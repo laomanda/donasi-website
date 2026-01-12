@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  max-width: none;
+}
+
+body {
+  @apply antialiased;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+* {
+  min-width: 0;
+}
+
+body.hide-wa .floating-wa {
+  display: none !important;
+}
+
+/* PARTNER MARQUEE STYLES */
+
+/* Konainer untuk mencegah scrollbar horizontal */
+.animate-marquee {
+  animation: marquee 16s linear infinite;
+  width: max-content;
+  will-change: transform;
+}
+
+/* Pause animasi saat user mengarahkan mouse ke area track */
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Banner pan animation */
+.animate-banner-pan {
+  animation: banner-pan 18s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+
+@keyframes banner-pan {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.06) translate3d(-1.5%, 1%, 0);
+  }
+  100% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+/* Scrollbar halus dan tipis */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid #f8fafc;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
