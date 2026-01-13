@@ -149,7 +149,10 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     },
     {
       title: "Keuangan",
-      items: [{ label: "Rekening", href: "/admin/bank-accounts", icon: faBuildingColumns }],
+      items: [
+        { label: "Laporan Donasi", href: "/admin/reports/donations", icon: faChartLine },
+        { label: "Rekening", href: "/admin/bank-accounts", icon: faBuildingColumns },
+      ],
     },
     {
       title: "Sistem",
@@ -167,6 +170,10 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
         { label: "Pengguna", href: "/superadmin/users", icon: faUserGroup },
         { label: "Peran", href: "/superadmin/roles", icon: faChartLine },
       ],
+    },
+    {
+      title: "Laporan",
+      items: [{ label: "Laporan Donasi", href: "/superadmin/reports/donations", icon: faChartLine }],
     },
     {
       title: "Sistem",

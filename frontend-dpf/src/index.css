@@ -41,7 +41,13 @@ body.hide-wa .floating-wa {
 
 /* Konainer untuk mencegah scrollbar horizontal */
 .animate-marquee {
-  animation: marquee 16s linear infinite;
+  animation: marquee 32s linear infinite;
+  width: max-content;
+  will-change: transform;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse 32s linear infinite;
   width: max-content;
   will-change: transform;
 }
@@ -50,13 +56,25 @@ body.hide-wa .floating-wa {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+.animate-marquee-reverse:hover {
+  animation-play-state: paused;
+}
 
 @keyframes marquee {
   0% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes marquee-reverse {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
   }
 }
 

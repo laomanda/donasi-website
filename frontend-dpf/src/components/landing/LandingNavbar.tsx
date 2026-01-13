@@ -221,7 +221,7 @@ const SEARCH_INDEX: { href: string; corpus: string }[] = [
 const COPY = {
     id: {
         phoneLabel: "No telepon",
-        callCenter: "Call Center",
+        callCenter: "DPF Official",
         emailLabel: "Email",
         donationAccount: "Rekening Donasi",
         searchPlaceholder: "Cari program, layanan, atau topik...",
@@ -236,7 +236,7 @@ const COPY = {
     },
     en: {
         phoneLabel: "Phone",
-        callCenter: "Call Center",
+        callCenter: "DPF Official",
         emailLabel: "Email",
         donationAccount: "Donation Account",
         searchPlaceholder: "Search programs, services, or topics...",
@@ -411,12 +411,12 @@ export function LandingNavbar() {
                                     <FontAwesomeIcon icon={faPhone} className={topbarIconClass} />
                                     {t.phoneLabel}:{" "}
                                     <a
-                                        href="https://wa.me/6281235262651"
+                                        href="https://wa.me/6281311768254"
                                         target="_blank"
                                         rel="noreferrer"
                                         className={topbarLinkClass}
                                     >
-                                        0812-3526-2651
+                                        0813-1176-8254
                                     </a>{" "}
                                     <span className={topbarMutedClass}>({t.callCenter})</span>
                                 </span>
@@ -674,12 +674,12 @@ export function LandingNavbar() {
                                      <FontAwesomeIcon icon={faPhone} className="text-brandGreen-600" />
                                      {t.phoneLabel}:{" "}
                                      <a
-                                         href="https://wa.me/6281235262651"
+                                         href="https://wa.me/6281311768254"
                                          target="_blank"
                                          rel="noreferrer"
                                          className="font-semibold text-slate-800"
                                      >
-                                         0812-3526-2651
+                                         0813-1176-8254
                                      </a>
                                  </div>
                                  <div className="flex items-center gap-2">

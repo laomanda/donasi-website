@@ -27,7 +27,12 @@ export const landingDict: Dict = {
         en: "A modern, trustworthy, and integrated platform for managing Zakat, Infaq, Sadaqah, and Waqf to benefit the wider community.",
     },
     "footer.cta.donate": { id: "Salurkan Donasi", en: "Give Donation" },
-    "footer.address": { id: "Jl. Rasuna Said Kav. 10,\nJakarta Selatan, 12950", en: "Jl. Rasuna Said Kav. 10,\nSouth Jakarta, 12950" },
+    "footer.address": {
+      id:
+        "Jakarta:\nSignature Park Grande, Jl. Letjen M.T. Haryono No.Kav. 20, RT.4/RW.1, Cawang, Kec. Kramat jati, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13630.\nMedan:\nJl. Setia Budi No.123 c, Tj. Sari, Kec. Medan Selayang, Kota Medan, Sumatera Utara 20132",
+      en:
+        "Jakarta:\nSignature Park Grande, Jl. Letjen M.T. Haryono No.Kav. 20, RT.4/RW.1, Cawang, Kec. Kramat jati, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13630.\nMedan:\nJl. Setia Budi No.123 c, Tj. Sari, Kec. Medan Selayang, Kota Medan, Sumatera Utara 20132",
+    },
     "footer.phone": { id: "Telepon", en: "Phone" },
     "footer.email": { id: "Email", en: "Email" },
     "footer.copyright": { id: "Hak Cipta", en: "Copyright" },

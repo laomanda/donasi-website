@@ -60,6 +60,7 @@ import { AdminBannersPage } from '../pages/management/admin/AdminBannersPage'
 import { AdminBannerCreatePage } from '../pages/management/admin/AdminBannerCreatePage'
 import { AdminBannerEditPage } from '../pages/management/admin/AdminBannerEditPage'
 import { AdminDonationsPage } from '../pages/management/admin/AdminDonationsPage'
+import { AdminDonationReportPage } from '../pages/management/admin/AdminDonationReportPage'
 import { AdminDonationManualCreatePage } from '../pages/management/admin/AdminDonationManualCreatePage'
 import { AdminDonationShowPage } from '../pages/management/admin/AdminDonationShowPage'
 import { AdminDonationConfirmationsPage } from '../pages/management/admin/AdminDonationConfirmationsPage'
@@ -78,6 +79,7 @@ import { AdminSearchPage } from '../pages/management/admin/AdminSearchPage'
 import { SuperAdminDashboardPage } from '../pages/management/superadmin/SuperAdminDashboardPage'
 import { SuperAdminRolesPage } from '../pages/management/superadmin/SuperAdminRolesPage'
 import { SuperAdminSearchPage } from '../pages/management/superadmin/SuperAdminSearchPage'
+import { SuperAdminDonationReportPage } from '../pages/management/superadmin/SuperAdminDonationReportPage'
 
 export const router = createBrowserRouter([
   {
@@ -134,6 +136,7 @@ export const router = createBrowserRouter([
             path: 'donations',
             element: <AdminDonationsPage />,
           },
+          { path: 'reports/donations', element: <AdminDonationReportPage /> },
           {
             path: 'donation-confirmations',
             element: <AdminDonationConfirmationsPage />,
@@ -197,6 +200,7 @@ export const router = createBrowserRouter([
             path: 'roles',
             element: <SuperAdminRolesPage />,
           },
+          { path: 'reports/donations', element: <SuperAdminDonationReportPage /> },
           {
             path: 'search',
             element: <SuperAdminSearchPage />,

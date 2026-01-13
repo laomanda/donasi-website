@@ -31,6 +31,7 @@ use App\Http\Controllers\Api\Frontend\ProgramController as FrontendProgramContro
 use App\Http\Controllers\Api\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Api\Editor\BannerController as EditorBannerController;
 use App\Http\Controllers\Api\PrayerTimesController;
+use App\Http\Controllers\Api\Reports\DonationReportController;
 use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboardController;
 use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
@@ -122,6 +123,8 @@ Route::prefix('v1')->group(function () {
             Route::get('donations/{donation}', [AdminDonationController::class, 'show']);
             Route::patch('donations/{donation}/status', [AdminDonationController::class, 'updateStatus']);
             Route::delete('donations/{donation}', [AdminDonationController::class, 'destroy']);
+            Route::get('reports/donations', [DonationReportController::class, 'index']);
+            Route::get('reports/donations/export', [DonationReportController::class, 'export']);
 
             Route::apiResource('pickup-requests', AdminPickupRequestController::class);
             Route::patch('pickup-requests/{pickup_request}/status', [AdminPickupRequestController::class, 'updateStatus']);
@@ -177,5 +180,7 @@ Route::prefix('v1')->group(function () {
 
             Route::get('roles', [SuperadminUserController::class, 'roles']);
             Route::apiResource('users', SuperadminUserController::class);
+            Route::get('reports/donations', [DonationReportController::class, 'index']);
+            Route::get('reports/donations/export', [DonationReportController::class, 'export']);
         });
 });

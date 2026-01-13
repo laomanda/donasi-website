@@ -9,7 +9,7 @@ import {
   faPhone,
   faHandHoldingHeart,
 } from '@fortawesome/free-solid-svg-icons'
-import { faInstagram, faXTwitter } from '@fortawesome/free-brands-svg-icons'
+import { faFacebookF, faInstagram, faTiktok, faWhatsapp, faYoutube } from '@fortawesome/free-brands-svg-icons'
 import { Link } from 'react-router-dom'
 import { useLang } from '../../lib/i18n'
 import { landingDict, translate } from '../../i18n/landing'
@@ -25,6 +25,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
   const limitedPrograms = programLinks.slice(0, 5)
   const { locale } = useLang()
   const t = (key: string, fallback?: string) => translate(landingDict, locale, key, fallback)
+  const addressLines = t('footer.address').split('\n').filter(Boolean)
 
   return (
     <footer className="relative overflow-hidden bg-gradient-to-b from-brandGreen-700 via-brandGreen-800 to-primary-700 text-slate-100">
@@ -37,10 +38,10 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
 
       <div className="relative mx-auto max-w-7xl px-6 pb-12 pt-16 lg:px-8">
         {/* GRID LAYOUT: 12 Columns System */}
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-10">
 
           {/* KOLOM 1: BRAND (Span 4) */}
-          <div className="lg:col-span-4 space-y-6 pr-0 lg:pr-8">
+          <div className="lg:col-span-4 space-y-6 pr-0 lg:pr-6">
             {/* Logo */}
             <div className="flex items-center gap-5">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-lg shadow-white/5">
@@ -63,7 +64,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
               {t('footer.description')}
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-col items-start gap-3 pt-2">
               <Link
                 to="/donate"
                 className="inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm ring-1 ring-white/20 transition-all hover:bg-emerald-600 hover:ring-emerald-600 hover:shadow-lg hover:-translate-y-0.5"
@@ -71,13 +72,22 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
                 <FontAwesomeIcon icon={faHandHoldingHeart} />
                 <span>Salurkan Donasi</span>
               </Link>
-              <SocialIcon href="#" icon={faInstagram} variant="ig" />
-              <SocialIcon href="#" icon={faXTwitter} variant="x" />
+              <div className="flex items-center gap-3">
+                <SocialIcon href="https://wa.me/6281311768254" icon={faWhatsapp} variant="wa" />
+                <SocialIcon href="https://instagram.com/wakafdpf/" icon={faInstagram} variant="ig" />
+                <SocialIcon href="https://www.tiktok.com/@dpf.or.id" icon={faTiktok} variant="tiktok" />
+                <SocialIcon href="https://www.youtube.com/@dpfofficial" icon={faYoutube} variant="yt" />
+                <SocialIcon
+                  href="https://www.facebook.com/people/Djalaluddin-Pane/pfbid02KjuGjczQitKPCZqDu8QvXHywyEoz17FroATYcY1meQVV4yu5mH9YQj5C84W1WkPxl/"
+                  icon={faFacebookF}
+                  variant="fb"
+                />
+              </div>
             </div>
           </div>
 
           {/* KOLOM 2: NAVIGASI (Span 2) */}
-          <div className="lg:col-span-2 lg:pl-4">
+          <div className="lg:col-span-3 lg:pl-2">
             <FooterHeading>{t('footer.explore')}</FooterHeading>
             <ul className="space-y-3">
               <FooterLinkItem to="/" label={t('nav.home')} />
@@ -89,7 +99,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
           </div>
 
           {/* KOLOM 3: PROGRAM (Span 3) */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-2">
             <FooterHeading>{t('footer.programHighlight')}</FooterHeading>
             {limitedPrograms.length ? (
               <ul className="space-y-3">
@@ -111,20 +121,30 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
           {/* KOLOM 4: KONTAK (Span 3) */}
           <div className="lg:col-span-3">
             <FooterHeading>{t('footer.contact')}</FooterHeading>
-            <ul className="space-y-5 text-sm">
+            <ul className="space-y-4 text-sm">
                <ContactItem
                  icon={faMapLocationDot}
                  text={
-                    <>
-                       {t('footer.address').split('\n')[0]}<br/>
-                       {t('footer.address').split('\n')[1]}
-                    </>
+                   <>
+                     {addressLines.map((line, index) => {
+                       const isLabel = line.trim().endsWith(':')
+                       const spacingClass = isLabel && index !== 0 ? 'mt-3' : ''
+                       const textClass = isLabel
+                         ? 'block font-semibold text-white/90'
+                         : 'block text-slate-300/90'
+                       return (
+                         <span key={`${line}-${index}`} className={`${textClass} ${spacingClass}`}>
+                           {line}
+                         </span>
+                       )
+                     })}
+                   </>
                  }
                />
                <ContactItem
                  icon={faPhone}
-                 text="+62 812-3456-7890"
-                 href="tel:6281234567890"
+                 text="0813-1176-8254 (DPF Official)"
+                 href="https://wa.me/6281311768254"
                />
                <ContactItem
                  icon={faEnvelope}
@@ -133,28 +153,47 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
                />
             </ul>
 
-            <div className="mt-6 space-y-2">
-              <div className="overflow-hidden rounded-xl border border-white/10 shadow-lg">
-                <iframe
-                  src="https://www.openstreetmap.org/export/embed.html?bbox=106.85403477404349%2C-6.25460046114402%2C106.87403477404349%2C-6.23460046114402&layer=mapnik&marker=-6.24460046114402%2C106.86403477404349"
-                  width="100%"
-                  height="180"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  title="Lokasi DPF"
-                  className="opacity-85 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-              <a
-                href="https://maps.google.com/?q=-6.24460046114402,106.86403477404349"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-semibold text-white hover:text-emerald-300 transition-colors"
-              >
-                <FontAwesomeIcon icon={faMapLocationDot} className="h-4 w-4" />
-                Lihat di Google Maps
-              </a>
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="flex flex-col">
+            <div className="overflow-hidden rounded-xl border border-white/10 shadow-lg">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63458.32104835289!2d106.80576511303089!3d-6.2446057999999915!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3804815921d%3A0x6b5d698d11d225a9!2sDPF%20(Djalaludin%20Pane%20Foundation)!5e0!3m2!1sid!2sid!4v1768288510620!5m2!1sid!2sid"
+                width="100%"
+                height="220"
+                style={{ border: 0 }}
+                loading="lazy"
+                title="Lokasi DPF Jakarta"
+                className="opacity-85 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            </div>
+            <a
+              href="https://maps.google.com/?q=-6.24460046114402,106.86403477404349"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-white hover:text-emerald-300 transition-colors"
+            >
+              <FontAwesomeIcon icon={faMapLocationDot} className="h-4 w-4" />
+              Lihat di Google Maps (Jakarta)
+            </a>
+          </div>
+          <div className="flex flex-col">
+            <div className="overflow-hidden rounded-xl border border-white/10 shadow-lg">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15928.511404694102!2d98.62002560195295!3d3.5580108814351994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30312fae9de99267%3A0xf1b47cb5a453853e!2sLAZNAS%20DPF!5e0!3m2!1sid!2sid!4v1768288065923!5m2!1sid!2sid"
+                width="100%"
+                height="220"
+                style={{ border: 0 }}
+                loading="lazy"
+                title="Lokasi DPF Medan"
+                className="opacity-85 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
             </div>
           </div>
         </div>
@@ -164,11 +203,6 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
           <p className="text-center md:text-left text-white">
             &copy; {currentYear} DPF ZISWAF. {t('footer.copyright', 'Dikelola oleh Yayasan DPF Indonesia.')}
           </p>
-          <div className="flex gap-6 font-medium text-white">
-             <Link to="/kebijakan-privasi" className="hover:text-emerald-400 transition-colors">{t('footer.privacy', 'Privasi')}</Link>
-             <Link to="/syarat-ketentuan" className="hover:text-emerald-400 transition-colors">{t('footer.tos', 'Syarat & Ketentuan')}</Link>
-             <Link to="/faq" className="hover:text-emerald-400 transition-colors">{t('footer.help', 'Bantuan')}</Link>
-          </div>
         </div>
 
       </div>
@@ -216,20 +250,31 @@ function ContactItem({ icon, text, href }: { icon: IconProp; text: ReactNode; hr
   if (href) {
     return (
       <li>
-        <a href={href} className="flex gap-3 hover:text-white transition-colors">
+        <a href={href} className="flex items-start gap-3 hover:text-white transition-colors">
           {content}
         </a>
       </li>
     )
   }
 
-  return <li className="flex gap-3 cursor-default">{content}</li>
+  return <li className="flex items-start gap-3 cursor-default">{content}</li>
 }
 
-function SocialIcon({ href, icon, variant }: { href: string; icon: IconProp; variant: 'ig' | 'x' }) {
+function SocialIcon({
+  href,
+  icon,
+  variant,
+}: {
+  href: string
+  icon: IconProp
+  variant: 'ig' | 'wa' | 'tiktok' | 'yt' | 'fb'
+}) {
   const hoverStyles = {
     ig: 'hover:bg-gradient-to-br hover:from-purple-500 hover:to-pink-500 hover:border-transparent',
-    x: 'hover:bg-black hover:border-transparent',
+    wa: 'hover:bg-emerald-600 hover:border-transparent',
+    tiktok: 'hover:bg-slate-900 hover:border-transparent',
+    yt: 'hover:bg-red-600 hover:border-transparent',
+    fb: 'hover:bg-blue-600 hover:border-transparent',
   }
 
   return (
