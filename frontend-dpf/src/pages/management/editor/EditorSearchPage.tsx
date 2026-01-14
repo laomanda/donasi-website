@@ -98,9 +98,8 @@ const articleStatusLabel = (status: string) => {
 
 const programStatusLabel = (status: string) => {
   const value = String(status ?? "").toLowerCase();
-  if (value === "active") return { label: "Aktif", tone: "green" as const };
-  if (value === "completed") return { label: "Selesai", tone: "neutral" as const };
-  if (value === "archived") return { label: "Arsip", tone: "neutral" as const };
+  if (value === "active") return { label: "Berjalan", tone: "green" as const };
+  if (value === "completed" || value === "archived") return { label: "Tersalurkan", tone: "neutral" as const };
   return { label: "Segera", tone: "amber" as const };
 };
 

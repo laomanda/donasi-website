@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRight,
@@ -8,6 +8,7 @@ import {
   faClipboardCheck,
   faClock,
   faHandHoldingHeart,
+  faHeadset,
   faLocationDot,
   faMapMarkedAlt,
   faPaperPlane,
@@ -34,7 +35,29 @@ const STEPS = [
   { titleKey: "jemput.steps.4.title", descKey: "jemput.steps.4.desc", icon: faPaperPlane },
 ];
 
-export function JemputZakatPage() {
+const JABODETABEK_CITIES = [
+  { id: "3101", label: "Kabupaten Kepulauan Seribu" },
+  { id: "3171", label: "Kota Jakarta Selatan" },
+  { id: "3172", label: "Kota Jakarta Timur" },
+  { id: "3173", label: "Kota Jakarta Pusat" },
+  { id: "3174", label: "Kota Jakarta Barat" },
+  { id: "3175", label: "Kota Jakarta Utara" },
+  { id: "3201", label: "Kabupaten Bogor" },
+  { id: "3271", label: "Kota Bogor" },
+  { id: "3275", label: "Kota Bekasi" },
+  { id: "3276", label: "Kota Depok" },
+  { id: "3216", label: "Kabupaten Bekasi" },
+  { id: "3603", label: "Kabupaten Tangerang" },
+  { id: "3671", label: "Kota Tangerang" },
+  { id: "3674", label: "Kota Tangerang Selatan" },
+];
+
+type DistrictOption = {
+  id: string;
+  name: string;
+};
+
+export function JemputWakafPage() {
   const { locale } = useLang();
   const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
   const [form, setForm] = useState({
@@ -43,7 +66,7 @@ export function JemputZakatPage() {
     address_full: "",
     city: "",
     district: "",
-    zakat_type: "",
+    wakaf_type: "",
     estimation: "",
     preferred_time: "",
   });
@@ -53,12 +76,55 @@ export function JemputZakatPage() {
     message: null,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [selectedCityId, setSelectedCityId] = useState("");
+  const [districts, setDistricts] = useState<DistrictOption[]>([]);
+  const [districtLoading, setDistrictLoading] = useState(false);
 
   const handleChange = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => ({ ...prev, [key]: "" }));
     setStatus({ type: null, message: null });
   };
+
+  const handleCitySelect = (cityId: string) => {
+    const city = JABODETABEK_CITIES.find((item) => item.id === cityId);
+    setSelectedCityId(cityId);
+    setForm((prev) => ({
+      ...prev,
+      city: city?.label ?? "",
+      district: "",
+    }));
+    setErrors((prev) => ({ ...prev, city: "", district: "" }));
+    setStatus({ type: null, message: null });
+  };
+
+  useEffect(() => {
+    let active = true;
+    if (!selectedCityId) {
+      setDistricts([]);
+      setDistrictLoading(false);
+      return;
+    }
+
+    setDistrictLoading(true);
+    fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${selectedCityId}.json`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Failed to load districts"))))
+      .then((data: DistrictOption[]) => {
+        if (!active) return;
+        setDistricts(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!active) return;
+        setDistricts([]);
+      })
+      .finally(() => {
+        if (active) setDistrictLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectedCityId]);
 
   const validate = () => {
     const alphaSpace = /^[A-Za-z\s]+$/;
@@ -79,7 +145,7 @@ export function JemputZakatPage() {
     if (!form.district.trim()) next.district = "jemput.form.error.district.required";
     else if (!alphaSpace.test(form.district.trim())) next.district = "jemput.form.error.district.alpha";
 
-    if (!form.zakat_type.trim()) next.zakat_type = "jemput.form.error.zakat.required";
+    if (!form.wakaf_type.trim()) next.wakaf_type = "jemput.form.error.wakaf.required";
 
     return { ok: Object.keys(next).length === 0, errors: next };
   };
@@ -101,7 +167,7 @@ export function JemputZakatPage() {
         address_full: form.address_full,
         city: form.city,
         district: form.district,
-        zakat_type: form.zakat_type,
+        wakaf_type: form.wakaf_type,
         estimation: form.estimation || undefined,
         preferred_time: form.preferred_time || undefined,
       });
@@ -112,7 +178,7 @@ export function JemputZakatPage() {
         address_full: "",
         city: "",
         district: "",
-        zakat_type: "",
+        wakaf_type: "",
         estimation: "",
         preferred_time: "",
       });
@@ -267,6 +333,24 @@ export function JemputZakatPage() {
                 </li>
               </ul>
             </div>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-900 shadow-sm">
+                <span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-100">
+                  <FontAwesomeIcon icon={faHeadset} />
+                </span>
+                <p className="leading-relaxed">
+                  Untuk layanan jemput wakaf di luar wilayah Jabodetabek, kami dengan senang hati melayani melalui nomor{" "}
+                  <a
+                    href="https://wa.me/6281311768254?text=Halo%20DPF%2C%20saya%20ingin%20bertanya%20mengenai%20layanan%20jemput%20wakaf%20di%20luar%20Jabodetabek."
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-emerald-700 hover:text-emerald-800"
+                  >
+                    081311768254
+                  </a>
+                  .
+                </p>
+              </div>
             <form onSubmit={handleSubmit} className="rounded-[24px] border border-slate-100 bg-white p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)] space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <InputField label={t("jemput.form.fields.name")} value={form.donor_name} onChange={(v) => handleChange("donor_name", v)} required error={errors.donor_name ? t(errors.donor_name) : ""} />
@@ -274,11 +358,54 @@ export function JemputZakatPage() {
               </div>
               <InputField label={t("jemput.form.fields.address")} value={form.address_full} onChange={(v) => handleChange("address_full", v)} required error={errors.address_full ? t(errors.address_full) : ""} />
               <div className="grid gap-4 sm:grid-cols-2">
-                <InputField label={t("jemput.form.fields.city")} value={form.city} onChange={(v) => handleChange("city", v)} required error={errors.city ? t(errors.city) : ""} />
-                <InputField label={t("jemput.form.fields.district")} value={form.district} onChange={(v) => handleChange("district", v)} required error={errors.district ? t(errors.district) : ""} />
+                <label className="space-y-1 text-sm font-medium text-slate-700">
+                  <span>{t("jemput.form.fields.city")}</span>
+                  <select
+                    value={selectedCityId}
+                    onChange={(e) => handleCitySelect(e.target.value)}
+                    required
+                    className={`w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2 ${
+                      errors.city
+                        ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
+                        : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100"
+                    }`}
+                  >
+                    <option value="">{t("jemput.form.fields.city")}</option>
+                    {JABODETABEK_CITIES.map((city) => (
+                      <option key={city.id} value={city.id}>
+                        {city.label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.city && <span className="text-xs font-semibold text-red-600">{t(errors.city)}</span>}
+                </label>
+                <label className="space-y-1 text-sm font-medium text-slate-700">
+                  <span>{t("jemput.form.fields.district")}</span>
+                  <select
+                    value={form.district}
+                    onChange={(e) => handleChange("district", e.target.value)}
+                    required
+                    disabled={!selectedCityId || districtLoading}
+                    className={`w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2 ${
+                      errors.district
+                        ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
+                        : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100"
+                    } ${!selectedCityId || districtLoading ? "bg-slate-100 text-slate-400" : ""}`}
+                  >
+                    <option value="">
+                      {districtLoading ? "Memuat kecamatan..." : t("jemput.form.fields.district")}
+                    </option>
+                    {districts.map((district) => (
+                      <option key={district.id} value={district.name}>
+                        {district.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.district && <span className="text-xs font-semibold text-red-600">{t(errors.district)}</span>}
+                </label>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <InputField label={t("jemput.form.fields.zakat")} value={form.zakat_type} onChange={(v) => handleChange("zakat_type", v)} required error={errors.zakat_type ? t(errors.zakat_type) : ""} />
+                <InputField label={t("jemput.form.fields.wakaf")} value={form.wakaf_type} onChange={(v) => handleChange("wakaf_type", v)} required error={errors.wakaf_type ? t(errors.wakaf_type) : ""} />
                 <InputField label={t("jemput.form.fields.estimation")} value={form.estimation} onChange={(v) => handleChange("estimation", v)} />
               </div>
               <InputField label={t("jemput.form.fields.time")} value={form.preferred_time} onChange={(v) => handleChange("preferred_time", v)} />
@@ -302,6 +429,7 @@ export function JemputZakatPage() {
                 {submitting ? t("jemput.form.submit.sending") : t("jemput.form.submit.label")}
               </button>
             </form>
+            </div>
           </div>
         </div>
       </section>
@@ -352,4 +480,4 @@ function InputField({
   );
 }
 
-export default JemputZakatPage;
+export default JemputWakafPage;

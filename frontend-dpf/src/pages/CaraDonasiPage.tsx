@@ -38,9 +38,9 @@ const manualSteps = [
 ];
 
 const midtransSteps = [
-  "donasi.midtrans.step1",
-  "donasi.midtrans.step2",
-  "donasi.midtrans.step3",
+  "donasi.methods.midtrans.step1",
+  "donasi.methods.midtrans.step2",
+  "donasi.methods.midtrans.step3",
 ];
 
 export function CaraDonasiPage() {

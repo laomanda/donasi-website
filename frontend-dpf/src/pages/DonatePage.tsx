@@ -89,9 +89,10 @@ const normalizeProgramStatus = (
     if (!raw) return translateFn("donate.program.status.unset");
     const s = raw.toLowerCase();
     if (s === "active" || s === "berjalan") return translateFn("landing.programs.status.ongoing");
-    if (s === "completed" || s === "selesai") return translateFn("landing.programs.status.completed");
+    if (s === "completed" || s === "selesai" || s === "archived" || s === "arsip") {
+        return translateFn("landing.programs.status.completed");
+    }
     if (s === "draft" || s === "segera") return translateFn("landing.programs.status.upcoming");
-    if (s === "archived" || s === "arsip") return translateFn("landing.programs.status.archived");
     return raw;
 };
 
@@ -105,18 +106,8 @@ const formatCurrency = (value: number | string | null | undefined, locale: "id" 
 
 const getProgress = (collected?: number | string | null, target?: number | string | null) => {
     const safeTarget = Math.max(Number(target ?? 0), 1);
-    const value = Math.min(Math.round((Number(collected ?? 0) / safeTarget) * 100), 100);
+    const value = Math.round((Number(collected ?? 0) / safeTarget) * 100);
     return Number.isNaN(value) ? 0 : value;
-};
-
-const isProgramClosed = (program?: Program | null) => {
-    if (!program) return false;
-    const status = String(program.status ?? "").trim().toLowerCase();
-    const statusClosed = ["draft", "segera", "completed", "selesai", "archived", "arsip"].includes(status);
-    if (statusClosed) return true;
-    const target = Number(program.target_amount ?? 0);
-    const collected = Number(program.collected_amount ?? 0);
-    return target > 0 && collected >= target;
 };
 
 const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" | "en" = "id") => {
@@ -274,7 +265,6 @@ function DonatePage() {
             : 0
         : selectedProgramProgress;
     const detailLink = !isGeneralDonation && selectedProgramSlug ? `/program/${selectedProgramSlug}` : "/program";
-    const isProgramClosedSelected = !isGeneralDonation && isProgramClosed(selectedProgram);
 
     const handleChange = (key: keyof typeof form, value: string | boolean) => {
         setForm((prev) => ({ ...prev, [key]: value as any }));
@@ -298,10 +288,6 @@ function DonatePage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (isProgramClosedSelected) {
-            setSubmitState({ type: "error", messageKey: "donate.form.status.programClosed" });
-            return;
-        }
         const v = validate();
         if (!v.ok) {
             setFormErrors(v.errors);
@@ -447,7 +433,7 @@ function DonatePage() {
                                             <div className="h-2 w-full rounded-full bg-slate-100">
                                                 <div
                                                     className="h-full rounded-full bg-brandGreen-600"
-                                                    style={{ width: `${hasProgramProgress ? displayProgress : 0}%` }}
+                                                    style={{ width: `${hasProgramProgress ? Math.min(displayProgress, 100) : 0}%` }}
                                                 />
                                             </div>
                                             <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
@@ -482,11 +468,6 @@ function DonatePage() {
                                                 </Link>
                                             )}
                                         </div>
-                                        {isProgramClosedSelected && (
-                                            <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                                                {t("donate.program.closed")}
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -550,8 +531,7 @@ function DonatePage() {
                                     { value: "", label: t("donate.form.generalOption") },
                                     ...localizedPrograms.map((p) => ({
                                         value: String(p.id),
-                                        label: isProgramClosed(p) ? `${p.title} (${t("donate.program.closedTag")})` : p.title,
-                                        disabled: isProgramClosed(p),
+                                        label: p.title,
                                     })),
                                 ]}
                             />
@@ -587,12 +567,11 @@ function DonatePage() {
                                                 key={value}
                                                 type="button"
                                                 onClick={() => handleChange("amount", value)}
-                                                disabled={isProgramClosedSelected}
                                                 className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                                                     isActive
                                                         ? "border-brandGreen-600 bg-brandGreen-600 text-white shadow-sm"
                                                         : "border-slate-200 bg-white text-slate-700 hover:border-brandGreen-200 hover:text-brandGreen-700"
-                                                } ${isProgramClosedSelected ? "cursor-not-allowed opacity-60" : ""}`}
+                                                }`}
                                             >
                                                 {formatNumber(amount)}
                                             </button>
@@ -629,15 +608,9 @@ function DonatePage() {
                                     {t(submitState.messageKey)}
                                 </div>
                             )}
-                            {isProgramClosedSelected && (
-                                <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
-                                    {t("donate.program.closed")}
-                                </div>
-                            )}
-
                             <button
                                 type="submit"
-                                disabled={submitting || isProgramClosedSelected}
+                                disabled={submitting}
                                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brandGreen-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 <FontAwesomeIcon icon={faCreditCard} />

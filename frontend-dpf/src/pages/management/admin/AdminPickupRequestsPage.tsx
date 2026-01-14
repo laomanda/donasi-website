@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -23,7 +23,7 @@ type PickupRequest = {
   address_full: string;
   city: string;
   district: string;
-  zakat_type: string;
+  wakaf_type: string;
   estimation?: string | null;
   preferred_time?: string | null;
   status?: PickupStatus | null;
@@ -117,7 +117,7 @@ export function AdminPickupRequestsPage() {
       setLastPage(res.data.last_page ?? 1);
       setTotal(res.data.total ?? 0);
     } catch {
-      setError("Gagal memuat data jemput zakat.");
+      setError("Gagal memuat data jemput wakaf.");
     } finally {
       setLoading(false);
     }
@@ -179,7 +179,7 @@ export function AdminPickupRequestsPage() {
               <span className="h-2 w-2 rounded-full bg-primary-600" />
               Layanan
             </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Jemput Zakat</h1>
+            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Jemput Wakaf</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
               Pantau permintaan jemput, jadwalkan petugas, dan tutup permintaan.
             </p>
@@ -270,7 +270,7 @@ export function AdminPickupRequestsPage() {
 
       <BulkActionsBar
         count={selection.count}
-        itemLabel="jemput zakat"
+        itemLabel="jemput wakaf"
         onClear={selection.clear}
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
@@ -298,7 +298,7 @@ export function AdminPickupRequestsPage() {
                   Lokasi
                 </th>
                 <th className="w-[18%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Jenis zakat
+                  Jenis wakaf
                 </th>
                 <th className="w-[14%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Status
@@ -360,7 +360,7 @@ export function AdminPickupRequestsPage() {
                       <p className="mt-1 line-clamp-1 text-xs text-slate-500">{item.address_full}</p>
                     </td>
                     <td className="px-6 py-5">
-                      <p className="text-sm font-semibold text-slate-900">{item.zakat_type}</p>
+                      <p className="text-sm font-semibold text-slate-900">{item.wakaf_type}</p>
                       <p className="mt-1 text-xs text-slate-500">{item.estimation ? item.estimation : "-"}</p>
                     </td>
                     <td className="px-6 py-5">

@@ -16,6 +16,7 @@ import { resolveStorageBaseUrl } from "../lib/urls";
 import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
 import placeholderBanner from "../brand/placeholder-banner.png";
 import heroImage from "../brand/assets/Hero.png";
+import donasiUmumImage from "../brand/assets/Donasi-umum.png";
 import { useLang } from "../lib/i18n";
 import { landingDict, translate } from "../i18n/landing";
 
@@ -108,7 +109,7 @@ const getImageUrl = (path?: string | null) => {
 
 const getProgress = (collected: number | string | undefined, target: number | string | undefined) => {
   const safeTarget = Math.max(Number(target ?? 0), 1);
-  const value = Math.min(Math.round((Number(collected ?? 0) / safeTarget) * 100), 100);
+  const value = Math.round((Number(collected ?? 0) / safeTarget) * 100);
   return Number.isNaN(value) ? 0 : value;
 };
 
@@ -116,9 +117,8 @@ const normalizeProgramStatus = (status: string | null | undefined, t: (k: string
   const raw = String(status ?? "").trim().toLowerCase();
   if (!raw) return t("landing.common.na");
   if (raw === "active") return t("landing.programs.status.ongoing");
-  if (raw === "completed") return t("landing.programs.status.completed");
+  if (raw === "completed" || raw === "archived") return t("landing.programs.status.completed");
   if (raw === "draft" || raw === "upcoming") return t("landing.programs.status.upcoming");
-  if (raw === "archived") return t("landing.programs.status.archived");
   return status ?? raw;
 };
 
@@ -126,8 +126,9 @@ const getProgramStatusTone = (status?: string | null) => {
   const s = String(status ?? "").trim().toLowerCase();
   if (s === "berjalan" || s === "active") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
   if (s === "segera" || s === "draft") return "bg-amber-50 text-amber-700 ring-amber-100";
-  if (s === "selesai" || s === "completed") return "bg-blue-50 text-blue-700 ring-blue-100";
-  if (s === "arsip" || s === "archived") return "bg-slate-100 text-slate-700 ring-slate-200";
+  if (s === "selesai" || s === "completed" || s === "arsip" || s === "archived") {
+    return "bg-blue-50 text-blue-700 ring-blue-100";
+  }
   return "bg-slate-50 text-slate-700 ring-slate-200";
 };
 
@@ -182,12 +183,17 @@ function LandingPage() {
   const partners = data?.partners ?? [];
   const localizedHighlights = useMemo(
     () =>
-      highlights.map((p) => ({
-        ...p,
-        title: pickLocale(p.title, p.title_en, locale),
-        short_description: pickLocale(p.short_description, p.short_description_en, locale),
-        category: pickLocale(p.category, p.category_en, locale),
-      })),
+      highlights
+        .filter((p) => {
+          const status = String(p.status ?? "").trim().toLowerCase();
+          return status !== "draft" && status !== "segera";
+        })
+        .map((p) => ({
+          ...p,
+          title: pickLocale(p.title, p.title_en, locale),
+          short_description: pickLocale(p.short_description, p.short_description_en, locale),
+          category: pickLocale(p.category, p.category_en, locale),
+        })),
     [highlights, locale]
   );
   const localizedArticles = useMemo(
@@ -447,6 +453,9 @@ function PromiseStrip({ t }: { t: (k: string, f?: string) => string }) {
 function ProgramsSection({ highlights, loading, t, locale }: { highlights: Program[]; loading: boolean; t: (k: string, f?: string) => string; locale: "id" | "en" }) {
   const hasPrograms = highlights.length > 0;
 
+  const visiblePrograms = highlights.slice(0, 6);
+  const showGeneralCard = true;
+
   return (
     <section id="programs" className="relative bg-slate-50">
       <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -472,8 +481,9 @@ function ProgramsSection({ highlights, loading, t, locale }: { highlights: Progr
         </div>
 
         <div className="mt-10 grid gap-7 md:grid-cols-2 lg:grid-cols-3">
+          {showGeneralCard && <GeneralDonationCard t={t} />}
           {hasPrograms &&
-            highlights.map((program) => <ProgramCard key={program.id} program={program} t={t} locale={locale} />)}
+            visiblePrograms.map((program) => <ProgramCard key={program.id} program={program} t={t} locale={locale} />)}
 
           {!hasPrograms && loading &&
             Array.from({ length: 3 }).map((_, idx) => <ProgramSkeleton key={`program-skel-${idx}`} />)}
@@ -497,6 +507,13 @@ function ProgramCard({ program, t, locale }: { program: Program; t: (k: string, 
   const title = pickLocale(program.title, program.title_en, locale);
   const desc = pickLocale(program.short_description, program.short_description_en, locale);
   const category = pickLocale(program.category, program.category_en, locale) || t("landing.programs.defaultCategory");
+  const normalizedStatus = String(program.status ?? "").trim().toLowerCase();
+  const isCompleted =
+    normalizedStatus === "completed" ||
+    normalizedStatus === "selesai" ||
+    normalizedStatus === "tersalurkan" ||
+    normalizedStatus === "archived" ||
+    normalizedStatus === "arsip";
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-100 bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-lg hover:shadow-slate-200/50">
@@ -528,7 +545,7 @@ function ProgramCard({ program, t, locale }: { program: Program; t: (k: string, 
         <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
           <div
             className="h-full rounded-full bg-brandGreen-600 transition-[width] duration-500"
-            style={{ width: `${progress}%` }}
+            style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
         <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
@@ -542,6 +559,55 @@ function ProgramCard({ program, t, locale }: { program: Program; t: (k: string, 
           </Link>
           <Link
             to={`/donate?program_id=${program.id}`}
+            className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99] ${
+              isCompleted ? "bg-slate-300 cursor-not-allowed" : "bg-brandGreen-600 hover:bg-brandGreen-700"
+            }`}
+            aria-disabled={isCompleted}
+            tabIndex={isCompleted ? -1 : undefined}
+            onClick={(e) => {
+              if (isCompleted) {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            }}
+          >
+            <FontAwesomeIcon icon={faHandHoldingHeart} />
+            {t("landing.programs.donate")}
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function GeneralDonationCard({ t }: { t: (k: string, f?: string) => string }) {
+  return (
+    <article className="flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-100 bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-lg hover:shadow-slate-200/50">
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
+        <img src={donasiUmumImage} alt={t("donate.program.general")} className="h-full w-full object-cover" />
+        <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-semibold text-white">
+          <span className="rounded-full uppercase font-heading bg-primary-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm">
+            {t("donate.program.general")}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <div className="flex items-center justify-between gap-3">
+          <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 bg-emerald-50 text-emerald-700 ring-emerald-100">
+            {t("donate.program.general")}
+          </span>
+          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg ring-1 ring-emerald-100">
+            {t("landing.programs.status.ongoing")}
+          </span>
+        </div>
+
+        <h3 className="text-lg font-heading font-semibold text-slate-900 leading-snug">{t("donate.program.general")}</h3>
+        <p className="text-sm text-slate-600 line-clamp-3">{t("donate.program.generalDesc")}</p>
+
+        <div className="mt-auto flex items-center justify-end border-t border-slate-100 pt-4">
+          <Link
+            to="/donate"
             className="inline-flex items-center justify-center gap-2 rounded-full bg-brandGreen-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brandGreen-700 active:scale-[0.99]"
           >
             <FontAwesomeIcon icon={faHandHoldingHeart} />

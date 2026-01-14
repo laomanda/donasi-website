@@ -33,6 +33,8 @@ type Program = {
   category?: string | null;
   category_en?: string | null;
   deadline_days?: number | string | null;
+  published_at?: string | null;
+  created_at?: string | null;
 };
 
 const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" | "en" = "id") => {
@@ -59,7 +61,7 @@ const getImageUrl = (path?: string | null) => {
 
 const getProgress = (collected: number | string | undefined, target: number | string | undefined) => {
   const safeTarget = Math.max(Number(target ?? 0), 1);
-  const value = Math.min(Math.round((Number(collected ?? 0) / safeTarget) * 100), 100);
+  const value = Math.round((Number(collected ?? 0) / safeTarget) * 100);
   return Number.isNaN(value) ? 0 : value;
 };
 
@@ -67,9 +69,8 @@ const canonicalStatus = (status?: string | null) => {
   const raw = String(status ?? "").trim();
   const s = raw.toLowerCase();
   if (s === "active" || s === "berjalan") return "active";
-  if (s === "completed" || s === "selesai") return "completed";
+  if (s === "completed" || s === "selesai" || s === "archived" || s === "arsip") return "completed";
   if (s === "draft" || s === "upcoming" || s === "segera") return "draft";
-  if (s === "archived" || s === "arsip") return "archived";
   return "other";
 };
 
@@ -78,7 +79,6 @@ const getProgramStatusTone = (status?: string | null) => {
   if (s === "active") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
   if (s === "draft") return "bg-amber-50 text-amber-700 ring-amber-100";
   if (s === "completed") return "bg-blue-50 text-blue-700 ring-blue-100";
-  if (s === "archived") return "bg-slate-100 text-slate-700 ring-slate-200";
   return "bg-slate-50 text-slate-700 ring-slate-200";
 };
 
@@ -88,7 +88,6 @@ const getStatusLabel = (status?: string | null, t?: (key: string, fallback?: str
   if (s === "active") return translateFn("landing.programs.status.ongoing");
   if (s === "completed") return translateFn("landing.programs.status.completed");
   if (s === "draft") return translateFn("landing.programs.status.upcoming");
-  if (s === "archived") return translateFn("landing.programs.status.archived");
   return translateFn("landing.common.na");
 };
 
@@ -143,16 +142,25 @@ export function ProgramPage() {
     }
   }, [searchParams]);
 
-  const localizedPrograms = useMemo(
-    () =>
-      programs.map((p) => ({
-        ...p,
-        title: pickLocale(p.title, p.title_en, locale),
-        short_description: pickLocale(p.short_description, p.short_description_en, locale),
-        category: pickLocale(p.category, p.category_en, locale) || t("landing.programs.defaultCategory"),
-      })),
-    [programs, locale]
-  );
+  const localizedPrograms = useMemo(() => {
+    const filtered = programs.filter((p) => {
+      const status = String(p.status ?? "").trim().toLowerCase();
+      return status !== "draft" && status !== "segera";
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      const aDate = new Date(a.published_at ?? a.created_at ?? 0).getTime();
+      const bDate = new Date(b.published_at ?? b.created_at ?? 0).getTime();
+      return bDate - aDate;
+    });
+
+    return sorted.map((p) => ({
+      ...p,
+      title: pickLocale(p.title, p.title_en, locale),
+      short_description: pickLocale(p.short_description, p.short_description_en, locale),
+      category: pickLocale(p.category, p.category_en, locale) || t("landing.programs.defaultCategory"),
+    }));
+  }, [programs, locale, t]);
 
   // Compute Categories from Data
   const categories = useMemo(() => {
@@ -175,11 +183,7 @@ export function ProgramPage() {
     const term = search.trim().toLowerCase();
     return localizedPrograms.filter((p) => {
       const matchCategory = activeCategory ? p.category === activeCategory : true;
-      const target = Number(p.target_amount ?? 0);
-      const collected = Number(p.collected_amount ?? 0);
-      const isCompletedByProgress = target > 0 && collected >= target;
-      const derivedStatus = isCompletedByProgress ? "completed" : p.status;
-      const matchStatus = activeStatus ? canonicalStatus(derivedStatus) === activeStatus : true;
+      const matchStatus = activeStatus ? canonicalStatus(p.status) === activeStatus : true;
       const matchSearch =
         !term ||
         p.title.toLowerCase().includes(term) ||
@@ -366,17 +370,11 @@ function ProgramCard({
   t: (key: string, fallback?: string) => string;
 }) {
   const progress = getProgress(program.collected_amount, program.target_amount);
-  const target = Number(program.target_amount ?? 0);
-  const collected = Number(program.collected_amount ?? 0);
-  const isCompletedByProgress = target > 0 && collected >= target;
-  const derivedStatus = isCompletedByProgress ? "completed" : program.status;
-  const statusLabel = getStatusLabel(derivedStatus, t);
-  const statusTone = getProgramStatusTone(derivedStatus);
+  const statusLabel = getStatusLabel(program.status, t);
+  const statusTone = getProgramStatusTone(program.status);
   const detailHref = program.slug ? `/program/${program.slug}` : "/program";
-  const closedByProgress = target > 0 && collected >= target;
-  const statusUnavailable = canonicalStatus(derivedStatus) !== "active";
-  const closed = closedByProgress || statusUnavailable;
   const brandName = "Djalalaludin Pane Foundation";
+  const isCompleted = canonicalStatus(program.status) === "completed";
   const deadlineText = program.deadline_days !== null && program.deadline_days !== undefined && String(program.deadline_days).trim() !== ""
     ? `${program.deadline_days} ${locale === "en" ? "days" : "hari"}`
     : t("landing.programs.deadline.unlimited");
@@ -421,7 +419,7 @@ function ProgramCard({
         <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
           <div
             className="h-full rounded-full bg-brandGreen-600 transition-[width] duration-500"
-            style={{ width: `${progress}%` }}
+            style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
         <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
@@ -440,21 +438,21 @@ function ProgramCard({
           <Link
             to={`/donate?program_id=${program.id}`}
             className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99] ${
-              closed
+              isCompleted
                 ? "bg-slate-300 cursor-not-allowed"
                 : "bg-brandGreen-600 hover:bg-brandGreen-700"
-            }`}  
-            aria-disabled={closed}
-            tabIndex={closed ? -1 : undefined}
+            }`}
+            aria-disabled={isCompleted}
+            tabIndex={isCompleted ? -1 : undefined}
             onClick={(e) => {
-              if (closed) {
+              if (isCompleted) {
                 e.preventDefault();
                 e.stopPropagation();
               }
             }}
           >
             <FontAwesomeIcon icon={faHandHoldingHeart} />
-            {closed ? t("donate.program.closedTag") : t("landing.programs.donate")}
+            {t("landing.programs.donate")}
           </Link>
         </div>
       </div>

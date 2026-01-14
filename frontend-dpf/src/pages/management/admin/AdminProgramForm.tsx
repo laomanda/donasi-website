@@ -25,6 +25,7 @@ type EditorProgram = {
   target_amount: number | string;
   collected_amount?: number | string | null;
   deadline_days?: number | string | null;
+  published_at?: string | null;
   thumbnail_path?: string | null;
   banner_path?: string | null;
   is_highlight?: boolean | null;
@@ -45,10 +46,11 @@ type ProgramFormState = {
   benefits_en: string;
   target_amount: string;
   deadline_days: string;
+  published_at: string;
   thumbnail_path: string;
   banner_path: string;
   is_highlight: boolean;
-  status: "draft" | "active" | "completed" | "archived";
+  status: "draft" | "active" | "completed";
 };
 
 const emptyForm: ProgramFormState = {
@@ -65,6 +67,7 @@ const emptyForm: ProgramFormState = {
   benefits_en: "",
   target_amount: "",
   deadline_days: "",
+  published_at: "",
   thumbnail_path: "",
   banner_path: "",
   is_highlight: false,
@@ -182,10 +185,11 @@ export function AdminProgramForm({ mode, programId }: { mode: Mode; programId?: 
           benefits_en: p.benefits_en ?? "",
           target_amount: p.target_amount !== null && p.target_amount !== undefined ? String(p.target_amount) : "",
           deadline_days: p.deadline_days !== null && p.deadline_days !== undefined ? String(p.deadline_days) : "",
+          published_at: p.published_at ?? "",
           thumbnail_path: p.thumbnail_path ?? "",
           banner_path: p.banner_path ?? "",
           is_highlight: Boolean(p.is_highlight),
-          status: (String(p.status ?? "draft").toLowerCase() as any) ?? "draft",
+          status: (String(p.status ?? "draft").toLowerCase() === "archived" ? "completed" : String(p.status ?? "draft").toLowerCase()) as any,
         });
       })
       .catch((err) => {
@@ -255,6 +259,7 @@ export function AdminProgramForm({ mode, programId }: { mode: Mode; programId?: 
       benefits_en: state.benefits_en.trim() || null,
       target_amount: targetAmount === "" ? null : Number(targetAmount),
       deadline_days: state.deadline_days.trim() === "" ? null : Number(state.deadline_days.trim()),
+      published_at: state.published_at.trim() === "" ? null : state.published_at.trim(),
       thumbnail_path: state.thumbnail_path.trim() || null,
       banner_path: state.banner_path.trim() || null,
       is_highlight: state.is_highlight,
@@ -541,9 +546,8 @@ export function AdminProgramForm({ mode, programId }: { mode: Mode; programId?: 
                   disabled={loading || saving || deleting}
                 >
                   <option value="draft">Segera</option>
-                  <option value="active">Aktif</option>
-                  <option value="completed">Selesai</option>
-                  <option value="archived">Arsip</option>
+                  <option value="active">Berjalan</option>
+                  <option value="completed">Tersalurkan</option>
                 </select>
               </label>
 
@@ -617,6 +621,19 @@ export function AdminProgramForm({ mode, programId }: { mode: Mode; programId?: 
                   disabled={loading || saving || deleting}
                 />
                 <p className="mt-2 text-xs font-semibold text-slate-500">Kosongkan jika program tidak memiliki batas hari.</p>
+              </label>
+
+              <label className="block">
+                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                  Tanggal Program <span className="text-slate-400">(opsional)</span>
+                </span>
+                <input
+                  type="date"
+                  value={form.published_at}
+                  onChange={(e) => setForm((s) => ({ ...s, published_at: e.target.value }))}
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  disabled={loading || saving || deleting}
+                />
               </label>
 
               {mode === "edit" && collectedAmount !== null && (

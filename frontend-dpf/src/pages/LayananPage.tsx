@@ -39,7 +39,7 @@ const SERVICES: Service[] = [
     descriptionKey: "layanan.services.pickup.desc",
     icon: faTruckRampBox,
     badgeKey: "layanan.services.pickup.badge",
-    link: "/jemput-zakat",
+    link: "/jemput-wakaf",
     ctaKey: "layanan.services.pickup.cta",
   },
   {
@@ -195,7 +195,7 @@ function LayananPage() {
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Link
-                  to="/jemput-zakat"
+                  to="/jemput-wakaf"
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-700"
                 >
                   <FontAwesomeIcon icon={faTruckRampBox} />

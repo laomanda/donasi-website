@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -722,7 +722,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
                 <input
                   value={form.slug}
                   onChange={(e) => setForm((s) => ({ ...s, slug: e.target.value }))}
-                  placeholder="contoh: panduan-zakat"
+                  placeholder="contoh: panduan-wakaf"
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
                   disabled={loading || saving || deleting}
                 />

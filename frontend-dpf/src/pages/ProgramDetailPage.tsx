@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
+  faArrowRight,
   faCheckCircle,
   faCopy,
   faHandHoldingHeart,
@@ -37,6 +38,7 @@ type Program = {
   is_highlight?: boolean | null;
   status?: string | null;
   deadline_days?: number | string | null;
+  published_at?: string | null;
 };
 
 const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" | "en" = "id") => {
@@ -58,11 +60,14 @@ type ProgramShowResponse = {
   }>;
   latest_updates?: Array<{
     id: number;
+    slug?: string | null;
     title?: string | null;
     excerpt?: string | null;
     published_at?: string | null;
   }>;
 };
+
+type RecentDonations = NonNullable<ProgramShowResponse["recent_donations"]>;
 
 const formatCurrency = (value?: number | string | null) =>
   new Intl.NumberFormat("id-ID", {
@@ -80,6 +85,14 @@ const formatDateShort = (value?: string | null) => {
     month: "long",
     year: "numeric",
   }).format(d);
+};
+
+const getExcerptParagraph = (value?: string | null) => {
+  if (!value) return "";
+  const cleaned = value.replace(/\r/g, "").trim();
+  if (!cleaned) return "";
+  const parts = cleaned.split(/\n\s*\n|\n/).map((part) => part.trim()).filter(Boolean);
+  return parts[0] ?? "";
 };
 
 const getImageUrl = (path?: string | null) => {
@@ -100,9 +113,10 @@ const sanitizeHtml = (html: string) => {
 const getStatusTone = (status?: string | null) => {
   const s = String(status ?? "").toLowerCase();
   if (s === "active" || s === "berjalan") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
-  if (s === "completed" || s === "selesai") return "bg-blue-50 text-blue-700 ring-blue-100";
+  if (s === "completed" || s === "selesai" || s === "archived" || s === "arsip") {
+    return "bg-blue-50 text-blue-700 ring-blue-100";
+  }
   if (s === "draft" || s === "segera") return "bg-amber-50 text-amber-700 ring-amber-100";
-  if (s === "archived" || s === "arsip") return "bg-slate-100 text-slate-700 ring-slate-200";
   return "bg-slate-50 text-slate-700 ring-slate-200";
 };
 
@@ -114,15 +128,9 @@ const getStatusLabel = (
   const translateFn = t ?? ((key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback));
   const s = String(status ?? "").toLowerCase();
   if (s === "active") return translateFn("landing.programs.status.ongoing");
-  if (s === "completed") return translateFn("landing.programs.status.completed");
-  if (s === "archived") return translateFn("landing.programs.status.archived");
+  if (s === "completed" || s === "archived") return translateFn("landing.programs.status.completed");
   if (s === "draft") return translateFn("landing.programs.status.upcoming");
   return status ? String(status) : translateFn("landing.common.na");
-};
-
-const isStatusUnavailable = (status?: string | null) => {
-  const s = String(status ?? "").trim().toLowerCase();
-  return ["draft", "segera", "completed", "selesai", "archived", "arsip"].includes(s);
 };
 
 function ProgramDetailSkeleton() {
@@ -172,19 +180,17 @@ export function ProgramDetailPage() {
   const brandName = "Djalalaludin Pane Foundation";
 
   const [program, setProgram] = useState<Program | null>(null);
-  const [recentDonations, setRecentDonations] = useState<ProgramShowResponse["recent_donations"]>([]);
+  const [recentDonations, setRecentDonations] = useState<RecentDonations>([]);
   const [latestUpdates, setLatestUpdates] = useState<ProgramShowResponse["latest_updates"]>([]);
   const [progressPercent, setProgressPercent] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [errorKey, setErrorKey] = useState<"not_found" | "load_failed" | null>(null);
   const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"detail" | "updates" | "donors">("detail");
+  const [donorQuery, setDonorQuery] = useState("");
 
   const localizedProgram = useMemo(() => {
     if (!program) return null;
-    const target = Number(program.target_amount ?? 0);
-    const collected = Number(program.collected_amount ?? 0);
-    const closed = target > 0 && collected >= target;
     return {
       ...program,
       title: pickLocale(program.title, program.title_en, locale),
@@ -193,7 +199,6 @@ export function ProgramDetailPage() {
       description: pickLocale(program.description, program.description_en, locale),
       benefits: pickLocale(program.benefits, program.benefits_en, locale),
       deadline_days: program.deadline_days ?? null,
-      closed,
     };
   }, [program, locale, t]);
 
@@ -204,6 +209,26 @@ export function ProgramDetailPage() {
     }
     return `${raw} ${locale === "en" ? "days" : "hari"}`;
   }, [localizedProgram?.deadline_days, locale, t]);
+
+  const isCompleted = useMemo(() => {
+    const normalized = String(program?.status ?? "").trim().toLowerCase();
+    return (
+      normalized === "completed" ||
+      normalized === "selesai" ||
+      normalized === "tersalurkan" ||
+      normalized === "archived" ||
+      normalized === "arsip"
+    );
+  }, [program?.status]);
+
+  const filteredDonations = useMemo(() => {
+    const term = donorQuery.trim().toLowerCase();
+    if (!term) return recentDonations;
+    return recentDonations.filter((donation) => {
+      const name = String(donation.donor_name ?? "").trim().toLowerCase();
+      return name.includes(term);
+    });
+  }, [donorQuery, recentDonations]);
 
   useEffect(() => {
     if (!slug) {
@@ -220,7 +245,7 @@ export function ProgramDetailPage() {
         if (!active) return;
         setProgram(res.data.program);
         const rawProgress = Number(res.data.progress_percent ?? 0);
-        setProgressPercent(Number.isFinite(rawProgress) ? Math.min(Math.max(rawProgress, 0), 100) : 0);
+        setProgressPercent(Number.isFinite(rawProgress) ? Math.max(rawProgress, 0) : 0);
         setRecentDonations(res.data.recent_donations ?? []);
         setLatestUpdates(res.data.latest_updates ?? []);
         setErrorKey(null);
@@ -397,6 +422,15 @@ export function ProgramDetailPage() {
                       </span>
                     ) : null}
                   </div>
+                  <div className="mt-4 inline-flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white/90 px-4 py-2 shadow-sm">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-slate-900 to-slate-700 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white">
+                      <span className="h-2 w-2 rounded-full bg-emerald-300" aria-hidden="true" />
+                      {locale === "en" ? "Program date" : "Tanggal program"}
+                    </span>
+                    <span className="text-sm font-semibold text-slate-900">
+                      {formatDateShort(program?.published_at ?? null)}
+                    </span>
+                  </div>
 
                   <h1 className="mt-5 font-heading text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
                     {localizedProgram?.title ?? ""}
@@ -490,8 +524,19 @@ export function ProgramDetailPage() {
                             </p>
                             {u.excerpt ? (
                               <p className="mt-3 text-sm leading-relaxed text-slate-700">
-                                {u.excerpt}
+                                {getExcerptParagraph(u.excerpt)}
                               </p>
+                            ) : null}
+                            {u.slug ? (
+                              <div className="mt-4 flex justify-end">
+                                <Link
+                                  to={`/articles/${u.slug}`}
+                                  className="inline-flex items-center gap-2 text-xs font-semibold text-brandGreen-700 transition hover:text-brandGreen-800"
+                                >
+                                  Selengkapnya
+                                  <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
+                                </Link>
+                              </div>
                             ) : null}
                           </div>
                         ))
@@ -505,8 +550,21 @@ export function ProgramDetailPage() {
 
                   {activeTab === "donors" && (
                     <div className="mt-5 space-y-3">
-                      {recentDonations && recentDonations.length > 0 ? (
-                        recentDonations.map((don) => (
+                      <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+                        <div className="flex items-center gap-3">
+                          <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-slate-500">
+                            Cari Donatur
+                          </span>
+                          <input
+                            value={donorQuery}
+                            onChange={(e) => setDonorQuery(e.target.value)}
+                            placeholder="Ketik nama donatur..."
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition focus:border-brandGreen-200 focus:outline-none focus:ring-2 focus:ring-brandGreen-100"
+                          />
+                        </div>
+                      </div>
+                      {filteredDonations && filteredDonations.length > 0 ? (
+                        filteredDonations.map((don) => (
                           <div
                             key={don.id}
                             className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
@@ -523,7 +581,9 @@ export function ProgramDetailPage() {
                         ))
                       ) : (
                         <div className="rounded-2xl border border-slate-100 bg-white p-4 text-sm font-semibold text-slate-500">
-                          Belum ada donatur untuk program ini.
+                          {recentDonations.length === 0
+                            ? "Belum ada donatur untuk program ini."
+                            : "Tidak ada donatur yang cocok."}
                         </div>
                       )}
                     </div>
@@ -571,7 +631,7 @@ export function ProgramDetailPage() {
                   <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
                       className="h-full rounded-full bg-brandGreen-600"
-                      style={{ width: `${progressPercent}%` }}
+                      style={{ width: `${Math.min(progressPercent, 100)}%` }}
                     />
                   </div>
 
@@ -585,28 +645,24 @@ export function ProgramDetailPage() {
 
                   <Link
                     to={`/donate?program_id=${program?.id}`}
-                    className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold shadow-sm transition ${
-                      localizedProgram?.closed || isStatusUnavailable(program?.status)
-                        ? "cursor-not-allowed bg-slate-200 text-slate-500 ring-1 ring-slate-300"
-                        : "bg-brandGreen-600 text-white hover:bg-brandGreen-700"
+                    className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-sm transition ${
+                      isCompleted ? "bg-slate-300 cursor-not-allowed" : "bg-brandGreen-600 hover:bg-brandGreen-700"
                     }`}
-                    aria-disabled={localizedProgram?.closed || isStatusUnavailable(program?.status)}
-                    tabIndex={localizedProgram?.closed || isStatusUnavailable(program?.status) ? -1 : undefined}
+                    aria-disabled={isCompleted}
+                    tabIndex={isCompleted ? -1 : undefined}
                     onClick={(e) => {
-                      if (localizedProgram?.closed || isStatusUnavailable(program?.status)) {
+                      if (isCompleted) {
                         e.preventDefault();
                         e.stopPropagation();
                       }
                     }}
                   >
                     <FontAwesomeIcon icon={faHandHoldingHeart} />
-                    {localizedProgram?.closed || isStatusUnavailable(program?.status)
-                      ? t("donate.program.closedTag")
-                      : locale === "en" ? "Donate now" : "Donasi sekarang"}
+                    {locale === "en" ? "Donate now" : "Donasi sekarang"}
                   </Link>
 
                   <p className="mt-3 text-xs text-slate-500">
-                    {locale === "en" 
+                    {locale === "en"
                       ? "Donation is made through the donate page. Make sure the amount and data are correct."
                       : "Donasi dilakukan melalui halaman donate. Pastikan nominal dan data sudah benar."}
                   </p>
@@ -615,7 +671,7 @@ export function ProgramDetailPage() {
                 <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                   <p className="text-sm font-bold text-slate-900">{locale === "en" ? "Share program" : "Bagikan program"}</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    {locale === "en" 
+                    {locale === "en"
                       ? "Spread the goodness so more people can be helped."
                       : "Sebarkan kebaikan agar lebih banyak yang terbantu."}
                   </p>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRight,
@@ -18,6 +18,27 @@ import http from "../lib/http";
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
 
+type BankAccount = {
+  id: number;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+  branch?: string | null;
+  is_visible?: boolean;
+  notes?: string | null;
+};
+
+type OrganizationResponse = {
+  bank_accounts?: BankAccount[];
+};
+
+type Program = {
+  id: number;
+  title: string;
+  title_en?: string | null;
+  status: string;
+};
+
 const BENEFITS = [
   { titleKey: "konfirmasi.benefits.1.title", descKey: "konfirmasi.benefits.1.desc", icon: faClock },
   { titleKey: "konfirmasi.benefits.2.title", descKey: "konfirmasi.benefits.2.desc", icon: faShieldHalved },
@@ -33,7 +54,14 @@ const STEPS = [
 export function KonfirmasiDonasiPage() {
   const { locale } = useLang();
   const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
+  const pickLocale = (idVal?: string | null, enVal?: string | null) => {
+    const idText = (idVal ?? "").trim();
+    const enText = (enVal ?? "").trim();
+    if (locale === "en") return enText || idText;
+    return idText || enText;
+  };
   const [form, setForm] = useState({
+    program_id: "",
     name: "",
     phone: "",
     amount: "",
@@ -42,6 +70,10 @@ export function KonfirmasiDonasiPage() {
     notes: "",
     proof: null as File | null,
   });
+  const [accounts, setAccounts] = useState<BankAccount[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [optionsLoading, setOptionsLoading] = useState(true);
+  const [optionsError, setOptionsError] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
   const [statusKey, setStatusKey] = useState<"success" | "error" | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -62,6 +94,61 @@ export function KonfirmasiDonasiPage() {
     }
   };
 
+  useEffect(() => {
+    let active = true;
+    setOptionsLoading(true);
+    Promise.all([http.get<OrganizationResponse>("/organization"), http.get<{ data: Program[] }>("/programs")])
+      .then(([orgRes, progRes]) => {
+        if (!active) return;
+        setAccounts(orgRes.data?.bank_accounts ?? []);
+        setPrograms(progRes.data?.data ?? []);
+        setOptionsError(null);
+      })
+      .catch(() => {
+        if (!active) return;
+        setOptionsError("konfirmasi.form.error.options");
+      })
+      .finally(() => active && setOptionsLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const visibleAccounts = useMemo(() => accounts.filter((account) => account.is_visible !== false), [accounts]);
+  const programOptions = useMemo(() => {
+    return programs
+      .filter((program) => {
+        const status = String(program.status ?? "").trim().toLowerCase();
+        return status !== "draft" && status !== "segera";
+      })
+      .map((program) => ({
+        value: String(program.id),
+        label: pickLocale(program.title, program.title_en) || t("landing.programs.defaultCategory"),
+      }));
+  }, [programs, locale, t]);
+
+  const bankOptions = useMemo(
+    () =>
+      visibleAccounts.map((account) => ({
+        value: String(account.id),
+        label: `${account.bank_name} • ${account.account_number} a.n. ${account.account_name}`,
+      })),
+    [visibleAccounts]
+  );
+
+  const handleBankChange = (value: string) => {
+    setForm((prev) => ({ ...prev, bank: value }));
+    setErrors((prev) => ({ ...prev, bank: "" }));
+    setStatusKey(null);
+  };
+
+  const handleProgramChange = (value: string) => {
+    const selected = programOptions.find((program) => program.value === value);
+    setForm((prev) => ({ ...prev, program_id: value, purpose: selected?.label ?? "" }));
+    setErrors((prev) => ({ ...prev, purpose: "" }));
+    setStatusKey(null);
+  };
+
   const validate = () => {
     const alphaSpace = /^[A-Za-z\s]+$/;
     const digits = /^[0-9]+$/;
@@ -77,8 +164,11 @@ export function KonfirmasiDonasiPage() {
     else if (!digits.test(form.amount.trim())) next.amount = "konfirmasi.form.error.amount.numeric";
     else if (Number(form.amount) < 1000) next.amount = "konfirmasi.form.error.amount.min";
 
-    if (!form.bank.trim()) next.bank = "konfirmasi.form.error.bank.required";
-    if (!form.purpose.trim()) next.purpose = "konfirmasi.form.error.purpose.required";
+    const selectedBank = visibleAccounts.find((account) => String(account.id) === form.bank);
+    if (!selectedBank) next.bank = "konfirmasi.form.error.bank.required";
+
+    const selectedProgram = programOptions.find((program) => program.value === form.program_id);
+    if (!selectedProgram) next.purpose = "konfirmasi.form.error.purpose.required";
 
     if (form.proof) {
       const allowed = ["image/jpeg", "image/png", "application/pdf"];
@@ -103,12 +193,27 @@ export function KonfirmasiDonasiPage() {
     setSubmitting(true);
     setStatusKey(null);
     try {
+      const selectedBank = visibleAccounts.find((account) => String(account.id) === form.bank);
+      const selectedProgram = programOptions.find((program) => program.value === form.program_id);
+      if (!selectedBank || !selectedProgram) {
+        setErrors({
+          bank: selectedBank ? "" : "konfirmasi.form.error.bank.required",
+          purpose: selectedProgram ? "" : "konfirmasi.form.error.purpose.required",
+        });
+        setStatusKey("error");
+        setSubmitting(false);
+        return;
+      }
       const fd = new FormData();
       fd.append("donor_name", form.name);
       fd.append("donor_phone", form.phone);
       fd.append("amount", form.amount);
-      fd.append("bank_destination", form.bank);
-      fd.append("purpose", form.purpose);
+      fd.append(
+        "bank_destination",
+        `${selectedBank.bank_name} ${selectedBank.account_number} a.n. ${selectedBank.account_name}`
+      );
+      fd.append("program_id", selectedProgram.value);
+      fd.append("purpose", selectedProgram.label);
       if (form.notes) fd.append("notes", form.notes);
       if (form.proof) fd.append("proof", form.proof);
 
@@ -117,7 +222,7 @@ export function KonfirmasiDonasiPage() {
       });
 
       setStatusKey("success");
-      setForm({ name: "", phone: "", amount: "", bank: "", purpose: "", notes: "", proof: null });
+      setForm({ program_id: "", name: "", phone: "", amount: "", bank: "", purpose: "", notes: "", proof: null });
     } catch {
       setStatusKey("error");
     } finally {
@@ -276,9 +381,34 @@ export function KonfirmasiDonasiPage() {
               </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <InputField label={t("konfirmasi.form.fields.amount")} value={form.amount} onChange={(v) => handleChange("amount", v)} required error={errors.amount ? t(errors.amount) : ""} />
-              <InputField label={t("konfirmasi.form.fields.bank")} value={form.bank} onChange={(v) => handleChange("bank", v)} required error={errors.bank ? t(errors.bank) : ""} />
+              <SelectField
+                label={t("konfirmasi.form.fields.bank")}
+                value={form.bank}
+                onChange={handleBankChange}
+                required
+                error={errors.bank ? t(errors.bank) : ""}
+                options={bankOptions}
+                disabled={optionsLoading || bankOptions.length === 0}
+                placeholder={locale === "en" ? "Select destination bank" : "Pilih bank tujuan"}
+                loading={optionsLoading}
+              />
             </div>
-            <InputField label={t("konfirmasi.form.fields.purpose")} value={form.purpose} onChange={(v) => handleChange("purpose", v)} required error={errors.purpose ? t(errors.purpose) : ""} />
+            <SelectField
+              label={t("konfirmasi.form.fields.purpose")}
+              value={form.program_id}
+              onChange={handleProgramChange}
+              required
+              error={errors.purpose ? t(errors.purpose) : ""}
+              options={programOptions}
+              disabled={optionsLoading || programOptions.length === 0}
+              placeholder={locale === "en" ? "Select donation program" : "Pilih program tujuan"}
+              loading={optionsLoading}
+            />
+            {optionsError ? (
+              <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700">
+                {t(optionsError)}
+              </div>
+            ) : null}
             <InputField label={t("konfirmasi.form.fields.notes")} value={form.notes} onChange={(v) => handleChange("notes", v)} />
             <FileField label={t("konfirmasi.form.fields.proof")} onChange={(file) => handleChange("proof", file as any)} error={errors.proof ? t(errors.proof) : ""} />
             {preview && (
@@ -354,6 +484,55 @@ function InputField({
         required={required}
         className={`${base} ${state}`}
       />
+      {error && <span className="text-xs font-semibold text-red-600">{error}</span>}
+    </label>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  required,
+  error,
+  options,
+  disabled,
+  placeholder,
+  loading,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+  error?: string;
+  options: Array<{ value: string; label: string }>;
+  disabled?: boolean;
+  placeholder?: string;
+  loading?: boolean;
+}) {
+  const base =
+    "w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2";
+  const state = error
+    ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
+    : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
+  const emptyLabel = loading ? "Memuat..." : placeholder ?? "Pilih";
+  return (
+    <label className="space-y-1 text-sm font-medium text-slate-700">
+      <span>{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        disabled={disabled}
+        className={`${base} ${state} ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-500" : ""}`}
+      >
+        <option value="">{emptyLabel}</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
       {error && <span className="text-xs font-semibold text-red-600">{error}</span>}
     </label>
   );

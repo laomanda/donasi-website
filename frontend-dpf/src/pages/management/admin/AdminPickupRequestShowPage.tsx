@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -20,7 +20,7 @@ type PickupRequest = {
   address_full: string;
   city: string;
   district: string;
-  zakat_type: string;
+  wakaf_type: string;
   estimation?: string | null;
   preferred_time?: string | null;
   status?: PickupStatus | null;
@@ -124,7 +124,7 @@ export function AdminPickupRequestShowPage() {
 
   useEffect(() => {
     if (!canLoad) {
-      setError("ID jemput zakat tidak valid.");
+      setError("ID jemput wakaf tidak valid.");
       setLoading(false);
       return;
     }
@@ -143,7 +143,7 @@ export function AdminPickupRequestShowPage() {
       })
       .catch(() => {
         if (!active) return;
-        setError("Gagal memuat detail jemput zakat.");
+        setError("Gagal memuat detail jemput wakaf.");
       })
       .finally(() => active && setLoading(false));
 
@@ -163,12 +163,12 @@ export function AdminPickupRequestShowPage() {
         assigned_officer: assignedOfficer.trim() || null,
         notes: notes.trim() || null,
       });
-      toast.success("Status jemput zakat diperbarui.", { title: "Berhasil" });
+      toast.success("Status jemput wakaf diperbarui.", { title: "Berhasil" });
       if (nextStatus === "dijadwalkan" && prevStatus !== "dijadwalkan") {
         const phone = normalizePhone(data?.donor_phone);
         if (phone) {
           const message =
-            "Informasi, DPF Siap Menjemput Zakat Anda Silahkan Tunggu Di Alamat Yang Sudah Disesuaikan Anda, Terimakasih";
+            "Informasi, DPF Siap Menjemput Wakaf Anda Silahkan Tunggu Di Alamat Yang Sudah Disesuaikan Anda, Terimakasih";
           const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
           window.open(url, "_blank", "noopener,noreferrer");
         } else {
@@ -177,7 +177,7 @@ export function AdminPickupRequestShowPage() {
       }
       navigate("/admin/pickup-requests", { replace: true });
     } catch {
-      toast.error("Gagal memperbarui status jemput zakat.", { title: "Gagal" });
+      toast.error("Gagal memperbarui status jemput wakaf.", { title: "Gagal" });
     } finally {
       setSaving(false);
     }
@@ -205,7 +205,7 @@ export function AdminPickupRequestShowPage() {
           <div className="min-w-0">
             <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-700 ring-1 ring-primary-100">
               <span className="h-2 w-2 rounded-full bg-primary-600" />
-              Detail jemput zakat
+              Detail jemput wakaf
             </span>
             <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">
               {loading ? "Memuat..." : data?.donor_name ?? `#${pickupId}`}
@@ -235,7 +235,7 @@ export function AdminPickupRequestShowPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="space-y-1">
                 <h2 className="font-heading text-xl font-semibold text-slate-900">Detail pemohon</h2>
-                <p className="text-sm font-medium text-slate-600">Alamat, jenis zakat, dan jadwal.</p>
+                <p className="text-sm font-medium text-slate-600">Alamat, jenis wakaf, dan jadwal.</p>
               </div>
               <span
                 className={[
@@ -272,8 +272,8 @@ export function AdminPickupRequestShowPage() {
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <dt className="text-xs font-semibold text-slate-500">Jenis zakat</dt>
-                <dd className="mt-2 text-sm font-bold text-slate-900">{data?.zakat_type ?? "-"}</dd>
+                <dt className="text-xs font-semibold text-slate-500">Jenis wakaf</dt>
+                <dd className="mt-2 text-sm font-bold text-slate-900">{data?.wakaf_type ?? "-"}</dd>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <dt className="text-xs font-semibold text-slate-500">Estimasi</dt>

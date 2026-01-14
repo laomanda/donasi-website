@@ -27,6 +27,7 @@ type Program = {
   target_amount?: number | string | null;
   collected_amount?: number | string | null;
   deadline_days?: number | string | null;
+  published_at?: string | null;
   updated_at?: string | null;
   created_at?: string | null;
 };
@@ -56,16 +57,14 @@ const formatCurrency = (value: number | string | null | undefined) => {
 const getStatusTone = (status: ProgramStatus) => {
   const s = String(status ?? "").toLowerCase();
   if (s === "active") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
-  if (s === "completed") return "bg-blue-50 text-blue-700 ring-blue-100";
-  if (s === "archived") return "bg-slate-100 text-slate-700 ring-slate-200";
+  if (s === "completed" || s === "archived") return "bg-blue-50 text-blue-700 ring-blue-100";
   return "bg-amber-50 text-amber-700 ring-amber-100";
 };
 
 const formatStatusLabel = (status: ProgramStatus) => {
   const s = String(status ?? "").toLowerCase();
-  if (s === "active") return "Aktif";
-  if (s === "completed") return "Selesai";
-  if (s === "archived") return "Arsip";
+  if (s === "active") return "Berjalan";
+  if (s === "completed" || s === "archived") return "Tersalurkan";
   if (s === "draft") return "Segera";
   return String(status || "-");
 };
@@ -226,9 +225,8 @@ export function AdminProgramsPage() {
               >
                 <option value="">Semua status</option>
                 <option value="draft">Segera</option>
-                <option value="active">Aktif</option>
-                <option value="completed">Selesai</option>
-                <option value="archived">Arsip</option>
+                <option value="active">Berjalan</option>
+                <option value="completed">Tersalurkan</option>
               </select>
             </label>
 
@@ -368,6 +366,7 @@ export function AdminProgramsPage() {
               ) : (
                 items.map((program) => {
                   const updated = program.updated_at ?? program.created_at;
+                  const published = program.published_at ?? null;
                   return (
                     <tr key={program.id} className="transition hover:bg-slate-50">
                       <td className="px-6 py-5">
@@ -387,7 +386,7 @@ export function AdminProgramsPage() {
                         >
                           <p className="line-clamp-1 text-sm font-bold text-slate-900">{program.title}</p>
                           <p className="mt-1 text-xs font-semibold text-slate-500">
-                            {program.slug} - Diperbarui {formatDate(updated)}
+                            {program.slug} - {published ? "Tanggal program" : "Diperbarui"} {formatDate(published ?? updated)}
                           </p>
                         </button>
                       </td>
@@ -443,6 +442,7 @@ export function AdminProgramsPage() {
         ) : (
           items.map((program) => {
             const updated = program.updated_at ?? program.created_at;
+            const published = program.published_at ?? null;
             return (
               <button
                 key={program.id}
@@ -465,7 +465,7 @@ export function AdminProgramsPage() {
                       <div className="min-w-0">
                         <p className="line-clamp-1 text-sm font-bold text-slate-900">{program.title}</p>
                         <p className="mt-1 text-xs font-semibold text-slate-500">
-                          {program.slug} - Diperbarui {formatDate(updated)}
+                          {program.slug} - {published ? "Tanggal program" : "Diperbarui"} {formatDate(published ?? updated)}
                         </p>
                       </div>
                     </div>

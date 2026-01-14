@@ -8,16 +8,20 @@ use App\Models\Donation;
 use App\Models\Partner;
 use App\Models\Program;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $highlights = Program::highlight()->limit(6)->get();
+        $highlights = Program::highlight()
+            ->orderByDesc(DB::raw('COALESCE(published_at, created_at)'))
+            ->limit(6)
+            ->get();
 
         if ($highlights->isEmpty()) {
             $highlights = Program::where('status', 'active')
-                ->latest('created_at')
+                ->orderByDesc(DB::raw('COALESCE(published_at, created_at)'))
                 ->limit(6)
                 ->get();
         }

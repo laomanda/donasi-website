@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\Frontend\OrganizationController as FrontendOrganiza
 use App\Http\Controllers\Api\Frontend\PickupRequestController as FrontendPickupRequestController;
 use App\Http\Controllers\Api\Frontend\ServiceRequestController as FrontendServiceRequestController;
 use App\Http\Controllers\Api\Frontend\ProgramController as FrontendProgramController;
+use App\Http\Controllers\Api\Frontend\SettingController as FrontendSettingController;
 use App\Http\Controllers\Api\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Api\Editor\BannerController as EditorBannerController;
 use App\Http\Controllers\Api\PrayerTimesController;
@@ -78,6 +79,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('throttle:60,1')->group(function () {
         Route::get('home', HomeController::class);
         Route::get('banners', [FrontendBannerController::class, 'index']);
+        Route::get('settings', [FrontendSettingController::class, 'index']);
 
         Route::get('programs', [FrontendProgramController::class, 'index']);
         Route::get('programs/{slug}', [FrontendProgramController::class, 'show']);

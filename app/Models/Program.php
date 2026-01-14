@@ -29,6 +29,7 @@ class Program extends Model
         'is_highlight',
         'status',
         'deadline_days',
+        'published_at',
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class Program extends Model
         'collected_amount' => 'decimal:2',
         'is_highlight'     => 'boolean',
         'deadline_days'    => 'integer',
+        'published_at'     => 'date',
     ];
 
     // Pastikan slug unik otomatis jika belum ada

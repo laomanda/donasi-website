@@ -21,7 +21,7 @@ import { LoginPage } from '../pages/LoginPage'
 import { ArticleDetailPage } from '../pages/ArticleDetailPage'
 import { ProgramDetailPage } from '../pages/ProgramDetailPage'
 import { KonsultasiPage } from '../pages/KonsultasiPage'
-import { JemputZakatPage } from '../pages/JemputZakatPage'
+import { JemputWakafPage } from '../pages/JemputWakafPage'
 import { KonfirmasiDonasiPage } from '../pages/KonfirmasiDonasiPage'
 import { CaraDonasiPage } from '../pages/CaraDonasiPage'
 import { EditorShell, AdminShell, SuperAdminShell } from '../layouts/dashboard/RoleShells'
@@ -94,7 +94,7 @@ export const router = createBrowserRouter([
       { path: 'articles/:slug', element: <ArticleDetailPage /> },
       { path: 'tentang-kami', element: <TentangKamiPage /> },
       { path: 'konsultasi', element: <KonsultasiPage /> },
-      { path: 'jemput-zakat', element: <JemputZakatPage /> },
+      { path: 'jemput-wakaf', element: <JemputWakafPage /> },
       { path: 'konfirmasi-donasi', element: <KonfirmasiDonasiPage /> },
       { path: 'cara-donasi', element: <CaraDonasiPage /> },
       { path: 'donate', element: <DonatePage /> },

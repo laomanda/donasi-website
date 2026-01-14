@@ -23,6 +23,7 @@ import {
 import dpfLogo from "../../brand/dpf-icon.png";
 import { useLang } from "../../lib/i18n";
 import { PrayerBadge } from "./PrayerBadge";
+import { fetchPublicSettings } from "../../lib/publicSettings";
 
 type NavItem = { label: { id: string; en: string }; href: string; icon: IconProp };
 
@@ -81,9 +82,9 @@ const SEARCH_ITEMS = [
         keywords: ["konsultasi", "consultation", "ziswaf"],
     },
     {
-        href: "/jemput-zakat",
-        labels: { id: "Jemput Zakat", en: "Pickup Zakat" },
-        keywords: ["jemput", "pickup", "zakat"],
+        href: "/jemput-wakaf",
+        labels: { id: "Jemput Wakaf", en: "Pickup Wakaf" },
+        keywords: ["jemput", "pickup", "wakaf"],
     },
     {
         href: "/konfirmasi-donasi",
@@ -120,7 +121,7 @@ const SEARCH_INDEX: { href: string; corpus: string }[] = [
         href: "/program",
         corpus: `
             Program unggulan
-            Zakat
+            Wakaf
             Donasi
             Beasiswa
             Campaign sosial
@@ -135,11 +136,11 @@ const SEARCH_INDEX: { href: string; corpus: string }[] = [
         href: "/layanan",
         corpus: `
             Layanan
-            Jemput Zakat
+            Jemput Wakaf
             Konfirmasi Donasi
             Konsultasi ZISWAF
             Konsultasi ziswaf
-            Jemput zakat ke lokasi
+            Jemput wakaf ke lokasi
             Donasi langsung
         `,
     },
@@ -173,16 +174,16 @@ const SEARCH_INDEX: { href: string; corpus: string }[] = [
         corpus: `
             Konsultasi
             Konsultasi ZISWAF
-            Tanya zakat infak sedekah wakaf
+            Tanya wakaf infak sedekah wakaf
             Konsultasi ziswaf
             Hubungi kami
         `,
     },
     {
-        href: "/jemput-zakat",
+        href: "/jemput-wakaf",
         corpus: `
-            Jemput zakat
-            Pickup zakat
+            Jemput wakaf
+            Pickup wakaf
             Penjemputan donasi
             Antar jemput
             Jadwalkan penjemputan
@@ -259,6 +260,7 @@ export function LandingNavbar() {
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchFeedback, setSearchFeedback] = useState<string | null>(null);
     const [langOpen, setLangOpen] = useState(false);
+    const [publicSettings, setPublicSettings] = useState<Record<string, string>>({});
     const langRef = useRef<HTMLDivElement | null>(null);
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const navigate = useNavigate();
@@ -328,6 +330,12 @@ export function LandingNavbar() {
     );
     const t = COPY[locale];
     const searchOptions = useMemo(() => SEARCH_ITEMS.map((item) => item.labels[locale]), [locale]);
+    const phoneNumber = publicSettings["landing.contact_phone"]?.trim() || "0813-1176-8254";
+    const phoneLink =
+        publicSettings["landing.contact_phone_link"]?.trim() || "https://wa.me/6281311768254";
+    const emailText = publicSettings["landing.contact_email"]?.trim() || "info@dpf.or.id";
+    const emailLink =
+        publicSettings["landing.contact_email_link"]?.trim() || `mailto:${emailText}`;
 
     // Scroll handler: Wave hilang saat discroll agar bersih
     useEffect(() => {
@@ -335,6 +343,23 @@ export function LandingNavbar() {
         onScroll();
         window.addEventListener("scroll", onScroll, { passive: true });
         return () => window.removeEventListener("scroll", onScroll);
+    }, []);
+
+    useEffect(() => {
+        let active = true;
+        fetchPublicSettings([
+            "landing.contact_phone",
+            "landing.contact_phone_link",
+            "landing.contact_email",
+            "landing.contact_email_link",
+        ])
+            .then((settings) => {
+                if (active) setPublicSettings(settings);
+            })
+            .catch(() => {});
+        return () => {
+            active = false;
+        };
     }, []);
 
     // Handle Mobile Menu Escape
@@ -411,20 +436,20 @@ export function LandingNavbar() {
                                     <FontAwesomeIcon icon={faPhone} className={topbarIconClass} />
                                     {t.phoneLabel}:{" "}
                                     <a
-                                        href="https://wa.me/6281311768254"
+                                        href={phoneLink}
                                         target="_blank"
                                         rel="noreferrer"
                                         className={topbarLinkClass}
                                     >
-                                        0813-1176-8254
+                                        {phoneNumber}
                                     </a>{" "}
                                     <span className={topbarMutedClass}>({t.callCenter})</span>
                                 </span>
                                 <span className="inline-flex items-center gap-2">
                                     <FontAwesomeIcon icon={faEnvelope} className={topbarIconClass} />
                                     {t.emailLabel}:{" "}
-                                    <a href="mailto:info@dpf.or.id" className={topbarLinkClass}>
-                                        info@dpf.or.id
+                                    <a href={emailLink} className={topbarLinkClass}>
+                                        {emailText}
                                     </a>
                                 </span>
                                 <Link to="/donate" className={`inline-flex items-center gap-2 ${topbarLinkClass}`}>
@@ -674,19 +699,19 @@ export function LandingNavbar() {
                                      <FontAwesomeIcon icon={faPhone} className="text-brandGreen-600" />
                                      {t.phoneLabel}:{" "}
                                      <a
-                                         href="https://wa.me/6281311768254"
+                                         href={phoneLink}
                                          target="_blank"
                                          rel="noreferrer"
                                          className="font-semibold text-slate-800"
                                      >
-                                         0813-1176-8254
+                                         {phoneNumber}
                                      </a>
                                  </div>
                                  <div className="flex items-center gap-2">
                                      <FontAwesomeIcon icon={faEnvelope} className="text-brandGreen-600" />
                                      {t.emailLabel}:{" "}
-                                     <a href="mailto:info@dpf.or.id" className="font-semibold text-slate-800">
-                                         info@dpf.or.id
+                                     <a href={emailLink} className="font-semibold text-slate-800">
+                                         {emailText}
                                      </a>
                                  </div>
                                  <button

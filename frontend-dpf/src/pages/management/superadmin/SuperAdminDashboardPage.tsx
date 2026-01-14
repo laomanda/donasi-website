@@ -114,9 +114,8 @@ const normalizeNumber = (value: unknown) => {
 
 const getProgramStatusLabel = (status: string | null | undefined) => {
   const normalized = String(status ?? "").toLowerCase();
-  if (normalized === "active") return { label: "Aktif", tone: "green" as const };
-  if (normalized === "completed") return { label: "Selesai", tone: "neutral" as const };
-  if (normalized === "archived") return { label: "Arsip", tone: "neutral" as const };
+  if (normalized === "active") return { label: "Berjalan", tone: "green" as const };
+  if (normalized === "completed" || normalized === "archived") return { label: "Tersalurkan", tone: "neutral" as const };
   return { label: "Draf", tone: "amber" as const };
 };
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Program;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ProgramController extends Controller
@@ -34,7 +35,7 @@ class ProgramController extends Controller
             $query->where('category', $category);
         }
 
-        $programs = $query->orderByDesc('created_at')
+        $programs = $query->orderByDesc(DB::raw('COALESCE(published_at, created_at)'))
             ->paginate($request->integer('per_page', 15));
 
         return response()->json($programs);
@@ -103,7 +104,7 @@ class ProgramController extends Controller
     public function updateStatus(Request $request, Program $program)
     {
         $data = $request->validate([
-            'status' => ['required', 'in:draft,active,completed,archived'],
+            'status' => ['required', 'in:draft,active,completed'],
         ]);
 
         $program->update($data);
@@ -143,8 +144,9 @@ class ProgramController extends Controller
             'thumbnail_path'    => ['nullable', 'string', 'max:255'],
             'banner_path'       => ['nullable', 'string', 'max:255'],
             'is_highlight'      => ['sometimes', 'boolean'],
-            'status'            => [$required, 'in:draft,active,completed,archived'],
+            'status'            => [$required, 'in:draft,active,completed'],
             'deadline_days'     => ['nullable', 'integer', 'min:0'],
+            'published_at'      => ['nullable', 'date'],
         ]);
     }
 }

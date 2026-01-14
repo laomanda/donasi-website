@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Program;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProgramController extends Controller
 {
@@ -26,7 +27,7 @@ class ProgramController extends Controller
 
         return response()->json(
             $query->orderBy('is_highlight', 'desc')
-                ->orderBy('created_at', 'desc')
+                ->orderByDesc(DB::raw('COALESCE(published_at, created_at)'))
                 ->paginate($perPage)
         );
     }
@@ -58,11 +59,11 @@ class ProgramController extends Controller
             ->where('program_id', $program->id)
             ->orderByDesc('published_at')
             ->limit(10)
-            ->get(['id', 'title', 'excerpt', 'published_at']);
+            ->get(['id', 'slug', 'title', 'excerpt', 'published_at']);
 
         return response()->json([
             'program'          => $program,
-            'progress_percent' => min($progress, 100),
+            'progress_percent' => $progress,
             'recent_donations' => $recentDonations,
             'latest_updates'   => $latestUpdates,
         ]);

@@ -1,5 +1,6 @@
 import dpfLogo from '../../brand/dpf-icon.png'
 import type { ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import {
@@ -13,6 +14,7 @@ import { faFacebookF, faInstagram, faTiktok, faWhatsapp, faYoutube } from '@fort
 import { Link } from 'react-router-dom'
 import { useLang } from '../../lib/i18n'
 import { landingDict, translate } from '../../i18n/landing'
+import { fetchPublicSettings } from '../../lib/publicSettings'
 
 type FooterProgramLink = { label: string; href: string }
 
@@ -25,7 +27,52 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
   const limitedPrograms = programLinks.slice(0, 5)
   const { locale } = useLang()
   const t = (key: string, fallback?: string) => translate(landingDict, locale, key, fallback)
-  const addressLines = t('footer.address').split('\n').filter(Boolean)
+  const [publicSettings, setPublicSettings] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    let active = true
+    fetchPublicSettings([
+      'landing.contact_address',
+      'landing.contact_phone',
+      'landing.contact_phone_display',
+      'landing.contact_phone_link',
+      'landing.contact_email',
+      'landing.contact_email_link',
+      'landing.contact_map_jakarta_embed',
+      'landing.contact_map_jakarta_link',
+      'landing.contact_map_medan_embed',
+      'landing.contact_map_medan_link',
+      'landing.social_whatsapp_link',
+    ])
+      .then((settings) => {
+        if (active) setPublicSettings(settings)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const addressText = publicSettings['landing.contact_address']?.trim() || t('footer.address')
+  const addressLines = addressText.split('\n').filter(Boolean)
+  const phoneNumber = publicSettings['landing.contact_phone']?.trim() || '0813-1176-8254'
+  const phoneDisplay =
+    publicSettings['landing.contact_phone_display']?.trim() || `${phoneNumber} (DPF Official)`
+  const phoneLink = publicSettings['landing.contact_phone_link']?.trim() || 'https://wa.me/6281311768254'
+  const emailText = publicSettings['landing.contact_email']?.trim() || 'layanan@dpf.or.id'
+  const emailLink =
+    publicSettings['landing.contact_email_link']?.trim() || `mailto:${emailText}`
+  const jakartaMapEmbed =
+    publicSettings['landing.contact_map_jakarta_embed']?.trim() ||
+    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63458.32104835289!2d106.80576511303089!3d-6.2446057999999915!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3804815921d%3A0x6b5d698d11d225a9!2sDPF%20(Djalaludin%20Pane%20Foundation)!5e0!3m2!1sid!2sid!4v1768288510620!5m2!1sid!2sid'
+  const jakartaMapLink =
+    publicSettings['landing.contact_map_jakarta_link']?.trim() ||
+    'https://maps.google.com/?q=-6.24460046114402,106.86403477404349'
+  const medanMapEmbed =
+    publicSettings['landing.contact_map_medan_embed']?.trim() ||
+    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15928.511404694102!2d98.62002560195295!3d3.5580108814351994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30312fae9de99267%3A0xf1b47cb5a453853e!2sLAZNAS%20DPF!5e0!3m2!1sid!2sid!4v1768288065923!5m2!1sid!2sid'
+  const medanMapLink = publicSettings['landing.contact_map_medan_link']?.trim()
+  const whatsappLink = publicSettings['landing.social_whatsapp_link']?.trim() || phoneLink
 
   return (
     <footer className="relative overflow-hidden bg-gradient-to-b from-brandGreen-700 via-brandGreen-800 to-primary-700 text-slate-100">
@@ -73,7 +120,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
                 <span>Salurkan Donasi</span>
               </Link>
               <div className="flex items-center gap-3">
-                <SocialIcon href="https://wa.me/6281311768254" icon={faWhatsapp} variant="wa" />
+                <SocialIcon href={whatsappLink} icon={faWhatsapp} variant="wa" />
                 <SocialIcon href="https://instagram.com/wakafdpf/" icon={faInstagram} variant="ig" />
                 <SocialIcon href="https://www.tiktok.com/@dpf.or.id" icon={faTiktok} variant="tiktok" />
                 <SocialIcon href="https://www.youtube.com/@dpfofficial" icon={faYoutube} variant="yt" />
@@ -110,7 +157,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
             ) : (
                // Default fallback if no props
               <ul className="space-y-3">
-                 <FooterLinkItem to="/program/zakat" label={t('footer.program.zakat', 'Zakat Penghasilan')} />
+                 <FooterLinkItem to="/program/wakaf" label={t('footer.program.wakafIncome', 'Wakaf Penghasilan')} />
                  <FooterLinkItem to="/program/pendidikan" label={t('footer.program.beasiswa', 'Beasiswa Dhuafa')} />
                  <FooterLinkItem to="/program/wakaf" label={t('footer.program.wakaf', 'Wakaf Produktif')} />
                  <FooterLinkItem to="/program/kemanusiaan" label={t('footer.program.kemanusiaan', 'Bantuan Bencana')} />
@@ -143,13 +190,13 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
                />
                <ContactItem
                  icon={faPhone}
-                 text="0813-1176-8254 (DPF Official)"
-                 href="https://wa.me/6281311768254"
+                 text={phoneDisplay}
+                 href={phoneLink}
                />
                <ContactItem
                  icon={faEnvelope}
-                 text="layanan@dpf.or.id"
-                 href="mailto:layanan@dpf.or.id"
+                 text={emailText}
+                 href={emailLink}
                />
             </ul>
 
@@ -160,7 +207,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
           <div className="flex flex-col">
             <div className="overflow-hidden rounded-xl border border-white/10 shadow-lg">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63458.32104835289!2d106.80576511303089!3d-6.2446057999999915!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3804815921d%3A0x6b5d698d11d225a9!2sDPF%20(Djalaludin%20Pane%20Foundation)!5e0!3m2!1sid!2sid!4v1768288510620!5m2!1sid!2sid"
+                src={jakartaMapEmbed}
                 width="100%"
                 height="220"
                 style={{ border: 0 }}
@@ -172,7 +219,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
               />
             </div>
             <a
-              href="https://maps.google.com/?q=-6.24460046114402,106.86403477404349"
+              href={jakartaMapLink}
               target="_blank"
               rel="noreferrer"
               className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-white hover:text-emerald-300 transition-colors"
@@ -184,7 +231,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
           <div className="flex flex-col">
             <div className="overflow-hidden rounded-xl border border-white/10 shadow-lg">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15928.511404694102!2d98.62002560195295!3d3.5580108814351994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30312fae9de99267%3A0xf1b47cb5a453853e!2sLAZNAS%20DPF!5e0!3m2!1sid!2sid!4v1768288065923!5m2!1sid!2sid"
+                src={medanMapEmbed}
                 width="100%"
                 height="220"
                 style={{ border: 0 }}
@@ -195,6 +242,17 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
                 allowFullScreen
               />
             </div>
+            {medanMapLink ? (
+              <a
+                href={medanMapLink}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-white hover:text-emerald-300 transition-colors"
+              >
+                <FontAwesomeIcon icon={faMapLocationDot} className="h-4 w-4" />
+                Lihat di Google Maps (Medan)
+              </a>
+            ) : null}
           </div>
         </div>
 

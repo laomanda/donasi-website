@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBookOpen,
@@ -361,7 +361,7 @@ export function AdminDashboardPage() {
             }}
           />
           <StatCard
-            title="Jemput Zakat Baru"
+            title="Jemput Wakaf Baru"
             value={loading ? "-" : formatCount(stats.pickupPending)}
             icon={faHandHoldingHeart}
             loading={loading}
