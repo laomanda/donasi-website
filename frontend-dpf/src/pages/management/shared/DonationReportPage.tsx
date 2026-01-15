@@ -4,7 +4,6 @@ import {
   faCalendarDays,
   faFilter,
   faMagnifyingGlass,
-  faPrint,
   faReceipt,
   faFileArrowDown,
 } from "@fortawesome/free-solid-svg-icons";
@@ -121,7 +120,6 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
 
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
-  const [printing, setPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const hasFilters = Boolean(q.trim() || status || paymentSource || dateFrom.trim() || dateTo.trim());
@@ -177,16 +175,11 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
   }, [perPage]);
 
   const pageLabel = useMemo(() => {
-    if (printing) {
-      const count = items.length;
-      if (!count) return "Tidak ada data.";
-      return `Menampilkan 1-${count} dari ${count}.`;
-    }
     if (!total) return "Tidak ada data.";
     const start = (page - 1) * perPage + 1;
     const end = Math.min(page * perPage, total);
     return `Menampilkan ${start}-${end} dari ${total}.`;
-  }, [items.length, page, perPage, printing, total]);
+  }, [page, perPage, total]);
 
   const onApplyFilters = () => void fetchReports(1);
   const onResetFilters = () => {
@@ -231,46 +224,6 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
     }
   };
 
-  const onPrint = async () => {
-    const snapshot = {
-      items,
-      summary,
-      page,
-      perPage,
-      lastPage,
-      total,
-    };
-    setPrinting(true);
-    try {
-      const res = await http.get<ReportPayload>(`${apiBase}/reports/donations`, {
-        params: {
-          all: 1,
-          q: q.trim() || undefined,
-          status: status || undefined,
-          payment_source: paymentSource.trim() || undefined,
-          date_from: dateFrom.trim() || undefined,
-          date_to: dateTo.trim() || undefined,
-        },
-      });
-      const allItems = res.data?.data ?? [];
-      setItems(allItems);
-      setSummary(res.data?.summary ?? summary);
-      setPage(1);
-      setTotal(allItems.length);
-      await new Promise((resolve) => window.setTimeout(resolve, 0));
-      window.print();
-    } catch {
-      toast.error("Gagal menyiapkan data print.", { title: "Print gagal" });
-    } finally {
-      setItems(snapshot.items);
-      setSummary(snapshot.summary);
-      setPage(snapshot.page);
-      setPerPage(snapshot.perPage);
-      setLastPage(snapshot.lastPage);
-      setTotal(snapshot.total);
-      setPrinting(false);
-    }
-  };
 
   const badgeClass =
     role === "superadmin"
@@ -308,19 +261,10 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
               type="button"
               onClick={() => void exportReport("xlsx")}
               disabled={exporting}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-brandGreen-500 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-600 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
             >
               <FontAwesomeIcon icon={faFileArrowDown} />
               Export Excel
-            </button>
-            <button
-              type="button"
-              onClick={() => void onPrint()}
-              disabled={printing}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-            >
-              <FontAwesomeIcon icon={faPrint} />
-              Print
             </button>
           </div>
         </div>

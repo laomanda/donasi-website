@@ -18,7 +18,10 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($roles as $roleName) {
-            Role::firstOrCreate(['name' => $roleName]);
+            Role::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => 'sanctum',
+            ]);
         }
 
         // Daftar permission (bisa lu tambah lagi nanti)
@@ -35,7 +38,10 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permissionName) {
-            Permission::firstOrCreate(['name' => $permissionName]);
+            Permission::firstOrCreate([
+                'name' => $permissionName,
+                'guard_name' => 'sanctum',
+            ]);
         }
 
         // Kasih semua permission ke superadmin

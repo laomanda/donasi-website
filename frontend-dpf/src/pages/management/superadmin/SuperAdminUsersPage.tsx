@@ -143,6 +143,14 @@ export function SuperAdminUsersPage() {
   }, [perPage]);
 
   useEffect(() => {
+    const handle = window.setTimeout(() => {
+      void fetchUsers(1, { q, role });
+    }, 350);
+    return () => window.clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, role]);
+
+  useEffect(() => {
     selection.keepOnly(pageIds);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageIds.join(",")]);

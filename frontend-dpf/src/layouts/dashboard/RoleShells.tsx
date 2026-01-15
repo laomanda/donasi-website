@@ -3,7 +3,9 @@ import { getAuthToken, getAuthUser } from "../../lib/auth";
 import { DashboardLayout } from "./DashboardLayout";
 import type { DashboardRole } from "./DashboardLayout";
 
-const resolveUserRole = (): DashboardRole | null => {
+const normalizeRoleValue = (value: string) => value.toLowerCase().replace(/[^a-z]/g, "");
+
+const resolveUserRoles = (): DashboardRole[] => {
   const user = getAuthUser();
   const candidates: string[] = [];
 
@@ -19,14 +21,13 @@ const resolveUserRole = (): DashboardRole | null => {
     candidates.push(user.role_label);
   }
 
-  const normalized = new Set(
-    candidates.map((value) => value.toLowerCase().replace(/[^a-z]/g, ""))
-  );
+  const normalized = new Set(candidates.map((value) => normalizeRoleValue(value)));
 
-  if (normalized.has("superadmin")) return "superadmin";
-  if (normalized.has("admin")) return "admin";
-  if (normalized.has("editor")) return "editor";
-  return null;
+  const roles: DashboardRole[] = [];
+  if (normalized.has("superadmin")) roles.push("superadmin");
+  if (normalized.has("admin")) roles.push("admin");
+  if (normalized.has("editor")) roles.push("editor");
+  return roles;
 };
 
 function RequireDashboardRole({ role }: { role: DashboardRole }) {
@@ -37,13 +38,13 @@ function RequireDashboardRole({ role }: { role: DashboardRole }) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  const currentRole = resolveUserRole();
-  if (!currentRole) {
+  const roles = resolveUserRoles();
+  if (!roles.length) {
     return <Navigate to="/error/403" replace />;
   }
 
-  if (currentRole !== role) {
-    return <Navigate to={`/${currentRole}/dashboard`} replace />;
+  if (!roles.includes(role)) {
+    return <Navigate to={`/${roles[0]}/dashboard`} replace />;
   }
 
   return (

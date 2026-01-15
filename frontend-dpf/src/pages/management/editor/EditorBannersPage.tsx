@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPenToSquare, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import imagePlaceholder from "../../../brand/assets/image-placeholder.jpg";
+import { useBulkSelection } from "../../../components/ui/useBulkSelection";
+import { BulkActionsBar } from "../../../components/ui/BulkActionsBar";
+import { runWithConcurrency } from "../../../lib/bulk";
 
 type Banner = {
   id: number;
@@ -39,6 +42,10 @@ export function EditorBannersPage() {
   const [items, setItems] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const selection = useBulkSelection<number>();
+  const pageIds = useMemo(() => items.map((banner) => banner.id), [items]);
 
   const fetchBanners = async () => {
     setLoading(true);
@@ -58,6 +65,48 @@ export function EditorBannersPage() {
   useEffect(() => {
     void fetchBanners();
   }, []);
+
+  useEffect(() => {
+    selection.keepOnly(pageIds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageIds.join(",")]);
+
+  const onDelete = async (banner: Banner) => {
+    const confirmed = window.confirm("Hapus banner ini? Banner yang dihapus tidak akan tampil di landing page.");
+    if (!confirmed) return;
+    setDeletingId(banner.id);
+    setError(null);
+    try {
+      await http.delete(`/editor/banners/${banner.id}`);
+      await fetchBanners();
+    } catch {
+      setError("Gagal menghapus banner.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const onDeleteSelected = async () => {
+    if (selection.count === 0) return;
+    const confirmed = window.confirm("Hapus semua banner yang dipilih?");
+    if (!confirmed) return;
+    setBulkDeleting(true);
+    setError(null);
+    try {
+      const result = await runWithConcurrency(selection.selectedIds, 4, async (id) => {
+        await http.delete(`/editor/banners/${id}`);
+      });
+      if (result.failed.length) {
+        setError(`Berhasil menghapus ${result.succeeded.length}, gagal ${result.failed.length}.`);
+        selection.setSelected(new Set(result.failed.map((f) => f.id)));
+      } else {
+        selection.clear();
+      }
+      await fetchBanners();
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
 
   const sorted = useMemo(() => {
     return [...items].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
@@ -99,11 +148,29 @@ export function EditorBannersPage() {
         <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div>
       ) : null}
 
+      <BulkActionsBar
+        count={selection.count}
+        itemLabel="banner"
+        onClear={selection.clear}
+        onSelectAllPage={() => selection.toggleAll(pageIds)}
+        onDeleteSelected={onDeleteSelected}
+        disabled={loading || bulkDeleting}
+      />
+
       <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
         <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-left">
             <thead className="border-b border-primary-100 bg-primary-50">
               <tr className="text-xs font-bold tracking-wide text-slate-500">
+                <th className="px-6 py-4">
+                  <input
+                    type="checkbox"
+                    checked={pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id))}
+                    onChange={() => selection.toggleAll(pageIds)}
+                    aria-label="Pilih semua banner di halaman"
+                    className="h-4 w-4"
+                  />
+                </th>
                 <th className="px-6 py-4">Urutan</th>
                 <th className="px-6 py-4">Banner</th>
                 <th className="px-6 py-4">Diperbarui</th>
@@ -133,7 +200,7 @@ export function EditorBannersPage() {
                 ))
               ) : sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
                     Belum ada banner.
                   </td>
                 </tr>
@@ -143,6 +210,15 @@ export function EditorBannersPage() {
                   const updated = banner.updated_at ?? banner.created_at;
                   return (
                     <tr key={banner.id} className="hover:bg-primary-50">
+                      <td className="px-6 py-5">
+                        <input
+                          type="checkbox"
+                          checked={selection.isSelected(banner.id)}
+                          onChange={() => selection.toggle(banner.id)}
+                          aria-label={`Pilih banner ${banner.display_order ?? 0}`}
+                          className="h-4 w-4"
+                        />
+                      </td>
                       <td className="px-6 py-5">
                         <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
                           #{banner.display_order ?? 0}
@@ -176,6 +252,15 @@ export function EditorBannersPage() {
                             aria-label="Ubah"
                           >
                             <FontAwesomeIcon icon={faPenToSquare} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void onDelete(banner)}
+                            className="ml-2 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-red-200 bg-white text-red-600 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            aria-label="Hapus"
+                            disabled={deletingId === banner.id || bulkDeleting}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
                           </button>
                         </div>
                       </td>
@@ -214,23 +299,32 @@ export function EditorBannersPage() {
               const updated = banner.updated_at ?? banner.created_at;
               return (
                 <div key={banner.id} className="p-5">
-                  <button type="button" onClick={() => navigate(`/editor/banners/${banner.id}/edit`)} className="w-full text-left">
-                    <div className="flex items-start gap-4">
-                      <div className="h-16 w-24 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
-                        <img
-                          src={imageUrl}
-                          alt="Banner"
-                          className="h-full w-full object-cover"
-                          onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
-                        />
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selection.isSelected(banner.id)}
+                      onChange={() => selection.toggle(banner.id)}
+                      aria-label={`Pilih banner ${banner.display_order ?? 0}`}
+                      className="mt-2 h-4 w-4"
+                    />
+                    <button type="button" onClick={() => navigate(`/editor/banners/${banner.id}/edit`)} className="w-full text-left">
+                      <div className="flex items-start gap-4">
+                        <div className="h-16 w-24 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
+                          <img
+                            src={imageUrl}
+                            alt="Banner"
+                            className="h-full w-full object-cover"
+                            onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-base font-bold text-slate-900">Banner #{banner.display_order ?? 0}</p>
+                          <p className="mt-1 line-clamp-1 text-xs text-slate-500">{banner.image_path ?? "-"}</p>
+                          <p className="mt-2 text-xs font-semibold text-slate-500">Diperbarui: {formatDate(updated)}</p>
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-base font-bold text-slate-900">Banner #{banner.display_order ?? 0}</p>
-                        <p className="mt-1 line-clamp-1 text-xs text-slate-500">{banner.image_path ?? "-"}</p>
-                        <p className="mt-2 text-xs font-semibold text-slate-500">Diperbarui: {formatDate(updated)}</p>
-                      </div>
-                    </div>
-                  </button>
+                    </button>
+                  </div>
                   <div className="mt-4 flex items-center justify-between">
                     <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
                       #{banner.display_order ?? 0}
@@ -242,6 +336,15 @@ export function EditorBannersPage() {
                       aria-label="Ubah"
                     >
                       <FontAwesomeIcon icon={faPenToSquare} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void onDelete(banner)}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-red-200 bg-white text-red-600 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      aria-label="Hapus"
+                      disabled={deletingId === banner.id || bulkDeleting}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
                     </button>
                   </div>
                 </div>

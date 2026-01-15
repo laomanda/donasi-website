@@ -142,10 +142,17 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
     setSaving(true);
     setErrors([]);
     try {
+      const trimmedPhone = form.phone.trim();
+      if (trimmedPhone !== "" && !/^\d+$/.test(trimmedPhone)) {
+        const message = "Nomor telepon hanya boleh berisi angka.";
+        setErrors([message]);
+        toast.error(message, { title: "Validasi gagal" });
+        return;
+      }
       const payload = {
         name: form.name.trim(),
         email: form.email.trim(),
-        phone: form.phone.trim() || null,
+        phone: trimmedPhone || null,
         password: form.password || undefined,
         is_active: Boolean(form.is_active),
         role_label: form.role_label.trim() || null,
@@ -267,8 +274,13 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
               <label className="block">
                 <span className="text-[11px] font-bold tracking-wide text-slate-400">Telepon</span>
                 <input
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={form.phone}
-                  onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((s) => ({ ...s, phone: e.target.value.replace(/\D+/g, "") }))
+                  }
                   placeholder="08xxxxxxxxxx"
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
                   disabled={loading || saving}

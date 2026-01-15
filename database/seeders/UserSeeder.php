@@ -12,9 +12,18 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Pastikan roles sudah ada (hasil dari RolePermissionSeeder)
-        $superadminRole = Role::firstOrCreate(['name' => 'superadmin']);
-        $adminRole      = Role::firstOrCreate(['name' => 'admin']);
-        $editorRole     = Role::firstOrCreate(['name' => 'editor']);
+        $superadminRole = Role::firstOrCreate([
+            'name' => 'superadmin',
+            'guard_name' => 'sanctum',
+        ]);
+        $adminRole      = Role::firstOrCreate([
+            'name' => 'admin',
+            'guard_name' => 'sanctum',
+        ]);
+        $editorRole     = Role::firstOrCreate([
+            'name' => 'editor',
+            'guard_name' => 'sanctum',
+        ]);
 
         /*
          * 1) SUPERADMIN

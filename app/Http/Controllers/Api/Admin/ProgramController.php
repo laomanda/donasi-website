@@ -127,7 +127,7 @@ class ProgramController extends Controller
     {
         $required = $isUpdate ? 'sometimes' : 'required';
 
-        return $request->validate([
+        $data = $request->validate([
             'title'             => [$required, 'string', 'max:255'],
             'title_en'          => ['nullable', 'string', 'max:255'],
             'slug'              => ['nullable', 'string', 'max:255', 'unique:programs,slug,' . $programId],
@@ -143,10 +143,24 @@ class ProgramController extends Controller
             'collected_amount'  => ['nullable', 'numeric', 'min:0'],
             'thumbnail_path'    => ['nullable', 'string', 'max:255'],
             'banner_path'       => ['nullable', 'string', 'max:255'],
+            'program_images'    => ['nullable', 'array', 'max:3'],
+            'program_images.*'  => ['string', 'max:255'],
             'is_highlight'      => ['sometimes', 'boolean'],
             'status'            => [$required, 'in:draft,active,completed'],
             'deadline_days'     => ['nullable', 'integer', 'min:0'],
             'published_at'      => ['nullable', 'date'],
         ]);
+
+        if (array_key_exists('program_images', $data)) {
+            $images = collect($data['program_images'])
+                ->map(fn ($value) => trim((string) $value))
+                ->filter()
+                ->values()
+                ->take(3)
+                ->all();
+            $data['program_images'] = $images ?: null;
+        }
+
+        return $data;
     }
 }

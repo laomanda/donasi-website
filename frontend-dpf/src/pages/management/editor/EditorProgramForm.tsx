@@ -28,6 +28,7 @@ type EditorProgram = {
   published_at?: string | null;
   thumbnail_path?: string | null;
   banner_path?: string | null;
+  program_images?: string[] | null;
   is_highlight?: boolean | null;
   status: string;
 };
@@ -49,8 +50,18 @@ type ProgramFormState = {
   published_at: string;
   thumbnail_path: string;
   banner_path: string;
+  program_images: string[];
   is_highlight: boolean;
   status: "draft" | "active" | "completed";
+};
+
+const gallerySlots = 3;
+
+const normalizeProgramImages = (images?: string[] | null) => {
+  const list = Array.isArray(images) ? images : [];
+  const cleaned = list.map((value) => String(value ?? "").trim()).filter(Boolean);
+  while (cleaned.length < gallerySlots) cleaned.push("");
+  return cleaned.slice(0, gallerySlots);
 };
 
 const emptyForm: ProgramFormState = {
@@ -70,6 +81,7 @@ const emptyForm: ProgramFormState = {
   published_at: "",
   thumbnail_path: "",
   banner_path: "",
+  program_images: normalizeProgramImages([]),
   is_highlight: false,
   status: "draft",
 };
@@ -117,6 +129,8 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
   const navigate = useNavigate();
   const toast = useToast();
   const [form, setForm] = useState<ProgramFormState>(emptyForm);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+  const [categoryPick, setCategoryPick] = useState("");
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -131,10 +145,22 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
   const [bannerPreviewUrl, setBannerPreviewUrl] = useState<string | null>(null);
   const bannerInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [galleryUploading, setGalleryUploading] = useState<boolean[]>(
+    () => Array.from({ length: gallerySlots }, () => false)
+  );
+  const [galleryUploadErrors, setGalleryUploadErrors] = useState<string[]>(
+    () => Array.from({ length: gallerySlots }, () => "")
+  );
+  const [galleryPreviewUrls, setGalleryPreviewUrls] = useState<Array<string | null>>(
+    () => Array.from({ length: gallerySlots }, () => null)
+  );
+  const galleryInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState<number | string | null>(null);
 
+  const isGalleryUploading = galleryUploading.some(Boolean);
   const isEditIdValid = typeof programId === "number" && Number.isFinite(programId) && programId > 0;
   const canSubmit =
     (mode === "create" || isEditIdValid) &&
@@ -142,6 +168,7 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
     !saving &&
     !thumbnailUploading &&
     !bannerUploading &&
+    !isGalleryUploading &&
     !deleting;
 
   const savedThumbnailUrl = useMemo(() => resolveStorageUrl(form.thumbnail_path), [form.thumbnail_path]);
@@ -151,8 +178,11 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
     return () => {
       if (thumbnailPreviewUrl) URL.revokeObjectURL(thumbnailPreviewUrl);
       if (bannerPreviewUrl) URL.revokeObjectURL(bannerPreviewUrl);
+      galleryPreviewUrls.forEach((url) => {
+        if (url) URL.revokeObjectURL(url);
+      });
     };
-  }, [thumbnailPreviewUrl, bannerPreviewUrl]);
+  }, [thumbnailPreviewUrl, bannerPreviewUrl, galleryPreviewUrls]);
 
   useEffect(() => {
     if (mode !== "edit") return;
@@ -188,6 +218,7 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
           published_at: p.published_at ?? "",
           thumbnail_path: p.thumbnail_path ?? "",
           banner_path: p.banner_path ?? "",
+          program_images: normalizeProgramImages(p.program_images ?? []),
           is_highlight: Boolean(p.is_highlight),
           status: (String(p.status ?? "draft").toLowerCase() === "archived" ? "completed" : String(p.status ?? "draft").toLowerCase()) as any,
         });
@@ -243,13 +274,69 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
     }
   };
 
+  const onUploadGallery = async (index: number, file: File) => {
+    setGalleryUploadErrors((prev) => {
+      const next = [...prev];
+      next[index] = "";
+      return next;
+    });
+    setGalleryUploading((prev) => {
+      const next = [...prev];
+      next[index] = true;
+      return next;
+    });
+    try {
+      const path = await uploadImage(file, "uploads/programs/gallery");
+      setForm((s) => {
+        const nextImages = [...s.program_images];
+        nextImages[index] = path;
+        return { ...s, program_images: nextImages };
+      });
+    } catch (err: any) {
+      setGalleryUploadErrors((prev) => {
+        const next = [...prev];
+        next[index] = normalizeErrors(err).join(" ");
+        return next;
+      });
+    } finally {
+      setGalleryUploading((prev) => {
+        const next = [...prev];
+        next[index] = false;
+        return next;
+      });
+    }
+  };
+
+  useEffect(() => {
+    http
+      .get("/editor/programs", { params: { per_page: 200 } })
+      .then((res) => {
+        const items = Array.isArray(res.data?.data) ? res.data.data : [];
+        const map = new Map<string, string>();
+        items.forEach((program: any) => {
+          const raw = String(program?.category ?? "").trim();
+          if (!raw) return;
+          const key = raw.toLowerCase();
+          if (!map.has(key)) map.set(key, raw);
+        });
+        setCategoryOptions(Array.from(map.values()).sort((a, b) => a.localeCompare(b)));
+      })
+      .catch(() => undefined);
+  }, []);
+
   const payloadForRequest = (state: ProgramFormState) => {
     const targetAmount = state.target_amount.trim();
+    const normalizedCategory = (() => {
+      const raw = state.category.trim();
+      if (!raw) return raw;
+      const match = categoryOptions.find((opt) => opt.toLowerCase() === raw.toLowerCase());
+      return match ?? raw;
+    })();
     const payload: any = {
       title: state.title.trim(),
       title_en: state.title_en.trim() || null,
       slug: state.slug.trim() || null,
-      category: state.category.trim(),
+      category: normalizedCategory,
       category_en: state.category_en.trim() || null,
       short_description: state.short_description.trim(),
       short_description_en: state.short_description_en.trim() || null,
@@ -262,9 +349,11 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
       published_at: state.published_at.trim() || null,
       thumbnail_path: state.thumbnail_path.trim() || null,
       banner_path: state.banner_path.trim() || null,
+      program_images: state.program_images.map((value) => value.trim()).filter(Boolean).slice(0, gallerySlots),
       is_highlight: state.is_highlight,
       status: state.status,
     };
+    if (payload.program_images.length === 0) payload.program_images = null;
     return payload;
   };
 
@@ -481,6 +570,116 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                   disabled={loading || saving || deleting}
                 />
               </label>
+
+              <div className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="rounded-2xl border border-brandGreen-100 bg-gradient-to-r from-brandGreen-50 via-white to-primary-50 px-4 py-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brandGreen-700">Foto Program</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-700">Maksimal 3 foto untuk slideshow.</p>
+                      <p className="mt-1 text-xs text-slate-500">Urutan foto tampil di detail program untuk transparansi.</p>
+                    </div>
+                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-600 shadow-sm ring-1 ring-brandGreen-100">
+                      <FontAwesomeIcon icon={faImage} />
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                  {form.program_images.map((path, index) => {
+                    const previewUrl = galleryPreviewUrls[index];
+                    const savedUrl = resolveStorageUrl(path);
+                    const hasImage = Boolean(previewUrl || savedUrl);
+                    return (
+                      <div
+                        key={index}
+                        className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                      >
+                        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Foto {index + 1}</p>
+                        <div className="mt-3 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
+                          {hasImage ? (
+                            <img
+                              src={previewUrl ?? savedUrl ?? undefined}
+                              alt=""
+                              className="h-32 w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-32 items-center justify-center text-xs font-semibold text-slate-500">
+                              Belum ada foto.
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => galleryInputRefs.current[index]?.click()}
+                            disabled={!canSubmit}
+                            className="inline-flex flex-1 items-center justify-center rounded-xl bg-brandGreen-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:opacity-70"
+                          >
+                            Pilih
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (previewUrl) URL.revokeObjectURL(previewUrl);
+                              setGalleryPreviewUrls((prev) => {
+                                const next = [...prev];
+                                next[index] = null;
+                                return next;
+                              });
+                              setGalleryUploadErrors((prev) => {
+                                const next = [...prev];
+                                next[index] = "";
+                                return next;
+                              });
+                              setForm((s) => {
+                                const nextImages = [...s.program_images];
+                                nextImages[index] = "";
+                                return { ...s, program_images: nextImages };
+                              });
+                            }}
+                            disabled={!canSubmit || !hasImage}
+                            className="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Hapus
+                          </button>
+                        </div>
+
+                        {galleryUploading[index] ? (
+                          <p className="mt-2 text-xs font-semibold text-slate-600">Mengunggah...</p>
+                        ) : null}
+                        {galleryUploadErrors[index] ? (
+                          <p className="mt-2 text-xs font-semibold text-red-700">{galleryUploadErrors[index]}</p>
+                        ) : null}
+
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          ref={(el) => {
+                            galleryInputRefs.current[index] = el;
+                          }}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = "";
+                            if (!file) return;
+                            const nextPreview = URL.createObjectURL(file);
+                            setGalleryPreviewUrls((prev) => {
+                              const next = [...prev];
+                              if (next[index]) URL.revokeObjectURL(next[index] as string);
+                              next[index] = nextPreview;
+                              return next;
+                            });
+                            void onUploadGallery(index, file);
+                          }}
+                          disabled={!canSubmit}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -558,10 +757,36 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                 <input
                   value={form.category}
                   onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))}
+                  onBlur={() => {
+                    const raw = form.category.trim();
+                    if (!raw) return;
+                    const match = categoryOptions.find((opt) => opt.toLowerCase() === raw.toLowerCase());
+                    if (match && match !== form.category) {
+                      setForm((s) => ({ ...s, category: match }));
+                    }
+                  }}
                   placeholder="Mis. pendidikan"
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
                   disabled={loading || saving || deleting}
                 />
+                <select
+                  value={categoryPick}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (!value) return;
+                    setForm((s) => ({ ...s, category: value }));
+                    setCategoryPick("");
+                  }}
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-70"
+                  disabled={loading || saving || deleting || categoryOptions.length === 0}
+                >
+                  <option value="">Pilih Kategori Yang Sudah Ada</option>
+                  {categoryOptions.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label className="block">

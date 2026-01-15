@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Api\Admin\ZiswafConsultationController as AdminZiswafConsultationController;
 use App\Http\Controllers\Api\Admin\ServiceRequestController as AdminServiceRequestController;
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\PasswordController;
 use App\Http\Controllers\Api\Editor\ArticleController as EditorArticleController;
 use App\Http\Controllers\Api\Editor\DashboardController as EditorDashboardController;
 use App\Http\Controllers\Api\Editor\OrganizationController as EditorOrganizationController;
@@ -68,6 +69,7 @@ Route::prefix('v1')->group(function () {
         Route::middleware('auth:sanctum')->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);
+            Route::put('password', [PasswordController::class, 'update']);
         });
     });
 

@@ -48,6 +48,7 @@ type Program = {
     short_description_en?: string | null;
     thumbnail_path?: string | null;
     banner_path?: string | null;
+    program_images?: string[] | null;
     category?: string | null;
     category_en?: string | null;
     slug?: string;
@@ -237,7 +238,7 @@ function DonatePage() {
     const isGeneralDonation = !form.program_id;
     const selectedProgramImage = isGeneralDonation
         ? donasiUmumImage
-        : getImageUrl(selectedProgram?.banner_path ?? selectedProgram?.thumbnail_path ?? null);
+        : getImageUrl(selectedProgram?.program_images?.[0] ?? selectedProgram?.banner_path ?? selectedProgram?.thumbnail_path ?? null);
     const selectedProgramTitle = isGeneralDonation
         ? t("donate.program.general")
         : selectedProgram?.title ?? t("donate.program.notFound");
@@ -414,7 +415,7 @@ function DonatePage() {
                                     <img
                                         src={selectedProgramImage}
                                         alt={selectedProgramTitle}
-                                        className="h-56 w-full object-cover sm:h-60"
+                                        className="h-56 w-full bg-slate-100 object-contain sm:h-60"
                                     />
                                     <div className="absolute right-4 top-4 rounded-full bg-primary-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm">
                                         {selectedProgramStatus}
@@ -529,10 +530,16 @@ function DonatePage() {
                                 onChange={(v) => handleChange("program_id", v)}
                                 options={[
                                     { value: "", label: t("donate.form.generalOption") },
-                                    ...localizedPrograms.map((p) => ({
-                                        value: String(p.id),
-                                        label: p.title,
-                                    })),
+                                    ...localizedPrograms.map((p) => {
+                                        const isClosed = ["completed", "selesai", "tersalurkan", "archived", "arsip"].includes(
+                                            String(p.status ?? "").trim().toLowerCase()
+                                        );
+                                        return {
+                                            value: String(p.id),
+                                            label: isClosed ? `${p.title} (Tersalurkan)` : p.title,
+                                            disabled: isClosed,
+                                        };
+                                    }),
                                 ]}
                             />
                             <InputField

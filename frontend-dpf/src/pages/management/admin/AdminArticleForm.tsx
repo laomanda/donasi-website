@@ -110,6 +110,8 @@ export function AdminArticleForm({ mode, articleId }: { mode: Mode; articleId?: 
   const toast = useToast();
   const [form, setForm] = useState<ArticleFormState>(emptyForm);
   const [programOptions, setProgramOptions] = useState<Array<{ id: number; title: string }>>([]);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+  const [categoryPick, setCategoryPick] = useState("");
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -286,12 +288,18 @@ export function AdminArticleForm({ mode, articleId }: { mode: Mode; articleId?: 
   };
 
   const payloadForRequest = (state: ArticleFormState) => {
+    const normalizedCategory = (() => {
+      const raw = state.category.trim();
+      if (!raw) return raw;
+      const match = categoryOptions.find((opt) => opt.toLowerCase() === raw.toLowerCase());
+      return match ?? raw;
+    })();
     const payload: any = {
       title: state.title.trim(),
       title_en: state.title_en.trim() || null,
       slug: state.slug.trim() || null,
       program_id: state.program_id.trim() === "" ? null : Number(state.program_id.trim()),
-      category: state.category.trim(),
+      category: normalizedCategory,
       category_en: state.category_en.trim() || null,
       thumbnail_path: state.thumbnail_path.trim() || null,
       excerpt: state.excerpt.trim(),
@@ -307,6 +315,23 @@ export function AdminArticleForm({ mode, articleId }: { mode: Mode; articleId?: 
     }
     return payload;
   };
+
+  useEffect(() => {
+    http
+      .get("/admin/articles", { params: { per_page: 200 } })
+      .then((res) => {
+        const items = Array.isArray(res.data?.data) ? res.data.data : [];
+        const map = new Map<string, string>();
+        items.forEach((article: any) => {
+          const raw = String(article?.category ?? "").trim();
+          if (!raw) return;
+          const key = raw.toLowerCase();
+          if (!map.has(key)) map.set(key, raw);
+        });
+        setCategoryOptions(Array.from(map.values()).sort((a, b) => a.localeCompare(b)));
+      })
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     http
@@ -695,10 +720,36 @@ export function AdminArticleForm({ mode, articleId }: { mode: Mode; articleId?: 
                 <input
                   value={form.category}
                   onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))}
+                  onBlur={() => {
+                    const raw = form.category.trim();
+                    if (!raw) return;
+                    const match = categoryOptions.find((opt) => opt.toLowerCase() === raw.toLowerCase());
+                    if (match && match !== form.category) {
+                      setForm((s) => ({ ...s, category: match }));
+                    }
+                  }}
                   placeholder="Mis. edukasi"
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
                   disabled={loading || saving || deleting}
                 />
+                <select
+                  value={categoryPick}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (!value) return;
+                    setForm((s) => ({ ...s, category: value }));
+                    setCategoryPick("");
+                  }}
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-70"
+                  disabled={loading || saving || deleting || categoryOptions.length === 0}
+                >
+                  <option value="">Pilih Kategori Yang Sudah Ada</option>
+                  {categoryOptions.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label className="block">

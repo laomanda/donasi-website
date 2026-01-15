@@ -26,6 +26,7 @@ class Program extends Model
         'collected_amount',
         'thumbnail_path',
         'banner_path',
+        'program_images',
         'is_highlight',
         'status',
         'deadline_days',
@@ -38,6 +39,7 @@ class Program extends Model
         'is_highlight'     => 'boolean',
         'deadline_days'    => 'integer',
         'published_at'     => 'date',
+        'program_images'   => 'array',
     ];
 
     // Pastikan slug unik otomatis jika belum ada

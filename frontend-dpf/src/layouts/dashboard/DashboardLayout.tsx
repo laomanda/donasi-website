@@ -59,6 +59,7 @@ type StoredUser = {
   name?: unknown;
   email?: unknown;
   role_label?: unknown;
+  roles?: { name?: unknown }[] | unknown;
 };
 
 type PaginationMeta = {
@@ -168,7 +169,6 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       title: "Akses",
       items: [
         { label: "Pengguna", href: "/superadmin/users", icon: faUserGroup },
-        { label: "Peran", href: "/superadmin/roles", icon: faChartLine },
       ],
     },
     {
@@ -180,6 +180,48 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       items: [{ label: "Pengaturan", href: "/superadmin/settings", icon: faGear }],
     },
   ],
+};
+
+const normalizeRoleValue = (value: string) => value.toLowerCase().replace(/[^a-z]/g, "");
+
+const resolveUserRoles = (user: StoredUser | null): DashboardRole[] => {
+  if (!user) return [];
+  const candidates: string[] = [];
+
+  if (Array.isArray(user.roles)) {
+    user.roles.forEach((role) => {
+      if (role && typeof role === "object" && typeof role.name === "string") {
+        candidates.push(role.name);
+      }
+    });
+  }
+
+  if (typeof user.role_label === "string") {
+    candidates.push(user.role_label);
+  }
+
+  const normalized = new Set(candidates.map((value) => normalizeRoleValue(value)));
+  const roles: DashboardRole[] = [];
+  if (normalized.has("superadmin")) roles.push("superadmin");
+  if (normalized.has("admin")) roles.push("admin");
+  if (normalized.has("editor")) roles.push("editor");
+  return roles;
+};
+
+const buildNavSections = (roles: DashboardRole[]): NavSection[] => {
+  const items: NavItem[] = [];
+  const seen = new Set<string>();
+  roles.forEach((role) => {
+    NAV_SECTIONS_BY_ROLE[role].forEach((section) => {
+      section.items.forEach((item) => {
+        if (seen.has(item.href)) return;
+        seen.add(item.href);
+        items.push(item);
+      });
+    });
+  });
+
+  return items.length ? [{ title: "Menu", items }] : [];
 };
 
 const formatTimeHHMM = (value: number) => String(value).padStart(2, "0");
@@ -212,7 +254,12 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = ROLE_THEME[role];
-  const navSections = useMemo(() => NAV_SECTIONS_BY_ROLE[role], [role]);
+  const storedUser = useMemo(() => getAuthUser() as StoredUser | null, []);
+  const userRoles = useMemo(() => resolveUserRoles(storedUser), [storedUser]);
+  const navSections = useMemo(() => {
+    const roles = userRoles.length ? userRoles : [role];
+    return buildNavSections(roles);
+  }, [role, userRoles]);
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -222,7 +269,6 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const [adminBadgeCounts, setAdminBadgeCounts] = useState<Record<string, number>>({});
 
   const userMenuRef = useRef<HTMLDivElement | null>(null);
-  const storedUser = useMemo(() => getAuthUser() as StoredUser | null, []);
   const userName = typeof storedUser?.name === "string" ? storedUser.name : null;
   const userEmail = typeof storedUser?.email === "string" ? storedUser.email : null;
   const userRoleLabel = typeof storedUser?.role_label === "string" ? storedUser.role_label : null;
@@ -584,7 +630,7 @@ function SidebarContent({
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-3">
+      <nav className="sidebar-scroll flex-1 overflow-y-auto px-3 py-3">
         <div className="space-y-1.5">
           {navItems.map((item) => (
             <NavLink

@@ -27,6 +27,7 @@ type Program = {
   short_description: string;
   short_description_en?: string | null;
   thumbnail_path: string | null;
+  program_images?: string[] | null;
   target_amount: number | string;
   collected_amount: number | string;
   status: string;
@@ -386,7 +387,7 @@ function ProgramCard({
     >
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
         <img
-          src={getImageUrl(program.thumbnail_path)}
+          src={getImageUrl(program.program_images?.[0] ?? program.thumbnail_path)}
           alt={program.title}
           className="h-full w-full object-cover"
           onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}

@@ -527,7 +527,7 @@ export const landingDict: Dict = {
     "donate.form.error.amount.required": { id: "Nominal wajib diisi.", en: "Amount is required." },
     "donate.form.error.amount.numeric": { id: "Nominal hanya angka.", en: "Amount must be numbers only." },
     "donate.form.error.amount.min": { id: "Nominal minimal 1.000.", en: "Minimum amount is 1,000." },
-    "donate.form.status.processing": { id: "Memproses...", en: "Processing..." },
+  "donate.form.status.processing": { id: "Memproses...", en: "Processing..." },
     "donate.form.submit": { id: "Donasi Dengan Midtrans", en: "Donate with Midtrans" },
     "donate.form.status.checkInput": { id: "Periksa kembali isian Anda.", en: "Please check your inputs." },
     "donate.form.status.noToken": { id: "Snap token tidak tersedia.", en: "Snap token is not available." },

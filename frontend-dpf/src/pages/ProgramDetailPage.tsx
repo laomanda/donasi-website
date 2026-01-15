@@ -35,6 +35,7 @@ type Program = {
   collected_amount?: number | string | null;
   thumbnail_path?: string | null;
   banner_path?: string | null;
+  program_images?: string[] | null;
   is_highlight?: boolean | null;
   status?: string | null;
   deadline_days?: number | string | null;
@@ -188,6 +189,7 @@ export function ProgramDetailPage() {
   const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"detail" | "updates" | "donors">("detail");
   const [donorQuery, setDonorQuery] = useState("");
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const localizedProgram = useMemo(() => {
     if (!program) return null;
@@ -265,10 +267,33 @@ export function ProgramDetailPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [slug]);
 
-  const heroImage = useMemo(() => {
-    if (!program) return imagePlaceholder;
-    return getImageUrl(program.banner_path ?? program.thumbnail_path ?? null);
+  const galleryImages = useMemo(() => {
+    if (!program) return [];
+    const raw = Array.isArray(program.program_images) ? program.program_images : [];
+    const cleaned = raw.map((value) => String(value ?? "").trim()).filter(Boolean);
+    if (cleaned.length) return cleaned;
+    const fallback = program.banner_path ?? program.thumbnail_path ?? "";
+    return fallback ? [fallback] : [];
   }, [program]);
+
+  const galleryUrls = useMemo(() => {
+    if (!galleryImages.length) return [imagePlaceholder];
+    return galleryImages.map((path) => getImageUrl(path));
+  }, [galleryImages]);
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [galleryUrls.join("|")]);
+
+  useEffect(() => {
+    if (galleryUrls.length <= 1) return;
+    const id = window.setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % galleryUrls.length);
+    }, 6000);
+    return () => window.clearInterval(id);
+  }, [galleryUrls.length]);
+
+  const heroImage = galleryUrls[activeImageIndex] ?? imagePlaceholder;
 
   const shareUrl = typeof window !== "undefined" && slug ? `${window.location.origin}/program/${slug}` : "";
   const shareText = localizedProgram?.title ? `${localizedProgram.title} - ${shareUrl}` : shareUrl;
@@ -391,20 +416,72 @@ export function ProgramDetailPage() {
           ) : localizedProgram ? (
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
               <div className="space-y-8">
-                <div className="relative aspect-[16/9] overflow-hidden rounded-[28px] border border-slate-100 bg-slate-100 shadow-soft">
-                  <img
-                    src={heroImage}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl"
-                    onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
-                  />
-                  <img
-                    src={heroImage}
-                    alt={localizedProgram?.title ?? ""}
-                    className="relative z-10 h-full w-full object-contain"
-                    onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
-                  />
+                <div className="relative overflow-hidden rounded-[28px] border border-slate-100 bg-slate-100 shadow-soft">
+                  <div className="relative aspect-[16/9]">
+                    <img
+                      src={heroImage}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl transition-opacity duration-500"
+                      onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
+                    />
+                    <div className="relative z-10 h-full w-full overflow-hidden">
+                      <div
+                        className="flex h-full w-full transition-transform duration-500 ease-in-out"
+                        style={{ transform: `translateX(-${activeImageIndex * 100}%)` }}
+                      >
+                        {galleryUrls.map((url, idx) => (
+                          <img
+                            key={url + idx}
+                            src={url}
+                            alt={localizedProgram?.title ?? ""}
+                            className="h-full w-full shrink-0 object-contain"
+                            onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {galleryUrls.length > 1 ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActiveImageIndex((prev) => (prev - 1 + galleryUrls.length) % galleryUrls.length)
+                          }
+                          className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-white"
+                          aria-label="Foto sebelumnya"
+                        >
+                          <FontAwesomeIcon icon={faArrowLeft} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveImageIndex((prev) => (prev + 1) % galleryUrls.length)}
+                          className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-white"
+                          aria-label="Foto berikutnya"
+                        >
+                          <FontAwesomeIcon icon={faArrowRight} />
+                        </button>
+                      </>
+                    ) : null}
+                  </div>
+
+                  {galleryUrls.length > 1 ? (
+                    <div className="flex items-center justify-center gap-2 border-t border-slate-100 bg-white/90 px-4 py-3">
+                      {galleryUrls.map((_, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setActiveImageIndex(idx)}
+                          className={[
+                            "h-2.5 w-2.5 rounded-full transition",
+                            idx === activeImageIndex ? "bg-brandGreen-600" : "bg-slate-300",
+                          ].join(" ")}
+                          aria-label={`Pilih foto ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

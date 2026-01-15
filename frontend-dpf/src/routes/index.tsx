@@ -77,7 +77,6 @@ import { SuperAdminUserCreatePage } from '../pages/management/superadmin/SuperAd
 import { SuperAdminUserEditPage } from '../pages/management/superadmin/SuperAdminUserEditPage'
 import { AdminSearchPage } from '../pages/management/admin/AdminSearchPage'
 import { SuperAdminDashboardPage } from '../pages/management/superadmin/SuperAdminDashboardPage'
-import { SuperAdminRolesPage } from '../pages/management/superadmin/SuperAdminRolesPage'
 import { SuperAdminSearchPage } from '../pages/management/superadmin/SuperAdminSearchPage'
 import { SuperAdminDonationReportPage } from '../pages/management/superadmin/SuperAdminDonationReportPage'
 
@@ -196,10 +195,6 @@ export const router = createBrowserRouter([
           },
           { path: 'users/create', element: <SuperAdminUserCreatePage /> },
           { path: 'users/:id/edit', element: <SuperAdminUserEditPage /> },
-          {
-            path: 'roles',
-            element: <SuperAdminRolesPage />,
-          },
           { path: 'reports/donations', element: <SuperAdminDonationReportPage /> },
           {
             path: 'search',
