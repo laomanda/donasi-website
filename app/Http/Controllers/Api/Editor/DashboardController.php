@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Editor;
 
 use App\Http\Controllers\Api\Admin\DashboardController as BaseDashboardController;
 use App\Models\Article;
+use App\Models\EditorTask;
 use App\Models\OrganizationMember;
 use App\Models\Partner;
 use App\Models\Program;
@@ -168,6 +169,19 @@ class DashboardController extends BaseDashboardController
             }
         }
 
+        $currentUserId = auth()->id();
+        $taskItems = EditorTask::query()
+            ->with(['attachments', 'creator:id,name,email', 'assignee:id,name,email'])
+            ->when($currentUserId, function ($query, $userId) {
+                $query->where(function ($q) use ($userId) {
+                    $q->whereNull('assigned_to')
+                        ->orWhere('assigned_to', $userId);
+                });
+            })
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
         return [
             'stats' => [
                 'articles' => [
@@ -190,6 +204,9 @@ class DashboardController extends BaseDashboardController
             ],
             'todo' => [
                 'items' => $todoItems,
+            ],
+            'tasks' => [
+                'items' => $taskItems,
             ],
             'activities' => $activities,
             'public_preview' => [

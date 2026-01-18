@@ -45,6 +45,7 @@ import { EditorOrganizationMemberShowPage } from '../pages/management/editor/Edi
 import { EditorOrganizationMemberEditPage } from '../pages/management/editor/EditorOrganizationMemberEditPage'
 import { EditorSearchPage } from '../pages/management/editor/EditorSearchPage'
 import { EditorSettingsPage } from '../pages/management/editor/EditorSettingsPage'
+import { EditorTasksPage } from '../pages/management/editor/EditorTasksPage'
 import { AdminSettingsPage } from '../pages/management/admin/AdminSettingsPage'
 import { AdminDashboardPage } from '../pages/management/admin/AdminDashboardPage'
 import { AdminProgramsPage } from '../pages/management/admin/AdminProgramsPage'
@@ -71,6 +72,8 @@ import { AdminPickupRequestShowPage } from '../pages/management/admin/AdminPicku
 import { AdminBankAccountsPage } from '../pages/management/admin/AdminBankAccountsPage'
 import { AdminBankAccountCreatePage } from '../pages/management/admin/AdminBankAccountCreatePage'
 import { AdminBankAccountEditPage } from '../pages/management/admin/AdminBankAccountEditPage'
+import { AdminEditorTasksPage } from '../pages/management/admin/AdminEditorTasksPage'
+import { AdminEditorTaskCreatePage } from '../pages/management/admin/AdminEditorTaskCreatePage'
 import { SuperAdminSettingsPage } from '../pages/management/superadmin/SuperAdminSettingsPage'
 import { SuperAdminUsersPage } from '../pages/management/superadmin/SuperAdminUsersPage'
 import { SuperAdminUserCreatePage } from '../pages/management/superadmin/SuperAdminUserCreatePage'
@@ -79,6 +82,8 @@ import { AdminSearchPage } from '../pages/management/admin/AdminSearchPage'
 import { SuperAdminDashboardPage } from '../pages/management/superadmin/SuperAdminDashboardPage'
 import { SuperAdminSearchPage } from '../pages/management/superadmin/SuperAdminSearchPage'
 import { SuperAdminDonationReportPage } from '../pages/management/superadmin/SuperAdminDonationReportPage'
+import { SuperAdminEditorTasksPage } from '../pages/management/superadmin/SuperAdminEditorTasksPage'
+import { SuperAdminEditorTaskCreatePage } from '../pages/management/superadmin/SuperAdminEditorTaskCreatePage'
 
 export const router = createBrowserRouter([
   {
@@ -121,6 +126,7 @@ export const router = createBrowserRouter([
           { path: 'organization-members/create', element: <EditorOrganizationMemberCreatePage /> },
           { path: 'organization-members/:id', element: <EditorOrganizationMemberShowPage /> },
           { path: 'organization-members/:id/edit', element: <EditorOrganizationMemberEditPage /> },
+          { path: 'tasks', element: <EditorTasksPage /> },
           { path: 'search', element: <EditorSearchPage /> },
           { path: 'settings', element: <EditorSettingsPage /> },
         ],
@@ -149,6 +155,8 @@ export const router = createBrowserRouter([
           { path: 'bank-accounts', element: <AdminBankAccountsPage /> },
           { path: 'bank-accounts/create', element: <AdminBankAccountCreatePage /> },
           { path: 'bank-accounts/:id/edit', element: <AdminBankAccountEditPage /> },
+          { path: 'editor-tasks', element: <AdminEditorTasksPage /> },
+          { path: 'editor-tasks/create', element: <AdminEditorTaskCreatePage /> },
           {
             path: 'programs',
             element: <AdminProgramsPage />,
@@ -196,6 +204,8 @@ export const router = createBrowserRouter([
           { path: 'users/create', element: <SuperAdminUserCreatePage /> },
           { path: 'users/:id/edit', element: <SuperAdminUserEditPage /> },
           { path: 'reports/donations', element: <SuperAdminDonationReportPage /> },
+          { path: 'editor-tasks', element: <SuperAdminEditorTasksPage /> },
+          { path: 'editor-tasks/create', element: <SuperAdminEditorTaskCreatePage /> },
           {
             path: 'search',
             element: <SuperAdminSearchPage />,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -43,6 +43,7 @@ export function AdminBannersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((banner) => banner.id), [items]);
@@ -72,8 +73,6 @@ export function AdminBannersPage() {
   }, [pageIds.join(",")]);
 
   const onDelete = async (banner: Banner) => {
-    const confirmed = window.confirm("Hapus banner ini? Banner yang dihapus tidak akan tampil di landing page.");
-    if (!confirmed) return;
     setDeletingId(banner.id);
     setError(null);
     try {
@@ -83,14 +82,14 @@ export function AdminBannersPage() {
       setError("Gagal menghapus banner.");
     } finally {
       setDeletingId(null);
+      setConfirmDeleteId(null);
     }
   };
 
   const onDeleteSelected = async () => {
     if (selection.count === 0) return;
-    const confirmed = window.confirm("Hapus semua banner yang dipilih?");
-    if (!confirmed) return;
     setBulkDeleting(true);
+    setConfirmDeleteId(null);
     setError(null);
     try {
       const result = await runWithConcurrency(selection.selectedIds, 4, async (id) => {
@@ -209,62 +208,92 @@ export function AdminBannersPage() {
                   const imageUrl = resolveStorageUrl(banner.image_path) ?? imagePlaceholder;
                   const updated = banner.updated_at ?? banner.created_at;
                   return (
-                    <tr key={banner.id} className="hover:bg-primary-50">
-                      <td className="px-6 py-5">
-                        <input
-                          type="checkbox"
-                          checked={selection.isSelected(banner.id)}
-                          onChange={() => selection.toggle(banner.id)}
-                          aria-label={`Pilih banner ${banner.display_order ?? 0}`}
-                          className="h-4 w-4"
-                        />
-                      </td>
-                      <td className="px-6 py-5">
-                        <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
-                          #{banner.display_order ?? 0}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex items-center gap-4">
-                          <div className="h-16 w-28 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
-                            <img
-                              src={imageUrl}
-                              alt="Banner"
-                              className="h-full w-full object-cover"
-                              onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
-                            />
+                    <Fragment key={banner.id}>
+                      <tr className="hover:bg-primary-50">
+                        <td className="px-6 py-5">
+                          <input
+                            type="checkbox"
+                            checked={selection.isSelected(banner.id)}
+                            onChange={() => selection.toggle(banner.id)}
+                            aria-label={`Pilih banner ${banner.display_order ?? 0}`}
+                            className="h-4 w-4"
+                          />
+                        </td>
+                        <td className="px-6 py-5">
+                          <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+                            #{banner.display_order ?? 0}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-4">
+                            <div className="h-16 w-28 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
+                              <img
+                                src={imageUrl}
+                                alt="Banner"
+                                className="h-full w-full object-cover"
+                                onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold text-slate-900">Banner #{banner.display_order ?? 0}</p>
+                              <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">
+                                {banner.image_path ? banner.image_path : "Tanpa path"}
+                              </p>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-slate-900">Banner #{banner.display_order ?? 0}</p>
-                            <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">
-                              {banner.image_path ? banner.image_path : "Tanpa path"}
-                            </p>
+                        </td>
+                        <td className="px-6 py-5 text-sm font-semibold text-slate-600">{formatDate(updated)}</td>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center justify-end">
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/admin/banners/${banner.id}/edit`)}
+                              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+                              aria-label="Ubah"
+                            >
+                              <FontAwesomeIcon icon={faPenToSquare} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteId((current) => (current === banner.id ? null : banner.id))}
+                              className="ml-2 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-red-200 bg-white text-red-600 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                              aria-label="Hapus"
+                              disabled={deletingId === banner.id || bulkDeleting}
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </button>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-600">{formatDate(updated)}</td>
-                      <td className="px-6 py-5">
-                        <div className="flex items-center justify-end">
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/admin/banners/${banner.id}/edit`)}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
-                            aria-label="Ubah"
-                          >
-                            <FontAwesomeIcon icon={faPenToSquare} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void onDelete(banner)}
-                            className="ml-2 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-red-200 bg-white text-red-600 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                            aria-label="Hapus"
-                            disabled={deletingId === banner.id || bulkDeleting}
-                          >
-                            <FontAwesomeIcon icon={faTrash} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                        </td>
+                      </tr>
+                      {confirmDeleteId === banner.id ? (
+                        <tr>
+                          <td colSpan={5} className="px-6 pb-5">
+                            <div className="rounded-2xl border border-red-100 bg-red-50 p-4">
+                              <p className="text-sm font-bold text-red-800">Konfirmasi hapus</p>
+                              <p className="mt-1 text-sm text-red-700">Klik "Ya, hapus" untuk melanjutkan.</p>
+                              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() => setConfirmDeleteId(null)}
+                                  className="inline-flex items-center justify-center rounded-2xl border border-red-200 bg-white px-5 py-3 text-sm font-bold text-red-700 transition hover:bg-red-100"
+                                  disabled={deletingId === banner.id || bulkDeleting}
+                                >
+                                  Batal
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void onDelete(banner)}
+                                  className="inline-flex items-center justify-center rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                                  disabled={deletingId === banner.id || bulkDeleting}
+                                >
+                                  {deletingId === banner.id ? "Menghapus..." : "Ya, hapus"}
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : null}
+                    </Fragment>
                   );
                 })
               )}
@@ -339,7 +368,7 @@ export function AdminBannersPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => void onDelete(banner)}
+                      onClick={() => setConfirmDeleteId((current) => (current === banner.id ? null : banner.id))}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-red-200 bg-white text-red-600 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                       aria-label="Hapus"
                       disabled={deletingId === banner.id || bulkDeleting}
@@ -347,6 +376,30 @@ export function AdminBannersPage() {
                       <FontAwesomeIcon icon={faTrash} />
                     </button>
                   </div>
+                  {confirmDeleteId === banner.id ? (
+                    <div className="mt-4 rounded-2xl border border-red-100 bg-red-50 p-4">
+                      <p className="text-sm font-bold text-red-800">Konfirmasi hapus</p>
+                      <p className="mt-1 text-sm text-red-700">Klik "Ya, hapus" untuk melanjutkan.</p>
+                      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="inline-flex items-center justify-center rounded-2xl border border-red-200 bg-white px-5 py-3 text-sm font-bold text-red-700 transition hover:bg-red-100"
+                          disabled={deletingId === banner.id || bulkDeleting}
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void onDelete(banner)}
+                          className="inline-flex items-center justify-center rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                          disabled={deletingId === banner.id || bulkDeleting}
+                        >
+                          {deletingId === banner.id ? "Menghapus..." : "Ya, hapus"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               );
             })

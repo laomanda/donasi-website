@@ -39,4 +39,14 @@ return [
         'base_url' => env('ALADHAN_BASE_URL', 'https://api.aladhan.com/v1'),
     ],
 
+    'pusher' => [
+        'app_id' => env('PUSHER_APP_ID'),
+        'key' => env('PUSHER_APP_KEY'),
+        'secret' => env('PUSHER_APP_SECRET'),
+        'cluster' => env('PUSHER_APP_CLUSTER'),
+        'host' => env('PUSHER_HOST'),
+        'port' => env('PUSHER_PORT', 443),
+        'scheme' => env('PUSHER_APP_SCHEME', 'https'),
+    ],
+
 ];

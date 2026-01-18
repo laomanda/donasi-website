@@ -75,11 +75,11 @@ const formatDateTime = (value: string | null | undefined) => {
 
 const getStatusTone = (status: DonationStatus) => {
   const s = String(status ?? "").toLowerCase();
-  if (s === "paid") return "bg-emerald-50 text-emerald-700 ring-emerald-100";
-  if (s === "pending") return "bg-amber-50 text-amber-700 ring-amber-100";
-  if (s === "failed" || s === "cancelled") return "bg-red-50 text-red-700 ring-red-100";
-  if (s === "expired") return "bg-slate-100 text-slate-700 ring-slate-200";
-  return "bg-slate-100 text-slate-700 ring-slate-200";
+  if (s === "paid") return "bg-emerald-600 text-white ring-emerald-700/60";
+  if (s === "pending") return "bg-amber-500 text-slate-900 ring-amber-600/60";
+  if (s === "failed" || s === "cancelled") return "bg-rose-600 text-white ring-rose-700/60";
+  if (s === "expired") return "bg-slate-400 text-slate-900 ring-slate-500/60";
+  return "bg-slate-300 text-slate-900 ring-slate-400/60";
 };
 
 const getStatusLabel = (status: DonationStatus) => {
@@ -224,11 +224,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
     }
   };
 
-
-  const badgeClass =
-    role === "superadmin"
-      ? "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100"
-      : "bg-primary-50 text-primary-700 ring-primary-100";
+  const badgeClass = "bg-slate-900 text-white ring-slate-800/80";
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
@@ -236,7 +232,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] ring-1 ${badgeClass}`}>
-              <span className="h-2 w-2 rounded-full bg-brandGreen-600" />
+              <span className="h-2 w-2 rounded-full bg-brandGreen-400" />
               Laporan
             </span>
             <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">
@@ -252,7 +248,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
               type="button"
               onClick={() => void exportReport("pdf")}
               disabled={exporting}
-              className="inline-flex items-center gap-2 rounded-2xl bg-primary-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+              className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
             >
               <FontAwesomeIcon icon={faFileArrowDown} />
               Export PDF
@@ -261,7 +257,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
               type="button"
               onClick={() => void exportReport("xlsx")}
               disabled={exporting}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-brandGreen-500 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-600 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
             >
               <FontAwesomeIcon icon={faFileArrowDown} />
               Export Excel
@@ -273,7 +269,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-50 text-primary-700">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white">
               <FontAwesomeIcon icon={faReceipt} />
             </span>
             <div>
@@ -323,7 +319,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Kode donasi atau nama donatur..."
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                 />
               </div>
             </label>
@@ -333,7 +329,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
               >
                 <option value="">Semua status</option>
                 <option value="pending">Menunggu</option>
@@ -349,7 +345,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
               <select
                 value={paymentSource}
                 onChange={(e) => setPaymentSource(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
               >
                 <option value="">Semua</option>
                 <option value="midtrans">Midtrans</option>
@@ -367,7 +363,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
                   type="date"
                   value={dateFrom}
                   onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                 />
               </div>
             </label>
@@ -382,14 +378,14 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
                   type="date"
                   value={dateTo}
                   onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                 />
               </div>
             </label>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
+            <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
               <span className="text-slate-400">
                 <FontAwesomeIcon icon={faFilter} />
               </span>
@@ -397,7 +393,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
               <select
                 value={perPage}
                 onChange={(e) => setPerPage(Number(e.target.value))}
-                className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1 text-sm font-bold text-slate-700 focus:outline-none"
+                className="rounded-xl border border-slate-300 bg-white px-2 py-1 text-sm font-bold text-slate-700 focus:outline-none"
               >
                 <option value={10}>10</option>
                 <option value={20}>20</option>
@@ -409,7 +405,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
             <button
               type="button"
               onClick={onApplyFilters}
-              className="inline-flex items-center justify-center rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700"
+              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
             >
               Terapkan
             </button>
@@ -418,7 +414,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
               <button
                 type="button"
                 onClick={onResetFilters}
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
               >
                 Atur ulang
               </button>
@@ -433,7 +429,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">
+        <div className="rounded-2xl border border-rose-700 bg-rose-600 p-4 text-sm font-semibold text-white">
           {error}
         </div>
       )}
@@ -441,27 +437,27 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
       <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
         <div className="hidden overflow-x-auto md:block">
           <table className="min-w-full table-fixed">
-            <thead className="border-b border-primary-100 bg-primary-50">
+            <thead className="border-b border-slate-800 bg-slate-900">
               <tr>
-                <th className="w-[16%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[16%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
                   Kode
                 </th>
-                <th className="w-[20%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[20%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
                   Donatur
                 </th>
-                <th className="w-[24%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[24%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
                   Program
                 </th>
-                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
                   Sumber
                 </th>
-                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
                   Status
                 </th>
-                <th className="w-[10%] px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[10%] px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
                   Nominal
                 </th>
-                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
                   Waktu
                 </th>
               </tr>
@@ -508,7 +504,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
                   const source = normalizeSourceLabel(donation.payment_source);
                   const when = donation.paid_at ?? donation.created_at;
                   return (
-                    <tr key={donation.id} className="transition hover:bg-slate-50">
+                    <tr key={donation.id} className="transition hover:bg-slate-100">
                       <td className="px-6 py-5">
                         <p className="text-sm font-bold text-slate-900">{code}</p>
                         <p className="mt-1 text-xs font-semibold text-slate-500">{source}</p>
@@ -569,7 +565,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
               const statusValue = String(donation.status ?? "").trim();
               const when = donation.paid_at ?? donation.created_at;
               return (
-                <div key={donation.id} className="w-full p-5 text-left transition hover:bg-slate-50">
+                <div key={donation.id} className="w-full p-5 text-left transition hover:bg-slate-100">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-slate-900">{code}</p>
@@ -607,7 +603,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
 
       <div className="flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-primary-100 bg-primary-50 text-primary-700">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 text-white">
             <FontAwesomeIcon icon={faReceipt} />
           </span>
           {pageLabel}
@@ -617,7 +613,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
             type="button"
             onClick={() => void fetchReports(Math.max(1, page - 1))}
             disabled={page <= 1 || loading}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
           >
             Sebelumnya
           </button>
@@ -625,7 +621,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
             type="button"
             onClick={() => void fetchReports(Math.min(lastPage, page + 1))}
             disabled={page >= lastPage || loading}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
           >
             Berikutnya
           </button>
