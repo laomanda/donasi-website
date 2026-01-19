@@ -14,6 +14,7 @@ class EditorTask extends Model
         'description',
         'priority',
         'status',
+        'cancel_reason',
         'due_at',
         'assigned_to',
         'created_by',

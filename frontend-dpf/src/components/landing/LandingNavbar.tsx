@@ -78,8 +78,8 @@ const SEARCH_ITEMS = [
     },
     {
         href: "/konsultasi",
-        labels: { id: "Konsultasi ZISWAF", en: "ZISWAF Consultation" },
-        keywords: ["konsultasi", "consultation", "ziswaf"],
+        labels: { id: "Konsultasi WAKAF", en: "WAKAF Consultation" },
+        keywords: ["konsultasi", "consultation", "wakaf"],
     },
     {
         href: "/jemput-wakaf",
@@ -138,8 +138,8 @@ const SEARCH_INDEX: { href: string; corpus: string }[] = [
             Layanan
             Jemput Wakaf
             Konfirmasi Donasi
-            Konsultasi ZISWAF
-            Konsultasi ziswaf
+            Konsultasi WAKAF
+            Konsultasi wakaf
             Jemput wakaf ke lokasi
             Donasi langsung
         `,
@@ -173,9 +173,9 @@ const SEARCH_INDEX: { href: string; corpus: string }[] = [
         href: "/konsultasi",
         corpus: `
             Konsultasi
-            Konsultasi ZISWAF
+            Konsultasi WAKAF
             Tanya wakaf infak sedekah wakaf
-            Konsultasi ziswaf
+            Konsultasi wakaf
             Hubungi kami
         `,
     },

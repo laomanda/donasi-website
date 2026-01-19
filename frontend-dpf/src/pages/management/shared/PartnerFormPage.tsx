@@ -1,7 +1,7 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faImage, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
 
@@ -83,11 +83,23 @@ const getNextAvailableOrder = (partners: Partner[], excludeId?: number) => {
   return candidate;
 };
 
+const resolveRoleBase = (pathname: string) => {
+  const segment = pathname.split("/").filter(Boolean)[0];
+  if (segment === "admin" || segment === "editor") return segment;
+  return "editor";
+};
+
 type Mode = "create" | "edit";
 
-export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?: number }) {
+export function PartnerFormPage({ mode }: { mode: Mode }) {
   const navigate = useNavigate();
   const toast = useToast();
+  const location = useLocation();
+  const { id } = useParams<{ id: string }>();
+  const partnerId = useMemo(() => Number(id), [id]);
+  const roleBase = useMemo(() => resolveRoleBase(location.pathname), [location.pathname]);
+  const apiBase = `/${roleBase}`;
+  const routeBase = `/${roleBase}`;
 
   const [form, setForm] = useState<PartnerFormState>(emptyForm);
   const [loading, setLoading] = useState(mode === "edit");
@@ -151,7 +163,7 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
     setPeersError(null);
     setErrors([]);
     http
-      .get<Partner[]>("/editor/partners")
+      .get<Partner[]>(`${apiBase}/partners`)
       .then((res) => {
         if (!active) return;
         const list = Array.isArray(res.data) ? res.data : [];
@@ -196,7 +208,7 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
     return () => {
       active = false;
     };
-  }, [mode, isEditIdValid, partnerId]);
+  }, [apiBase, mode, isEditIdValid, partnerId]);
 
   const uploadImage = async (file: File, folder: string) => {
     const formData = new FormData();
@@ -262,13 +274,13 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
     try {
       const payload = payloadForRequest(form);
       if (mode === "create") {
-        await http.post("/editor/partners", payload);
+        await http.post(`${apiBase}/partners`, payload);
         toast.success("Mitra berhasil dibuat.", { title: "Berhasil" });
       } else {
-        await http.put(`/editor/partners/${partnerId}`, payload);
+        await http.put(`${apiBase}/partners/${partnerId}`, payload);
         toast.success("Perubahan mitra berhasil disimpan.", { title: "Berhasil" });
       }
-      navigate("/editor/partners", { replace: true });
+      navigate(`${routeBase}/partners`, { replace: true });
     } catch (err: any) {
       setErrors(normalizeErrors(err));
     } finally {
@@ -286,9 +298,9 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
     setDeleting(true);
     setErrors([]);
     try {
-      await http.delete(`/editor/partners/${partnerId}`);
+      await http.delete(`${apiBase}/partners/${partnerId}`);
       toast.success("Mitra berhasil dihapus.", { title: "Berhasil" });
-      navigate("/editor/partners", { replace: true });
+      navigate(`${routeBase}/partners`, { replace: true });
     } catch (err: any) {
       setErrors(normalizeErrors(err));
     } finally {
@@ -302,16 +314,17 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
-            <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-700 ring-1 ring-primary-100">
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
+              <span className="h-2 w-2 rounded-full bg-brandGreen-500" />
               Mitra
             </span>
             <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">{title}</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
               {mode === "create"
-                ? "Tambahkan mitra untuk ditampilkan di landing page."
+                ? "Tambahkan mitra untuk ditampilkan di beranda."
                 : "Perbarui detail mitra agar selalu rapi dan akurat."}
             </p>
           </div>
@@ -319,8 +332,8 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={() => navigate("/editor/partners")}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              onClick={() => navigate(`${routeBase}/partners`)}
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
               disabled={saving || logoUploading || deleting}
             >
               <FontAwesomeIcon icon={faArrowLeft} />
@@ -340,8 +353,8 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
       </div>
 
       {errors.length > 0 && (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">
-          <p className="font-bold">Periksa kembali:</p>
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
+          <p className="font-bold">Periksa kembali data berikut:</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
             {errors.slice(0, 8).map((msg, idx) => (
               <li key={idx} className="font-semibold">
@@ -354,65 +367,71 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
             <div className="grid grid-cols-1 gap-4">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Nama mitra (Bahasa Indonesia) <span className="text-red-500">*</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Nama Mitra (Bahasa Indonesia) <span className="text-red-500">*</span>
                 </span>
                 <input
                   value={form.name}
                   onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
-                  placeholder="Nama mitra..."
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Tulis nama mitra."
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Name (English) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Nama Mitra (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <input
                   value={form.name_en}
                   onChange={(e) => setForm((s) => ({ ...s, name_en: e.target.value }))}
-                  placeholder="Partner name (English)..."
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Terjemahan nama mitra (opsional)."
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">URL (opsional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  URL <span className="text-slate-400">(opsional)</span>
+                </span>
                 <input
                   value={form.url}
                   onChange={(e) => setForm((s) => ({ ...s, url: e.target.value }))}
-                  placeholder="https://mitra.com"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="https://mitra.co.id"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">Deskripsi (Bahasa Indonesia) <span className="text-slate-400">(Optional)</span></span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Deskripsi (Bahasa Indonesia) <span className="text-slate-400">(opsional)</span>
+                </span>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))}
                   rows={5}
-                  placeholder="Deskripsi singkat untuk kebutuhan internal..."
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Ringkasan singkat untuk kebutuhan internal."
+                  className="mt-2 w-full resize-y rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">Description (English) <span className="text-slate-400">(Optional)</span></span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Deskripsi (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
+                </span>
                 <textarea
                   value={form.description_en}
                   onChange={(e) => setForm((s) => ({ ...s, description_en: e.target.value }))}
                   rows={5}
-                  placeholder="Short description for internal purposes (English)..."
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Terjemahan deskripsi (opsional)."
+                  className="mt-2 w-full resize-y rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
@@ -420,9 +439,9 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-[11px] font-bold tracking-wide text-slate-400">Logo (opsional)</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-700">Upload logo untuk kartu mitra di landing.</p>
-                    <p className="mt-1 text-xs text-slate-500">jpg/png/webp, max 4MB.</p>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Logo (opsional)</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-700">Unggah logo untuk kartu mitra di beranda.</p>
+                    <p className="mt-1 text-xs text-slate-500">jpg/png/webp, maks. 4MB.</p>
                   </div>
                   <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200">
                     <FontAwesomeIcon icon={faImage} />
@@ -447,8 +466,8 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
                       setForm((s) => ({ ...s, logo_path: "" }));
                       setLogoUploadError(null);
                     }}
-                        disabled={!canSubmit || (!logoPreviewUrl && !form.logo_path)}
-                        className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-red-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={!canSubmit || (!logoPreviewUrl && !form.logo_path)}
+                    className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-red-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Hapus
                   </button>
@@ -469,7 +488,7 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
                     {logoPreviewUrl || storedLogoUrl ? (
                       <img
                         src={logoPreviewUrl ?? storedLogoUrl ?? undefined}
-                        alt=""
+                        alt="Pratinjau logo mitra"
                         className="h-44 w-full object-contain bg-white p-6"
                       />
                     ) : (
@@ -486,6 +505,7 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
                   type="file"
                   accept="image/*"
                   className="hidden"
+                  aria-label="Unggah logo mitra"
                   ref={logoInputRef}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
@@ -547,13 +567,13 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
           ) : null}
         </div>
 
-        <div className="space-y-6 lg:col-span-4">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-xs font-bold tracking-wide text-slate-400">Properti</p>
+        <div className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:self-start lg:h-fit">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-sky-300 bg-white p-6 shadow-sm sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Properti</p>
 
             <div className="mt-5 space-y-4">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Urutan tampil <span className="text-red-500">*</span>
                 </span>
                 <input
@@ -568,7 +588,9 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
                   placeholder="0"
                   className={[
                     "mt-2 w-full rounded-2xl border px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:outline-none focus:ring-2",
-                    orderError ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100" : "border-slate-200 bg-slate-50 focus:border-slate-300 focus:bg-white focus:ring-slate-200",
+                    orderError
+                      ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
+                      : "border-slate-300 bg-white focus:border-slate-400 focus:ring-brandGreen-400",
                   ].join(" ")}
                   disabled={loading || saving || deleting}
                 />
@@ -581,9 +603,9 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
                       setForm((s) => ({ ...s, order: String(suggestedOrder) }));
                     }}
                     disabled={peersLoading || Boolean(peersError) || loading || saving || deleting}
-                    className="rounded-full bg-primary-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-primary-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    Gunakan Urutan Kosong
+                    Gunakan urutan kosong
                   </button>
                 </div>
                 {peersLoading ? (
@@ -603,27 +625,41 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
                 type="button"
                 onClick={() => setForm((s) => ({ ...s, is_active: !s.is_active }))}
                 disabled={loading || saving || deleting}
+                aria-pressed={form.is_active}
                 className={[
                   "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-bold shadow-sm transition",
                   form.is_active
-                    ? "border-brandGreen-100 bg-brandGreen-50 text-brandGreen-800"
-                    : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
+                    ? "border-brandGreen-200 bg-brandGreen-50 text-brandGreen-800"
+                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
                 ].join(" ")}
               >
-                <span>Tampilkan di landing</span>
-                <span className="text-xs font-semibold opacity-80">{form.is_active ? "Aktif" : "Nonaktif"}</span>
+                <span>Tampilkan di beranda</span>
+                <span
+                  className={[
+                    "inline-flex h-6 w-11 items-center rounded-full p-1 transition",
+                    form.is_active ? "bg-brandGreen-600" : "bg-slate-200",
+                  ].join(" ")}
+                  aria-hidden="true"
+                >
+                  <span
+                    className={[
+                      "h-4 w-4 rounded-full bg-white shadow-sm transition",
+                      form.is_active ? "translate-x-5" : "translate-x-0",
+                    ].join(" ")}
+                  />
+                </span>
               </button>
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-[11px] font-bold tracking-wide text-slate-400">Catatan</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Catatan</p>
                 <ul className="mt-2 space-y-2 text-sm text-slate-700">
                   <li className="flex gap-2">
                     <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brandGreen-600" />
-                    <span>Logo akan tampil dengan mode contain agar tidak terpotong.</span>
+                    <span>Logo tampil dengan mode contain agar proporsinya tetap rapi.</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brandGreen-600" />
-                    <span>Pastikan URL lengkap agar tombol website berfungsi.</span>
+                    <span>Pastikan URL lengkap agar tombol menuju situs berfungsi.</span>
                   </li>
                 </ul>
               </div>
@@ -635,6 +671,4 @@ export function EditorPartnerForm({ mode, partnerId }: { mode: Mode; partnerId?:
   );
 }
 
-export default EditorPartnerForm;
-
-
+export default PartnerFormPage;

@@ -131,7 +131,7 @@ function LoginPage() {
               <img src={dpfLogo} alt="DPF" className="h-7 w-7 object-contain" />
             </span>
             <div className="leading-tight">
-              <p className="font-heading text-sm font-bold text-slate-900">DPF ZISWAF</p>
+              <p className="font-heading text-sm font-bold text-slate-900">DPF WAKAF</p>
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Amanah | Profesional
               </p>

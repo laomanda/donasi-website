@@ -419,8 +419,10 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     const userIdRaw = (storedUser as StoredUser | null)?.id;
     const userId = typeof userIdRaw === "number" ? userIdRaw : Number(userIdRaw);
 
+    const fallbackInterval = 5_000;
+
     if (!token || !pusherKey || !Number.isFinite(userId)) {
-      pollId = window.setInterval(loadCounts, 2_000);
+      pollId = window.setInterval(loadCounts, fallbackInterval);
       return () => {
         active = false;
         if (pollId) window.clearInterval(pollId);
@@ -457,12 +459,17 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     });
 
     echo.connector?.pusher?.connection.bind("connected", () => {
+      if (!active) return;
+      if (pollId) {
+        window.clearInterval(pollId);
+        pollId = null;
+      }
       void loadCounts();
     });
 
     echo.connector?.pusher?.connection.bind("error", () => {
       if (!active) return;
-      if (!pollId) pollId = window.setInterval(loadCounts, 2_000);
+      if (!pollId) pollId = window.setInterval(loadCounts, fallbackInterval);
     });
 
     return () => {

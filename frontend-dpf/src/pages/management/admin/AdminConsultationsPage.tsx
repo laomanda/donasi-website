@@ -174,7 +174,7 @@ export function AdminConsultationsPage() {
               <span className="h-2 w-2 rounded-full bg-primary-600" />
               Layanan
             </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Konsultasi ZISWAF</h1>
+            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Konsultasi WAKAF</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
               Kelola pertanyaan masuk, status tindak lanjut, dan catatan admin.
             </p>

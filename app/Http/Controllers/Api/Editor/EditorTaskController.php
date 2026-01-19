@@ -20,9 +20,22 @@ class EditorTaskController extends Controller
                     ->orWhere('assigned_to', $user->id);
             });
 
+        $search = $request->string('q')->trim()->toString();
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
         $status = $request->string('status')->trim()->toString();
         if ($status !== '') {
             $query->where('status', $status);
+        }
+
+        $priority = $request->string('priority')->trim()->toString();
+        if ($priority !== '') {
+            $query->where('priority', $priority);
         }
 
         $tasks = $query->orderByDesc('created_at')

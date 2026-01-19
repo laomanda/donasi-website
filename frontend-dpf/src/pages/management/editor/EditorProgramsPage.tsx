@@ -56,16 +56,16 @@ const formatCurrency = (value: number | string | null | undefined) => {
 
 const getStatusTone = (status: ProgramStatus) => {
   const s = String(status ?? "").toLowerCase();
-  if (s === "active") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
-  if (s === "completed" || s === "archived") return "bg-blue-50 text-blue-700 ring-blue-100";
-  return "bg-amber-50 text-amber-700 ring-amber-100";
+  if (s === "active") return "bg-brandGreen-600 text-white ring-brandGreen-700/70";
+  if (s === "completed" || s === "archived") return "bg-sky-600 text-white ring-sky-700/70";
+  return "bg-amber-600 text-white ring-amber-700/70";
 };
 
 const formatStatusLabel = (status: ProgramStatus) => {
   const s = String(status ?? "").toLowerCase();
   if (s === "active") return "Berjalan";
   if (s === "completed" || s === "archived") return "Tersalurkan";
-  if (s === "draft") return "Segera";
+  if (s === "draft") return "Draf";
   return String(status || "-");
 };
 
@@ -82,6 +82,8 @@ export function EditorProgramsPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<ProgramStatus>("");
   const [category, setCategory] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
+  const [debouncedCategory, setDebouncedCategory] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -125,9 +127,28 @@ export function EditorProgramsPage() {
   };
 
   useEffect(() => {
-    void fetchPrograms(1);
+    const handle = window.setTimeout(() => {
+      setDebouncedQ(q.trim());
+    }, 400);
+    return () => window.clearTimeout(handle);
+  }, [q]);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      setDebouncedCategory(category.trim());
+    }, 400);
+    return () => window.clearTimeout(handle);
+  }, [category]);
+
+  useEffect(() => {
+    void fetchPrograms(1, {
+      q: debouncedQ,
+      status,
+      category: debouncedCategory,
+      perPage,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [perPage]);
+  }, [debouncedQ, debouncedCategory, status, perPage]);
 
   useEffect(() => {
     selection.keepOnly(pageIds);
@@ -141,11 +162,12 @@ export function EditorProgramsPage() {
     return `Menampilkan ${start}-${end} dari ${total}.`;
   }, [page, perPage, total]);
 
-  const onApplyFilters = () => void fetchPrograms(1);
   const onResetFilters = () => {
     setQ("");
     setStatus("");
     setCategory("");
+    setDebouncedQ("");
+    setDebouncedCategory("");
     void fetchPrograms(1, { q: "", status: "", category: "" });
   };
 
@@ -175,10 +197,11 @@ export function EditorProgramsPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-brandGreen-100 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
-            <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-brandGreen-700 ring-1 ring-brandGreen-100">
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
+              <span className="h-2 w-2 rounded-full bg-brandGreen-500" />
               Konten
             </span>
             <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Program</h1>
@@ -190,7 +213,7 @@ export function EditorProgramsPage() {
           <button
             type="button"
             onClick={() => navigate("/editor/programs/create")}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-700"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700"
           >
             <FontAwesomeIcon icon={faPlus} />
             Buat Program
@@ -202,7 +225,7 @@ export function EditorProgramsPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Cari</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Cari</span>
               <div className="relative mt-2">
                 <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                   <FontAwesomeIcon icon={faMagnifyingGlass} className="text-sm" />
@@ -211,38 +234,38 @@ export function EditorProgramsPage() {
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Cari judul atau kategori..."
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                 />
               </div>
             </label>
 
             <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Status</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Status</span>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
               >
                 <option value="">Semua status</option>
-                <option value="draft">Segera</option>
+                <option value="draft">Draf</option>
                 <option value="active">Berjalan</option>
                 <option value="completed">Tersalurkan</option>
               </select>
             </label>
 
             <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Kategori</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Kategori</span>
               <input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder="Mis. pendidikan"
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
               />
             </label>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
+            <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
               <span className="text-slate-400">
                 <FontAwesomeIcon icon={faFilter} />
               </span>
@@ -250,7 +273,7 @@ export function EditorProgramsPage() {
               <select
                 value={perPage}
                 onChange={(e) => setPerPage(Number(e.target.value))}
-                className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1 text-sm font-bold text-slate-700 focus:outline-none"
+                className="rounded-xl border border-slate-300 bg-white px-2 py-1 text-sm font-bold text-slate-700 focus:outline-none"
               >
                 <option value={8}>8</option>
                 <option value={12}>12</option>
@@ -259,19 +282,11 @@ export function EditorProgramsPage() {
               </select>
             </label>
 
-            <button
-              type="button"
-              onClick={onApplyFilters}
-              className="inline-flex items-center justify-center rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700"
-            >
-              Terapkan
-            </button>
-
             {hasFilters && (
               <button
                 type="button"
                 onClick={onResetFilters}
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
               >
                 Atur ulang
               </button>
@@ -286,7 +301,7 @@ export function EditorProgramsPage() {
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">
+        <div className="rounded-2xl border border-rose-600 bg-rose-500 p-4 text-sm font-semibold text-white">
           {error}
         </div>
       )}
@@ -303,21 +318,21 @@ export function EditorProgramsPage() {
       <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
         <div className="hidden overflow-x-auto md:block">
           <table className="min-w-full table-fixed">
-            <thead className="border-b border-brandGreen-100 bg-brandGreen-50">
+            <thead className="border-b border-slate-200 bg-slate-100">
               <tr>
-                <th className="w-[6%] px-6 py-4 text-left text-[11px] font-bold tracking-wide text-slate-400">
+                <th className="w-[6%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                   <input
                     type="checkbox"
                     checked={pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id))}
                     onChange={() => selection.toggleAll(pageIds)}
                     aria-label="Pilih semua program di halaman"
-                    className="h-4 w-4"
+                    className="h-4 w-4 accent-brandGreen-600"
                   />
                 </th>
-                <th className="w-[56%] px-6 py-4 text-left text-[11px] font-bold tracking-wide text-slate-400">Program</th>
-                <th className="w-[16%] px-6 py-4 text-left text-[11px] font-bold tracking-wide text-slate-400">Status</th>
-                <th className="w-[16%] px-6 py-4 text-left text-[11px] font-bold tracking-wide text-slate-400">Diperbarui</th>
-                <th className="w-[6%] px-6 py-4 text-right text-[11px] font-bold tracking-wide text-slate-400">Aksi</th>
+                <th className="w-[56%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Program</th>
+                <th className="w-[16%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Status</th>
+                <th className="w-[16%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Diperbarui</th>
+                <th className="w-[6%] px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -344,14 +359,14 @@ export function EditorProgramsPage() {
                 </tr>
               ) : (
                 items.map((program) => (
-                  <tr key={program.id} className="hover:bg-brandGreen-50">
+                  <tr key={program.id} className="hover:bg-slate-50">
                     <td className="px-6 py-5">
                       <input
                         type="checkbox"
                         checked={selection.isSelected(program.id)}
                         onChange={() => selection.toggle(program.id)}
                         aria-label={`Pilih program ${program.title}`}
-                        className="h-4 w-4"
+                        className="h-4 w-4 accent-brandGreen-600"
                       />
                     </td>
                     <td className="px-6 py-5">
@@ -360,11 +375,11 @@ export function EditorProgramsPage() {
                           {program.title}
                         </p>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <span className="inline-flex max-w-full truncate rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600 ring-1 ring-slate-200">
+                          <span className="inline-flex max-w-full truncate rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
                             {program.category}
                           </span>
                           {program.is_highlight ? (
-                            <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-xs font-bold text-primary-700 ring-1 ring-primary-100">
+                            <span className="inline-flex items-center rounded-full bg-violet-600 px-3 py-1 text-xs font-bold text-white ring-1 ring-violet-700/70">
                               Highlight
                             </span>
                           ) : null}
@@ -379,7 +394,7 @@ export function EditorProgramsPage() {
                       </button>
                     </td>
                     <td className="px-6 py-5">
-                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${getStatusTone(program.status)}`}>
+                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 whitespace-nowrap ${getStatusTone(program.status)}`}>
                         {formatStatusLabel(program.status)}
                       </span>
                     </td>
@@ -391,7 +406,7 @@ export function EditorProgramsPage() {
                         <button
                           type="button"
                           onClick={() => goEdit(program.id)}
-                          className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-300 bg-white text-slate-700 shadow-sm transition hover:border-brandGreen-500 hover:text-brandGreen-700"
                           aria-label="Ubah"
                         >
                           <FontAwesomeIcon icon={faPenToSquare} />
@@ -431,20 +446,20 @@ export function EditorProgramsPage() {
                       checked={selection.isSelected(program.id)}
                       onChange={() => selection.toggle(program.id)}
                       aria-label={`Pilih program ${program.title}`}
-                      className="mt-1 h-4 w-4"
+                      className="mt-1 h-4 w-4 accent-brandGreen-600"
                     />
                   </span>
                   <button type="button" onClick={() => goEdit(program.id)} className="block w-full text-left">
                     <p className="text-base font-bold text-slate-900">{program.title}</p>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${getStatusTone(program.status)}`}>
+                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 whitespace-nowrap ${getStatusTone(program.status)}`}>
                       {formatStatusLabel(program.status)}
                     </span>
-                    <span className="inline-flex max-w-[14rem] truncate rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600 ring-1 ring-slate-200">
+                    <span className="inline-flex max-w-[14rem] truncate rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
                       {program.category}
                     </span>
                     {program.is_highlight ? (
-                      <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-xs font-bold text-primary-700 ring-1 ring-primary-100">
+                      <span className="inline-flex items-center rounded-full bg-violet-600 px-3 py-1 text-xs font-bold text-white ring-1 ring-violet-700/70">
                         Highlight
                       </span>
                     ) : null}
@@ -467,7 +482,7 @@ export function EditorProgramsPage() {
                   <button
                     type="button"
                     onClick={() => goEdit(program.id)}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-300 bg-white text-slate-700 shadow-sm transition hover:border-brandGreen-500 hover:text-brandGreen-700"
                     aria-label="Ubah"
                   >
                     <FontAwesomeIcon icon={faPenToSquare} />

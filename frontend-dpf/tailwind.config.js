@@ -34,13 +34,11 @@ module.exports = {
         },
       },
       fontFamily: {
-        // kita pakai:
-        // - Poppins untuk heading
-        // - Nunito untuk body
-        // - Quicksand untuk badge / accent
+        // Poppins sebagai font utama.
         heading: ["Poppins", "system-ui", "sans-serif"],
-        body: ["Nunito", "system-ui", "sans-serif"],
-        accent: ["Quicksand", "system-ui", "sans-serif"],
+        body: ["Poppins", "system-ui", "sans-serif"],
+        accent: ["Poppins", "system-ui", "sans-serif"],
+        sans: ["Poppins", "system-ui", "sans-serif"],
       },
       container: {
         center: true,

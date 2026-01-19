@@ -632,7 +632,7 @@ export function AdminSearchPage() {
                 partners.map((item) => {
                   const active = Boolean(item.is_active);
                   const meta = [
-                    <span key="status" className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ring-1 ${badgeTone(active ? "green" : "neutral")}`}>
+                    <span key="status" className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ring-1 ${badgeTone(active ? "green" : "red")}`}>
                       {active ? "Aktif" : "Nonaktif"}
                     </span>,
                     item.url ? (

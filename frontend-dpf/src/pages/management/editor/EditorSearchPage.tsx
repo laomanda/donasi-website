@@ -83,9 +83,10 @@ const resolveStorageUrl = (path: string | null | undefined) => {
   return `${getBackendBaseUrl()}/storage/${clean}`;
 };
 
-const badgeTone = (tone: "neutral" | "green" | "amber") => {
+const badgeTone = (tone: "neutral" | "green" | "amber" | "red") => {
   if (tone === "green") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
   if (tone === "amber") return "bg-amber-50 text-amber-700 ring-amber-100";
+  if (tone === "red") return "bg-red-100 text-red-700 ring-red-200";
   return "bg-slate-100 text-slate-700 ring-slate-200";
 };
 
@@ -109,6 +110,7 @@ function ResultRow({
   metaLeft,
   metaRight,
   imageUrl,
+  tone = "slate",
   onClick,
 }: {
   title: string;
@@ -116,12 +118,53 @@ function ResultRow({
   metaLeft?: React.ReactNode;
   metaRight?: React.ReactNode;
   imageUrl?: string | null;
+  tone?: "slate" | "primary" | "green" | "sky" | "amber" | "red";
   onClick: () => void;
 }) {
+  const toneStyles = {
+    slate: {
+      border: "border-l-slate-200",
+      icon: "border-slate-200 bg-white text-slate-700",
+      ring: "ring-slate-200",
+    },
+    primary: {
+      border: "border-l-primary-300",
+      icon: "border-primary-100 bg-primary-50 text-primary-700",
+      ring: "ring-primary-100",
+    },
+    green: {
+      border: "border-l-brandGreen-300",
+      icon: "border-brandGreen-100 bg-brandGreen-50 text-brandGreen-700",
+      ring: "ring-brandGreen-100",
+    },
+    sky: {
+      border: "border-l-sky-300",
+      icon: "border-sky-100 bg-sky-50 text-sky-700",
+      ring: "ring-sky-100",
+    },
+    amber: {
+      border: "border-l-amber-300",
+      icon: "border-amber-100 bg-amber-50 text-amber-700",
+      ring: "ring-amber-100",
+    },
+    red: {
+      border: "border-l-red-300",
+      icon: "border-red-100 bg-red-50 text-red-700",
+      ring: "ring-red-100",
+    },
+  } as const;
+  const toneClass = toneStyles[tone] ?? toneStyles.slate;
+
   return (
     <button type="button" onClick={onClick} className="group w-full text-left">
-      <div className="flex items-start gap-4 rounded-2xl border border-slate-100 bg-white px-4 py-4 shadow-sm transition hover:bg-slate-50">
-        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200">
+      <div
+        className={[
+          "flex items-start gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm transition hover:bg-slate-50",
+          "border-l-4",
+          toneClass.border,
+        ].join(" ")}
+      >
+        <div className={["h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-slate-100 ring-1", toneClass.ring].join(" ")}>
           <img
             src={imageUrl ?? imagePlaceholder}
             alt=""
@@ -142,7 +185,13 @@ function ResultRow({
           )}
         </div>
 
-        <span className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition group-hover:bg-slate-50">
+        <span
+          className={[
+            "mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border shadow-sm transition",
+            "group-hover:opacity-90",
+            toneClass.icon,
+          ].join(" ")}
+        >
           <FontAwesomeIcon icon={faPenToSquare} className="text-sm" />
         </span>
       </div>
@@ -307,13 +356,16 @@ export function EditorSearchPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4">
           <div className="min-w-0">
             <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-700 ring-1 ring-primary-100">
               Pencarian
             </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Cari data</h1>  
+            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Hasil pencarian</h1>
+            <p className="mt-2 text-sm text-slate-600">
+              Menampilkan hasil dari artikel, program, mitra, dan struktur organisasi.
+            </p>
 
             {q ? (
               <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
@@ -330,24 +382,24 @@ export function EditorSearchPage() {
       </div>
 
       {!q ? (
-        <div className="rounded-[28px] border border-dashed border-primary-100 bg-primary-50 p-8 text-center text-sm font-semibold text-slate-700">
+        <div className="rounded-[28px] border border-dashed border-brandGreen-200 bg-brandGreen-50 p-8 text-center text-sm font-semibold text-slate-700">
           Ketik kata kunci di kolom pencarian pada top bar untuk menampilkan hasil.
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[28px] border border-primary-200 border-l-4 border-primary-300 bg-white p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Konten</p>
                 <h2 className="mt-2 flex items-center gap-2 font-heading text-xl font-semibold text-slate-900">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-600 text-white">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-600 text-white shadow-sm ring-1 ring-primary-200">
                     <FontAwesomeIcon icon={faBookOpen} className="text-sm" />
                   </span>
                   Artikel
                 </h2>
                 <p className="mt-2 text-sm text-slate-600">Hasil paling relevan dari data artikel.</p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+              <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-xs font-bold text-primary-700 ring-1 ring-primary-100">
                 {articlesTotal} hasil
               </span>
             </div>
@@ -395,6 +447,7 @@ export function EditorSearchPage() {
                       imageUrl={imageUrl}
                       metaLeft={meta}
                       metaRight={<span className="text-[11px] font-semibold text-slate-500">Diperbarui: {formatDate(item.updated_at ?? item.created_at)}</span>}
+                      tone="primary"
                       onClick={() => navigate(`/editor/articles/${item.id}/edit`)}
                     />
                   );
@@ -403,19 +456,19 @@ export function EditorSearchPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[28px] border border-brandGreen-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Konten</p>
                 <h2 className="mt-2 flex items-center gap-2 font-heading text-xl font-semibold text-slate-900">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-brandGreen-600 text-white">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-brandGreen-600 text-white shadow-sm ring-1 ring-brandGreen-200">
                     <FontAwesomeIcon icon={faHeart} className="text-sm" />
                   </span>
                   Program
                 </h2>
                 <p className="mt-2 text-sm text-slate-600">Hasil paling relevan dari data program.</p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+              <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-xs font-bold text-brandGreen-700 ring-1 ring-brandGreen-100">
                 {programsTotal} hasil
               </span>
             </div>
@@ -463,6 +516,7 @@ export function EditorSearchPage() {
                       imageUrl={imageUrl}
                       metaLeft={meta}
                       metaRight={<span className="text-[11px] font-semibold text-slate-500">Diperbarui: {formatDate(item.updated_at ?? item.created_at)}</span>}
+                      tone="green"
                       onClick={() => navigate(`/editor/programs/${item.id}/edit`)}
                     />
                   );
@@ -471,19 +525,19 @@ export function EditorSearchPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[28px] border border-sky-200 border-l-4 border-sky-300 bg-white p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Organisasi</p>
                 <h2 className="mt-2 flex items-center gap-2 font-heading text-xl font-semibold text-slate-900">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-600 text-white">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-sky-600 text-white shadow-sm ring-1 ring-sky-200">
                     <FontAwesomeIcon icon={faHandshake} className="text-sm" />
                   </span>
                   Mitra
                 </h2>
                 <p className="mt-2 text-sm text-slate-600">Hasil paling relevan dari data mitra.</p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+              <span className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 ring-1 ring-sky-100">
                 {partnersTotal} hasil
               </span>
             </div>
@@ -512,7 +566,7 @@ export function EditorSearchPage() {
                 partners.map((item) => {
                   const active = Boolean(item.is_active);
                   const meta = [
-                    <span key="status" className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ring-1 ${badgeTone(active ? "green" : "neutral")}`}>
+                    <span key="status" className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ring-1 ${badgeTone(active ? "green" : "red")}`}>
                       {active ? "Aktif" : "Nonaktif"}
                     </span>,
                     item.url ? (
@@ -530,6 +584,7 @@ export function EditorSearchPage() {
                       subtitle={null}
                       imageUrl={imageUrl}
                       metaLeft={meta}
+                      tone="sky"
                       onClick={() => navigate(`/editor/partners/${item.id}/edit`)}
                     />
                   );
@@ -538,19 +593,19 @@ export function EditorSearchPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[28px] border border-amber-200 border-l-4 border-amber-300 bg-white p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Organisasi</p>
                 <h2 className="mt-2 flex items-center gap-2 font-heading text-xl font-semibold text-slate-900">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-brandGreen-600 text-white">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-sm ring-1 ring-amber-200">
                     <FontAwesomeIcon icon={faSitemap} className="text-sm" />
                   </span>
                   Struktur
                 </h2>
                 <p className="mt-2 text-sm text-slate-600">Hasil paling relevan dari data struktur.</p>
               </div>
-              <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+              <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 ring-1 ring-amber-100">
                 {membersTotal} hasil
               </span>
             </div>
@@ -579,7 +634,7 @@ export function EditorSearchPage() {
                 members.map((item) => {
                   const active = Boolean(item.is_active);
                   const meta = [
-                    <span key="status" className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ring-1 ${badgeTone(active ? "green" : "neutral")}`}>
+                    <span key="status" className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ring-1 ${badgeTone(active ? "green" : "red")}`}>
                       {active ? "Aktif" : "Nonaktif"}
                     </span>,
                     <span key="group" className="inline-flex items-center rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200">
@@ -596,6 +651,7 @@ export function EditorSearchPage() {
                       imageUrl={imageUrl}
                       metaLeft={meta}
                       metaRight={<span className="text-[11px] font-semibold text-slate-500">Diperbarui: {formatDate(item.updated_at ?? item.created_at)}</span>}
+                      tone="amber"
                       onClick={() => navigate(`/editor/organization-members/${item.id}`)}
                     />
                   );

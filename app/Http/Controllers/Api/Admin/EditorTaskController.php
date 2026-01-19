@@ -53,6 +53,14 @@ class EditorTaskController extends Controller
         $data['created_by'] = $request->user()?->id;
         $data['priority'] = $data['priority'] ?? 'normal';
         $data['status'] = $data['status'] ?? 'open';
+        if ($data['status'] === 'cancelled' && blank($data['cancel_reason'] ?? null)) {
+            return response()->json([
+                'message' => 'Alasan pembatalan wajib diisi.',
+            ], 422);
+        }
+        if ($data['status'] !== 'cancelled') {
+            $data['cancel_reason'] = null;
+        }
         if (array_key_exists('assigned_to', $data) && blank($data['assigned_to'])) {
             $data['assigned_to'] = null;
         }
@@ -82,6 +90,16 @@ class EditorTaskController extends Controller
     public function update(Request $request, EditorTask $editor_task)
     {
         $data = $this->validatePayload($request, true);
+
+        if (array_key_exists('status', $data) && $data['status'] === 'cancelled') {
+            if (blank($data['cancel_reason'] ?? null)) {
+                return response()->json([
+                    'message' => 'Alasan pembatalan wajib diisi.',
+                ], 422);
+            }
+        } elseif (array_key_exists('cancel_reason', $data)) {
+            $data['cancel_reason'] = null;
+        }
 
         if (array_key_exists('assigned_to', $data) && blank($data['assigned_to'])) {
             $data['assigned_to'] = null;
@@ -157,6 +175,7 @@ class EditorTaskController extends Controller
             'description' => ['nullable', 'string'],
             'priority' => ['nullable', 'in:low,normal,high'],
             'status' => ['nullable', 'in:open,in_progress,done,cancelled'],
+            'cancel_reason' => ['nullable', 'string', 'max:500'],
             'due_at' => ['nullable', 'date'],
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
             'attachments' => ['nullable', 'array', 'max:5'],

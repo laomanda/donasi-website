@@ -6,6 +6,7 @@ import {
   faFilter,
   faMagnifyingGlass,
   faPaperclip,
+  faBan,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
@@ -29,6 +30,7 @@ type EditorTaskItem = {
   title?: string | null;
   description?: string | null;
   status?: EditorTaskStatus | null;
+  cancel_reason?: string | null;
   priority?: EditorTaskPriority | null;
   due_at?: string | null;
   created_at?: string | null;
@@ -89,7 +91,7 @@ const getStatusTone = (value: EditorTaskStatus | null | undefined) => {
   if (s === "done") return "bg-emerald-600 text-white ring-emerald-700/60";
   if (s === "in_progress") return "bg-sky-600 text-white ring-sky-700/60";
   if (s === "open") return "bg-amber-500 text-slate-900 ring-amber-600/60";
-  if (s === "cancelled") return "bg-slate-700 text-white ring-slate-700/60";
+  if (s === "cancelled") return "bg-rose-600 text-white ring-rose-700/60";
   return "bg-slate-600 text-white ring-slate-700/60";
 };
 
@@ -121,7 +123,10 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
 
   const pageRef = useRef(page);
   const perPageRef = useRef(perPage);
@@ -255,8 +260,10 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
       });
     };
 
+    const fallbackInterval = 5_000;
+
     if (!token || !pusherKey || !Number.isFinite(userId)) {
-      pollId = window.setInterval(refreshTasks, 2_000);
+      pollId = window.setInterval(refreshTasks, fallbackInterval);
       return () => {
         active = false;
         if (pollId) window.clearInterval(pollId);
@@ -294,12 +301,17 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
     });
 
     echo.connector?.pusher?.connection.bind("connected", () => {
+      if (!active) return;
+      if (pollId) {
+        window.clearInterval(pollId);
+        pollId = null;
+      }
       refreshTasks();
     });
 
     echo.connector?.pusher?.connection.bind("error", () => {
       if (!active) return;
-      if (!pollId) pollId = window.setInterval(refreshTasks, 2_000);
+      if (!pollId) pollId = window.setInterval(refreshTasks, fallbackInterval);
     });
 
     return () => {
@@ -339,6 +351,33 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
     } finally {
       setDeletingId(null);
       setConfirmDeleteId(null);
+    }
+  };
+
+  const onCancelTask = async (taskId: number) => {
+    const reason = cancelReason.trim();
+    if (!reason) {
+      toast.error("Alasan pembatalan wajib diisi.", { title: "Batalkan tugas" });
+      return;
+    }
+    setCancellingId(taskId);
+    try {
+      await http.put(`${apiBase}/editor-tasks/${taskId}`, {
+        status: "cancelled",
+        cancel_reason: reason,
+      });
+      setItems((current) =>
+        current.map((item) =>
+          item.id === taskId ? { ...item, status: "cancelled", cancel_reason: reason } : item
+        )
+      );
+      toast.success("Tugas dibatalkan.", { title: "Berhasil" });
+    } catch {
+      toast.error("Gagal membatalkan tugas.", { title: "Error" });
+    } finally {
+      setCancellingId(null);
+      setConfirmCancelId(null);
+      setCancelReason("");
     }
   };
 
@@ -495,6 +534,8 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
         ) : (
           items.map((task) => {
             const deleteLocked = isDeleteLocked(task.status);
+            const statusValue = String(task.status ?? "").toLowerCase();
+            const cancelLocked = statusValue === "cancelled" || statusValue === "done";
             return (
               <div key={task.id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -502,6 +543,11 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
                     <p className="text-sm font-semibold text-slate-900">{task.title ?? "Tugas tanpa judul"}</p>
                     {task.description ? (
                       <p className="mt-1 text-xs font-medium text-slate-600">{task.description}</p>
+                    ) : null}
+                    {statusValue === "cancelled" && task.cancel_reason ? (
+                      <div className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
+                        Alasan dibatalkan: {task.cancel_reason}
+                      </div>
                     ) : null}
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-600">
                       <span className="rounded-full border border-slate-300 bg-white px-2.5 py-1">
@@ -548,7 +594,24 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
                     </span>
                     <button
                       type="button"
-                      onClick={() => setConfirmDeleteId((current) => (current === task.id ? null : task.id))}
+                      onClick={() => {
+                        setConfirmDeleteId(null);
+                        setConfirmCancelId((current) => (current === task.id ? null : task.id));
+                        setCancelReason("");
+                      }}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 shadow-sm transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={cancellingId === task.id || cancelLocked}
+                      title={cancelLocked ? "Tugas selesai atau dibatalkan tidak bisa dibatalkan ulang." : "Batalkan tugas"}
+                    >
+                      <FontAwesomeIcon icon={faBan} />
+                      Batalkan
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setConfirmCancelId(null);
+                        setConfirmDeleteId((current) => (current === task.id ? null : task.id));
+                      }}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-300 bg-white text-slate-600 shadow-sm transition hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
                       disabled={deletingId === task.id || deleteLocked}
                       title={
@@ -561,6 +624,44 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
                     </button>
                   </div>
                 </div>
+                {confirmCancelId === task.id && !cancelLocked ? (
+                  <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4">
+                    <p className="text-sm font-bold text-rose-800">Batalkan tugas</p>
+                    <p className="mt-1 text-sm text-rose-700">
+                      Tulis alasan pembatalan agar editor memahami perubahan.
+                    </p>
+                    <label className="mt-3 block">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-rose-700">
+                        Alasan pembatalan
+                      </span>
+                      <textarea
+                        value={cancelReason}
+                        onChange={(event) => setCancelReason(event.target.value)}
+                        rows={3}
+                        className="mt-2 w-full rounded-2xl border border-rose-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                        placeholder="Contoh: tugas salah dikirim ke editor."
+                      />
+                    </label>
+                    <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmCancelId(null)}
+                        className="inline-flex items-center justify-center rounded-2xl border border-rose-200 bg-white px-5 py-3 text-sm font-bold text-rose-700 transition hover:bg-rose-100"
+                        disabled={cancellingId === task.id}
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void onCancelTask(task.id)}
+                        className="inline-flex items-center justify-center rounded-2xl bg-rose-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
+                        disabled={cancellingId === task.id}
+                      >
+                        {cancellingId === task.id ? "Membatalkan..." : "Ya, batalkan"}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
                 {confirmDeleteId === task.id && !deleteLocked ? (
                   <div className="mt-4 rounded-2xl border border-red-100 bg-red-50 p-4">
                     <p className="text-sm font-bold text-red-800">Konfirmasi hapus</p>

@@ -1,7 +1,7 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faMagnifyingGlass, faPenToSquare, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faFilter, faMagnifyingGlass, faPenToSquare, faPlus } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import imagePlaceholder from "../../../brand/assets/image-placeholder.jpg";
 
@@ -30,7 +30,7 @@ type PaginationPayload<T> = {
   total: number;
 };
 
-const GROUP_SUGGESTIONS = ["pembina", "pengawas", "pengurus", "staff", "relawan", "lainnya"];
+const GROUP_SUGGESTIONS = ["Pembina", "Pengawas", "Pengurus", "Staff", "Relawan", "Lainnya"];
 
 const formatDate = (value: string | null | undefined) => {
   if (!value) return "-";
@@ -54,7 +54,10 @@ const resolveStorageUrl = (path: string | null | undefined) => {
 };
 
 const getStatusTone = (active: boolean) =>
-  active ? "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100" : "bg-slate-100 text-slate-700 ring-slate-200";
+  active ? "bg-emerald-600 text-white ring-emerald-600" : "bg-red-600 text-white ring-red-600";
+const getContactTone = (visible: boolean) =>
+  visible ? "bg-sky-600 text-white ring-sky-600" : "bg-amber-500 text-white ring-amber-500";
+const groupTone = "bg-slate-800 text-white ring-slate-800";
 
 export function EditorOrganizationMembersPage() {
   const navigate = useNavigate();
@@ -72,6 +75,8 @@ export function EditorOrganizationMembersPage() {
   const [error, setError] = useState<string | null>(null);
 
   const hasFilters = Boolean(q.trim() || group.trim());
+  const filterInitializedRef = useRef(false);
+  const skipFilterRef = useRef(false);
 
   const fetchMembers = async (
     nextPage: number,
@@ -109,6 +114,21 @@ export function EditorOrganizationMembersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [perPage]);
 
+  useEffect(() => {
+    if (!filterInitializedRef.current) {
+      filterInitializedRef.current = true;
+      return;
+    }
+    if (skipFilterRef.current) {
+      skipFilterRef.current = false;
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void fetchMembers(1, { q, group });
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [q, group]);
+
   const pageLabel = useMemo(() => {
     if (!total) return "Tidak ada data.";
     const start = (page - 1) * perPage + 1;
@@ -116,8 +136,8 @@ export function EditorOrganizationMembersPage() {
     return `Menampilkan ${start}-${end} dari ${total}.`;
   }, [page, perPage, total]);
 
-  const onApplyFilters = () => void fetchMembers(1);
   const onResetFilters = () => {
+    skipFilterRef.current = true;
     setQ("");
     setGroup("");
     void fetchMembers(1, { q: "", group: "" });
@@ -128,10 +148,11 @@ export function EditorOrganizationMembersPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-brandGreen-100 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
-            <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-brandGreen-700 ring-1 ring-brandGreen-100">
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
+              <span className="h-2 w-2 rounded-full bg-brandGreen-500" />
               Organisasi
             </span>
             <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Struktur</h1>
@@ -142,16 +163,13 @@ export function EditorOrganizationMembersPage() {
               <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-brandGreen-700 ring-1 ring-brandGreen-100">
                 Total: <span className="ml-1 font-bold text-slate-900">{total}</span>
               </span>
-              <span className="inline-flex items-center rounded-full bg-white px-3 py-1 ring-1 ring-slate-200">
-                {pageLabel}
-              </span>
             </div>
           </div>
 
           <button
             type="button"
             onClick={() => navigate("/editor/organization-members/create")}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-700"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700"
           >
             <FontAwesomeIcon icon={faPlus} />
             Tambah Anggota
@@ -159,88 +177,93 @@ export function EditorOrganizationMembersPage() {
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,180px)_auto] lg:items-end">
-          <label className="block">
-            <span className="text-[11px] font-bold tracking-wide text-slate-400">Pencarian</span>
-            <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus-within:bg-white focus-within:ring-2 focus-within:ring-slate-200">
-              <FontAwesomeIcon icon={faMagnifyingGlass} className="text-slate-400" />
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2">
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Cari</span>
+              <div className="relative mt-2">
+                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                  <FontAwesomeIcon icon={faMagnifyingGlass} className="text-sm" />
+                </span>
+                <input
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Cari nama atau jabatan..."
+                  className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+                />
+              </div>
+            </label>
+
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Grup</span>
               <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Cari nama atau jabatan..."
-                className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                value={group}
+                onChange={(e) => setGroup(e.target.value)}
+                placeholder="Mis. pengurus"
+                list="org-group-options"
+                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
               />
-            </div>
-          </label>
-
-          <label className="block">
-            <span className="text-[11px] font-bold tracking-wide text-slate-400">Grup</span>
-            <input
-              value={group}
-              onChange={(e) => setGroup(e.target.value)}
-              placeholder="Mis. pengurus"
-              list="org-group-options"
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-            />
-            <datalist id="org-group-options">
-              {GROUP_SUGGESTIONS.map((g) => (
-                <option key={g} value={g} />
-              ))}
-            </datalist>
-          </label>
-
-          <label className="block">
-            <span className="text-[11px] font-bold tracking-wide text-slate-400">Per halaman</span>
-            <select
-              value={perPage}
-              onChange={(e) => setPerPage(Number(e.target.value))}
-              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-            >
-              {[8, 12, 20, 30, 50].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="flex flex-wrap items-end gap-2 lg:flex-nowrap lg:justify-end">
-            <button
-              type="button"
-              onClick={onApplyFilters}
-              className="inline-flex items-center justify-center rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700"
-              disabled={loading}
-            >
-              Terapkan
-            </button>
-
-            <button
-              type="button"
-              onClick={onResetFilters}
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-              disabled={loading || !hasFilters}
-            >
-              Atur ulang
-            </button>
+              <datalist id="org-group-options">
+                {GROUP_SUGGESTIONS.map((g) => (
+                  <option key={g} value={g} />
+                ))}
+              </datalist>
+            </label>
           </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
+              <span className="text-slate-400">
+                <FontAwesomeIcon icon={faFilter} />
+              </span>
+              <span>Per halaman</span>
+              <select
+                value={perPage}
+                onChange={(e) => setPerPage(Number(e.target.value))}
+                className="rounded-xl border border-slate-300 bg-white px-2 py-1 text-sm font-bold text-slate-700 focus:outline-none"
+              >
+                {[8, 12, 20, 30, 50].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={onResetFilters}
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                disabled={loading}
+              >
+                Atur ulang
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-semibold text-slate-600">{pageLabel}</p>
+          <p className="text-xs font-semibold text-slate-500">Klik nama untuk detail.</p>
         </div>
       </div>
 
       {error ? (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div>
+        <div className="rounded-2xl border border-rose-600 bg-rose-500 p-4 text-sm font-semibold text-white">{error}</div>
       ) : null}
 
-      <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-200 bg-white shadow-sm">
         <div className="hidden overflow-x-auto md:block">
-          <table className="w-full text-left">
-            <thead className="border-b border-brandGreen-100 bg-brandGreen-50">
-              <tr className="text-xs font-bold tracking-wide text-slate-500">
-                <th className="px-6 py-4">Anggota</th>
-                <th className="px-6 py-4">Grup</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Diperbarui</th>
-                <th className="px-6 py-4 text-right">Aksi</th>
+          <table className="min-w-full table-fixed text-left">
+            <thead className="border-b border-slate-200 bg-slate-100">
+              <tr>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Anggota</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Grup</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Status</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Diperbarui</th>
+                <th className="px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -281,7 +304,7 @@ export function EditorOrganizationMembersPage() {
                   const photo = resolveStorageUrl(member.photo_path) ?? imagePlaceholder;
                   const updated = member.updated_at ?? member.created_at;
                   return (
-                    <tr key={member.id} className="hover:bg-brandGreen-50">
+                    <tr key={member.id} className="hover:bg-slate-50">
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-4">
                           <div className="h-11 w-11 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
@@ -299,7 +322,7 @@ export function EditorOrganizationMembersPage() {
                         </div>
                       </td>
                       <td className="px-6 py-5">
-                        <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${groupTone}`}>
                           {member.group}
                         </span>
                       </td>
@@ -308,7 +331,7 @@ export function EditorOrganizationMembersPage() {
                           <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${getStatusTone(Boolean(member.is_active))}`}>
                             {member.is_active ? "Aktif" : "Nonaktif"}
                           </span>
-                          <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+                          <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${getContactTone(member.show_contact)}`}>
                             {member.show_contact ? "Kontak tampil" : "Kontak sembunyi"}
                           </span>
                         </div>
@@ -388,7 +411,7 @@ export function EditorOrganizationMembersPage() {
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${groupTone}`}>
                         {member.group}
                       </span>
                       <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${getStatusTone(Boolean(member.is_active))}`}>
@@ -450,6 +473,7 @@ export function EditorOrganizationMembersPage() {
 }
 
 export default EditorOrganizationMembersPage;
+
 
 
 

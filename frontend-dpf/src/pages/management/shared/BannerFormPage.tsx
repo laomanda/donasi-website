@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faImage, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
 import imagePlaceholder from "../../../brand/assets/image-placeholder.jpg";
@@ -68,11 +68,23 @@ const getNextAvailableOrder = (banners: Banner[], excludeId?: number) => {
   return candidate;
 };
 
+const resolveRoleBase = (pathname: string) => {
+  const segment = pathname.split("/").filter(Boolean)[0];
+  if (segment === "admin" || segment === "editor") return segment;
+  return "editor";
+};
+
 type Mode = "create" | "edit";
 
-export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: number }) {
+export function BannerFormPage({ mode }: { mode: Mode }) {
   const navigate = useNavigate();
   const toast = useToast();
+  const location = useLocation();
+  const { id } = useParams<{ id: string }>();
+  const bannerId = useMemo(() => Number(id), [id]);
+  const roleBase = useMemo(() => resolveRoleBase(location.pathname), [location.pathname]);
+  const apiBase = `/${roleBase}`;
+  const routeBase = `/${roleBase}`;
 
   const [form, setForm] = useState<BannerFormState>(emptyForm);
   const [loading, setLoading] = useState(mode === "edit");
@@ -137,7 +149,7 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
     setErrors([]);
 
     http
-      .get<Banner[]>("/editor/banners")
+      .get<Banner[]>(`${apiBase}/banners`)
       .then((res) => {
         if (!active) return;
         const list = Array.isArray(res.data) ? res.data : [];
@@ -176,7 +188,7 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
     return () => {
       active = false;
     };
-  }, [mode, isEditIdValid, bannerId]);
+  }, [apiBase, mode, isEditIdValid, bannerId]);
 
   const uploadImage = async (file: File, folder: string) => {
     const formData = new FormData();
@@ -240,13 +252,13 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
     try {
       const payload = payloadForRequest(form);
       if (mode === "create") {
-        await http.post("/editor/banners", payload);
+        await http.post(`${apiBase}/banners`, payload);
         toast.success("Banner berhasil dibuat.", { title: "Berhasil" });
       } else {
-        await http.put(`/editor/banners/${bannerId}`, payload);
+        await http.put(`${apiBase}/banners/${bannerId}`, payload);
         toast.success("Perubahan banner berhasil disimpan.", { title: "Berhasil" });
       }
-      navigate("/editor/banners", { replace: true });
+      navigate(`${routeBase}/banners`, { replace: true });
     } catch (err: any) {
       setErrors(normalizeErrors(err));
     } finally {
@@ -264,9 +276,9 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
     setDeleting(true);
     setErrors([]);
     try {
-      await http.delete(`/editor/banners/${bannerId}`);
+      await http.delete(`${apiBase}/banners/${bannerId}`);
       toast.success("Banner berhasil dihapus.", { title: "Berhasil" });
-      navigate("/editor/banners", { replace: true });
+      navigate(`${routeBase}/banners`, { replace: true });
     } catch (err: any) {
       setErrors(normalizeErrors(err));
     } finally {
@@ -280,23 +292,24 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
-            <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-700 ring-1 ring-primary-100">
-              Banner
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
+              <span className="h-2 w-2 rounded-full bg-brandGreen-500" />
+              Konten
             </span>
             <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">{title}</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Banner digunakan untuk slideshow di landing page. Pastikan resolusi dan urutan tampil sudah sesuai.
+              Banner digunakan untuk slideshow di beranda. Pastikan resolusi dan urutan tampil sudah sesuai.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={() => navigate("/editor/banners")}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              onClick={() => navigate(`${routeBase}/banners`)}
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
               disabled={saving || imageUploading || deleting}
             >
               <FontAwesomeIcon icon={faArrowLeft} />
@@ -316,8 +329,8 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
       </div>
 
       {errors.length > 0 && (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">
-          <p className="font-bold">Periksa kembali:</p>
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
+          <p className="font-bold">Periksa kembali data berikut:</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
             {errors.slice(0, 8).map((msg, idx) => (
               <li key={idx} className="font-semibold">
@@ -330,15 +343,15 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-bold tracking-wide text-slate-400">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                     Gambar banner <span className="text-red-500">*</span>
                   </p>
                   <p className="mt-1 text-sm font-semibold text-slate-700">
-                    Upload gambar untuk slideshow landing page.
+                    Upload gambar untuk slideshow beranda.
                   </p>
                   <p className="mt-1 text-xs text-slate-500">jpg/png/webp, max 6MB.</p>
                 </div>
@@ -366,7 +379,7 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
                     setImageUploadError(null);
                   }}
                   disabled={saving || imageUploading || deleting || (!imagePreviewUrl && !form.image_path)}
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-red-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Hapus
                 </button>
@@ -374,7 +387,7 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
                 {imageUploading ? (
                   <span className="text-sm font-semibold text-slate-600">Mengunggah...</span>
                 ) : form.image_path ? (
-                  <span className="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+                  <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
                     Tersimpan
                   </span>
                 ) : (
@@ -418,7 +431,7 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
               <p className="text-xs font-bold tracking-wide text-red-600">Zona berbahaya</p>
               <h2 className="mt-2 font-heading text-xl font-semibold text-slate-900">Hapus banner</h2>
               <p className="mt-2 text-sm text-slate-600">
-                Banner yang dihapus tidak akan tampil di landing page.
+                Banner yang dihapus tidak akan tampil di beranda.
               </p>
 
               {!showDeleteConfirm ? (
@@ -460,12 +473,12 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
         </div>
 
         <div className="space-y-6 lg:col-span-4">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-xs font-bold tracking-wide text-slate-400">Properti</p>
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-sky-300 bg-white p-6 shadow-sm sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Properti</p>
 
             <div className="mt-5 space-y-4">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Urutan tampil <span className="text-red-500">*</span>
                 </span>
                 <input
@@ -480,7 +493,9 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
                   placeholder="0"
                   className={[
                     "mt-2 w-full rounded-2xl border px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:outline-none focus:ring-2",
-                    orderError ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100" : "border-slate-200 bg-slate-50 focus:border-slate-300 focus:bg-white focus:ring-slate-200",
+                    orderError
+                      ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
+                      : "border-slate-300 bg-white focus:border-slate-400 focus:ring-brandGreen-400",
                   ].join(" ")}
                   disabled={loading || saving || deleting}
                 />
@@ -512,11 +527,11 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
               </label>
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-[11px] font-bold tracking-wide text-slate-400">Catatan</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Catatan</p>
                 <ul className="mt-2 space-y-2 text-sm text-slate-700">
                   <li className="flex gap-2">
                     <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brandGreen-600" />
-                    <span>Pastikan banner memiliki rasio lebar agar tampil penuh di landing page.</span>
+                    <span>Pastikan banner memiliki rasio lebar agar tampil penuh di beranda.</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brandGreen-600" />
@@ -532,4 +547,4 @@ export function EditorBannerForm({ mode, bannerId }: { mode: Mode; bannerId?: nu
   );
 }
 
-export default EditorBannerForm;
+export default BannerFormPage;

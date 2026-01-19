@@ -55,7 +55,7 @@ const formatDateTime = (value: string | null | undefined) => {
 const getStatusTone = (isActive: boolean) =>
   isActive
     ? "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100"
-    : "bg-slate-100 text-slate-700 ring-slate-200";
+    : "bg-red-100 text-red-700 ring-red-200";
 
 const getRoleLabel = (user: User) => {
   const roles = Array.isArray(user.roles) ? user.roles : [];

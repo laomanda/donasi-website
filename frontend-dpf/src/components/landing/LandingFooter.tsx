@@ -97,7 +97,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
               <div className="space-y-2">
                 <div>
                   <span className="block text-xl font-bold font-heading text-white tracking-tight">
-                    DPF ZISWAF
+                    DPF WAKAF
                   </span>
                 <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-white">
                     {t('nav.tagline', 'Amanah | Profesional')}
@@ -259,7 +259,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
         {/* BOTTOM SECTION */}
         <div className="mt-16 border-t border-white/10 pt-8 flex flex-col items-center justify-between gap-4 md:flex-row text-xs text-slate-400">
           <p className="text-center md:text-left text-white">
-            &copy; {currentYear} DPF ZISWAF. {t('footer.copyright', 'Dikelola oleh Yayasan DPF Indonesia.')}
+            &copy; {currentYear} DPF WAKAF {t('footer.copyright', 'Dikelola oleh Yayasan DPF Indonesia.')}
           </p>
         </div>
 

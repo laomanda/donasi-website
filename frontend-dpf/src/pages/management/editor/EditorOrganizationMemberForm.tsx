@@ -98,6 +98,12 @@ const resolveStorageUrl = (path: string) => {
   return `${getBackendBaseUrl()}/storage/${clean}`;
 };
 
+const autoResizeTextarea = (textarea: HTMLTextAreaElement | null) => {
+  if (!textarea) return;
+  textarea.style.height = "auto";
+  textarea.style.height = `${textarea.scrollHeight}px`;
+};
+
 const getNextOrderAtEnd = (members: OrganizationMember[], excludeId?: number) => {
   let maxOrder = -1;
   members.forEach((m) => {
@@ -128,6 +134,8 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
   const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
+  const longBioRef = useRef<HTMLTextAreaElement | null>(null);
+  const longBioEnRef = useRef<HTMLTextAreaElement | null>(null);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -155,6 +163,14 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
       if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
     };
   }, [photoPreviewUrl]);
+
+  useEffect(() => {
+    autoResizeTextarea(longBioRef.current);
+  }, [form.long_bio]);
+
+  useEffect(() => {
+    autoResizeTextarea(longBioEnRef.current);
+  }, [form.long_bio_en]);
 
   useEffect(() => {
     if (mode !== "edit") return;
@@ -388,11 +404,12 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="rounded-[28px] border border-brandGreen-100 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
-            <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-brandGreen-700 ring-1 ring-brandGreen-100">
-              Struktur
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
+              <span className="h-2 w-2 rounded-full bg-brandGreen-500" />
+              Organisasi
             </span>
             <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">{title}</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
@@ -406,7 +423,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
             <button
               type="button"
               onClick={() => navigate("/editor/organization-members")}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
               disabled={saving || photoUploading || deleting}
             >
               <FontAwesomeIcon icon={faArrowLeft} />
@@ -426,8 +443,8 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
       </div>
 
       {errors.length > 0 && (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">
-          <p className="font-bold">Periksa kembali:</p>
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
+          <p className="font-bold">Periksa kembali data berikut:</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
             {errors.slice(0, 10).map((msg, idx) => (
               <li key={idx} className="font-semibold">
@@ -440,138 +457,144 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-xs font-bold tracking-wide text-slate-400">Informasi</p>
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Informasi</p>
             <div className="mt-5 grid grid-cols-1 gap-4">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Nama (Bahasa Indonesia) <span className="text-red-500">*</span>
                 </span>
                 <input
                   value={form.name}
                   onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
-                  placeholder="Nama anggota..."
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Nama lengkap anggota."
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Name (English) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Nama (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <input
                   value={form.name_en}
                   onChange={(e) => setForm((s) => ({ ...s, name_en: e.target.value }))}
-                  placeholder="Member name (English)..."
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Terjemahan nama (opsional)."
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Jabatan (Bahasa Indonesia) <span className="text-red-500">*</span>
                 </span>
                 <input
                   value={form.position_title}
                   onChange={(e) => setForm((s) => ({ ...s, position_title: e.target.value }))}
-                  placeholder="Mis. Direktur, Ketua, Staff..."
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Mis. Direktur, Ketua, Staf."
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Position Title (English) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Jabatan (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <input
                   value={form.position_title_en}
                   onChange={(e) => setForm((s) => ({ ...s, position_title_en: e.target.value }))}
-                  placeholder="e.g. Director, Chairman, Staff..."
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Terjemahan jabatan (opsional)."
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Bio singkat (Bahasa Indonesia) <span className="text-slate-500">(opsional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Ringkasan (Bahasa Indonesia) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <input
                   value={form.short_bio}
                   onChange={(e) => setForm((s) => ({ ...s, short_bio: e.target.value }))}
-                  placeholder="Ringkasan singkat (maks 255 karakter)..."
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Ringkasan singkat (maks. 255 karakter)."
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Short Bio (English) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Ringkasan (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <input
                   value={form.short_bio_en}
                   onChange={(e) => setForm((s) => ({ ...s, short_bio_en: e.target.value }))}
-                  placeholder="Short summary (max 255 characters) (English)..."
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Terjemahan ringkasan (opsional)."
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Bio lengkap (Bahasa Indonesia) <span className="text-slate-500">(opsional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Profil Lengkap (Bahasa Indonesia) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <textarea
                   value={form.long_bio}
                   onChange={(e) => setForm((s) => ({ ...s, long_bio: e.target.value }))}
                   rows={7}
-                  placeholder="Profil lengkap untuk kebutuhan public/internal..."
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Profil lengkap untuk publik maupun internal."
+                  className="mt-2 w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
+                  ref={longBioRef}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Long Bio (English) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Profil Lengkap (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <textarea
                   value={form.long_bio_en}
                   onChange={(e) => setForm((s) => ({ ...s, long_bio_en: e.target.value }))}
                   rows={7}
-                  placeholder="Full profile for public/internal purposes (English)..."
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Terjemahan profil lengkap (opsional)."
+                  className="mt-2 w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
+                  ref={longBioEnRef}
                 />
               </label>
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-xs font-bold tracking-wide text-slate-400">Kontak</p>
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Kontak</p>
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">Email (opsional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Email <span className="text-slate-400">(opsional)</span>
+                </span>
                 <input
                   value={form.email}
                   onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
-                  placeholder="email@contoh.com"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="nama@contoh.com"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">No. HP (opsional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  No. HP <span className="text-slate-400">(opsional)</span>
+                </span>
                 <input
                   value={form.phone}
                   onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))}
                   placeholder="08xxxxxxxxxx"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
@@ -584,8 +607,8 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
               className={[
                 "mt-4 flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-bold shadow-sm transition",
                 form.show_contact
-                  ? "border-brandGreen-100 bg-brandGreen-50 text-brandGreen-800"
-                  : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
+                  ? "border-brandGreen-200 bg-brandGreen-50 text-brandGreen-800"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
               ].join(" ")}
             >
               <span>Tampilkan kontak di publik</span>
@@ -593,13 +616,13 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
             </button>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-xs font-bold tracking-wide text-slate-400">Foto</p>
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Foto</p>
             <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-slate-700">Upload foto anggota.</p>
-                  <p className="mt-1 text-xs text-slate-500">jpg/png/webp, max 4MB.</p>
+                  <p className="text-sm font-semibold text-slate-700">Unggah foto anggota.</p>
+                  <p className="mt-1 text-xs text-slate-500">jpg/png/webp, maks. 4MB.</p>
                 </div>
                 <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200">
                   <FontAwesomeIcon icon={faImage} />
@@ -613,7 +636,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                   disabled={!canSubmit}
                   className="inline-flex items-center justify-center rounded-2xl bg-white px-4 py-2.5 text-sm font-bold text-slate-800 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  Pilih Foto
+                  Pilih Gambar
                 </button>
 
                 <button
@@ -647,7 +670,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                     <img
                       src={photoPreviewUrl ?? storedPhotoUrl ?? undefined}
                       alt=""
-                      className="h-[320px] w-full object-cover"
+                      className="h-[320px] w-full object-contain bg-slate-50"
                     />
                   ) : (
                     <div className="flex h-[320px] items-center justify-center text-sm font-semibold text-slate-500">
@@ -663,6 +686,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                 type="file"
                 accept="image/*"
                 className="hidden"
+                aria-label="Unggah foto anggota"
                 ref={photoInputRef}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
@@ -723,13 +747,13 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
           ) : null}
         </div>
 
-        <div className="space-y-6 lg:col-span-4">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-xs font-bold tracking-wide text-slate-400">Properti</p>
+        <div className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:self-start lg:h-fit">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-sky-300 bg-white p-6 shadow-sm sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Properti</p>
 
             <div className="mt-5 space-y-4">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Grup (Bahasa Indonesia) <span className="text-red-500">*</span>
                 </span>
                 <input
@@ -737,7 +761,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                   onChange={(e) => setForm((s) => ({ ...s, group: e.target.value }))}
                   placeholder="Mis. pengurus"
                   list="org-group-options"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
                 <datalist id="org-group-options">
@@ -748,31 +772,34 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Group (English) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Grup (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <input
                   value={form.group_en}
                   onChange={(e) => setForm((s) => ({ ...s, group_en: e.target.value }))}
-                  placeholder="e.g. management"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Terjemahan grup (opsional)."
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">Slug (opsional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Slug
+                  <span className="ml-2 normal-case font-semibold tracking-normal text-slate-500">(opsional)</span>
+                </span>
                 <input
                   value={form.slug}
                   onChange={(e) => setForm((s) => ({ ...s, slug: e.target.value }))}
-                  placeholder="Otomatis dari nama jika kosong"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Contoh: nama-anggota"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-[11px] font-bold tracking-wide text-slate-400">Urutan tampil</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Urutan tampil</p>
                 <p className="mt-1 text-sm font-bold text-slate-900">Otomatis</p>
                 <p className="mt-1 text-xs text-slate-500">
                   Sistem mengatur urutan dalam grup untuk mencegah duplikasi.
@@ -794,11 +821,11 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                 className={[
                   "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-bold shadow-sm transition",
                   form.is_active
-                    ? "border-brandGreen-100 bg-brandGreen-50 text-brandGreen-800"
-                    : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
+                    ? "border-brandGreen-200 bg-brandGreen-50 text-brandGreen-800"
+                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
                 ].join(" ")}
               >
-                <span>Tampilkan di landing</span>
+                <span>Tampilkan di publik</span>
                 <span className="text-xs font-semibold opacity-80">{form.is_active ? "Aktif" : "Nonaktif"}</span>
               </button>
             </div>
@@ -810,5 +837,3 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
 }
 
 export default EditorOrganizationMemberForm;
-
-

@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
@@ -37,8 +37,19 @@ const resolveStorageUrl = (path: string | null | undefined) => {
   return `${getBackendBaseUrl()}/storage/${clean}`;
 };
 
-export function EditorBannersPage() {
+const resolveRoleBase = (pathname: string) => {
+  const segment = pathname.split("/").filter(Boolean)[0];
+  if (segment === "admin" || segment === "editor") return segment;
+  return "editor";
+};
+
+export function BannersPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const roleBase = useMemo(() => resolveRoleBase(location.pathname), [location.pathname]);
+  const apiBase = `/${roleBase}`;
+  const routeBase = `/${roleBase}`;
+
   const [items, setItems] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +63,7 @@ export function EditorBannersPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await http.get<Banner[]>("/editor/banners");
+      const res = await http.get<Banner[]>(`${apiBase}/banners`);
       const list = Array.isArray(res.data) ? res.data : [];
       setItems(list);
     } catch {
@@ -65,7 +76,8 @@ export function EditorBannersPage() {
 
   useEffect(() => {
     void fetchBanners();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiBase]);
 
   useEffect(() => {
     selection.keepOnly(pageIds);
@@ -76,7 +88,7 @@ export function EditorBannersPage() {
     setDeletingId(banner.id);
     setError(null);
     try {
-      await http.delete(`/editor/banners/${banner.id}`);
+      await http.delete(`${apiBase}/banners/${banner.id}`);
       await fetchBanners();
     } catch {
       setError("Gagal menghapus banner.");
@@ -93,7 +105,7 @@ export function EditorBannersPage() {
     setError(null);
     try {
       const result = await runWithConcurrency(selection.selectedIds, 4, async (id) => {
-        await http.delete(`/editor/banners/${id}`);
+        await http.delete(`${apiBase}/banners/${id}`);
       });
       if (result.failed.length) {
         setError(`Berhasil menghapus ${result.succeeded.length}, gagal ${result.failed.length}.`);
@@ -115,18 +127,19 @@ export function EditorBannersPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
-            <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-700 ring-1 ring-primary-100">
-              Banner
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
+              <span className="h-2 w-2 rounded-full bg-brandGreen-500" />
+              Konten
             </span>
             <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Banner</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Kelola slideshow banner yang tampil di bagian atas landing page.
+              Kelola slideshow banner yang tampil di bagian atas beranda.
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
-              <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-primary-700 ring-1 ring-primary-100">
+              <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-brandGreen-700 ring-1 ring-brandGreen-100">
                 Total: <span className="ml-1 font-bold text-slate-900">{total}</span>
               </span>
             </div>
@@ -134,8 +147,8 @@ export function EditorBannersPage() {
 
           <button
             type="button"
-            onClick={() => navigate("/editor/banners/create")}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-700"
+            onClick={() => navigate(`${routeBase}/banners/create`)}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700"
           >
             <FontAwesomeIcon icon={faPlus} />
             Tambah Banner
@@ -158,22 +171,22 @@ export function EditorBannersPage() {
 
       <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
         <div className="hidden overflow-x-auto md:block">
-          <table className="w-full text-left">
-            <thead className="border-b border-primary-100 bg-primary-50">
-              <tr className="text-xs font-bold tracking-wide text-slate-500">
+          <table className="min-w-full table-fixed text-left">
+            <thead className="border-b border-slate-200 bg-slate-100">
+              <tr>
                 <th className="px-6 py-4">
                   <input
                     type="checkbox"
                     checked={pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id))}
                     onChange={() => selection.toggleAll(pageIds)}
                     aria-label="Pilih semua banner di halaman"
-                    className="h-4 w-4"
+                    className="h-4 w-4 accent-brandGreen-600"
                   />
                 </th>
-                <th className="px-6 py-4">Urutan</th>
-                <th className="px-6 py-4">Banner</th>
-                <th className="px-6 py-4">Diperbarui</th>
-                <th className="px-6 py-4 text-right">Aksi</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Urutan</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Banner</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Diperbarui</th>
+                <th className="px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -209,14 +222,14 @@ export function EditorBannersPage() {
                   const updated = banner.updated_at ?? banner.created_at;
                   return (
                     <Fragment key={banner.id}>
-                      <tr className="hover:bg-primary-50">
+                      <tr className="hover:bg-slate-50">
                         <td className="px-6 py-5">
                           <input
                             type="checkbox"
                             checked={selection.isSelected(banner.id)}
                             onChange={() => selection.toggle(banner.id)}
                             aria-label={`Pilih banner ${banner.display_order ?? 0}`}
-                            className="h-4 w-4"
+                            className="h-4 w-4 accent-brandGreen-600"
                           />
                         </td>
                         <td className="px-6 py-5">
@@ -236,9 +249,6 @@ export function EditorBannersPage() {
                             </div>
                             <div className="min-w-0">
                               <p className="truncate text-sm font-bold text-slate-900">Banner #{banner.display_order ?? 0}</p>
-                              <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">
-                                {banner.image_path ? banner.image_path : "Tanpa path"}
-                              </p>
                             </div>
                           </div>
                         </td>
@@ -247,7 +257,7 @@ export function EditorBannersPage() {
                           <div className="flex items-center justify-end">
                             <button
                               type="button"
-                              onClick={() => navigate(`/editor/banners/${banner.id}/edit`)}
+                              onClick={() => navigate(`${routeBase}/banners/${banner.id}/edit`)}
                               className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
                               aria-label="Ubah"
                             >
@@ -334,9 +344,9 @@ export function EditorBannersPage() {
                       checked={selection.isSelected(banner.id)}
                       onChange={() => selection.toggle(banner.id)}
                       aria-label={`Pilih banner ${banner.display_order ?? 0}`}
-                      className="mt-2 h-4 w-4"
+                      className="mt-2 h-4 w-4 accent-brandGreen-600"
                     />
-                    <button type="button" onClick={() => navigate(`/editor/banners/${banner.id}/edit`)} className="w-full text-left">
+                    <button type="button" onClick={() => navigate(`${routeBase}/banners/${banner.id}/edit`)} className="w-full text-left">
                       <div className="flex items-start gap-4">
                         <div className="h-16 w-24 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
                           <img
@@ -348,7 +358,6 @@ export function EditorBannersPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-base font-bold text-slate-900">Banner #{banner.display_order ?? 0}</p>
-                          <p className="mt-1 line-clamp-1 text-xs text-slate-500">{banner.image_path ?? "-"}</p>
                           <p className="mt-2 text-xs font-semibold text-slate-500">Diperbarui: {formatDate(updated)}</p>
                         </div>
                       </div>
@@ -360,7 +369,7 @@ export function EditorBannersPage() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => navigate(`/editor/banners/${banner.id}/edit`)}
+                      onClick={() => navigate(`${routeBase}/banners/${banner.id}/edit`)}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
                       aria-label="Ubah"
                     >
@@ -409,11 +418,11 @@ export function EditorBannersPage() {
 
       {!loading && !error && sorted.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm font-semibold text-slate-500">
-          Banner belum tersedia. Tambahkan banner pertama untuk ditampilkan di landing page.
+          Banner belum tersedia. Tambahkan banner pertama untuk ditampilkan di beranda.
         </div>
       ) : null}
     </div>
   );
 }
 
-export default EditorBannersPage;
+export default BannersPage;

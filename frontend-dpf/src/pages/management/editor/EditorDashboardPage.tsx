@@ -41,6 +41,7 @@ type EditorTaskItem = {
   title?: string | null;
   description?: string | null;
   status?: string | null;
+  cancel_reason?: string | null;
   priority?: string | null;
   due_at?: string | null;
   created_at?: string | null;
@@ -90,7 +91,7 @@ const getTaskTone = (status?: string | null) => {
   if (s === "done") return "bg-emerald-600 text-white ring-emerald-700/60";
   if (s === "in_progress") return "bg-sky-600 text-white ring-sky-700/60";
   if (s === "open") return "bg-amber-500 text-slate-900 ring-amber-600/60";
-  if (s === "cancelled") return "bg-slate-700 text-white ring-slate-700/60";
+  if (s === "cancelled") return "bg-rose-600 text-white ring-rose-700/60";
   return "bg-slate-600 text-white ring-slate-700/60";
 };
 
@@ -128,7 +129,7 @@ const getStatusSelectTone = (status?: string | null) => {
   if (s === "done") return "border-emerald-300 text-emerald-900 focus:ring-emerald-200";
   if (s === "in_progress") return "border-sky-300 text-sky-900 focus:ring-sky-200";
   if (s === "open") return "border-amber-300 text-amber-900 focus:ring-amber-200";
-  if (s === "cancelled") return "border-slate-300 text-slate-900 focus:ring-slate-200";
+  if (s === "cancelled") return "border-rose-300 text-rose-900 focus:ring-rose-200";
   return "border-slate-300 text-slate-900 focus:ring-slate-200";
 };
 
@@ -194,6 +195,7 @@ export function EditorDashboardPage() {
   const onUpdateTaskStatus = async (taskId: number, nextStatus: string) => {
     const current = taskItems.find((item) => item.id === taskId);
     if (!current || current.status === nextStatus) return;
+    if (String(current.status ?? "").toLowerCase() === "cancelled") return;
     if (!isForwardStatus(current.status, nextStatus)) {
       toast.error("Status tidak bisa kembali ke tahap sebelumnya.", { title: "Status tugas" });
       return;
@@ -509,8 +511,12 @@ function TaskItemRow({
     { value: "open", label: "Baru" },
     { value: "in_progress", label: "Dikerjakan" },
     { value: "done", label: "Selesai" },
+    { value: "cancelled", label: "Dibatalkan" },
   ];
-  const allowedStatusOptions = statusOptions.filter((option) => isForwardStatus(status, option.value));
+  const isCancelled = status === "cancelled";
+  const allowedStatusOptions = isCancelled
+    ? statusOptions.filter((option) => option.value === "cancelled")
+    : statusOptions.filter((option) => option.value !== "cancelled" && isForwardStatus(status, option.value));
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -524,6 +530,11 @@ function TaskItemRow({
           </div>
           {item.description ? (
             <p className="text-sm font-medium text-slate-600">{item.description}</p>
+          ) : null}
+          {isCancelled && item.cancel_reason ? (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
+              Alasan dibatalkan: {item.cancel_reason}
+            </div>
           ) : null}
           <div className="flex flex-wrap items-center gap-2">
             <span className={[metaBase, priorityTone].join(" ")}>
@@ -556,7 +567,8 @@ function TaskItemRow({
             <select
               value={status}
               onChange={(event) => onStatusChange(event.target.value)}
-              disabled={busy}
+              disabled={busy || isCancelled}
+              aria-label="Status tugas"
               className={[
                 "mt-2 w-full rounded-xl border bg-white px-3 py-2 text-xs font-bold shadow-sm transition focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-100",
                 selectTone,
@@ -590,6 +602,12 @@ function TaskItemRow({
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status</p>
               <p className="mt-1 text-sm font-semibold text-slate-900">{statusLabel}</p>
             </div>
+            {isCancelled && item.cancel_reason ? (
+              <div className="sm:col-span-2">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Alasan pembatalan</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{item.cancel_reason}</p>
+              </div>
+            ) : null}
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Prioritas</p>
               <p className="mt-1 text-sm font-semibold text-slate-900">{priorityLabel}</p>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -116,6 +116,12 @@ const resolveStorageUrl = (path: string) => {
   return `${getBackendBaseUrl()}/storage/${clean}`;
 };
 
+const autoResizeTextarea = (textarea: HTMLTextAreaElement | null) => {
+  if (!textarea) return;
+  textarea.style.height = "auto";
+  textarea.style.height = `${textarea.scrollHeight}px`;
+};
+
 const formatCurrency = (value: number | string | null | undefined) => {
   const n = Number(value ?? 0);
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(
@@ -134,6 +140,13 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+
+  const shortDescriptionRef = useRef<HTMLTextAreaElement | null>(null);
+  const shortDescriptionEnRef = useRef<HTMLTextAreaElement | null>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
+  const descriptionEnRef = useRef<HTMLTextAreaElement | null>(null);
+  const benefitsRef = useRef<HTMLTextAreaElement | null>(null);
+  const benefitsEnRef = useRef<HTMLTextAreaElement | null>(null);
 
   const [thumbnailUploading, setThumbnailUploading] = useState(false);
   const [thumbnailUploadError, setThumbnailUploadError] = useState<string | null>(null);
@@ -183,6 +196,30 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
       });
     };
   }, [thumbnailPreviewUrl, bannerPreviewUrl, galleryPreviewUrls]);
+
+  useEffect(() => {
+    autoResizeTextarea(shortDescriptionRef.current);
+  }, [form.short_description]);
+
+  useEffect(() => {
+    autoResizeTextarea(shortDescriptionEnRef.current);
+  }, [form.short_description_en]);
+
+  useEffect(() => {
+    autoResizeTextarea(descriptionRef.current);
+  }, [form.description]);
+
+  useEffect(() => {
+    autoResizeTextarea(descriptionEnRef.current);
+  }, [form.description_en]);
+
+  useEffect(() => {
+    autoResizeTextarea(benefitsRef.current);
+  }, [form.benefits]);
+
+  useEffect(() => {
+    autoResizeTextarea(benefitsEnRef.current);
+  }, [form.benefits_en]);
 
   useEffect(() => {
     if (mode !== "edit") return;
@@ -407,17 +444,18 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="rounded-[28px] border border-brandGreen-100 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
-            <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-brandGreen-700 ring-1 ring-brandGreen-100">
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
+              <span className="h-2 w-2 rounded-full bg-brandGreen-500" />
               Program
             </span>
             <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">{title}</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
               {mode === "create"
-                ? "Siapkan informasi program dengan deskripsi yang jelas dan target yang realistis."
-                : "Perbarui detail program agar selalu rapi dan akurat."}
+                ? "Susun informasi program dengan deskripsi yang jelas dan target yang terukur."
+                : "Perbarui detail program agar tetap rapi dan akurat."}
             </p>
           </div>
 
@@ -425,7 +463,7 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
             <button
               type="button"
               onClick={() => navigate("/editor/programs")}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
               disabled={saving || thumbnailUploading || bannerUploading || deleting}
             >
               <FontAwesomeIcon icon={faArrowLeft} />
@@ -445,8 +483,8 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
       </div>
 
       {errors.length > 0 && (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">
-          <p className="font-bold">Periksa kembali:</p>
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
+          <p className="font-bold">Periksa kembali data berikut:</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
             {errors.slice(0, 8).map((msg, idx) => (
               <li key={idx} className="font-semibold">
@@ -459,133 +497,137 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
             <div className="grid grid-cols-1 gap-4">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Judul (Bahasa Indonesia) <span className="text-red-500">*</span>
                 </span>
                 <input
                   value={form.title}
                   onChange={(e) => setForm((s) => ({ ...s, title: e.target.value }))}
-                  placeholder="Judul program..."
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Tulis judul program yang jelas."
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Title (English) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Judul (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <input
                   value={form.title_en}
                   onChange={(e) => setForm((s) => ({ ...s, title_en: e.target.value }))}
-                  placeholder="Program title (English)..."
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Terjemahan judul program (opsional)."
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Ringkasan (Bahasa Indonesia) <span className="text-red-500">*</span>
                 </span>
                 <textarea
                   value={form.short_description}
                   onChange={(e) => setForm((s) => ({ ...s, short_description: e.target.value }))}
                   rows={3}
-                  placeholder="Ringkasan singkat untuk kartu program..."
-                  className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Ringkasan singkat yang tampil di kartu program."
+                  className="mt-2 w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
+                  ref={shortDescriptionRef}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Short Description (English) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Ringkasan (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <textarea
                   value={form.short_description_en}
                   onChange={(e) => setForm((s) => ({ ...s, short_description_en: e.target.value }))}
                   rows={3}
-                  placeholder="Short summary for program card (English)..."
-                  className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Terjemahan ringkasan (opsional)."
+                  className="mt-2 w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
+                  ref={shortDescriptionEnRef}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Deskripsi (Bahasa Indonesia) <span className="text-red-500">*</span>
                 </span>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))}
                   rows={12}
-                  placeholder="Jelaskan tujuan program, alur distribusi, dan informasi penting lainnya..."
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Jelaskan tujuan program, alur penyaluran, dan informasi penting lainnya."
+                  className="mt-2 w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
+                  ref={descriptionRef}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Description (English) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Deskripsi (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <textarea
                   value={form.description_en}
                   onChange={(e) => setForm((s) => ({ ...s, description_en: e.target.value }))}
                   rows={12}
-                  placeholder="Explain program purpose, distribution flow, and other important information (English)..."
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Terjemahan deskripsi program (opsional)."
+                  className="mt-2 w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
+                  ref={descriptionEnRef}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Manfaat (Bahasa Indonesia) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Manfaat (Bahasa Indonesia) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <textarea
                   value={form.benefits}
                   onChange={(e) => setForm((s) => ({ ...s, benefits: e.target.value }))}
                   rows={4}
-                  placeholder="Tuliskan manfaat atau poin penting (boleh per baris)..."
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Tuliskan manfaat utama, boleh per baris."
+                  className="mt-2 w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
+                  ref={benefitsRef}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Benefits (English) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Manfaat (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <textarea
                   value={form.benefits_en}
                   onChange={(e) => setForm((s) => ({ ...s, benefits_en: e.target.value }))}
                   rows={4}
-                  placeholder="Write benefits or important points (one per line) (English)..."
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Terjemahan manfaat (opsional)."
+                  className="mt-2 w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
+                  ref={benefitsEnRef}
                 />
               </label>
 
-              <div className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="rounded-2xl border border-brandGreen-100 bg-gradient-to-r from-brandGreen-50 via-white to-primary-50 px-4 py-3">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brandGreen-700">Foto Program</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-700">Maksimal 3 foto untuk slideshow.</p>
-                      <p className="mt-1 text-xs text-slate-500">Urutan foto tampil di detail program untuk transparansi.</p>
-                    </div>
-                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-600 shadow-sm ring-1 ring-brandGreen-100">
-                      <FontAwesomeIcon icon={faImage} />
-                    </span>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Galeri Program</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-700">Maksimal 3 gambar untuk galeri.</p>
+                    <p className="mt-1 text-xs text-slate-500">Urutan gambar tampil di detail program untuk transparansi.</p>
                   </div>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200">
+                    <FontAwesomeIcon icon={faImage} />
+                  </span>
                 </div>
 
-                <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                <div className="mt-4 grid gap-4 sm:grid-cols-3">
                   {form.program_images.map((path, index) => {
                     const previewUrl = galleryPreviewUrls[index];
                     const savedUrl = resolveStorageUrl(path);
@@ -593,9 +635,11 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                     return (
                       <div
                         key={index}
-                        className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                        className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
                       >
-                        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Foto {index + 1}</p>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                          Gambar {index + 1}
+                        </p>
                         <div className="mt-3 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
                           {hasImage ? (
                             <img
@@ -605,7 +649,7 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                             />
                           ) : (
                             <div className="flex h-32 items-center justify-center text-xs font-semibold text-slate-500">
-                              Belum ada foto.
+                              Belum ada gambar.
                             </div>
                           )}
                         </div>
@@ -615,7 +659,7 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                             type="button"
                             onClick={() => galleryInputRefs.current[index]?.click()}
                             disabled={!canSubmit}
-                            className="inline-flex flex-1 items-center justify-center rounded-xl bg-brandGreen-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:opacity-70"
+                            className="inline-flex flex-1 items-center justify-center rounded-xl bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
                           >
                             Pilih
                           </button>
@@ -640,7 +684,7 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                               });
                             }}
                             disabled={!canSubmit || !hasImage}
-                            className="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-200 bg-red-500 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             Hapus
                           </button>
@@ -657,6 +701,7 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                           type="file"
                           accept="image/*"
                           className="hidden"
+                          aria-label={`Unggah gambar galeri ${index + 1}`}
                           ref={(el) => {
                             galleryInputRefs.current[index] = el;
                           }}
@@ -729,29 +774,29 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
           )}
         </div>
 
-        <div className="space-y-6 lg:col-span-4">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-bold tracking-wide text-slate-400">Properti</p>
+        <div className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:self-start lg:h-fit">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-sky-300 bg-white p-6 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Properti</p>
 
             <div className="mt-5 space-y-4">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Status <span className="text-red-500">*</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Status Publikasi <span className="text-red-500">*</span>
                 </span>
                 <select
                   value={form.status}
                   onChange={(e) => setForm((s) => ({ ...s, status: e.target.value as any }))}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 >
-                  <option value="draft">Segera</option>
+                  <option value="draft">Draf</option>
                   <option value="active">Berjalan</option>
                   <option value="completed">Tersalurkan</option>
                 </select>
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Kategori (Bahasa Indonesia) <span className="text-red-500">*</span>
                 </span>
                 <input
@@ -765,8 +810,8 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                       setForm((s) => ({ ...s, category: match }));
                     }
                   }}
-                  placeholder="Mis. pendidikan"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Contoh: Pendidikan"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
                 <select
@@ -777,10 +822,10 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                     setForm((s) => ({ ...s, category: value }));
                     setCategoryPick("");
                   }}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400 disabled:cursor-not-allowed disabled:opacity-70"
                   disabled={loading || saving || deleting || categoryOptions.length === 0}
                 >
-                  <option value="">Pilih Kategori Yang Sudah Ada</option>
+                  <option value="">Pilih kategori yang sudah ada</option>
                   {categoryOptions.map((opt) => (
                     <option key={opt} value={opt}>
                       {opt}
@@ -790,34 +835,34 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Category (English) <span className="text-slate-400">(Optional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Kategori (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
                 </span>
                 <input
                   value={form.category_en}
                   onChange={(e) => setForm((s) => ({ ...s, category_en: e.target.value }))}
-                  placeholder="e.g. education"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Contoh: education"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Slug
-                  <span className="ml-2 font-normal text-slate-500">(opsional)</span>
+                  <span className="ml-2 normal-case font-semibold tracking-normal text-slate-500">(opsional)</span>
                 </span>
                 <input
                   value={form.slug}
                   onChange={(e) => setForm((s) => ({ ...s, slug: e.target.value }))}
-                  placeholder="contoh: program-beasiswa"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Contoh: program-beasiswa-santri"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Target Donasi (IDR) <span className="text-red-500">*</span>
                 </span>
                 <input
@@ -826,14 +871,14 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                   step={1000}
                   value={form.target_amount}
                   onChange={(e) => setForm((s) => ({ ...s, target_amount: e.target.value }))}
-                  placeholder="Mis. 25000000"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Contoh: 25000000"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Batas Hari <span className="text-slate-400">(opsional)</span>
                 </span>
                 <input
@@ -841,30 +886,30 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                   min={0}
                   value={form.deadline_days}
                   onChange={(e) => setForm((s) => ({ ...s, deadline_days: e.target.value }))}
-                  placeholder="Mis. 30"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Contoh: 30"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
-                <p className="mt-2 text-xs font-semibold text-slate-500">Kosongkan jika program tidak memiliki batas hari.</p>
+                <p className="mt-2 text-xs font-semibold text-slate-500">Kosongkan jika program tidak memiliki batas waktu.</p>
               </label>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Tanggal Program <span className="text-slate-400">(opsional)</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                  Tanggal Publikasi <span className="text-slate-400">(opsional)</span>
                 </span>
                 <input
                   type="date"
                   value={form.published_at}
                   onChange={(e) => setForm((s) => ({ ...s, published_at: e.target.value }))}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
-                <p className="mt-2 text-xs font-semibold text-slate-500">Kosongkan jika belum ingin menampilkan tanggal.</p>
+                <p className="mt-2 text-xs font-semibold text-slate-500">Kosongkan jika jadwal publikasi belum ditentukan.</p>
               </label>
 
               {mode === "edit" && collectedAmount !== null && (
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-[11px] font-bold tracking-wide text-slate-400">Terkumpul</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Terkumpul</p>
                   <p className="mt-1 text-sm font-bold text-slate-900">{formatCurrency(collectedAmount)}</p>
                   <p className="mt-1 text-xs text-slate-500">Nilai ini dihitung dari donasi yang masuk.</p>
                 </div>
@@ -876,16 +921,16 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                 className={[
                   "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-bold shadow-sm transition",
                   form.is_highlight
-                    ? "border-primary-100 bg-primary-50 text-primary-800"
+                    ? "border-brandGreen-200 bg-brandGreen-50 text-brandGreen-800"
                     : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
                 ].join(" ")}
                 disabled={loading || saving || deleting}
               >
-                <span>Highlight di landing</span>
+                <span>Tampilkan di beranda</span>
                 <span
                   className={[
                     "inline-flex h-6 w-11 items-center rounded-full p-1 transition",
-                    form.is_highlight ? "bg-primary-600" : "bg-slate-200",
+                    form.is_highlight ? "bg-brandGreen-600" : "bg-slate-200",
                   ].join(" ")}
                   aria-hidden="true"
                 >
@@ -897,171 +942,172 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                   />
                 </span>
               </button>
-            </div>
-          </div>
+              <div className="pt-6 border-t border-slate-200">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Media</p>
 
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-bold tracking-wide text-slate-400">Media</p>
-
-            <div className="mt-5 space-y-5">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-[11px] font-bold tracking-wide text-slate-400">Thumbnail</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-700">Foto program.</p>
-                    <p className="mt-1 text-xs text-slate-500">jpg/png/webp, max 4MB.</p>
-                  </div>
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200">
-                    <FontAwesomeIcon icon={faImage} />
-                  </span>
-                </div>
-
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => thumbnailInputRef.current?.click()}
-                    disabled={!canSubmit}
-                    className="inline-flex items-center justify-center rounded-2xl bg-white px-4 py-2.5 text-sm font-bold text-slate-800 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    Pilih Foto
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (thumbnailPreviewUrl) URL.revokeObjectURL(thumbnailPreviewUrl);
-                      setThumbnailPreviewUrl(null);
-                      setForm((s) => ({ ...s, thumbnail_path: "" }));
-                      setThumbnailUploadError(null);
-                    }}
-                    disabled={!canSubmit || (!thumbnailPreviewUrl && !form.thumbnail_path)}
-                    className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-red-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    Hapus
-                  </button>
-                  {thumbnailUploading ? (
-                    <span className="text-sm font-semibold text-slate-600">Mengunggah...</span>
-                  ) : form.thumbnail_path ? (
-                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
-                      Tersimpan
-                    </span>
-                  ) : (
-                    <span className="text-sm font-semibold text-slate-600">Belum ada.</span>
-                  )}
-                </div>
-
-                <div className="mt-4 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
-                  {thumbnailPreviewUrl || savedThumbnailUrl ? (
-                    <img
-                      src={thumbnailPreviewUrl ?? savedThumbnailUrl ?? undefined}
-                      alt=""
-                      className="h-40 w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-40 items-center justify-center text-sm font-semibold text-slate-500">
-                      Tidak ada pratinjau.
+                <div className="mt-4 space-y-5">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Gambar Utama</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-700">Gambar utama program.</p>
+                        <p className="mt-1 text-xs text-slate-500">jpg/png/webp, maks. 4MB.</p>
+                      </div>
+                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200">
+                        <FontAwesomeIcon icon={faImage} />
+                      </span>
                     </div>
-                  )}
-                </div>
 
-                {thumbnailUploadError ? (
-                  <p className="mt-3 text-sm font-semibold text-red-700">{thumbnailUploadError}</p>
-                ) : null}
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  ref={thumbnailInputRef}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = "";
-                    if (!file) return;
-                    if (thumbnailPreviewUrl) URL.revokeObjectURL(thumbnailPreviewUrl);
-                    setThumbnailPreviewUrl(URL.createObjectURL(file));
-                    void onUploadThumbnail(file);
-                  }}
-                  disabled={!canSubmit}
-                />
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-[11px] font-bold tracking-wide text-slate-400">Banner</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-700">Foto header program.</p>
-                    <p className="mt-1 text-xs text-slate-500">jpg/png/webp, max 4MB.</p>
-                  </div>
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200">
-                    <FontAwesomeIcon icon={faImage} />
-                  </span>
-                </div>
-
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => bannerInputRef.current?.click()}
-                    disabled={!canSubmit}
-                    className="inline-flex items-center justify-center rounded-2xl bg-white px-4 py-2.5 text-sm font-bold text-slate-800 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    Pilih Foto
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (bannerPreviewUrl) URL.revokeObjectURL(bannerPreviewUrl);
-                      setBannerPreviewUrl(null);
-                      setForm((s) => ({ ...s, banner_path: "" }));
-                      setBannerUploadError(null);
-                    }}
-                    disabled={!canSubmit || (!bannerPreviewUrl && !form.banner_path)}
-                    className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-red-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    Hapus
-                  </button>
-                  {bannerUploading ? (
-                    <span className="text-sm font-semibold text-slate-600">Mengunggah...</span>
-                  ) : form.banner_path ? (
-                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
-                      Tersimpan
-                    </span>
-                  ) : (
-                    <span className="text-sm font-semibold text-slate-600">Belum ada.</span>
-                  )}
-                </div>
-
-                <div className="mt-4 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
-                  {bannerPreviewUrl || savedBannerUrl ? (
-                    <img
-                      src={bannerPreviewUrl ?? savedBannerUrl ?? undefined}
-                      alt=""
-                      className="h-44 w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-44 items-center justify-center text-sm font-semibold text-slate-500">
-                      Tidak ada pratinjau.
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => thumbnailInputRef.current?.click()}
+                        disabled={!canSubmit}
+                        className="inline-flex items-center justify-center rounded-2xl bg-white px-4 py-2.5 text-sm font-bold text-slate-800 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+                      >
+                        Pilih Gambar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (thumbnailPreviewUrl) URL.revokeObjectURL(thumbnailPreviewUrl);
+                          setThumbnailPreviewUrl(null);
+                          setForm((s) => ({ ...s, thumbnail_path: "" }));
+                          setThumbnailUploadError(null);
+                        }}
+                        disabled={!canSubmit || (!thumbnailPreviewUrl && !form.thumbnail_path)}
+                        className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-red-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Hapus
+                      </button>
+                      {thumbnailUploading ? (
+                        <span className="text-sm font-semibold text-slate-600">Mengunggah...</span>
+                      ) : form.thumbnail_path ? (
+                        <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+                          Tersimpan
+                        </span>
+                      ) : (
+                        <span className="text-sm font-semibold text-slate-600">Belum ada.</span>
+                      )}
                     </div>
-                  )}
+
+                    <div className="mt-4 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
+                      {thumbnailPreviewUrl || savedThumbnailUrl ? (
+                        <img
+                          src={thumbnailPreviewUrl ?? savedThumbnailUrl ?? undefined}
+                          alt=""
+                          className="h-40 w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-40 items-center justify-center text-sm font-semibold text-slate-500">
+                          Tidak ada pratinjau.
+                        </div>
+                      )}
+                    </div>
+
+                    {thumbnailUploadError ? (
+                      <p className="mt-3 text-sm font-semibold text-red-700">{thumbnailUploadError}</p>
+                    ) : null}
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      aria-label="Unggah gambar utama"
+                      ref={thumbnailInputRef}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!file) return;
+                        if (thumbnailPreviewUrl) URL.revokeObjectURL(thumbnailPreviewUrl);
+                        setThumbnailPreviewUrl(URL.createObjectURL(file));
+                        void onUploadThumbnail(file);
+                      }}
+                      disabled={!canSubmit}
+                    />
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Gambar Header</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-700">Gambar header program.</p>
+                        <p className="mt-1 text-xs text-slate-500">jpg/png/webp, maks. 4MB.</p>
+                      </div>
+                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200">
+                        <FontAwesomeIcon icon={faImage} />
+                      </span>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => bannerInputRef.current?.click()}
+                        disabled={!canSubmit}
+                        className="inline-flex items-center justify-center rounded-2xl bg-white px-4 py-2.5 text-sm font-bold text-slate-800 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+                      >
+                        Pilih Gambar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (bannerPreviewUrl) URL.revokeObjectURL(bannerPreviewUrl);
+                          setBannerPreviewUrl(null);
+                          setForm((s) => ({ ...s, banner_path: "" }));
+                          setBannerUploadError(null);
+                        }}
+                        disabled={!canSubmit || (!bannerPreviewUrl && !form.banner_path)}
+                        className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-red-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Hapus
+                      </button>
+                      {bannerUploading ? (
+                        <span className="text-sm font-semibold text-slate-600">Mengunggah...</span>
+                      ) : form.banner_path ? (
+                        <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+                          Tersimpan
+                        </span>
+                      ) : (
+                        <span className="text-sm font-semibold text-slate-600">Belum ada.</span>
+                      )}
+                    </div>
+
+                    <div className="mt-4 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
+                      {bannerPreviewUrl || savedBannerUrl ? (
+                        <img
+                          src={bannerPreviewUrl ?? savedBannerUrl ?? undefined}
+                          alt=""
+                          className="h-44 w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-44 items-center justify-center text-sm font-semibold text-slate-500">
+                          Tidak ada pratinjau.
+                        </div>
+                      )}
+                    </div>
+
+                    {bannerUploadError ? (
+                      <p className="mt-3 text-sm font-semibold text-red-700">{bannerUploadError}</p>
+                    ) : null}
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      aria-label="Unggah gambar header"
+                      ref={bannerInputRef}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!file) return;
+                        if (bannerPreviewUrl) URL.revokeObjectURL(bannerPreviewUrl);
+                        setBannerPreviewUrl(URL.createObjectURL(file));
+                        void onUploadBanner(file);
+                      }}
+                      disabled={!canSubmit}
+                    />
+                  </div>
                 </div>
-
-                {bannerUploadError ? (
-                  <p className="mt-3 text-sm font-semibold text-red-700">{bannerUploadError}</p>
-                ) : null}
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  ref={bannerInputRef}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = "";
-                    if (!file) return;
-                    if (bannerPreviewUrl) URL.revokeObjectURL(bannerPreviewUrl);
-                    setBannerPreviewUrl(URL.createObjectURL(file));
-                    void onUploadBanner(file);
-                  }}
-                  disabled={!canSubmit}
-                />
               </div>
             </div>
           </div>
@@ -1072,3 +1118,4 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
 }
 
 export default EditorProgramForm;
+

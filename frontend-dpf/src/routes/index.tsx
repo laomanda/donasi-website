@@ -33,12 +33,10 @@ import { EditorArticleEditPage } from '../pages/management/editor/EditorArticleE
 import { EditorProgramsPage } from '../pages/management/editor/EditorProgramsPage'
 import { EditorProgramCreatePage } from '../pages/management/editor/EditorProgramCreatePage'
 import { EditorProgramEditPage } from '../pages/management/editor/EditorProgramEditPage'
-import { EditorPartnersPage } from '../pages/management/editor/EditorPartnersPage'
-import { EditorPartnerCreatePage } from '../pages/management/editor/EditorPartnerCreatePage'
-import { EditorPartnerEditPage } from '../pages/management/editor/EditorPartnerEditPage'
-import { EditorBannersPage } from '../pages/management/editor/EditorBannersPage'
-import { EditorBannerCreatePage } from '../pages/management/editor/EditorBannerCreatePage'
-import { EditorBannerEditPage } from '../pages/management/editor/EditorBannerEditPage'
+import { BannersPage } from '../pages/management/shared/BannersPage'
+import { BannerFormPage } from '../pages/management/shared/BannerFormPage'
+import { PartnersPage } from '../pages/management/shared/PartnersPage'
+import { PartnerFormPage } from '../pages/management/shared/PartnerFormPage'
 import { EditorOrganizationMembersPage } from '../pages/management/editor/EditorOrganizationMembersPage'
 import { EditorOrganizationMemberCreatePage } from '../pages/management/editor/EditorOrganizationMemberCreatePage'
 import { EditorOrganizationMemberShowPage } from '../pages/management/editor/EditorOrganizationMemberShowPage'
@@ -54,12 +52,6 @@ import { AdminProgramEditPage } from '../pages/management/admin/AdminProgramEdit
 import { AdminArticlesPage } from '../pages/management/admin/AdminArticlesPage'
 import { AdminArticleCreatePage } from '../pages/management/admin/AdminArticleCreatePage'
 import { AdminArticleEditPage } from '../pages/management/admin/AdminArticleEditPage'
-import { AdminPartnersPage } from '../pages/management/admin/AdminPartnersPage'
-import { AdminPartnerCreatePage } from '../pages/management/admin/AdminPartnerCreatePage'
-import { AdminPartnerEditPage } from '../pages/management/admin/AdminPartnerEditPage'
-import { AdminBannersPage } from '../pages/management/admin/AdminBannersPage'
-import { AdminBannerCreatePage } from '../pages/management/admin/AdminBannerCreatePage'
-import { AdminBannerEditPage } from '../pages/management/admin/AdminBannerEditPage'
 import { AdminDonationsPage } from '../pages/management/admin/AdminDonationsPage'
 import { AdminDonationReportPage } from '../pages/management/admin/AdminDonationReportPage'
 import { AdminDonationManualCreatePage } from '../pages/management/admin/AdminDonationManualCreatePage'
@@ -116,12 +108,12 @@ export const router = createBrowserRouter([
           { path: 'programs', element: <EditorProgramsPage /> },
           { path: 'programs/create', element: <EditorProgramCreatePage /> },
           { path: 'programs/:id/edit', element: <EditorProgramEditPage /> },
-          { path: 'partners', element: <EditorPartnersPage /> },
-          { path: 'partners/create', element: <EditorPartnerCreatePage /> },
-          { path: 'partners/:id/edit', element: <EditorPartnerEditPage /> },
-          { path: 'banners', element: <EditorBannersPage /> },
-          { path: 'banners/create', element: <EditorBannerCreatePage /> },
-          { path: 'banners/:id/edit', element: <EditorBannerEditPage /> },
+          { path: 'partners', element: <PartnersPage /> },
+          { path: 'partners/create', element: <PartnerFormPage mode="create" /> },
+          { path: 'partners/:id/edit', element: <PartnerFormPage mode="edit" /> },
+          { path: 'banners', element: <BannersPage /> },
+          { path: 'banners/create', element: <BannerFormPage mode="create" /> },
+          { path: 'banners/:id/edit', element: <BannerFormPage mode="edit" /> },
           { path: 'organization-members', element: <EditorOrganizationMembersPage /> },
           { path: 'organization-members/create', element: <EditorOrganizationMemberCreatePage /> },
           { path: 'organization-members/:id', element: <EditorOrganizationMemberShowPage /> },
@@ -171,16 +163,16 @@ export const router = createBrowserRouter([
           { path: 'articles/:id/edit', element: <AdminArticleEditPage /> },
           {
             path: 'partners',
-            element: <AdminPartnersPage />,
+            element: <PartnersPage />,
           },
-          { path: 'partners/create', element: <AdminPartnerCreatePage /> },
-          { path: 'partners/:id/edit', element: <AdminPartnerEditPage /> },
+          { path: 'partners/create', element: <PartnerFormPage mode="create" /> },
+          { path: 'partners/:id/edit', element: <PartnerFormPage mode="edit" /> },
           {
             path: 'banners',
-            element: <AdminBannersPage />,
+            element: <BannersPage />,
           },
-          { path: 'banners/create', element: <AdminBannerCreatePage /> },
-          { path: 'banners/:id/edit', element: <AdminBannerEditPage /> },
+          { path: 'banners/create', element: <BannerFormPage mode="create" /> },
+          { path: 'banners/:id/edit', element: <BannerFormPage mode="edit" /> },
           {
             path: 'search',
             element: <AdminSearchPage />,
