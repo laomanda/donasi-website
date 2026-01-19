@@ -148,7 +148,7 @@ export function EditorOrganizationMembersPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
@@ -177,7 +177,7 @@ export function EditorOrganizationMembersPage() {
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-5 shadow-sm sm:p-6">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2">
             <label className="block">
@@ -254,7 +254,7 @@ export function EditorOrganizationMembersPage() {
         <div className="rounded-2xl border border-rose-600 bg-rose-500 p-4 text-sm font-semibold text-white">{error}</div>
       ) : null}
 
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-200 bg-white shadow-sm">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-200 bg-white shadow-sm">
         <div className="hidden overflow-x-auto md:block">
           <table className="min-w-full table-fixed text-left">
             <thead className="border-b border-slate-200 bg-slate-100">

@@ -41,17 +41,10 @@ import { EditorOrganizationMembersPage } from '../pages/management/editor/Editor
 import { EditorOrganizationMemberCreatePage } from '../pages/management/editor/EditorOrganizationMemberCreatePage'
 import { EditorOrganizationMemberShowPage } from '../pages/management/editor/EditorOrganizationMemberShowPage'
 import { EditorOrganizationMemberEditPage } from '../pages/management/editor/EditorOrganizationMemberEditPage'
-import { EditorSearchPage } from '../pages/management/editor/EditorSearchPage'
-import { EditorSettingsPage } from '../pages/management/editor/EditorSettingsPage'
+import { SettingsPage } from '../pages/management/SettingsPage'
 import { EditorTasksPage } from '../pages/management/editor/EditorTasksPage'
-import { AdminSettingsPage } from '../pages/management/admin/AdminSettingsPage'
+import { SearchPage } from '../pages/management/shared/SearchPage'
 import { AdminDashboardPage } from '../pages/management/admin/AdminDashboardPage'
-import { AdminProgramsPage } from '../pages/management/admin/AdminProgramsPage'
-import { AdminProgramCreatePage } from '../pages/management/admin/AdminProgramCreatePage'
-import { AdminProgramEditPage } from '../pages/management/admin/AdminProgramEditPage'
-import { AdminArticlesPage } from '../pages/management/admin/AdminArticlesPage'
-import { AdminArticleCreatePage } from '../pages/management/admin/AdminArticleCreatePage'
-import { AdminArticleEditPage } from '../pages/management/admin/AdminArticleEditPage'
 import { AdminDonationsPage } from '../pages/management/admin/AdminDonationsPage'
 import { AdminDonationReportPage } from '../pages/management/admin/AdminDonationReportPage'
 import { AdminDonationManualCreatePage } from '../pages/management/admin/AdminDonationManualCreatePage'
@@ -66,13 +59,10 @@ import { AdminBankAccountCreatePage } from '../pages/management/admin/AdminBankA
 import { AdminBankAccountEditPage } from '../pages/management/admin/AdminBankAccountEditPage'
 import { AdminEditorTasksPage } from '../pages/management/admin/AdminEditorTasksPage'
 import { AdminEditorTaskCreatePage } from '../pages/management/admin/AdminEditorTaskCreatePage'
-import { SuperAdminSettingsPage } from '../pages/management/superadmin/SuperAdminSettingsPage'
 import { SuperAdminUsersPage } from '../pages/management/superadmin/SuperAdminUsersPage'
 import { SuperAdminUserCreatePage } from '../pages/management/superadmin/SuperAdminUserCreatePage'
 import { SuperAdminUserEditPage } from '../pages/management/superadmin/SuperAdminUserEditPage'
-import { AdminSearchPage } from '../pages/management/admin/AdminSearchPage'
 import { SuperAdminDashboardPage } from '../pages/management/superadmin/SuperAdminDashboardPage'
-import { SuperAdminSearchPage } from '../pages/management/superadmin/SuperAdminSearchPage'
 import { SuperAdminDonationReportPage } from '../pages/management/superadmin/SuperAdminDonationReportPage'
 import { SuperAdminEditorTasksPage } from '../pages/management/superadmin/SuperAdminEditorTasksPage'
 import { SuperAdminEditorTaskCreatePage } from '../pages/management/superadmin/SuperAdminEditorTaskCreatePage'
@@ -119,8 +109,8 @@ export const router = createBrowserRouter([
           { path: 'organization-members/:id', element: <EditorOrganizationMemberShowPage /> },
           { path: 'organization-members/:id/edit', element: <EditorOrganizationMemberEditPage /> },
           { path: 'tasks', element: <EditorTasksPage /> },
-          { path: 'search', element: <EditorSearchPage /> },
-          { path: 'settings', element: <EditorSettingsPage /> },
+          { path: 'search', element: <SearchPage role="editor" /> },
+          { path: 'settings', element: <SettingsPage role="editor" /> },
         ],
       },
       {
@@ -149,35 +139,8 @@ export const router = createBrowserRouter([
           { path: 'bank-accounts/:id/edit', element: <AdminBankAccountEditPage /> },
           { path: 'editor-tasks', element: <AdminEditorTasksPage /> },
           { path: 'editor-tasks/create', element: <AdminEditorTaskCreatePage /> },
-          {
-            path: 'programs',
-            element: <AdminProgramsPage />,
-          },
-          { path: 'programs/create', element: <AdminProgramCreatePage /> },
-          { path: 'programs/:id/edit', element: <AdminProgramEditPage /> },
-          {
-            path: 'articles',
-            element: <AdminArticlesPage />,
-          },
-          { path: 'articles/create', element: <AdminArticleCreatePage /> },
-          { path: 'articles/:id/edit', element: <AdminArticleEditPage /> },
-          {
-            path: 'partners',
-            element: <PartnersPage />,
-          },
-          { path: 'partners/create', element: <PartnerFormPage mode="create" /> },
-          { path: 'partners/:id/edit', element: <PartnerFormPage mode="edit" /> },
-          {
-            path: 'banners',
-            element: <BannersPage />,
-          },
-          { path: 'banners/create', element: <BannerFormPage mode="create" /> },
-          { path: 'banners/:id/edit', element: <BannerFormPage mode="edit" /> },
-          {
-            path: 'search',
-            element: <AdminSearchPage />,
-          },
-          { path: 'settings', element: <AdminSettingsPage /> },
+          { path: 'search', element: <SearchPage role="admin" /> },
+          { path: 'settings', element: <SettingsPage role="admin" /> },
         ],
       },
       {
@@ -200,9 +163,9 @@ export const router = createBrowserRouter([
           { path: 'editor-tasks/create', element: <SuperAdminEditorTaskCreatePage /> },
           {
             path: 'search',
-            element: <SuperAdminSearchPage />,
+            element: <SearchPage role="superadmin" />,
           },
-          { path: 'settings', element: <SuperAdminSettingsPage /> },
+          { path: 'settings', element: <SettingsPage role="superadmin" /> },
         ],
       },
       { path: 'error/400', element: <Error400 /> },

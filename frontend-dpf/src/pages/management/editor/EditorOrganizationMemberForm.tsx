@@ -404,7 +404,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
@@ -457,7 +457,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
-          <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Informasi</p>
             <div className="mt-5 grid grid-cols-1 gap-4">
               <label className="block">
@@ -570,7 +570,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Kontak</p>
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <label className="block">
@@ -616,7 +616,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
             </button>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Foto</p>
             <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-start justify-between gap-4">
@@ -748,7 +748,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
         </div>
 
         <div className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:self-start lg:h-fit">
-          <div className="rounded-[28px] border border-slate-200 border-l-4 border-sky-300 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-sky-300 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Properti</p>
 
             <div className="mt-5 space-y-4">

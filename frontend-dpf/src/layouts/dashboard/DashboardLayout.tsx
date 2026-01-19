@@ -144,10 +144,6 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       items: [{ label: "Dashboard", href: "/admin/dashboard", icon: faGaugeHigh }],
     },
     {
-      title: "Konten",
-      items: [{ label: "Banner", href: "/admin/banners", icon: faImage }],
-    },
-    {
       title: "Operasional",
       items: [
         { label: "Donasi", href: "/admin/donations", icon: faReceipt },
@@ -271,6 +267,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = ROLE_THEME[role];
+  const isSearchEnabled = role === "editor" || role === "superadmin" || role === "admin";
   const storedUser = useMemo(() => getAuthUser() as StoredUser | null, []);
   const userRoles = useMemo(() => resolveUserRoles(storedUser), [storedUser]);
   const navSections = useMemo(() => {
@@ -520,6 +517,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
 
   const onSearchSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    if (!isSearchEnabled) return;
     const value = query.trim();
     if (!value) return;
     navigate(`/${role}/search?q=${encodeURIComponent(value)}`);
@@ -581,19 +579,21 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
               </button>
 
               <div className="flex min-w-0 flex-1 items-center gap-3">
-                <form onSubmit={onSearchSubmit} className="min-w-0 flex-1 lg:max-w-md">
-                  <div className="relative">
-                    <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                      <FontAwesomeIcon icon={faMagnifyingGlass} className="text-sm" />
-                    </span>
-                    <input
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Cari Cepat..."
-                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-11 pr-4 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-                    />
-                  </div>
-                </form>
+                {isSearchEnabled ? (
+                  <form onSubmit={onSearchSubmit} className="min-w-0 flex-1 lg:max-w-md">
+                    <div className="relative">
+                      <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                        <FontAwesomeIcon icon={faMagnifyingGlass} className="text-sm" />
+                      </span>
+                      <input
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Cari Cepat..."
+                        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-11 pr-4 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+                      />
+                    </div>
+                  </form>
+                ) : null}
 
                 {showClock ? <WorkClock now={now} className="hidden min-w-0 lg:flex" /> : null}
               </div>

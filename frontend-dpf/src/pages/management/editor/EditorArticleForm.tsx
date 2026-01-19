@@ -498,7 +498,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
@@ -572,7 +572,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
-          <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
             <div className="grid grid-cols-1 gap-4">
               <label className="block">
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
@@ -698,6 +698,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
                 <input
                   type="file"
                   accept="image/*"
+                  aria-label="Unggah gambar konten artikel"
                   className="hidden"
                   ref={contentImageInputRef}
                   onChange={async (e) => {
@@ -815,7 +816,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
         </div>
 
         <div className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:self-start lg:h-fit">
-          <div className="rounded-[28px] border border-slate-200 border-l-4 border-sky-300 bg-white p-6 shadow-sm">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-sky-300 bg-white p-6 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Properti</p>
 
             <div className="mt-5 space-y-4">
@@ -826,6 +827,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
                 <select
                   value={form.status}
                   onChange={(e) => setForm((s) => ({ ...s, status: e.target.value as any }))}
+                  aria-label="Status publikasi"
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 >
@@ -862,6 +864,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
                     setForm((s) => ({ ...s, category: value }));
                     setCategoryPick("");
                   }}
+                  aria-label="Pilih kategori yang sudah ada"
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400 disabled:cursor-not-allowed disabled:opacity-70"
                   disabled={loading || saving || deleting || categoryOptions.length === 0}
                 >
@@ -908,6 +911,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
                 <select
                   value={form.program_id}
                   onChange={(e) => setForm((s) => ({ ...s, program_id: e.target.value }))}
+                  aria-label="Tautkan ke program"
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 >
@@ -943,6 +947,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
                   type="datetime-local"
                   value={form.published_at}
                   onChange={(e) => setForm((s) => ({ ...s, published_at: e.target.value }))}
+                  aria-label="Tanggal publikasi"
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400 disabled:cursor-not-allowed disabled:opacity-70"
                   disabled={loading || saving || deleting || form.status !== "published"}
                 />
@@ -1016,6 +1021,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
                 <input
                   type="file"
                   accept="image/*"
+                  aria-label="Unggah thumbnail artikel"
                   className="hidden"
                   ref={fileInputRef}
                   onChange={(e) => {

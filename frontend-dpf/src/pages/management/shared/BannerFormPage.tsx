@@ -473,7 +473,7 @@ export function BannerFormPage({ mode }: { mode: Mode }) {
         </div>
 
         <div className="space-y-6 lg:col-span-4">
-          <div className="rounded-[28px] border border-slate-200 border-l-4 border-sky-300 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-sky-300 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Properti</p>
 
             <div className="mt-5 space-y-4">

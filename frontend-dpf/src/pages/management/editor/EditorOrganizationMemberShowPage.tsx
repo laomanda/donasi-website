@@ -131,7 +131,7 @@ export function EditorOrganizationMemberShowPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
@@ -187,7 +187,7 @@ export function EditorOrganizationMemberShowPage() {
       ) : member ? (
         <div className="grid gap-6 lg:grid-cols-12">
           <div className="space-y-6 lg:col-span-5">
-            <div className="overflow-hidden rounded-[28px] border border-slate-200 border-l-4 border-emerald-300 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-[28px] border border-slate-200 border-l-4 border-l-emerald-300 bg-white shadow-sm">
               <div className="relative bg-slate-100">
                 <img
                   src={photo}
@@ -238,7 +238,7 @@ export function EditorOrganizationMemberShowPage() {
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-slate-200 border-l-4 border-amber-300 bg-white p-6 shadow-sm">
+            <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-amber-300 bg-white p-6 shadow-sm">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Kontak</p>
               <p className="mt-2 text-sm font-semibold text-slate-600">Akses internal. Bisa ditampilkan ke publik sesuai pengaturan.</p>
               <div className="mt-5 space-y-3">
@@ -295,7 +295,7 @@ export function EditorOrganizationMemberShowPage() {
           </div>
 
           <div className="space-y-6 lg:col-span-7 lg:sticky lg:top-24 lg:self-start lg:h-fit">
-            <div className="rounded-[28px] border border-slate-200 border-l-4 border-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
+            <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Profil</p>
               <h2 className="mt-3 font-heading text-2xl font-semibold text-slate-900">Data anggota</h2>
               <p className="mt-2 text-sm font-semibold text-slate-600">Ringkasan detail anggota struktur untuk kebutuhan publik dan internal.</p>
@@ -329,7 +329,7 @@ export function EditorOrganizationMemberShowPage() {
               ) : null}
             </div>
 
-            <div className="rounded-[28px] border border-slate-200 border-l-4 border-sky-300 bg-white p-6 shadow-sm">
+            <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-sky-300 bg-white p-6 shadow-sm">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Metadata</p>
               <p className="mt-2 text-sm font-semibold text-slate-600">Informasi sistem untuk audit dan jejak perubahan.</p>
               <div className="mt-5 space-y-3">
