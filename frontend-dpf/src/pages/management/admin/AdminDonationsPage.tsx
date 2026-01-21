@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
   faArrowRight,
-  faCalendarDays,
   faFilter,
   faMagnifyingGlass,
   faPlus,
@@ -72,11 +71,11 @@ const formatDateTime = (value: string | null | undefined) => {
 
 const getStatusTone = (status: DonationStatus) => {
   const s = String(status ?? "").toLowerCase();
-  if (s === "paid") return "bg-emerald-50 text-emerald-700 ring-emerald-100";
-  if (s === "pending") return "bg-amber-50 text-amber-700 ring-amber-100";
-  if (s === "failed" || s === "cancelled") return "bg-red-50 text-red-700 ring-red-100";
-  if (s === "expired") return "bg-slate-100 text-slate-700 ring-slate-200";
-  return "bg-slate-100 text-slate-700 ring-slate-200";
+  if (s === "paid") return "bg-emerald-600 text-white shadow-md shadow-emerald-600/20";
+  if (s === "pending") return "bg-amber-500 text-white shadow-md shadow-amber-500/20";
+  if (s === "failed" || s === "cancelled") return "bg-rose-600 text-white shadow-md shadow-rose-600/20";
+  if (s === "expired") return "bg-slate-600 text-white shadow-md shadow-slate-600/20";
+  return "bg-slate-600 text-white shadow-md shadow-slate-600/20";
 };
 
 const getStatusLabel = (status: DonationStatus) => {
@@ -191,11 +190,10 @@ export function AdminDonationsPage() {
     }
   };
 
+  // Effect: Real-time filtering with debounce
   useEffect(() => {
     void fetchPrograms();
-    void fetchDonations(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [perPage]);
+  }, []);
 
   useEffect(() => {
     selection.keepOnly(pageIds);
@@ -209,7 +207,14 @@ export function AdminDonationsPage() {
     return `Menampilkan ${start}-${end} dari ${total}.`;
   }, [page, perPage, total]);
 
-  const onApplyFilters = () => void fetchDonations(1);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void fetchDonations(1);
+    }, 500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, status, paymentSource, programId, dateFrom, dateTo, perPage]);
+
   const onResetFilters = () => {
     setQ("");
     setStatus("");
@@ -217,7 +222,7 @@ export function AdminDonationsPage() {
     setProgramId("");
     setDateFrom("");
     setDateTo("");
-    void fetchDonations(1, { q: "", status: "", paymentSource: "", programId: "", dateFrom: "", dateTo: "" });
+    // The effect will trigger the fetch
   };
 
   const openDonation = (id: number) => navigate(`/admin/donations/${id}`);
@@ -239,6 +244,7 @@ export function AdminDonationsPage() {
       }
 
       await fetchDonations(1);
+      window.dispatchEvent(new Event("refresh-badges"));
     } finally {
       setBulkDeleting(false);
     }
@@ -246,173 +252,174 @@ export function AdminDonationsPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+      {/* Header Section - Solid & Professional */}
+      <div className="relative overflow-hidden rounded-[28px] bg-emerald-600 p-8 shadow-lg md:p-10">
+        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-700 ring-1 ring-primary-100">
-              <span className="h-2 w-2 rounded-full bg-primary-600" />
+            <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
+              <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
               Operasional
             </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Donasi</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Kelola transaksi donasi, verifikasi status, dan input donasi manual.
+            <h1 className="mt-3 font-heading text-3xl font-bold text-white sm:text-4xl text-shadow-sm">
+              Donasi Masuk
+            </h1>
+            <p className="mt-2 max-w-2xl text-emerald-100 font-medium text-lg">
+              Kelola seluruh transaksi donasi, verifikasi pembayaran, dan pantau arus dana masuk secara real-time.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={() => navigate("/admin/donations/manual")}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-700"
+              className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-emerald-700 shadow-md transition-all hover:bg-emerald-50 hover:scale-105 active:scale-95"
             >
-              <FontAwesomeIcon icon={faPlus} />
-              Donasi manual
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition group-hover:bg-emerald-200">
+                <FontAwesomeIcon icon={faPlus} className="text-xs" />
+              </span>
+              Input Manual
             </button>
           </div>
         </div>
+
+        {/* Abstract Background Decoration */}
+        <div className="absolute -right-12 -top-12 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div className="absolute -bottom-12 -left-12 h-64 w-64 rounded-full bg-emerald-400/20 blur-3xl" />
       </div>
 
-      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Filters Section */}
+      <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
+          <h3 className="font-heading text-lg font-bold text-slate-800">
+            <FontAwesomeIcon icon={faFilter} className="mr-2 text-emerald-500" />
+            Filter & Pencarian
+          </h3>
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={onResetFilters}
+              className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline"
+            >
+              Reset Filter
+            </button>
+          )}
+        </div>
+
+        <div className="grid gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Cari</span>
-              <div className="relative mt-2">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                  <FontAwesomeIcon icon={faMagnifyingGlass} className="text-sm" />
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Pencarian</span>
+              <div className="relative mt-2 group">
+                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
+                  <FontAwesomeIcon icon={faMagnifyingGlass} />
                 </span>
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Kode donasi atau nama donatur..."
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  placeholder="Kode / Donatur..."
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
                 />
               </div>
             </label>
 
             <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Status</span>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-              >
-                <option value="">Semua status</option>
-                <option value="pending">Menunggu</option>
-                <option value="paid">Lunas</option>
-                <option value="failed">Gagal</option>
-                <option value="expired">Kedaluwarsa</option>
-                <option value="cancelled">Dibatalkan</option>
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Sumber pembayaran</span>
-              <select
-                value={paymentSource}
-                onChange={(e) => setPaymentSource(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-              >
-                <option value="">Semua</option>
-                <option value="midtrans">Midtrans</option>
-                <option value="manual">Manual</option>
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Program</span>
-              <select
-                value={programId}
-                onChange={(e) => setProgramId(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                disabled={programLoading}
-              >
-                <option value="">{programLoading ? "Memuat..." : "Semua program"}</option>
-                {programOptions.map((p) => (
-                  <option key={p.id} value={String(p.id)}>
-                    {p.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Tanggal (dari)</span>
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Status</span>
               <div className="relative mt-2">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                  <FontAwesomeIcon icon={faCalendarDays} className="text-sm" />
-                </span>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                />
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                >
+                  <option value="">Semua Status</option>
+                  <option value="pending">Menunggu</option>
+                  <option value="paid">Lunas</option>
+                  <option value="failed">Gagal</option>
+                  <option value="expired">Kedaluwarsa</option>
+                  <option value="cancelled">Dibatalkan</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
+                </div>
               </div>
             </label>
 
             <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Tanggal (sampai)</span>
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Sumber</span>
               <div className="relative mt-2">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                  <FontAwesomeIcon icon={faCalendarDays} className="text-sm" />
-                </span>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                />
+                <select
+                  value={paymentSource}
+                  onChange={(e) => setPaymentSource(e.target.value)}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                >
+                  <option value="">Semua Sumber</option>
+                  <option value="midtrans">Midtrans (Otomatis)</option>
+                  <option value="manual">Manual (Transfer)</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
+                </div>
+              </div>
+            </label>
+
+            <label className="block">
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Program</span>
+              <div className="relative mt-2">
+                <select
+                  value={programId}
+                  onChange={(e) => setProgramId(e.target.value)}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                  disabled={programLoading}
+                >
+                  <option value="">{programLoading ? "Memuat..." : "Semua Program"}</option>
+                  {programOptions.map((p) => (
+                    <option key={p.id} value={String(p.id)}>{p.title}</option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
+                </div>
               </div>
             </label>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
-              <span className="text-slate-400">
-                <FontAwesomeIcon icon={faFilter} />
-              </span>
-              <span>Per halaman</span>
-              <select
-                value={perPage}
-                onChange={(e) => setPerPage(Number(e.target.value))}
-                className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1 text-sm font-bold text-slate-700 focus:outline-none"
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={30}>30</option>
-                <option value={50}>50</option>
-              </select>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 items-end">
+            <label className="block">
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Dari Tanggal</span>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Sampai Tanggal</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+              />
             </label>
 
-            <button
-              type="button"
-              onClick={onApplyFilters}
-              className="inline-flex items-center justify-center rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700"
-            >
-              Terapkan
-            </button>
-
-            {hasFilters && (
-              <button
-                type="button"
-                onClick={onResetFilters}
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-              >
-                Atur ulang
-              </button>
-            )}
+            <div className="flex flex-wrap items-center gap-3">
+              {hasFilters && (
+                <button
+                  type="button"
+                  onClick={onResetFilters}
+                  className="flex-1 rounded-xl bg-rose-50 px-6 py-3 text-sm font-bold text-rose-600 shadow-sm ring-1 ring-inset ring-rose-100 transition hover:bg-rose-100"
+                >
+                  Reset Filter
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold text-slate-600">{pageLabel}</p>
-          <p className="text-xs font-semibold text-slate-500">Klik baris untuk melihat detail.</p>
         </div>
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">
+        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold text-red-700 flex items-center gap-3">
+          <div className="h-2 w-2 rounded-full bg-red-500" />
           {error}
         </div>
       )}
@@ -426,73 +433,49 @@ export function AdminDonationsPage() {
         disabled={loading || bulkDeleting}
       />
 
-      <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
         <div className="hidden overflow-x-auto md:block">
           <table className="min-w-full table-fixed">
-            <thead className="border-b border-primary-100 bg-primary-50">
+            <thead className="bg-slate-50">
               <tr>
-                <th className="w-[6%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[6%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   <input
                     type="checkbox"
                     checked={pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id))}
                     onChange={() => selection.toggleAll(pageIds)}
-                    aria-label="Pilih semua donasi di halaman"
-                    className="h-4 w-4"
+                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
                 </th>
-                <th className="w-[18%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Kode
-                </th>
-                <th className="w-[22%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Donatur
-                </th>
-                <th className="w-[26%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Program
-                </th>
-                <th className="w-[14%] px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Nominal
-                </th>
-                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Status
-                </th>
-                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Waktu
-                </th>
+                <th className="w-[18%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Kode</th>
+                <th className="w-[20%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Donatur</th>
+                <th className="w-[30%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Program</th>
+                <th className="w-[14%] px-6 py-5 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Nominal</th>
+                <th className="w-[12%] px-6 py-5 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
-                Array.from({ length: 8 }).map((_, i) => (
+                Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-4 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-32 rounded bg-slate-100" />
-                      <div className="mt-2 h-3 w-24 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-44 rounded bg-slate-100" />
-                      <div className="mt-2 h-3 w-36 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-56 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="ml-auto h-4 w-28 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-6 w-24 rounded-full bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-28 rounded bg-slate-100" />
+                    <td colSpan={6} className="px-6 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-full bg-slate-100" />
+                        <div className="space-y-2 flex-1">
+                          <div className="h-4 w-1/4 rounded bg-slate-100" />
+                          <div className="h-3 w-1/3 rounded bg-slate-100" />
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
-                    Belum ada donasi yang cocok.
+                  <td colSpan={6} className="px-6 py-20 text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                      <FontAwesomeIcon icon={faReceipt} className="text-2xl" />
+                    </div>
+                    <h3 className="mt-4 text-lg font-bold text-slate-900">Belum ada donasi</h3>
+                    <p className="text-slate-500">Coba sesuaikan filter pencarian Anda.</p>
                   </td>
                 </tr>
               ) : (
@@ -502,11 +485,18 @@ export function AdminDonationsPage() {
                   const programTitle = String(donation.program?.title ?? "").trim() || "Tanpa program";
                   const statusValue = String(donation.status ?? "").trim();
                   const source = normalizeSourceLabel(donation.payment_source);
-                  const when = donation.paid_at ?? donation.created_at;
+                  const tone = getStatusTone(statusValue);
+
+                  // Color bar logic
+                  let barColor = "border-l-slate-200";
+                  if (statusValue === "paid") barColor = "border-l-emerald-500";
+                  else if (statusValue === "pending") barColor = "border-l-amber-500";
+                  else if (statusValue === "failed" || statusValue === "cancelled") barColor = "border-l-rose-500";
+
                   return (
                     <tr
                       key={donation.id}
-                      className="cursor-pointer transition hover:bg-slate-50"
+                      className={`group cursor-pointer transition hover:bg-slate-50 border-l-4 ${barColor}`}
                       onClick={() => openDonation(donation.id)}
                     >
                       <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
@@ -514,42 +504,32 @@ export function AdminDonationsPage() {
                           type="checkbox"
                           checked={selection.isSelected(donation.id)}
                           onChange={() => selection.toggle(donation.id)}
-                          aria-label={`Pilih donasi ${code}`}
-                          className="h-4 w-4"
+                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                         />
                       </td>
                       <td className="px-6 py-5">
-                        <p className="text-sm font-bold text-slate-900">{code}</p>
-                        <p className="mt-1 text-xs font-semibold text-slate-500">{source}</p>
+                        <p className="font-mono text-sm font-bold text-slate-700 group-hover:text-emerald-700 transition">{code}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="inline-flex items-center rounded bg-slate-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white shadow-sm">
+                            {source}
+                          </span>
+                          <span className="text-[10px] font-medium text-slate-400">{formatDateTime(donation.created_at)}</span>
+                        </div>
                       </td>
                       <td className="px-6 py-5">
-                        <p className="text-sm font-semibold text-slate-900">{donor}</p>
-                        <p className="mt-1 text-xs font-semibold text-slate-500">
-                          {donation.payment_method ? String(donation.payment_method) : "-"}
-                        </p>
+                        <p className="text-sm font-bold text-slate-900">{donor}</p>
                       </td>
                       <td className="px-6 py-5">
-                        <p className="line-clamp-1 text-sm font-semibold text-slate-900">{programTitle}</p>
-                        {donation.program?.id ? (
-                          <p className="mt-1 text-xs font-semibold text-slate-500">ID program: {donation.program.id}</p>
-                        ) : (
-                          <p className="mt-1 text-xs font-semibold text-slate-500">â€”</p>
-                        )}
+                        <p className="line-clamp-1 text-sm font-medium text-slate-600">{programTitle}</p>
                       </td>
-                      <td className="px-6 py-5 text-right text-sm font-bold text-slate-900">
-                        {formatCurrency(donation.amount)}
+                      <td className="px-6 py-5 text-right">
+                        <p className="text-sm font-bold text-slate-900">{formatCurrency(donation.amount)}</p>
                       </td>
-                      <td className="px-6 py-5">
-                        <span
-                          className={[
-                            "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1",
-                            getStatusTone(statusValue),
-                          ].join(" ")}
-                        >
+                      <td className="px-6 py-5 text-center">
+                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${tone}`}>
                           {getStatusLabel(statusValue)}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-600">{formatDateTime(when)}</td>
                     </tr>
                   );
                 })
@@ -558,105 +538,70 @@ export function AdminDonationsPage() {
           </table>
         </div>
 
+        {/* Mobile View */}
         <div className="divide-y divide-slate-100 md:hidden">
           {loading ? (
-            Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="p-5 animate-pulse">
-                <div className="h-4 w-2/3 rounded bg-slate-100" />
-                <div className="mt-3 h-3 w-1/2 rounded bg-slate-100" />
-                <div className="mt-4 h-6 w-28 rounded-full bg-slate-100" />
-              </div>
-            ))
+            <div className="p-6 text-center text-slate-400">Loading...</div>
           ) : items.length === 0 ? (
-            <div className="p-6 text-center text-sm font-semibold text-slate-500">Belum ada donasi yang cocok.</div>
+            <div className="p-6 text-center text-slate-500">Tidak ada data.</div>
           ) : (
-            items.map((donation) => {
-              const code = String(donation.donation_code ?? "").trim() || `#${donation.id}`;
-              const donor = String(donation.donor_name ?? "").trim() || "Anonim";
-              const programTitle = String(donation.program?.title ?? "").trim() || "Tanpa program";
+            items.map(donation => {
               const statusValue = String(donation.status ?? "").trim();
-              const when = donation.paid_at ?? donation.created_at;
+              let barColor = "border-l-slate-200";
+              if (statusValue === "paid") barColor = "border-l-emerald-500";
+              else if (statusValue === "pending") barColor = "border-l-amber-500";
+              else if (statusValue === "failed" || statusValue === "cancelled") barColor = "border-l-rose-500";
+
               return (
                 <button
                   key={donation.id}
                   type="button"
                   onClick={() => openDonation(donation.id)}
-                  className="w-full p-5 text-left transition hover:bg-slate-50"
+                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor}`}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-start gap-3">
-                        <span onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={selection.isSelected(donation.id)}
-                            onChange={() => selection.toggle(donation.id)}
-                            aria-label={`Pilih donasi ${code}`}
-                            className="mt-1 h-4 w-4"
-                          />
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-slate-900">{code}</p>
-                          <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">{donor}</p>
-                        </div>
-                      </div>
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <p className="text-xs font-bold font-mono text-slate-400">{String(donation.donation_code ?? "-")}</p>
+                      <p className="font-bold text-slate-900 text-base">{formatCurrency(donation.amount)}</p>
                     </div>
-                    <span
-                      className={[
-                        "inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-semibold ring-1",
-                        getStatusTone(statusValue),
-                      ].join(" ")}
-                    >
+                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(statusValue)}`}>
                       {getStatusLabel(statusValue)}
                     </span>
                   </div>
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs font-semibold text-slate-500">Program</span>
-                      <span className="line-clamp-1 text-sm font-semibold text-slate-900">{programTitle}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs font-semibold text-slate-500">Nominal</span>
-                      <span className="text-sm font-bold text-slate-900">{formatCurrency(donation.amount)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs font-semibold text-slate-500">Waktu</span>
-                      <span className="text-sm font-semibold text-slate-700">{formatDateTime(when)}</span>
-                    </div>
+                  <p className="text-sm font-semibold text-slate-700 mb-1">{String(donation.donor_name ?? "Anonim")}</p>
+                  <p className="text-xs text-slate-500 line-clamp-1 mb-3">{String(donation.program?.title ?? "Tanpa program")}</p>
+
+                  <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                    <span className="text-xs font-bold uppercase text-slate-400 tracking-wider text-[10px]">{normalizeSourceLabel(donation.payment_source)}</span>
+                    <span className="text-xs font-medium text-slate-500">{formatDateTime(donation.created_at)}</span>
                   </div>
                 </button>
-              );
+              )
             })
           )}
         </div>
-      </div>
 
-      <div className="flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-primary-100 bg-primary-50 text-primary-700">
-            <FontAwesomeIcon icon={faReceipt} />
-          </span>
-          {pageLabel}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => void fetchDonations(Math.max(1, page - 1))}
-            disabled={page <= 1 || loading}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} />
-            Sebelumnya
-          </button>
-          <button
-            type="button"
-            onClick={() => void fetchDonations(Math.min(lastPage, page + 1))}
-            disabled={page >= lastPage || loading}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-          >
-            Berikutnya
-            <FontAwesomeIcon icon={faArrowRight} />
-          </button>
+        {/* Pagination Footer */}
+        <div className="flex flex-col gap-4 border-t border-slate-100 bg-slate-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{pageLabel}</div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => void fetchDonations(Math.max(1, page - 1))}
+              disabled={page <= 1 || loading}
+              className="h-10 w-10 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
+            >
+              <FontAwesomeIcon icon={faArrowLeft} />
+            </button>
+            <button
+              type="button"
+              onClick={() => void fetchDonations(Math.min(lastPage, page + 1))}
+              disabled={page >= lastPage || loading}
+              className="h-10 w-10 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
+            >
+              <FontAwesomeIcon icon={faArrowRight} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

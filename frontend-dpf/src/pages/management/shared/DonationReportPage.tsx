@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCalendarDays,
   faFilter,
   faMagnifyingGlass,
   faReceipt,
   faFileArrowDown,
+  faCoins,
+  faHandHoldingDollar,
+  faCreditCard,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
@@ -47,7 +50,7 @@ type ReportPayload = {
 };
 
 type DonationReportPageProps = {
-  role: "admin" | "superadmin";
+  role?: "admin" | "superadmin";
 };
 
 const formatCurrency = (value: number | string | null | undefined) => {
@@ -100,8 +103,12 @@ const normalizeSourceLabel = (value: string | null | undefined) => {
   return value ?? "-";
 };
 
-export function DonationReportPage({ role }: DonationReportPageProps) {
+export function DonationReportPage({ role: propRole }: DonationReportPageProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
+
+  const role = propRole || (location.pathname.startsWith("/superadmin") ? "superadmin" : "admin");
   const apiBase = role === "superadmin" ? "/superadmin" : "/admin";
 
   const [items, setItems] = useState<Donation[]>([]);
@@ -170,9 +177,13 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
   };
 
   useEffect(() => {
-    void fetchReports(1);
+    const handler = setTimeout(() => {
+      void fetchReports(1);
+    }, 400);
+
+    return () => clearTimeout(handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [perPage]);
+  }, [q, status, paymentSource, dateFrom, dateTo, perPage]);
 
   const pageLabel = useMemo(() => {
     if (!total) return "Tidak ada data.";
@@ -181,14 +192,12 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
     return `Menampilkan ${start}-${end} dari ${total}.`;
   }, [page, perPage, total]);
 
-  const onApplyFilters = () => void fetchReports(1);
   const onResetFilters = () => {
     setQ("");
     setStatus("");
     setPaymentSource("");
     setDateFrom("");
     setDateTo("");
-    void fetchReports(1, { q: "", status: "", paymentSource: "", dateFrom: "", dateTo: "" });
   };
 
   const downloadFile = (data: Blob, filename: string) => {
@@ -224,240 +233,295 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
     }
   };
 
-  const badgeClass = "bg-slate-900 text-white ring-slate-800/80";
-
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] ring-1 ${badgeClass}`}>
-              <span className="h-2 w-2 rounded-full bg-brandGreen-400" />
-              Laporan
-            </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">
-              Laporan Donasi
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Ringkasan dan daftar donasi berdasarkan rentang waktu serta sumber pembayaran.
-            </p>
-          </div>
+    <div className="mx-auto w-full max-w-7xl space-y-8 pb-10">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
+        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
+        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => void exportReport("pdf")}
-              disabled={exporting}
-              className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
-            >
-              <FontAwesomeIcon icon={faFileArrowDown} />
-              Export PDF
-            </button>
-            <button
-              type="button"
-              onClick={() => void exportReport("xlsx")}
-              disabled={exporting}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-            >
-              <FontAwesomeIcon icon={faFileArrowDown} />
-              Export Excel
-            </button>
+        <div className="relative z-10 p-8 md:p-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-4">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
+                  <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
+                  Laporan
+                </span>
+                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
+                  Laporan Donasi
+                </h1>
+                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
+                  Ringkasan dan daftar donasi berdasarkan rentang waktu serta sumber pembayaran.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void exportReport("pdf")}
+                disabled={exporting}
+                className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-white/20 backdrop-blur-sm ring-1 ring-white/20 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+              >
+                <FontAwesomeIcon icon={faFileArrowDown} />
+                Export PDF
+              </button>
+              <button
+                type="button"
+                onClick={() => void exportReport("xlsx")}
+                disabled={exporting}
+                className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-white/20 backdrop-blur-sm ring-1 ring-white/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+              >
+                <FontAwesomeIcon icon={faFileArrowDown} />
+                Export Excel
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white">
-              <FontAwesomeIcon icon={faReceipt} />
-            </span>
+      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Total Donasi Card */}
+        <div className="relative overflow-hidden rounded-[28px] border border-emerald-600 bg-emerald-600 p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+          <div className="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
+          <div className="relative flex flex-col h-full justify-between z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-white shadow-sm ring-1 ring-white/30 backdrop-blur-md">
+                <FontAwesomeIcon icon={faReceipt} className="text-xl" />
+              </div>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-100">Total Transaksi</span>
+            </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Total Donasi</p>
-              <p className="mt-1 text-lg font-bold text-slate-900">
+              <p className="text-3xl font-heading font-bold text-white tracking-tight">
                 {loading ? "-" : formatCount(summary?.total_count)}
+              </p>
+              <p className="text-xs font-bold text-emerald-100 mt-1">Semua donasi berhasil</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Nominal Card */}
+        <div className="relative overflow-hidden rounded-[28px] border border-brandBlueTeal-500 bg-brandBlueTeal-500 p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+          <div className="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
+          <div className="relative flex flex-col h-full justify-between z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-white shadow-sm ring-1 ring-white/30 backdrop-blur-md">
+                <FontAwesomeIcon icon={faCoins} className="text-xl" />
+              </div>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-brandBlueTeal-100">Total Nominal</span>
+            </div>
+            <div>
+              <p className="text-3xl font-heading font-bold text-white tracking-tight">
+                {loading ? "-" : formatCurrency(summary?.total_amount ?? 0)}
+              </p>
+              <p className="text-xs font-bold text-brandBlueTeal-100 mt-1">Akumulasi dana terkumpul</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Manual Card */}
+        <div className="relative overflow-hidden rounded-[28px] border border-brandWarmOrange-500 bg-brandWarmOrange-500 p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+          <div className="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
+          <div className="relative flex flex-col h-full justify-between z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-white shadow-sm ring-1 ring-white/30 backdrop-blur-md">
+                <FontAwesomeIcon icon={faHandHoldingDollar} className="text-xl" />
+              </div>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-brandWarmOrange-100">Manual (Transfer)</span>
+            </div>
+            <div>
+              <p className="text-2xl font-heading font-bold text-white tracking-tight">
+                {loading ? "-" : formatCurrency(summary?.manual_amount ?? 0)}
+              </p>
+              <p className="text-xs font-bold text-brandWarmOrange-100 mt-1">
+                {loading ? "-" : `${formatCount(summary?.manual_count)} transaksi`}
               </p>
             </div>
           </div>
         </div>
-        <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Total Nominal</p>
-          <p className="mt-2 text-lg font-bold text-slate-900">
-            {loading ? "-" : formatCurrency(summary?.total_amount ?? 0)}
-          </p>
-        </div>
-        <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Manual</p>
-          <p className="mt-2 text-lg font-bold text-slate-900">
-            {loading ? "-" : formatCurrency(summary?.manual_amount ?? 0)}
-          </p>
-          <p className="mt-1 text-xs font-semibold text-slate-500">
-            {loading ? "-" : `${formatCount(summary?.manual_count)} transaksi`}
-          </p>
-        </div>
-        <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Midtrans</p>
-          <p className="mt-2 text-lg font-bold text-slate-900">
-            {loading ? "-" : formatCurrency(summary?.midtrans_amount ?? 0)}
-          </p>
-          <p className="mt-1 text-xs font-semibold text-slate-500">
-            {loading ? "-" : `${formatCount(summary?.midtrans_count)} transaksi`}
-          </p>
+
+        {/* Midtrans Card */}
+        <div className="relative overflow-hidden rounded-[28px] border border-brandPurple-500 bg-brandPurple-500 p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+          <div className="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
+          <div className="relative flex flex-col h-full justify-between z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-white shadow-sm ring-1 ring-white/30 backdrop-blur-md">
+                <FontAwesomeIcon icon={faCreditCard} className="text-xl" />
+              </div>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-brandPurple-100">Midtrans (Auto)</span>
+            </div>
+            <div>
+              <p className="text-2xl font-heading font-bold text-white tracking-tight">
+                {loading ? "-" : formatCurrency(summary?.midtrans_amount ?? 0)}
+              </p>
+              <p className="text-xs font-bold text-brandPurple-100 mt-1">
+                {loading ? "-" : `${formatCount(summary?.midtrans_count)} transaksi`}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
+          <h3 className="font-heading text-lg font-bold text-slate-800 flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+              <FontAwesomeIcon icon={faFilter} />
+            </div>
+            Filter & Pencarian
+          </h3>
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={onResetFilters}
+              className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline"
+            >
+              Reset Filter
+            </button>
+          )}
+        </div>
+
+        <div className="grid gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Cari</span>
-              <div className="relative mt-2">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                  <FontAwesomeIcon icon={faMagnifyingGlass} className="text-sm" />
+              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Cari</span>
+              <div className="relative mt-2 group">
+                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
+                  <FontAwesomeIcon icon={faMagnifyingGlass} />
                 </span>
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Kode donasi atau nama donatur..."
-                  className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+                  placeholder="Kode / Nama..."
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
                 />
               </div>
             </label>
 
             <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Status</span>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-              >
-                <option value="">Semua status</option>
-                <option value="pending">Menunggu</option>
-                <option value="paid">Lunas</option>
-                <option value="failed">Gagal</option>
-                <option value="expired">Kedaluwarsa</option>
-                <option value="cancelled">Dibatalkan</option>
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Sumber pembayaran</span>
-              <select
-                value={paymentSource}
-                onChange={(e) => setPaymentSource(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-              >
-                <option value="">Semua</option>
-                <option value="midtrans">Midtrans</option>
-                <option value="manual">Manual</option>
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Tanggal (dari)</span>
+              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Status</span>
               <div className="relative mt-2">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                  <FontAwesomeIcon icon={faCalendarDays} className="text-sm" />
-                </span>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-                />
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                >
+                  <option value="">Semua Status</option>
+                  <option value="pending">Menunggu</option>
+                  <option value="paid">Lunas</option>
+                  <option value="failed">Gagal</option>
+                  <option value="expired">Kedaluwarsa</option>
+                  <option value="cancelled">Dibatalkan</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
+                </div>
               </div>
             </label>
 
             <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Tanggal (sampai)</span>
+              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Sumber</span>
               <div className="relative mt-2">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                  <FontAwesomeIcon icon={faCalendarDays} className="text-sm" />
-                </span>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-                />
+                <select
+                  value={paymentSource}
+                  onChange={(e) => setPaymentSource(e.target.value)}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                >
+                  <option value="">Semua Sumber</option>
+                  <option value="midtrans">Midtrans</option>
+                  <option value="manual">Manual</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
+                </div>
               </div>
             </label>
+
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block">
+                <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Dari Tgl</span>
+                <div className="relative mt-2">
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                  />
+                </div>
+              </label>
+              <label className="block">
+                <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Sampai</span>
+                <div className="relative mt-2">
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                  />
+                </div>
+              </label>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
-              <span className="text-slate-400">
-                <FontAwesomeIcon icon={faFilter} />
-              </span>
-              <span>Per halaman</span>
-              <select
-                value={perPage}
-                onChange={(e) => setPerPage(Number(e.target.value))}
-                className="rounded-xl border border-slate-300 bg-white px-2 py-1 text-sm font-bold text-slate-700 focus:outline-none"
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={30}>30</option>
-                <option value={50}>50</option>
-              </select>
-            </label>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-50 pt-6 mt-2">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Tampilkan</span>
+              <div className="relative">
+                <select
+                  value={perPage}
+                  onChange={(e) => setPerPage(Number(e.target.value))}
+                  className="rounded-xl border border-slate-200 bg-slate-50 pl-3 pr-8 py-2 text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 appearance-none"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                  <FontAwesomeIcon icon={faFilter} className="text-[10px]" />
+                </div>
+              </div>
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Data</span>
+            </div>
 
-            <button
-              type="button"
-              onClick={onApplyFilters}
-              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
-            >
-              Terapkan
-            </button>
-
-            {hasFilters && (
-              <button
-                type="button"
-                onClick={onResetFilters}
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-              >
-                Atur ulang
-              </button>
-            )}
+            <div className="flex gap-2 w-full sm:w-auto justify-end">
+              {/* Removed Apply Button for real-time filtering */}
+            </div>
           </div>
-        </div>
-
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold text-slate-600">{pageLabel}</p>
-          <p className="text-xs font-semibold text-slate-500">Gunakan tombol ekspor untuk mengunduh file.</p>
         </div>
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-rose-700 bg-rose-600 p-4 text-sm font-semibold text-white">
+        <div className="rounded-2xl border border-rose-100 bg-rose-50 p-4 text-sm font-semibold text-rose-700 flex items-center gap-3">
+          <div className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
           {error}
         </div>
       )}
 
-      <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
         <div className="hidden overflow-x-auto md:block">
           <table className="min-w-full table-fixed">
-            <thead className="border-b border-slate-800 bg-slate-900">
+            <thead className="bg-slate-50">
               <tr>
-                <th className="w-[16%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
+                <th className="w-[16%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Kode
                 </th>
-                <th className="w-[20%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
+                <th className="w-[20%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Donatur
                 </th>
-                <th className="w-[24%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
+                <th className="w-[24%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Program
                 </th>
-                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
+                <th className="w-[10%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Sumber
                 </th>
-                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
+                <th className="w-[10%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Status
                 </th>
-                <th className="w-[10%] px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
+                <th className="w-[10%] px-6 py-5 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Nominal
                 </th>
-                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-300">
+                <th className="w-[10%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Waktu
                 </th>
               </tr>
@@ -467,25 +531,25 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
                 Array.from({ length: 8 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
                     <td className="px-6 py-5">
-                      <div className="h-4 w-32 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-40 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-52 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
                       <div className="h-4 w-24 rounded bg-slate-100" />
                     </td>
                     <td className="px-6 py-5">
-                      <div className="h-6 w-24 rounded-full bg-slate-100" />
+                      <div className="h-4 w-32 rounded bg-slate-100" />
                     </td>
                     <td className="px-6 py-5">
-                      <div className="ml-auto h-4 w-28 rounded bg-slate-100" />
+                      <div className="h-4 w-48 rounded bg-slate-100" />
                     </td>
                     <td className="px-6 py-5">
-                      <div className="h-4 w-28 rounded bg-slate-100" />
+                      <div className="h-4 w-16 rounded bg-slate-100" />
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="h-6 w-20 rounded-full bg-slate-100" />
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="ml-auto h-4 w-24 rounded bg-slate-100" />
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="h-4 w-24 rounded bg-slate-100" />
                     </td>
                   </tr>
                 ))
@@ -500,44 +564,54 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
                   const code = String(donation.donation_code ?? "").trim() || `#${donation.id}`;
                   const donor = String(donation.donor_name ?? "").trim() || "Anonim";
                   const programTitle = String(donation.program?.title ?? "").trim() || "Tanpa program";
-                  const statusValue = String(donation.status ?? "").trim();
+                  const statusValue = String(donation.status ?? "").trim().toLowerCase();
                   const source = normalizeSourceLabel(donation.payment_source);
                   const when = donation.paid_at ?? donation.created_at;
+
+                  let barColor = "border-l-slate-200";
+                  if (statusValue === "paid") barColor = "border-l-emerald-500";
+                  else if (statusValue === "pending") barColor = "border-l-amber-500";
+                  else if (statusValue === "failed") barColor = "border-l-rose-500";
+                  else if (statusValue === "expired") barColor = "border-l-slate-400";
+
+                  // Determine detail link based on role
+                  const detailLink = role === 'superadmin'
+                    ? `/superadmin/donations/${donation.id}`
+                    : `/admin/donations/${donation.id}`;
+
                   return (
-                    <tr key={donation.id} className="transition hover:bg-slate-100">
+                    <tr
+                      key={donation.id}
+                      className={`cursor-pointer transition hover:bg-slate-50 border-l-4 ${barColor}`}
+                      onClick={() => navigate(detailLink)}
+                    >
                       <td className="px-6 py-5">
-                        <p className="text-sm font-bold text-slate-900">{code}</p>
-                        <p className="mt-1 text-xs font-semibold text-slate-500">{source}</p>
+                        <p className="font-mono text-xs font-bold text-slate-500">{code}</p>
                       </td>
                       <td className="px-6 py-5">
-                        <p className="text-sm font-semibold text-slate-900">{donor}</p>
+                        <p className="text-sm font-bold text-slate-900">{donor}</p>
                         <p className="mt-1 text-xs font-semibold text-slate-500">
                           {donation.payment_method ? String(donation.payment_method) : "-"}
                         </p>
                       </td>
                       <td className="px-6 py-5">
                         <p className="line-clamp-1 text-sm font-semibold text-slate-900">{programTitle}</p>
-                        {donation.program?.id ? (
-                          <p className="mt-1 text-xs font-semibold text-slate-500">ID program: {donation.program.id}</p>
-                        ) : (
-                          <p className="mt-1 text-xs font-semibold text-slate-500">Tanpa program</p>
-                        )}
                       </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-700">{source}</td>
+                      <td className="px-6 py-5 text-sm font-semibold text-slate-600">{source}</td>
                       <td className="px-6 py-5">
                         <span
                           className={[
-                            "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1",
+                            "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold",
                             getStatusTone(statusValue),
                           ].join(" ")}
                         >
                           {getStatusLabel(statusValue)}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-right text-sm font-bold text-slate-900">
+                      <td className="px-6 py-5 text-right font-mono text-sm font-bold text-slate-900 tracking-tight">
                         {formatCurrency(donation.amount)}
                       </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-600">{formatDateTime(when)}</td>
+                      <td className="px-6 py-5 text-sm font-semibold text-slate-500">{formatDateTime(when)}</td>
                     </tr>
                   );
                 })
@@ -562,18 +636,33 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
               const code = String(donation.donation_code ?? "").trim() || `#${donation.id}`;
               const donor = String(donation.donor_name ?? "").trim() || "Anonim";
               const programTitle = String(donation.program?.title ?? "").trim() || "Tanpa program";
-              const statusValue = String(donation.status ?? "").trim();
+              const statusValue = String(donation.status ?? "").trim().toLowerCase();
               const when = donation.paid_at ?? donation.created_at;
+
+              let barColor = "border-l-slate-200";
+              if (statusValue === "paid") barColor = "border-l-emerald-500";
+              else if (statusValue === "pending") barColor = "border-l-amber-500";
+              else if (statusValue === "failed") barColor = "border-l-rose-500";
+              else if (statusValue === "expired") barColor = "border-l-slate-400";
+
+              const detailLink = role === 'superadmin'
+                ? `/superadmin/donations/${donation.id}`
+                : `/admin/donations/${donation.id}`;
+
               return (
-                <div key={donation.id} className="w-full p-5 text-left transition hover:bg-slate-100">
+                <div
+                  key={donation.id}
+                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor}`}
+                  onClick={() => navigate(detailLink)}
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-900">{code}</p>
-                      <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">{donor}</p>
+                      <p className="font-mono text-xs font-bold text-slate-500">{code}</p>
+                      <p className="mt-1 text-sm font-bold text-slate-900">{donor}</p>
                     </div>
                     <span
                       className={[
-                        "inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-semibold ring-1",
+                        "inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-bold",
                         getStatusTone(statusValue),
                       ].join(" ")}
                     >
@@ -581,17 +670,10 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
                     </span>
                   </div>
                   <div className="mt-4 space-y-2">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs font-semibold text-slate-500">Program</span>
-                      <span className="line-clamp-1 text-sm font-semibold text-slate-900">{programTitle}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs font-semibold text-slate-500">Nominal</span>
+                    <p className="line-clamp-1 text-xs font-semibold text-slate-600">{programTitle}</p>
+                    <div className="flex items-center justify-between gap-3 border-t border-slate-50 pt-3">
                       <span className="text-sm font-bold text-slate-900">{formatCurrency(donation.amount)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs font-semibold text-slate-500">Waktu</span>
-                      <span className="text-sm font-semibold text-slate-700">{formatDateTime(when)}</span>
+                      <span className="text-xs font-semibold text-slate-400">{formatDateTime(when)}</span>
                     </div>
                   </div>
                 </div>
@@ -603,7 +685,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
 
       <div className="flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 text-white">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-primary-100 bg-primary-50 text-primary-700">
             <FontAwesomeIcon icon={faReceipt} />
           </span>
           {pageLabel}
@@ -613,7 +695,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
             type="button"
             onClick={() => void fetchReports(Math.max(1, page - 1))}
             disabled={page <= 1 || loading}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
           >
             Sebelumnya
           </button>
@@ -621,7 +703,7 @@ export function DonationReportPage({ role }: DonationReportPageProps) {
             type="button"
             onClick={() => void fetchReports(Math.min(lastPage, page + 1))}
             disabled={page >= lastPage || loading}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
           >
             Berikutnya
           </button>

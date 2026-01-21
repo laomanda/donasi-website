@@ -1,12 +1,9 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faArrowUpRightFromSquare,
   faChartLine,
   faCircleCheck,
-  faCircleInfo,
-  faGears,
-  faRotateRight,
+  faCoins,
   faUserGroup,
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
@@ -17,6 +14,7 @@ import {
   BarElement,
   CategoryScale,
   Chart as ChartJS,
+  Filler,
   Legend,
   LineElement,
   LinearScale,
@@ -25,7 +23,7 @@ import {
 } from "chart.js";
 import { Bar, Doughnut, Line } from "react-chartjs-2";
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Filler);
 
 type SuperAdminStats = {
   users_total?: number;
@@ -57,29 +55,7 @@ type SuperAdminDashboardPayload = {
   top_programs?: TopProgram[];
 };
 
-const BRAND = {
-  brandGreen: {
-    50: "#f3faf3",
-    200: "#bde4bd",
-    400: "#5fab5f",
-    600: "#347334",
-    700: "#295a29",
-    800: "#1f4220",
-  },
-  primary: {
-    50: "#fff7e6",
-    200: "#ffd68a",
-    500: "#ff8a00",
-    700: "#ea580c",
-  },
-  slate: {
-    100: "#f1f5f9",
-    300: "#cbd5e1",
-    500: "#64748b",
-    800: "#1e293b",
-    900: "#0f172a",
-  },
-};
+
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -90,18 +66,7 @@ const formatCurrency = (value: number) =>
 
 const formatCount = (value: number) => new Intl.NumberFormat("id-ID").format(value);
 
-const formatDateTime = (value: string | null | undefined) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-};
+
 
 const normalizeNumber = (value: unknown) => {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
@@ -132,32 +97,34 @@ function StatCard({
   title,
   value,
   icon,
-  tone,
+  gradient,
   loading,
+  valueClassName = "text-3xl md:text-4xl",
 }: {
   title: string;
-  value: string;
+  value: React.ReactNode;
   icon: any;
-  tone: { bg: string; border: string; iconBg: string; iconText: string };
+  gradient: string;
   loading: boolean;
+  valueClassName?: string;
 }) {
   return (
-    <div className={`rounded-[28px] border ${tone.border} ${tone.bg} p-5 shadow-sm`}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 space-y-2">
-          <p className="text-xs font-semibold tracking-wide text-slate-600">{title}</p>
-          <p
-            className={[
-              "font-heading text-2xl font-bold leading-tight tracking-tight sm:text-3xl",
-              "break-words",
-              loading ? "text-slate-300" : "text-slate-900",
-            ].join(" ")}
-          >
-            {value}
-          </p>
+    <div className={`relative overflow-hidden rounded-[32px] ${gradient} p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl`}>
+      <div className="absolute right-0 top-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+      <div className="absolute bottom-0 left-0 -mb-8 -ml-8 h-24 w-24 rounded-full bg-black/5 blur-xl" />
+
+      <div className="relative z-10 flex flex-col justify-between h-full gap-4">
+        <div className="flex items-start justify-between">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-white backdrop-blur-sm shadow-inner ring-1 ring-white/30">
+            <FontAwesomeIcon icon={icon} className="text-xl" />
+          </div>
         </div>
-        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${tone.iconBg}`} aria-hidden="true">
-          <FontAwesomeIcon icon={icon} className={tone.iconText} />
+
+        <div className="space-y-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-white/80">{title}</p>
+          <div className={`font-heading font-bold text-white shadow-sm ${valueClassName}`}>
+            {loading ? <div className="h-8 w-24 animate-pulse rounded-lg bg-white/20" /> : value}
+          </div>
         </div>
       </div>
     </div>
@@ -166,27 +133,25 @@ function StatCard({
 
 function ChartCard({
   title,
+  subtitle,
   children,
   badge,
 }: {
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
   badge?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-xs font-bold tracking-[0.2em] text-slate-400">Analisis</p>
-          <h2 className="mt-2 font-heading text-xl font-semibold text-slate-900">{title}</h2>
+    <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
+        <div>
+          <h2 className="font-heading text-xl font-bold text-slate-900">{title}</h2>
+          {subtitle && <p className="mt-1 text-sm font-medium text-slate-500">{subtitle}</p>}
         </div>
-        {badge ? (
-          <div className="shrink-0">
-            {badge}
-          </div>
-        ) : null}
+        {badge && <div className="shrink-0">{badge}</div>}
       </div>
-      <div className="mt-5 h-64 sm:h-72">{children}</div>
+      <div className="h-72 w-full">{children}</div>
     </div>
   );
 }
@@ -196,7 +161,6 @@ export function SuperAdminDashboardPage() {
   const [data, setData] = useState<SuperAdminDashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
 
   const fetchDashboard = async () => {
     setLoading(true);
@@ -204,7 +168,6 @@ export function SuperAdminDashboardPage() {
     try {
       const res = await http.get<SuperAdminDashboardPayload>("/superadmin/dashboard");
       setData(res.data ?? null);
-      setLastUpdatedAt(new Date());
     } catch {
       setError("Gagal memuat dashboard super admin.");
     } finally {
@@ -237,14 +200,16 @@ export function SuperAdminDashboardPage() {
 
   const usersChartData = useMemo(() => {
     return {
-      labels: ["Aktif", "Nonaktif"],
+      labels: ["  Aktif", "  Nonaktif"],
       datasets: [
         {
           label: "Pengguna",
           data: [stats.usersActive, stats.usersInactive],
-          backgroundColor: [BRAND.brandGreen[700], BRAND.slate[300]],
-          borderColor: [BRAND.brandGreen[700], BRAND.slate[300]],
-          borderWidth: 1,
+          backgroundColor: ["#10B981", "#EF4444"], // Emerald-500 vs Red-500
+          hoverBackgroundColor: ["#059669", "#DC2626"],
+          borderWidth: 0,
+          borderRadius: 20,
+          spacing: 2,
         },
       ],
     };
@@ -257,11 +222,30 @@ export function SuperAdminDashboardPage() {
       plugins: {
         legend: {
           position: "bottom" as const,
-          labels: { boxWidth: 10, boxHeight: 10, color: BRAND.slate[800] },
+          labels: {
+            boxWidth: 8,
+            usePointStyle: true,
+            pointStyle: "circle",
+            padding: 20,
+            font: {
+              family: "'Inter', sans-serif",
+              size: 11,
+              weight: 600
+            },
+            color: "#64748B"
+          },
         },
-        tooltip: { enabled: true },
+        tooltip: {
+          enabled: true,
+          backgroundColor: "rgba(15, 23, 42, 0.9)",
+          padding: 12,
+          cornerRadius: 12,
+          titleFont: { family: "'Inter', sans-serif", size: 13 },
+          bodyFont: { family: "'Inter', sans-serif", size: 12 },
+        },
       },
-      cutout: "68%",
+      cutout: "75%",
+      layout: { padding: 10 },
     };
   }, []);
 
@@ -280,22 +264,37 @@ export function SuperAdminDashboardPage() {
       labels: donationTrendLabels,
       datasets: [
         {
-          label: "Donasi",
+          label: "  Donasi",
           data: paidSeries,
-          borderColor: BRAND.brandGreen[700],
-          backgroundColor: "rgba(41, 90, 41, 0.12)",
-          tension: 0.35,
-          pointRadius: 3,
-          pointBackgroundColor: BRAND.brandGreen[700],
+          borderColor: "#059669", // Emerald-600
+          backgroundColor: (context: any) => {
+            const ctx = context.chart.ctx;
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, "rgba(16, 185, 129, 0.2)"); // Emerald-500
+            gradient.addColorStop(1, "rgba(16, 185, 129, 0)");
+            return gradient;
+          },
+          borderWidth: 3,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: "#ffffff",
+          pointBorderColor: "#059669",
+          pointBorderWidth: 2,
+          pointHoverRadius: 6,
+          pointHoverBorderWidth: 3,
+          fill: true,
         },
         {
-          label: "Program",
+          label: "  Program",
           data: programSeries,
-          borderColor: BRAND.primary[500],
-          backgroundColor: "rgba(255, 138, 0, 0.12)",
-          tension: 0.35,
-          pointRadius: 3,
-          pointBackgroundColor: BRAND.primary[500],
+          borderColor: "#F59E0B", // Amber-500
+          backgroundColor: "transparent",
+          borderWidth: 2,
+          borderDash: [5, 5],
+          tension: 0.4,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointBackgroundColor: "#F59E0B",
         },
       ],
     };
@@ -308,21 +307,50 @@ export function SuperAdminDashboardPage() {
       plugins: {
         legend: {
           position: "bottom" as const,
-          labels: { boxWidth: 10, boxHeight: 10, color: BRAND.slate[800] },
+          labels: {
+            usePointStyle: true,
+            pointStyle: "circle",
+            boxWidth: 8,
+            padding: 20,
+            color: "#64748B",
+            font: { size: 12, weight: 600, family: "'Inter', sans-serif" }
+          },
         },
-        tooltip: { enabled: true },
+        tooltip: {
+          enabled: true,
+          mode: "index",
+          intersect: false,
+          backgroundColor: "rgba(15, 23, 42, 0.95)",
+          titleColor: "#f8fafc",
+          bodyColor: "#f1f5f9",
+          borderColor: "rgba(255,255,255,0.1)",
+          borderWidth: 1,
+          padding: 12,
+          cornerRadius: 12,
+          displayColors: true,
+          boxPadding: 4,
+        },
       },
       scales: {
         x: {
-          ticks: { color: BRAND.slate[500] },
+          ticks: { color: "#94a3b8", font: { size: 11 } },
           grid: { display: false },
         },
         y: {
-          ticks: { color: BRAND.slate[500], precision: 0 },
-          grid: { color: BRAND.slate[100] },
+          ticks: {
+            color: "#94a3b8",
+            font: { size: 10 },
+            callback: (value: any) => value >= 1000 ? `${value / 1000}k` : value,
+          },
+          grid: { color: "#f1f5f9", borderDash: [4, 4], drawBorder: false },
           beginAtZero: true,
         },
       },
+      interaction: {
+        mode: 'nearest' as const,
+        axis: 'x' as const,
+        intersect: false
+      }
     };
   }, []);
 
@@ -335,11 +363,11 @@ export function SuperAdminDashboardPage() {
         {
           label: "Donasi lunas (jumlah)",
           data: values,
-          backgroundColor: BRAND.brandGreen[600],
-          borderColor: BRAND.brandGreen[600],
-          borderWidth: 1,
-          borderRadius: 14,
-          barThickness: 18,
+          backgroundColor: "#34D399", // Emerald-400
+          hoverBackgroundColor: "#10B981", // Emerald-500
+          borderRadius: 8,
+          borderSkipped: false,
+          barThickness: 32,
         },
       ],
     };
@@ -351,222 +379,231 @@ export function SuperAdminDashboardPage() {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { enabled: true },
+        tooltip: {
+          enabled: true,
+          mode: "index",
+          intersect: false,
+          backgroundColor: "rgba(15, 23, 42, 0.95)",
+          titleColor: "#f8fafc",
+          bodyColor: "#f1f5f9",
+          padding: 12,
+          cornerRadius: 12,
+          titleFont: { family: "'Inter', sans-serif", size: 13 },
+          bodyFont: { family: "'Inter', sans-serif", size: 12 },
+          displayColors: false,
+          callbacks: {
+            label: (context: any) => `Jumlah: ${new Intl.NumberFormat("id-ID").format(context.raw)}`
+          }
+        },
       },
       scales: {
         x: {
-          ticks: { color: BRAND.slate[500], maxRotation: 0, autoSkip: true },
+          ticks: {
+            color: "#94a3b8",
+            font: { size: 11, family: "'Inter', sans-serif" },
+            maxRotation: 0,
+            autoSkip: true
+          },
           grid: { display: false },
+          border: { display: false }
         },
         y: {
-          ticks: { color: BRAND.slate[500], precision: 0 },
-          grid: { color: BRAND.slate[100] },
+          ticks: {
+            color: "#94a3b8",
+            font: { size: 10, family: "'Inter', sans-serif" },
+            callback: (value: any) => value >= 1000 ? `${value / 1000}k` : value,
+          },
+          grid: { color: "#f1f5f9", borderDash: [4, 4], drawBorder: false },
+          border: { display: false },
           beginAtZero: true,
         },
       },
+      layout: { padding: { top: 20 } }
     };
   }, []);
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6">
-      <section className="rounded-[28px] border border-brandGreen-100 bg-white p-6 shadow-sm sm:p-8">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-          <div className="space-y-3">
-            <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-[11px] font-bold tracking-[0.2em] text-brandGreen-700 ring-1 ring-brandGreen-100">
-              Pusat kendali
-            </span>
-            <div className="space-y-2">
-              <h1 className="font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">
-                Dashboard Super Admin
-              </h1>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
-                <span className="h-2 w-2 rounded-full bg-brandGreen-600" />
-                {lastUpdatedAt ? `Pembaruan terakhir: ${formatDateTime(lastUpdatedAt.toISOString())}` : "Pembaruan terakhir: -"}
-              </span>
-            </div>
-          </div>
+    <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 pb-10">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
+        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
+        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
 
-          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-            <button
-              type="button"
-              onClick={() => void fetchDashboard()}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-              disabled={loading}
-            >
-              <FontAwesomeIcon icon={faRotateRight} />
-              Muat ulang
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/superadmin/users")}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brandGreen-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-800"
-            >
-              <FontAwesomeIcon icon={faUserGroup} />
-              Kelola pengguna
-              <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-xs opacity-90" />
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/superadmin/settings")}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-brandGreen-100 bg-brandGreen-50 px-5 py-3 text-sm font-bold text-brandGreen-800 shadow-sm transition hover:bg-brandGreen-100"
-            >
-              <FontAwesomeIcon icon={faGears} />
-              Pengaturan
-            </button>
+        <div className="relative z-10 p-8 md:p-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-4">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
+                  <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
+                  Pusat Kendali
+                </span>
+                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
+                  Dashboard Super Admin
+                </h1>
+                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
+                  Pantau metrik utama, kelola pengguna sistem, dan analisis performa platform secara real-time.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => navigate("/superadmin/users")}
+                className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3 text-sm font-bold text-emerald-700 shadow-lg shadow-emerald-900/10 transition-all hover:bg-emerald-50 hover:scale-105 active:scale-95"
+              >
+                <FontAwesomeIcon icon={faUserGroup} />
+                Kelola Pengguna
+              </button>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
       {error ? (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div>
+        <div className="rounded-[24px] border border-red-100 bg-red-50 p-6 flex items-center gap-4 text-red-700 shadow-sm">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
+            <FontAwesomeIcon icon={faChartLine} className="rotate-180" />
+          </div>
+          <p className="font-bold">{error}</p>
+        </div>
       ) : null}
 
-      <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1">
-            <h2 className="font-heading text-xl font-semibold text-slate-900">Ringkasan cepat</h2>
-          </div>
-        </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <StatCard
-            title="Total pengguna"
-            value={loading ? "-" : formatCount(stats.usersTotal)}
-            icon={faUsers}
-            loading={loading}
-            tone={{ bg: "bg-brandGreen-100", border: "border-brandGreen-200", iconBg: "border-brandGreen-200 bg-white", iconText: "text-brandGreen-700" }}
-          />
-          <StatCard
-            title="Pengguna aktif"
-            value={loading ? "-" : formatCount(stats.usersActive)}
-            icon={faCircleCheck}
-            loading={loading}
-            tone={{ bg: "bg-brandGreen-50", border: "border-brandGreen-200", iconBg: "border-brandGreen-200 bg-white", iconText: "text-brandGreen-700" }}
-          />
-          <StatCard
-            title="Program / artikel"
-            value={loading ? "-" : `${formatCount(stats.programsTotal)} / ${formatCount(stats.articlesTotal)}`}
-            icon={faChartLine}
-            loading={loading}
-            tone={{ bg: "bg-primary-100", border: "border-primary-200", iconBg: "border-primary-200 bg-white", iconText: "text-primary-700" }}
-          />
-        </div>
-        <div className="mt-4">
-          <StatCard
-            title="Donasi lunas"
-            value={loading ? "-" : formatCurrency(stats.donationsPaid)}
-            icon={faCircleInfo}
-            loading={loading}
-            tone={{ bg: "bg-primary-50", border: "border-primary-200", iconBg: "border-primary-200 bg-white", iconText: "text-primary-700" }}
-          />
-        </div>
-      </section>
-
-      <section>
-        <ChartCard
-          title="Tren donasi dan program"
-          badge={
-            <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-xs font-bold text-brandGreen-700 ring-1 ring-brandGreen-100">
-              7 hari terakhir
-            </span>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Total Pengguna"
+          value={formatCount(stats.usersTotal)}
+          icon={faUsers}
+          loading={loading}
+          gradient="bg-[#1A9B7F]"
+        />
+        <StatCard
+          title="Pengguna Aktif"
+          value={formatCount(stats.usersActive)}
+          icon={faCircleCheck}
+          loading={loading}
+          gradient="bg-[#29B6F6]"
+        />
+        <StatCard
+          title="Konten Sistem"
+          value={
+            <div className="flex flex-col gap-0.5">
+              <span className="text-2xl">{formatCount(stats.programsTotal)} <span className="text-lg font-medium opacity-80">Program</span></span>
+              <span className="text-2xl">{formatCount(stats.articlesTotal)} <span className="text-lg font-medium opacity-80">Artikel</span></span>
+            </div>
           }
-        >
-          <Line data={donationTrendData} options={donationTrendOptions as any} />
-        </ChartCard>
-      </section>
+          icon={faChartLine}
+          loading={loading}
+          gradient="bg-[#66BB6A]"
+          valueClassName=""
+        />
+        <StatCard
+          title="Donasi Lunas"
+          value={formatCurrency(stats.donationsPaid)}
+          icon={faCoins}
+          loading={loading}
+          gradient="bg-[#5C6BC0]"
+          valueClassName="text-2xl md:text-3xl truncate"
+        />
+      </div>
 
-      <section className="grid gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-6">
+      <div className="grid gap-8 lg:grid-cols-12">
+        <div className="lg:col-span-8">
           <ChartCard
-            title="Status pengguna"
+            title="Tren Aktivitas Mingguan"
+            subtitle="Grafik donasi lunas dan penambahan program baru dalam 7 hari terakhir."
             badge={
-              <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
-                Total: {formatCount(stats.usersTotal)}
+              <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-100">
+                Live Data
               </span>
             }
           >
-            <Doughnut data={usersChartData} options={usersChartOptions as any} />
+            <Line data={donationTrendData} options={donationTrendOptions as any} />
           </ChartCard>
         </div>
-        <div className="lg:col-span-6">
+        <div className="lg:col-span-4">
+          <div className="grid gap-8 h-full">
+            <ChartCard
+              title="Komposisi Pengguna"
+              subtitle="Perbandingan pengguna aktif dan nonaktif."
+            >
+              <div className="flex items-center justify-center h-full">
+                <Doughnut data={usersChartData} options={usersChartOptions as any} />
+              </div>
+            </ChartCard>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-12">
+        <div className="lg:col-span-4">
           <ChartCard
-            title="Program teratas"
-            badge={
-              <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-xs font-bold text-primary-700 ring-1 ring-primary-100">
-                Teratas {topPrograms.length}
-              </span>
-            }
+            title="Program Unggulan"
+            subtitle={`Top ${topPrograms.length} program dengan donasi tertinggi.`}
           >
             <Bar data={topProgramsChartData} options={topProgramsChartOptions as any} />
           </ChartCard>
         </div>
-      </section>
+        <div className="lg:col-span-8">
+          <div className="flex h-full flex-col rounded-[32px] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
+            <div className="flex flex-col gap-1 mb-6">
+              <h2 className="font-heading text-xl font-bold text-slate-900">Detail Program Teratas</h2>
+              <p className="text-sm font-medium text-slate-500">Analisis status dan performa donasi per program.</p>
+            </div>
 
-      <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-bold tracking-[0.2em] text-slate-400">Ringkasan program</p>
-            <h2 className="mt-2 font-heading text-xl font-semibold text-slate-900">Program teratas</h2>
-            <p className="mt-2 text-sm text-slate-600">Status dan jumlah donasi lunas per program.</p>
-          </div>
-        </div>
-
-        <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
-          <table className="w-full text-left">
-            <thead className="border-b border-slate-200 bg-slate-50">
-              <tr className="text-xs font-bold tracking-wide text-slate-500">
-                <th className="px-5 py-4">Program</th>
-                <th className="px-5 py-4">Status</th>
-                <th className="px-5 py-4 text-right">Donasi lunas</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                Array.from({ length: 4 }).map((_, idx) => (
-                  <tr key={idx} className="animate-pulse">
-                    <td className="px-5 py-4">
-                      <div className="h-4 w-2/3 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="h-6 w-24 rounded-full bg-slate-100" />
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="ml-auto h-4 w-16 rounded bg-slate-100" />
-                    </td>
+            <div className="overflow-hidden rounded-2xl border border-slate-200">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50">
+                  <tr className="border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <th className="px-6 py-4">Program</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4 text-right">Total Donasi</th>
                   </tr>
-                ))
-              ) : topPrograms.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className="px-5 py-10 text-center text-sm font-semibold text-slate-600">
-                    Belum ada data program.
-                  </td>
-                </tr>
-              ) : (
-                topPrograms.map((p) => {
-                  const status = getProgramStatusLabel(p.status);
-                  return (
-                    <tr key={p.id} className="hover:bg-slate-50">
-                      <td className="px-5 py-4">
-                        <p className="line-clamp-1 text-sm font-bold text-slate-900">{p.title}</p>
-                        <p className="mt-1 text-xs font-semibold text-slate-500">ID: {p.id}</p>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${badgeTone(status.tone)}`}>
-                          {status.label}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-right text-sm font-bold text-slate-900 tabular-nums">
-                        {formatCount(normalizeNumber(p.donations_paid))}
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {loading ? (
+                    Array.from({ length: 3 }).map((_, idx) => (
+                      <tr key={idx} className="animate-pulse">
+                        <td className="px-6 py-4"><div className="h-4 w-32 rounded bg-slate-100" /></td>
+                        <td className="px-6 py-4"><div className="h-6 w-20 rounded-full bg-slate-100" /></td>
+                        <td className="px-6 py-4"><div className="ml-auto h-4 w-24 rounded bg-slate-100" /></td>
+                      </tr>
+                    ))
+                  ) : topPrograms.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-6 py-8 text-center text-sm font-semibold text-slate-500">
+                        Tidak ada data program.
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                  ) : (
+                    topPrograms.map((p) => {
+                      const status = getProgramStatusLabel(p.status);
+                      return (
+                        <tr key={p.id} className="group transition hover:bg-slate-50">
+                          <td className="px-6 py-4">
+                            <p className="line-clamp-1 font-bold text-slate-900 group-hover:text-emerald-700 transition">{p.title}</p>
+                            <span className="text-xs font-semibold text-slate-400">ID: {p.id}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${badgeTone(status.tone)}`}>
+                              <div className={`mr-1.5 h-1.5 w-1.5 rounded-full ${status.tone === 'green' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                              {status.label}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right font-bold text-slate-900 tabular-nums">
+                            {formatCount(normalizeNumber(p.donations_paid))}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

@@ -17,6 +17,9 @@ class BankAccount extends Model
         'account_name',
         'is_visible_public',
         'order',
+        'image_path',
+        'category',
+        'type',
     ];
 
     protected $casts = [

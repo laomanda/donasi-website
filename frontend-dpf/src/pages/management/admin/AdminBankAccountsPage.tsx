@@ -1,7 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBuildingColumns, faMagnifyingGlass, faPenToSquare, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faBuildingColumns, faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
 import { runWithConcurrency } from "../../../lib/bulk";
@@ -28,8 +28,8 @@ const formatDate = (value: string | null | undefined) => {
 
 const getStatusTone = (isActive: boolean) =>
   isActive
-    ? "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100"
-    : "bg-slate-100 text-slate-700 ring-slate-200";
+    ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-600"
+    : "bg-slate-500 text-white shadow-sm ring-1 ring-slate-500";
 
 export function AdminBankAccountsPage() {
   const navigate = useNavigate();
@@ -116,34 +116,46 @@ export function AdminBankAccountsPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0">
-            <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-700 ring-1 ring-primary-100">
-              Keuangan
-            </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Rekening Resmi</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Kelola rekening yang tampil di halaman donasi publik.
-            </p>
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
-              <span className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-primary-700 ring-1 ring-primary-100">
-                Total: <span className="ml-1 font-bold text-slate-900">{items.length}</span>
-              </span>
-              <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-brandGreen-700 ring-1 ring-brandGreen-100">
-                Tampil: <span className="ml-1 font-bold">{activeCount}</span>
-              </span>
-            </div>
-          </div>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
+        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
+        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
 
-          <button
-            type="button"
-            onClick={() => navigate("/admin/bank-accounts/create")}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-700"
-          >
-            <FontAwesomeIcon icon={faPlus} />
-            Tambah Rekening
-          </button>
+        <div className="relative z-10 p-8 md:p-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-4">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
+                  <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
+                  Keuangan
+                </span>
+                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
+                  Rekening Resmi
+                </h1>
+                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
+                  Kelola rekening yang tampil di halaman donasi publik.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-emerald-50">
+                <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/20 px-3 py-1.5 ring-1 ring-white/10">
+                  Total: <span className="font-bold text-white">{items.length}</span>
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/20 px-3 py-1.5 ring-1 ring-white/10">
+                  Tampil: <span className="font-bold text-white">{activeCount}</span>
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => navigate("/admin/bank-accounts/create")}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white text-emerald-700 px-6 py-4 text-sm font-bold shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-50 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <FontAwesomeIcon icon={faPlus} />
+              Tambah Rekening
+            </button>
+          </div>
         </div>
       </div>
 
@@ -151,8 +163,8 @@ export function AdminBankAccountsPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="grid flex-1 gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Pencarian</span>
-              <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus-within:bg-white focus-within:ring-2 focus-within:ring-slate-200">
+              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Pencarian</span>
+              <div className="mt-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition">
                 <FontAwesomeIcon icon={faMagnifyingGlass} className="text-slate-400" />
                 <input
                   value={q}
@@ -164,29 +176,23 @@ export function AdminBankAccountsPage() {
             </label>
 
             <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Status tampil</span>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as any)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-              >
-                <option value="">Semua</option>
-                <option value="active">Tampil</option>
-                <option value="inactive">Disembunyikan</option>
-              </select>
+              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Status tampil</span>
+              <div className="relative mt-2">
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as any)}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                >
+                  <option value="">Semua Status</option>
+                  <option value="active">Tampil</option>
+                  <option value="inactive">Disembunyikan</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                  <FontAwesomeIcon icon={faBuildingColumns} className="text-xs" />
+                </div>
+              </div>
             </label>
           </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              setQ("");
-              setStatus("");
-            }}
-            className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-          >
-            Atur ulang
-          </button>
         </div>
       </div>
 
@@ -206,24 +212,23 @@ export function AdminBankAccountsPage() {
       <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
         <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-left">
-            <thead className="border-b border-primary-100 bg-primary-50">
-              <tr className="text-xs font-bold tracking-wide text-slate-500">
-                <th className="px-6 py-4">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="w-[6%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   <input
                     type="checkbox"
                     checked={filteredIds.length > 0 && filteredIds.every((id) => selection.isSelected(id))}
                     onChange={() => selection.toggleAll(filteredIds)}
                     aria-label="Pilih semua rekening"
-                    className="h-4 w-4"
+                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
                 </th>
-                <th className="px-6 py-4">Urutan</th>
-                <th className="px-6 py-4">Bank</th>
-                <th className="px-6 py-4">Nomor</th>
-                <th className="px-6 py-4">Atas nama</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Diperbarui</th>
-                <th className="px-6 py-4 text-right">Aksi</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Urutan</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Bank</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Nomor</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Atas nama</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Diperbarui</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -251,29 +256,33 @@ export function AdminBankAccountsPage() {
                     <td className="px-6 py-5">
                       <div className="h-4 w-24 rounded bg-slate-100" />
                     </td>
-                    <td className="px-6 py-5">
-                      <div className="ml-auto h-10 w-10 rounded-2xl bg-slate-100" />
-                    </td>
                   </tr>
                 ))
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
+                  <td colSpan={7} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
                     Belum ada rekening yang cocok.
                   </td>
                 </tr>
               ) : (
                 filtered.map((acc) => {
                   const updated = acc.updated_at ?? acc.created_at;
+                  // Status bar color logic
+                  const barColor = acc.is_visible_public ? "border-l-emerald-500" : "border-l-slate-300";
+
                   return (
-                    <tr key={acc.id} className="hover:bg-primary-50">
-                      <td className="px-6 py-5">
+                    <tr
+                      key={acc.id}
+                      className={`cursor-pointer transition hover:bg-slate-50 border-l-4 ${barColor}`}
+                      onClick={() => navigate(`/admin/bank-accounts/${acc.id}/edit`)}
+                    >
+                      <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           checked={selection.isSelected(acc.id)}
                           onChange={() => selection.toggle(acc.id)}
                           aria-label={`Pilih rekening ${acc.bank_name}`}
-                          className="h-4 w-4"
+                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
                         />
                       </td>
                       <td className="px-6 py-5">
@@ -283,32 +292,20 @@ export function AdminBankAccountsPage() {
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-50 text-primary-700">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm ring-1 ring-emerald-100">
                             <FontAwesomeIcon icon={faBuildingColumns} />
                           </div>
-                          <span className="text-sm font-semibold text-slate-900">{acc.bank_name}</span>
+                          <span className="text-sm font-bold text-slate-900">{acc.bank_name}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-900">{acc.account_number}</td>
+                      <td className="px-6 py-5 text-sm font-bold text-slate-900">{acc.account_number}</td>
                       <td className="px-6 py-5 text-sm font-semibold text-slate-700">{acc.account_name}</td>
                       <td className="px-6 py-5">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${getStatusTone(Boolean(acc.is_visible_public))}`}>
+                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(Boolean(acc.is_visible_public))}`}>
                           {acc.is_visible_public ? "Tampil" : "Disembunyikan"}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-600">{formatDate(updated)}</td>
-                      <td className="px-6 py-5">
-                        <div className="flex items-center justify-end">
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/admin/bank-accounts/${acc.id}/edit`)}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
-                            aria-label="Ubah"
-                          >
-                            <FontAwesomeIcon icon={faPenToSquare} />
-                          </button>
-                        </div>
-                      </td>
+                      <td className="px-6 py-5 text-sm font-semibold text-slate-500">{formatDate(updated)}</td>
                     </tr>
                   );
                 })
@@ -333,8 +330,15 @@ export function AdminBankAccountsPage() {
           ) : (
             filtered.map((acc) => {
               const updated = acc.updated_at ?? acc.created_at;
+              const barColor = acc.is_visible_public ? "border-l-emerald-500" : "border-l-slate-300";
+
               return (
-                <div key={acc.id} className="p-5">
+                <button
+                  key={acc.id}
+                  type="button"
+                  onClick={() => navigate(`/admin/bank-accounts/${acc.id}/edit`)}
+                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor}`}
+                >
                   <div className="flex items-start gap-3">
                     <span onClick={(e) => e.stopPropagation()}>
                       <input
@@ -342,29 +346,25 @@ export function AdminBankAccountsPage() {
                         checked={selection.isSelected(acc.id)}
                         onChange={() => selection.toggle(acc.id)}
                         aria-label={`Pilih rekening ${acc.bank_name}`}
-                        className="mt-1 h-4 w-4"
+                        className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                       />
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/admin/bank-accounts/${acc.id}/edit`)}
-                      className="block w-full text-left"
-                    >
+                    <div className="min-w-0 flex-1">
                       <p className="text-base font-bold text-slate-900">{acc.bank_name}</p>
                       <p className="mt-1 text-sm text-slate-600">{acc.account_number}</p>
                       <p className="mt-1 text-xs text-slate-500">Atas nama: {acc.account_name}</p>
-                    </button>
+                    </div>
                   </div>
-                  <div className="mt-4 flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+                  <div className="mt-4 flex items-center justify-between gap-2 pl-7">
+                    <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700">
                       #{acc.order ?? 0}
                     </span>
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${getStatusTone(Boolean(acc.is_visible_public))}`}>
+                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(Boolean(acc.is_visible_public))}`}>
                       {acc.is_visible_public ? "Tampil" : "Disembunyikan"}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs font-semibold text-slate-500">Diperbarui: {formatDate(updated)}</p>
-                </div>
+                  <p className="mt-3 pl-7 text-xs font-semibold text-slate-500">Diperbarui: {formatDate(updated)}</p>
+                </button>
               );
             })
           )}

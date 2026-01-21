@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\PickupRequest;
+use App\Support\AdminBadgeNotifier;
 use Illuminate\Http\Request;
 
 class PickupRequestController extends Controller
@@ -24,6 +25,7 @@ class PickupRequestController extends Controller
         $data['status'] = 'baru';
 
         $pickup = PickupRequest::create($data);
+        AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($pickup, 201);
     }

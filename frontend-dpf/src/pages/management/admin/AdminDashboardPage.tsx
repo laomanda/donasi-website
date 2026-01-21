@@ -2,20 +2,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowUpRightFromSquare,
-  faBolt,
-  faBuildingColumns,
   faChartLine,
   faCircleCheck,
   faCircleInfo,
   faClipboardCheck,
   faClock,
-  faGear,
+  faComments,
   faHandHoldingHeart,
-  faHeadset,
-  faListCheck,
   faReceipt,
   faRotateRight,
-  faTruckRampBox,
+  faTruckFast,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import http from "../../../lib/http";
@@ -36,9 +32,27 @@ type AdminDonationItem = {
   program?: { title?: string | null } | null;
 };
 
+type PickupRequestItem = {
+  id: number;
+  donor_name?: string;
+  district?: string;
+  preferred_time?: string;
+  status: string;
+  created_at?: string;
+};
+
+type ConsultationItem = {
+  id: number;
+  name?: string;
+  topic?: string;
+  created_at?: string;
+};
+
 type AdminDashboardPayload = {
   stats?: AdminDashboardStats;
   recent_donations?: AdminDonationItem[];
+  upcoming_pickups?: PickupRequestItem[];
+  urgent_consultations?: ConsultationItem[];
 };
 
 type ToneKey = "emerald" | "primary" | "amber" | "violet" | "sky" | "rose" | "slate";
@@ -191,7 +205,7 @@ function StatCard({
   const styles = TONE_STYLES[tone];
   return (
     <div
-      className="rounded-[24px] border border-slate-200 border-l-4 bg-white p-5 shadow-sm"
+      className="rounded-[24px] border border-slate-200 border-l-4 p-5 shadow-sm"
       style={{ borderLeftColor: styles.accent }}
     >
       <div className="flex items-start justify-between gap-4">
@@ -208,68 +222,7 @@ function StatCard({
   );
 }
 
-function QuickActionCard({
-  title,
-  description,
-  icon,
-  tone,
-  onClick,
-}: {
-  title: string;
-  description: string;
-  icon: any;
-  tone: ToneKey;
-  onClick: () => void;
-}) {
-  const styles = TONE_STYLES[tone];
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`group flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 border-l-4 ${styles.border} bg-white px-4 py-3 text-left shadow-sm transition hover:border-slate-300`}
-    >
-      <span className="flex items-center gap-3">
-        <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${styles.iconBg}`}>
-          <FontAwesomeIcon icon={icon} className={styles.iconText} />
-        </span>
-        <span className="min-w-0">
-          <span className="block text-sm font-semibold text-slate-900">{title}</span>
-          <span className="mt-0.5 block text-xs font-semibold text-slate-500">{description}</span>
-        </span>
-      </span>
-      <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-xs text-slate-400 transition group-hover:text-slate-600" />
-    </button>
-  );
-}
 
-function FocusItem({
-  title,
-  value,
-  description,
-  tone,
-  onClick,
-}: {
-  title: string;
-  value: string;
-  description: string;
-  tone: ToneKey;
-  onClick: () => void;
-}) {
-  const styles = TONE_STYLES[tone];
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 border-l-4 ${styles.border} bg-white px-4 py-3 text-left shadow-sm transition hover:border-slate-300`}
-    >
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-slate-900">{title}</p>
-        <p className="mt-1 text-xs font-semibold text-slate-500">{description}</p>
-      </div>
-      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${styles.badge}`}>{value}</span>
-    </button>
-  );
-}
 
 export function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -293,31 +246,40 @@ export function AdminDashboardPage() {
     return (list ?? []).slice(0, 10);
   }, [data]);
 
-  const load = async () => {
-    setLoading(true);
-    setError(null);
+  const load = async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const res = await http.get<AdminDashboardPayload>("/admin/dashboard");
       if (!isMounted.current) return;
       setData(res.data);
+      if (silent) setError(null);
     } catch {
       if (!isMounted.current) return;
-      setError("Gagal memuat data dashboard admin.");
+      if (!silent) setError("Gagal memuat data dashboard admin.");
     } finally {
       if (!isMounted.current) return;
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     isMounted.current = true;
+
+    // Initial load
+    void load();
+
+    // Polling every 2 seconds
+    const intervalId = setInterval(() => {
+      void load(true);
+    }, 2000);
+
     return () => {
       isMounted.current = false;
+      clearInterval(intervalId);
     };
-  }, []);
-
-  useEffect(() => {
-    void load();
   }, []);
 
   return (
@@ -376,7 +338,7 @@ export function AdminDashboardPage() {
             </div>
             <button
               type="button"
-              onClick={load}
+              onClick={() => void load()}
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-rose-600 shadow-sm transition hover:bg-rose-50"
             >
               <FontAwesomeIcon icon={faRotateRight} />
@@ -422,8 +384,8 @@ export function AdminDashboardPage() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-6">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-[28px] border border-slate-200 bg-brandGreen-100/50 p-6 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Transaksi</p>
@@ -433,7 +395,7 @@ export function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => navigate("/admin/donations")}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-emerald-600 hover:text-white"
               >
                 Lihat semua
                 <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-xs" />
@@ -466,7 +428,7 @@ export function AdminDashboardPage() {
                       key={String(item.id ?? idx)}
                       type="button"
                       onClick={onClick}
-                      className={`flex w-full flex-col gap-3 rounded-2xl border border-slate-200 border-l-4 ${status.border} bg-white p-4 text-left shadow-sm transition hover:border-slate-300`}
+                      className={`flex w-full flex-col gap-3 rounded-2xl border border-slate-200 border-l-4 ${status.border} bg-white p-4 text-left shadow-sm transition hover:border-emerald-500`}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -493,106 +455,109 @@ export function AdminDashboardPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          {/* Agenda Jemputan Widget */}
+          <div className="rounded-[28px] border border-amber-100 bg-amber-50/50 p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Aksi</p>
-                <h2 className="font-heading text-xl font-semibold text-slate-900">Aksi Cepat</h2>
-                <p className="text-sm font-medium text-slate-600">Akses cepat menu yang sering dipakai.</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Logistik</p>
+                <h2 className="font-heading text-lg font-bold text-slate-900">Agenda Jemputan</h2>
               </div>
-              <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${TONE_STYLES.sky.iconBg}`}>
-                <FontAwesomeIcon icon={faBolt} className={TONE_STYLES.sky.iconText} />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                <FontAwesomeIcon icon={faTruckFast} />
               </div>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              <QuickActionCard
-                title="Donasi"
-                description="Kelola transaksi donatur"
-                icon={faReceipt}
-                tone="emerald"
-                onClick={() => navigate("/admin/donations")}
-              />
-              <QuickActionCard
-                title="Konfirmasi Donasi"
-                description="Verifikasi transfer manual"
-                icon={faClipboardCheck}
-                tone="amber"
-                onClick={() => navigate("/admin/donation-confirmations")}
-              />
-              <QuickActionCard
-                title="Jemput Wakaf"
-                description="Permintaan layanan jemput"
-                icon={faTruckRampBox}
-                tone="sky"
-                onClick={() => navigate("/admin/pickup-requests")}
-              />
-              <QuickActionCard
-                title="Konsultasi"
-                description="Pertanyaan masuk"
-                icon={faHeadset}
-                tone="violet"
-                onClick={() => navigate("/admin/consultations")}
-              />
-              <QuickActionCard
-                title="Tugas Editor"
-                description="Instruksi untuk editor"
-                icon={faListCheck}
-                tone="slate"
-                onClick={() => navigate("/admin/editor-tasks")}
-              />
-              <QuickActionCard
-                title="Rekening"
-                description="Kelola rekening resmi"
-                icon={faBuildingColumns}
-                tone="primary"
-                onClick={() => navigate("/admin/bank-accounts")}
-              />
+            <div className="mt-4 space-y-3">
+              {loading ? (
+                Array.from({ length: 3 }).map((_, idx) => (
+                  <div key={idx} className="h-16 rounded-2xl bg-white/60 animate-pulse" />
+                ))
+              ) : (data?.upcoming_pickups ?? []).length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-amber-200 bg-white/40 p-4 text-center text-sm font-medium text-amber-700">
+                  Tidak ada jadwal jemputan baru.
+                </div>
+              ) : (
+                (data?.upcoming_pickups ?? []).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => navigate("/admin/pickup-requests")}
+                    className="flex w-full items-start gap-3 rounded-2xl border border-amber-100 border-l-4 border-l-amber-500 bg-white p-3 text-left shadow-sm transition hover:border-amber-300 hover:shadow-md"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+                      <span className="text-xs font-bold">{item.district ? item.district.substring(0, 2).toUpperCase() : "??"}</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-1 text-sm font-bold text-slate-900">{item.donor_name}</p>
+                      <p className="text-xs font-medium text-slate-500">
+                        {item.district || "Area belum set"} • {item.preferred_time || "Waktu fleksibel"}
+                      </p>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
+            <button
+              type="button"
+              onClick={() => navigate("/admin/pickup-requests")}
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-amber-500 hover:text-white"
+            >
+              Lihat Semua
+              <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-xs" />
+            </button>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          {/* Antrean Konsultasi Widget */}
+          <div className="rounded-[28px] border border-violet-100 bg-violet-50/50 p-6 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Fokus Hari Ini</p>
-                <h2 className="font-heading text-xl font-semibold text-slate-900">Prioritas Operasional</h2>
-                <p className="text-sm font-medium text-slate-600">Area yang butuh perhatian cepat.</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-700">Layanan Umat</p>
+                <h2 className="font-heading text-lg font-bold text-slate-900">Antrean Konsultasi</h2>
               </div>
-              <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${TONE_STYLES.amber.iconBg}`}>
-                <FontAwesomeIcon icon={faGear} className={TONE_STYLES.amber.iconText} />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
+                <FontAwesomeIcon icon={faComments} />
               </div>
             </div>
 
-            <div className="mt-5 space-y-3">
-              <FocusItem
-                title="Jemput Wakaf Baru"
-                value={loading ? "-" : formatCount(stats.pickupPending)}
-                description="Jadwalkan petugas jemput."
-                tone="amber"
-                onClick={() => navigate("/admin/pickup-requests")}
-              />
-              <FocusItem
-                title="Konsultasi Baru"
-                value={loading ? "-" : formatCount(stats.consultationNew)}
-                description="Balas pertanyaan masuk."
-                tone="violet"
-                onClick={() => navigate("/admin/consultations")}
-              />
-              <FocusItem
-                title="Konfirmasi Donasi"
-                value="Perlu cek"
-                description="Verifikasi transfer manual."
-                tone="emerald"
-                onClick={() => navigate("/admin/donation-confirmations")}
-              />
-              <FocusItem
-                title="Tugas Editor"
-                value="Pantau"
-                description="Pastikan progres tugas."
-                tone="slate"
-                onClick={() => navigate("/admin/editor-tasks")}
-              />
+            <div className="mt-4 space-y-3">
+              {loading ? (
+                Array.from({ length: 3 }).map((_, idx) => (
+                  <div key={idx} className="h-16 rounded-2xl bg-white/60 animate-pulse" />
+                ))
+              ) : (data?.urgent_consultations ?? []).length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-violet-200 bg-white/40 p-4 text-center text-sm font-medium text-violet-700">
+                  Tidak ada pesan belum dibalas.
+                </div>
+              ) : (
+                (data?.urgent_consultations ?? []).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => navigate(`/admin/consultations/${item.id}`)}
+                    className="flex w-full items-start gap-3 rounded-2xl border border-violet-100 border-l-4 border-l-violet-600 bg-white p-3 text-left shadow-sm transition hover:border-violet-300 hover:shadow-md"
+                  >
+                    <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-rose-500 ring-2 ring-rose-100" title="Belum dibalas" />
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-1 text-sm font-bold text-slate-900">{item.name}</p>
+                      <p className="line-clamp-1 text-xs text-slate-500">
+                        Topik: {item.topic}
+                      </p>
+                      <p className="mt-1 text-[10px] font-bold text-violet-600">
+                        {formatDateTime(item.created_at)}
+                      </p>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
+            <button
+              type="button"
+              onClick={() => navigate("/admin/consultations")}
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-violet-600 hover:text-white"
+            >
+              Lihat Semua
+              <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-xs" />
+            </button>
           </div>
         </div>
       </section>

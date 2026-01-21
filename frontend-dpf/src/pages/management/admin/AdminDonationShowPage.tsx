@@ -3,10 +3,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
+  faCalendarDays,
   faCircleInfo,
+  faEnvelope,
   faFloppyDisk,
+  faMoneyBillWave,
+  faPhone,
   faReceipt,
   faTrash,
+  faUser,
+  faCheckCircle,
+  faClock,
+  faBan,
+  faExclamationCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
@@ -88,23 +97,33 @@ const toIsoFromLocalInput = (value: string) => {
   return date.toISOString();
 };
 
-const getStatusTone = (status: DonationStatus) => {
+const getStatusConfig = (status: DonationStatus) => {
   const s = String(status ?? "").toLowerCase();
-  if (s === "paid") return "bg-emerald-50 text-emerald-700 ring-emerald-100";
-  if (s === "pending") return "bg-amber-50 text-amber-700 ring-amber-100";
-  if (s === "failed" || s === "cancelled") return "bg-red-50 text-red-700 ring-red-100";
-  if (s === "expired") return "bg-slate-100 text-slate-700 ring-slate-200";
-  return "bg-slate-100 text-slate-700 ring-slate-200";
-};
-
-const getStatusLabel = (status: DonationStatus) => {
-  const s = String(status ?? "").toLowerCase();
-  if (s === "paid") return "Lunas";
-  if (s === "pending") return "Menunggu";
-  if (s === "failed") return "Gagal";
-  if (s === "expired") return "Kedaluwarsa";
-  if (s === "cancelled") return "Dibatalkan";
-  return String(status || "-");
+  if (s === "paid") return {
+    bg: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+    icon: faCheckCircle, label: "Lunas", border: "border-l-emerald-500",
+    headerBg: "bg-emerald-600", decoration: "decoration-emerald-400/50"
+  };
+  if (s === "pending") return {
+    bg: "bg-amber-50 text-amber-700 ring-amber-100",
+    icon: faClock, label: "Menunggu", border: "border-l-amber-500",
+    headerBg: "bg-amber-500", decoration: "decoration-amber-400/50"
+  };
+  if (s === "failed") return {
+    bg: "bg-rose-50 text-rose-700 ring-rose-100",
+    icon: faExclamationCircle, label: "Gagal", border: "border-l-rose-500",
+    headerBg: "bg-rose-600", decoration: "decoration-rose-400/50"
+  };
+  if (s === "cancelled") return {
+    bg: "bg-rose-50 text-rose-700 ring-rose-200",
+    icon: faBan, label: "Dibatalkan", border: "border-l-rose-400",
+    headerBg: "bg-rose-600", decoration: "decoration-rose-400/50"
+  };
+  return {
+    bg: "bg-slate-50 text-slate-600 ring-slate-200",
+    icon: faCircleInfo, label: s || "-", border: "border-l-slate-300",
+    headerBg: "bg-slate-500", decoration: "decoration-slate-400/50"
+  };
 };
 
 export function AdminDonationShowPage() {
@@ -134,13 +153,16 @@ export function AdminDonationShowPage() {
   const canDelete = canLoad && !loading && !saving && !deleting && isPendingStatus;
 
   const proofUrl = useMemo(() => resolveStorageUrl(data?.manual_proof_path), [data?.manual_proof_path]);
+
+  const statusConfig = getStatusConfig(String(data?.status ?? status));
+
   const statusOptions = useMemo(
     () => {
       if (isStatusLocked) {
         return [
           {
             value: persistedStatus || "pending",
-            label: getStatusLabel(persistedStatus || "pending"),
+            label: statusConfig.label,
             disabled: true,
           },
         ];
@@ -153,7 +175,7 @@ export function AdminDonationShowPage() {
         { value: "cancelled", label: "Dibatalkan", disabled: false },
       ];
     },
-    [isStatusLocked, persistedStatus],
+    [isStatusLocked, persistedStatus, statusConfig.label],
   );
 
   useEffect(() => {
@@ -192,14 +214,23 @@ export function AdminDonationShowPage() {
     setSaving(true);
     try {
       const desiredStatus = String(status ?? "").trim();
+
+      // Validation: Wajib isi tanggal pembayaran jika status Lunas
+      if (desiredStatus === "paid" && !paidAtLocal) {
+        toast.error("Wajib mengisi waktu pembayaran untuk status Lunas.", { title: "Validasi Gagal" });
+        setSaving(false);
+        return;
+      }
+
       const paidAtIso = toIsoFromLocalInput(paidAtLocal);
-      const shouldAutoPaidAt = desiredStatus === "paid" && !paidAtIso;
+
       await http.patch(`/admin/donations/${donationId}/status`, {
         status: desiredStatus,
-        paid_at: shouldAutoPaidAt ? new Date().toISOString() : paidAtIso,
+        paid_at: paidAtIso,
         notes: notes.trim() || null,
       });
       toast.success("Status donasi berhasil diperbarui.", { title: "Berhasil" });
+      window.dispatchEvent(new Event("refresh-badges"));
       navigate("/admin/donations", { replace: true });
     } catch (err: any) {
       const message = err?.response?.data?.message ?? "Gagal memperbarui status donasi.";
@@ -215,6 +246,7 @@ export function AdminDonationShowPage() {
     try {
       await http.delete(`/admin/donations/${donationId}`);
       toast.success("Donasi berhasil dihapus.", { title: "Berhasil" });
+      window.dispatchEvent(new Event("refresh-badges"));
       navigate("/admin/donations", { replace: true });
     } catch (err: any) {
       const message = err?.response?.data?.message ?? "Gagal menghapus donasi.";
@@ -226,262 +258,288 @@ export function AdminDonationShowPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-700 ring-1 ring-primary-100">
-              <span className="h-2 w-2 rounded-full bg-primary-600" />
-              Detail donasi
-            </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">
-              {loading ? "Memuat..." : String(data?.donation_code ?? `#${donationId}`)}
-            </h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Informasi donatur, metode pembayaran, dan kontrol status donasi.
-            </p>
-          </div>
+    <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 pb-10">
+      {/* Hero Header */}
+      <div className={`relative overflow-hidden rounded-[32px] ${statusConfig.headerBg} shadow-xl transition-colors duration-500`}>
+        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
+        <div className="absolute right-0 top-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-white/10 blur-3xl filter" />
+        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-80 w-80 rounded-full bg-white/10 blur-3xl filter" />
 
-          <button
-            type="button"
-            onClick={() => navigate("/admin/donations")}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} />
-            Kembali
-          </button>
+        <div className="relative z-10 p-8 md:p-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-4">
+              <button
+                onClick={() => navigate("/admin/donations")}
+                className="group inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur-sm transition hover:bg-white/20"
+              >
+                <FontAwesomeIcon icon={faArrowLeft} className="transition group-hover:-translate-x-1" />
+                Kembali ke List
+              </button>
+
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="font-heading text-3xl font-bold text-white md:text-5xl">
+                    {loading ? "Memuat..." : String(data?.donation_code ?? `#${donationId}`)}
+                  </h1>
+                  {!loading && (
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider shadow-sm ring-1 ring-inset ${statusConfig.bg}`}>
+                      <FontAwesomeIcon icon={statusConfig.icon} />
+                      {statusConfig.label}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2 text-lg text-white/90 font-medium max-w-2xl">
+                  Donasi dari <span className="font-bold text-white">{data?.donor_name || "Hamba Allah"}</span> untuk program <span className={`font-bold text-white underline underline-offset-4 ${statusConfig.decoration}`}>{data?.program?.title || "Umum"}</span>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {error ? (
-        <div className="rounded-[28px] border border-red-100 bg-red-50 p-5 text-sm font-semibold text-red-700">
-          {error}
+        <div className="rounded-2xl border border-rose-100 bg-rose-50 p-6 flex items-start gap-4 shadow-sm">
+          <FontAwesomeIcon icon={faExclamationCircle} className="mt-1 text-xl text-rose-500" />
+          <div>
+            <h3 className="font-bold text-rose-700">Terjadi Kesalahan</h3>
+            <p className="text-sm text-rose-600 mt-1">{error}</p>
+          </div>
         </div>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="space-y-6 lg:col-span-8">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-1">
-                <h2 className="font-heading text-xl font-semibold text-slate-900">Ringkasan</h2>
-                <p className="text-sm font-medium text-slate-600">Data utama donasi yang tercatat di sistem.</p>
+      {!loading && (
+        <div className="grid gap-8 lg:grid-cols-12">
+          {/* Main Content */}
+          <div className="space-y-8 lg:col-span-8">
+            {/* Summary Card */}
+            <div className={`overflow-hidden rounded-[24px] bg-white shadow-xl shadow-slate-200/50 border-l-8 ${statusConfig.border}`}>
+              <div className="p-8">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2 mb-4">
+                  <FontAwesomeIcon icon={faMoneyBillWave} />
+                  Rincian Pembayaran
+                </h2>
+
+                <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between border-b border-slate-100 pb-8 mb-8">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-500 mb-1">Total Donasi</p>
+                    <div className="font-heading text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">
+                      {formatCurrency(data?.amount)}
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
+                      <p className="text-xs font-bold text-slate-400 uppercase mb-1">Metode</p>
+                      <p className="font-bold text-slate-800">{data?.payment_method || "Manual Transfer"}</p>
+                    </div>
+                    <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
+                      <p className="text-xs font-bold text-slate-400 uppercase mb-1">Sumber</p>
+                      <p className="font-bold text-slate-800 capitalize">{data?.payment_source || "Manual"}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 mb-1">Dibuat Pada</p>
+                    <div className="flex items-center gap-2 text-slate-700 font-medium text-sm">
+                      <FontAwesomeIcon icon={faCalendarDays} className="text-emerald-500" />
+                      {formatDateTime(data?.created_at)}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 mb-1">Dibayar Pada</p>
+                    <div className="flex items-center gap-2 text-slate-700 font-medium text-sm">
+                      <FontAwesomeIcon icon={faCheckCircle} className={data?.paid_at ? "text-emerald-500" : "text-slate-300"} />
+                      {formatDateTime(data?.paid_at)}
+                    </div>
+                  </div>
+                  <div className="col-span-2 lg:col-span-2">
+                    <p className="text-xs font-bold text-slate-400 mb-1">Catatan Internal</p>
+                    <p className="text-sm text-slate-600 italic">
+                      {data?.notes || "Tidak ada catatan."}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <span
-                className={[
-                  "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1",
-                  getStatusTone(String(data?.status ?? status)),
-                ].join(" ")}
-              >
-                {getStatusLabel(String(data?.status ?? status))}
-              </span>
             </div>
 
-            <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <dt className="text-xs font-semibold text-slate-500">Nominal</dt>
-                <dd className="mt-2 font-heading text-2xl font-bold text-slate-900">
-                  {formatCurrency(data?.amount)}
-                </dd>
-                <p className="mt-2 text-xs font-semibold text-slate-500">Dibuat: {formatDateTime(data?.created_at)}</p>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <dt className="text-xs font-semibold text-slate-500">Waktu bayar</dt>
-                <dd className="mt-2 text-sm font-bold text-slate-900">{formatDateTime(data?.paid_at)}</dd>
-                <p className="mt-2 text-xs font-semibold text-slate-500">Diperbarui: {formatDateTime(data?.updated_at)}</p>
-              </div>
-            </dl>
+            {/* Donor Info */}
+            <div className="rounded-[24px] border border-slate-200 bg-white p-8 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-6">
+                <FontAwesomeIcon icon={faUser} className="text-emerald-500" />
+                Informasi Donatur
+              </h2>
 
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Program</p>
-              <p className="mt-2 text-sm font-semibold text-slate-900">
-                {String(data?.program?.title ?? "").trim() || "Tanpa program"}
-              </p>
-              {data?.program?.slug ? (
-                <button
-                  type="button"
-                  onClick={() => window.open(`/program/${data.program?.slug}`, "_blank", "noopener,noreferrer")}
-                  className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-primary-200 bg-white px-4 py-2.5 text-sm font-bold text-primary-800 shadow-sm transition hover:bg-primary-50"
-                >
-                  <FontAwesomeIcon icon={faReceipt} />
-                  Lihat di landing
-                </button>
-              ) : null}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-100">
+                    <FontAwesomeIcon icon={faUser} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Nama Lengkap</p>
+                    <p className="font-bold text-slate-900 mt-1">{String(data?.donor_name ?? "Anonim")}</p>
+                    <p className="text-xs font-medium text-slate-400 mt-1">{data?.is_anonymous ? "(Donasi sebagai Anonim)" : "(Publik)"}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-100">
+                    <FontAwesomeIcon icon={faEnvelope} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Alamat Email</p>
+                    <p className="font-bold text-slate-900 mt-1">{data?.donor_email || "-"}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-100">
+                    <FontAwesomeIcon icon={faPhone} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Nomor Telepon</p>
+                    <p className="font-bold text-slate-900 mt-1">{data?.donor_phone || "-"}</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {proofUrl ? (
-              <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4">
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Bukti manual</p>
-                <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-3">
+            {/* Proof of Payment */}
+            {proofUrl && (
+              <div className="rounded-[24px] border border-slate-200 bg-white p-8 shadow-sm">
+                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-6">
+                  <FontAwesomeIcon icon={faReceipt} className="text-emerald-500" />
+                  Bukti Pembayaran Manual
+                </h2>
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-2">
                   <img
                     src={proofUrl}
-                    alt="Bukti pembayaran manual"
-                    className="h-auto w-full max-h-[420px] object-contain"
-                    loading="lazy"
+                    alt="Bukti Transfer"
+                    className="w-full h-auto object-contain max-h-[500px] rounded-xl"
                   />
                 </div>
               </div>
-            ) : null}
+            )}
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="font-heading text-xl font-semibold text-slate-900">Data Donatur</h2>
-            <dl className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                <dt className="text-xs font-semibold text-slate-500">Nama</dt>
-                <dd className="mt-2 text-sm font-bold text-slate-900">
-                  {String(data?.donor_name ?? "").trim() || "Anonim"}
-                </dd>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                <dt className="text-xs font-semibold text-slate-500">Anonim</dt>
-                <dd className="mt-2 text-sm font-bold text-slate-900">
-                  {data?.is_anonymous ? "Ya" : "Tidak"}
-                </dd>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                <dt className="text-xs font-semibold text-slate-500">Email</dt>
-                <dd className="mt-2 text-sm font-bold text-slate-900">{data?.donor_email ? String(data.donor_email) : "-"}</dd>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                <dt className="text-xs font-semibold text-slate-500">Telepon</dt>
-                <dd className="mt-2 text-sm font-bold text-slate-900">{data?.donor_phone ? String(data.donor_phone) : "-"}</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
+          {/* Sticky Sidebar */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="sticky top-8 space-y-6">
+              {/* Control Card */}
+              <div className="rounded-[24px] border border-indigo-100 bg-white p-6 shadow-xl shadow-indigo-50/50">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                    <FontAwesomeIcon icon={faFloppyDisk} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900">Perbarui Status</h3>
+                    <p className="text-xs text-slate-500">Verifikasi manual donasi ini</p>
+                  </div>
+                </div>
 
-        <aside className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:h-fit">
-          <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm">
-            <div className="flex items-start gap-4">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 ring-1 ring-primary-100">
-                <FontAwesomeIcon icon={faReceipt} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Kontrol</p>
-                <h2 className="mt-2 font-heading text-xl font-semibold text-slate-900">Status Donasi</h2>
-                <p className="mt-2 text-sm text-slate-600">
-                  {isMidtrans
-                    ? "Transaksi Midtrans bersifat otomatis dan status tidak dapat diubah dari admin."
-                    : "Perbarui status untuk verifikasi dan pelaporan."}
-                </p>
-              </div>
-            </div>
+                <div className="space-y-4">
+                  <label className="block">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Status Terkini</span>
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
+                      disabled={!canSave || isStatusLocked}
+                    >
+                      {statusOptions.map((option) => (
+                        <option key={option.value} value={option.value} disabled={option.disabled}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
-            <div className="mt-6 grid gap-3">
-              <label className="block">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Status</span>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                  disabled={!canSave || isStatusLocked}
-                >
-                  {statusOptions.map((option) => (
-                    <option key={option.value} value={option.value} disabled={option.disabled}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <label className="block">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Waktu Pembayaran (Manual)</span>
+                    <input
+                      type="datetime-local"
+                      value={paidAtLocal}
+                      onChange={(e) => setPaidAtLocal(e.target.value)}
+                      className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
+                      disabled={!canSave}
+                    />
+                  </label>
 
-              <label className="block">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Waktu bayar</span>
-                <input
-                  type="datetime-local"
-                  value={paidAtLocal}
-                  onChange={(e) => setPaidAtLocal(e.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                  disabled={!canSave}
-                />
-              </label>
+                  <label className="block">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Catatan Tambahan</span>
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      rows={3}
+                      className="mt-1.5 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
+                      disabled={!canSave}
+                      placeholder="Contoh: Transfer valid via BCA..."
+                    />
+                  </label>
 
-              <label className="block">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Catatan</span>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={4}
-                  placeholder="Catatan internal (opsional)."
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                  disabled={!canSave}
-                />
-              </label>
-
-              <button
-                type="button"
-                onClick={() => void onSaveStatus()}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-                disabled={!canSave}
-              >
-                <FontAwesomeIcon icon={faFloppyDisk} />
-                Simpan perubahan
-              </button>
-            </div>
-
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs font-semibold text-slate-600">
-              <span className="inline-flex items-start gap-2">
-                <FontAwesomeIcon icon={faCircleInfo} className="mt-0.5 text-slate-500" />
-                {isMidtrans ? (
-                  <>
-                    Status Midtrans dikelola otomatis oleh sistem pembayaran.
-                  </>
-                ) : (
-                  <>
-                    Perubahan status <span className="font-bold">paid</span> akan mempengaruhi total terkumpul pada program.
-                  </>
-                )}
-              </span>
-            </div>
-          </div>
-
-          {isPendingStatus ? (
-            <div className="rounded-[28px] border border-red-200 bg-white p-6 shadow-sm">
-              <div className="flex items-start gap-4">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-700 ring-1 ring-red-100">
-                  <FontAwesomeIcon icon={faTrash} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Aksi</p>
-                  <h2 className="mt-2 font-heading text-xl font-semibold text-slate-900">Hapus Donasi</h2>
-                  <p className="mt-2 text-sm text-slate-600">Gunakan hanya jika benar-benar diperlukan.</p>
+                  {isMidtrans ? (
+                    <div className="rounded-xl bg-blue-50 p-4 border border-blue-100 text-xs font-medium text-blue-700 flex items-start gap-2">
+                      <FontAwesomeIcon icon={faCircleInfo} className="mt-0.5" />
+                      Status ini dikelola otomatis oleh Midtrans payment gateway dan tidak dapat diubah manual.
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => void onSaveStatus()}
+                      disabled={!canSave}
+                      className="w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                    >
+                      Simpan Perubahan
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {!confirmDelete ? (
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(true)}
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white px-5 py-3 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-                  disabled={!canDelete}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                  Hapus
-                </button>
-              ) : (
-                <div className="mt-5 grid gap-2 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    onClick={() => setConfirmDelete(false)}
-                    className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                    disabled={deleting}
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void onDelete()}
-                    className="inline-flex items-center justify-center rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-                    disabled={deleting}
-                  >
-                    {deleting ? "Menghapus..." : "Konfirmasi"}
-                  </button>
+              {/* Delete Zone */}
+              {isPendingStatus && (
+                <div className="rounded-[24px] border border-rose-100 bg-white p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-10 w-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
+                      <FontAwesomeIcon icon={faTrash} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900">Area Berbahaya</h3>
+                    </div>
+                  </div>
+
+                  {!confirmDelete ? (
+                    <button
+                      onClick={() => setConfirmDelete(true)}
+                      disabled={!canDelete}
+                      className="w-full rounded-xl border-2 border-rose-100 bg-white py-3 text-sm font-bold text-rose-600 transition hover:bg-rose-50 hover:border-rose-200"
+                    >
+                      Hapus Donasi Ini
+                    </button>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold text-rose-600 text-center">Yakin ingin menghapus data permanen?</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setConfirmDelete(false)}
+                          className="flex-1 rounded-lg bg-slate-100 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          onClick={() => void onDelete()}
+                          disabled={deleting}
+                          className="flex-1 rounded-lg bg-rose-600 py-2 text-xs font-bold text-white hover:bg-rose-700"
+                        >
+                          {deleting ? "Menghapus..." : "Ya, Hapus"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          ) : null}
-        </aside>
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

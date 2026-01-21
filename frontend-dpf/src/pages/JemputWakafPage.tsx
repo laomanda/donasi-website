@@ -167,7 +167,7 @@ export function JemputWakafPage() {
         address_full: form.address_full,
         city: form.city,
         district: form.district,
-        wakaf_type: form.wakaf_type,
+        zakat_type: form.wakaf_type,
         estimation: form.estimation || undefined,
         preferred_time: form.preferred_time || undefined,
       });

@@ -356,7 +356,7 @@ export function LandingNavbar() {
             .then((settings) => {
                 if (active) setPublicSettings(settings);
             })
-            .catch(() => {});
+            .catch(() => { });
         return () => {
             active = false;
         };
@@ -452,14 +452,13 @@ export function LandingNavbar() {
                                         {emailText}
                                     </a>
                                 </span>
-                                <Link to="/donate" className={`inline-flex items-center gap-2 ${topbarLinkClass}`}>
+                                <Link to="/donate#rekening-resmi" className={`inline-flex items-center gap-2 ${topbarLinkClass}`}>
                                     <FontAwesomeIcon icon={faHandHoldingHeart} className={topbarIconClass} />
                                     {t.donationAccount}
                                 </Link>
                                 <div
-                                    className={`inline-flex items-center gap-2 font-semibold ml-6 ${
-                                        topbarDark ? "text-white/70" : "text-slate-600"
-                                    }`}
+                                    className={`inline-flex items-center gap-2 font-semibold ml-6 ${topbarDark ? "text-white/70" : "text-slate-600"
+                                        }`}
                                 >
                                     <PrayerBadge variant={topbarDark ? "dark" : "light"} />
                                 </div>
@@ -485,7 +484,7 @@ export function LandingNavbar() {
                                                 ref={searchInputRef}
                                                 value={searchQuery}
                                                 onChange={(e) => handleSearchChange(e.target.value)}
-                                            placeholder={searchFeedback ? t.searchNotFound : t.searchPlaceholder}
+                                                placeholder={searchFeedback ? t.searchNotFound : t.searchPlaceholder}
                                                 list="landing-search-keywords"
                                                 className={searchInputClass}
                                             />
@@ -584,9 +583,8 @@ export function LandingNavbar() {
                                         <FontAwesomeIcon icon={langOpen ? faCaretUp : faCaretDown} className={langIconClass} />
                                     </button>
                                     <div
-                                        className={`absolute right-0 top-full mt-3 min-w-[160px] rounded-xl transition ${langDropdownClass} ${
-                                            langOpen ? "opacity-100 translate-y-0 pointer-events-auto z-[80]" : "pointer-events-none opacity-0 -translate-y-1 z-0"
-                                        }`}
+                                        className={`absolute right-0 top-full mt-3 min-w-[160px] rounded-xl transition ${langDropdownClass} ${langOpen ? "opacity-100 translate-y-0 pointer-events-auto z-[80]" : "pointer-events-none opacity-0 -translate-y-1 z-0"
+                                            }`}
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         {[
@@ -600,9 +598,8 @@ export function LandingNavbar() {
                                                     setLocale(opt.code);
                                                     setLangOpen(false);
                                                 }}
-                                                className={`flex w-full items-center gap-3 px-3 py-2 text-sm transition ${langOptionClass} ${
-                                                    locale === opt.code ? langOptionActiveClass : langOptionHoverClass
-                                                }`}
+                                                className={`flex w-full items-center gap-3 px-3 py-2 text-sm transition ${langOptionClass} ${locale === opt.code ? langOptionActiveClass : langOptionHoverClass
+                                                    }`}
                                             >
                                                 <img src={opt.flag} alt={opt.label} className="h-6 w-9 rounded-sm object-cover" />
                                                 <span className="font-semibold">{opt.label}</span>
@@ -640,9 +637,8 @@ export function LandingNavbar() {
 
                     <div
                         aria-hidden="true"
-                        className={`pointer-events-none absolute inset-x-0 -bottom-[1px] z-0 overflow-hidden transition-all duration-500 ease-in-out ${
-                            showWave ? "max-h-[20px] translate-y-0 opacity-100" : "max-h-0 translate-y-2 opacity-0"
-                        }`}
+                        className={`pointer-events-none absolute inset-x-0 -bottom-[1px] z-0 overflow-hidden transition-all duration-500 ease-in-out ${showWave ? "max-h-[20px] translate-y-0 opacity-100" : "max-h-0 translate-y-2 opacity-0"
+                            }`}
                     >
                         <svg
                             className="block w-full h-[18px]"
@@ -677,145 +673,145 @@ export function LandingNavbar() {
                     {/* Panel Menu Mobile */}
                     <div className="lg:hidden fixed inset-x-0 top-0 z-40 bg-white rounded-b-[2rem] shadow-xl overflow-hidden animate-slide-down">
                         <div className="max-h-[92dvh] overflow-y-auto">
-                        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                             <div className="flex items-center gap-2">
-                                <span className="font-heading font-bold text-slate-800">{t.menuTitle}</span>
-                             </div>
-                             <button
-                                onClick={() => setOpen(false)}
-                                className="h-9 w-9 rounded-full bg-slate-100 text-slate-500 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition"
-                            >
-                                 <FontAwesomeIcon icon={faXmark} />
-                             </button>
-                        </div>
-
-                        <div className="p-5 space-y-1">
-                             <div className="mb-4">
-                                 <PrayerBadge />
-                             </div>
-
-                             <div className="rounded-xl border border-slate-100 bg-white p-3 text-xs text-slate-600 space-y-2 mb-4">
-                                 <div className="flex items-center gap-2">
-                                     <FontAwesomeIcon icon={faPhone} className="text-brandGreen-600" />
-                                     {t.phoneLabel}:{" "}
-                                     <a
-                                         href={phoneLink}
-                                         target="_blank"
-                                         rel="noreferrer"
-                                         className="font-semibold text-slate-800"
-                                     >
-                                         {phoneNumber}
-                                     </a>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                     <FontAwesomeIcon icon={faEnvelope} className="text-brandGreen-600" />
-                                     {t.emailLabel}:{" "}
-                                     <a href={emailLink} className="font-semibold text-slate-800">
-                                         {emailText}
-                                     </a>
-                                 </div>
-                                 <button
-                                     type="button"
-                                     onClick={() => {
-                                         setOpen(false);
-                                         navigate("/donate");
-                                     }}
-                                     className="inline-flex items-center gap-2 font-semibold text-brandGreen-700"
-                                 >
-                                     <FontAwesomeIcon icon={faHandHoldingHeart} />
-                                     {t.donationAccount}
-                                 </button>
-                             </div>
-
-                             <form onSubmit={handleSearch} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 mb-2">
-                                 <FontAwesomeIcon icon={faMagnifyingGlass} className="text-slate-400" />
-                                 <input
-                                     value={searchQuery}
-                                     onChange={(e) => handleSearchChange(e.target.value)}
-                                    placeholder={t.searchPlaceholder}
-                                     list="landing-search-keywords"
-                                     className="w-full bg-transparent text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:outline-none"
-                                 />
-                                 <button
-                                     type="submit"
-                                     className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brandGreen-600 text-white transition hover:bg-brandGreen-700"
-                                     aria-label={t.searchButton}
-                                 >
-                                     <FontAwesomeIcon icon={faMagnifyingGlass} />
-                                 </button>
-                             </form>
-                             {searchFeedback && (
-                                 <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 mb-3">
-                                     {searchFeedback}
-                                 </div>
-                             )}
-
-                             <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-xs font-semibold text-slate-500 mb-3">
-                                 <div className="flex items-center gap-2">
-                                     <FontAwesomeIcon icon={faGlobe} className="text-brandGreen-600" />
-                                     {t.language}
-                                 </div>
-                                 <div className="flex items-center gap-1 rounded-full bg-slate-50 p-1 ring-1 ring-slate-100">
-                                     <button
-                                         type="button"
-                                         onClick={() => setLocale("id")}
-                                         aria-label="Bahasa Indonesia"
-                                         className={`h-7 w-10 rounded-md ${locale === "id" ? "bg-brandGreen-600 ring-1 ring-brandGreen-700" : "bg-white"}`}
-                                     >
-                                         <img
-                                             src="/brand/Indonesia.svg"
-                                             alt="Indonesia"
-                                             className="h-full w-full rounded-sm object-cover"
-                                         />
-                                     </button>
-                                     <button
-                                         type="button"
-                                         onClick={() => setLocale("en")}
-                                         aria-label="English"
-                                         className={`h-7 w-10 rounded-md ${locale === "en" ? "bg-brandGreen-600 ring-1 ring-brandGreen-700" : "bg-white"}`}
-                                     >
-                                         <img
-                                             src="/brand/United-Kingdom.svg"
-                                             alt="English"
-                                             className="h-full w-full rounded-sm object-cover"
-                                         />
-                                     </button>
-                                 </div>
-                             </div>
-
-                            {items.map((it) => (
+                            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-heading font-bold text-slate-800">{t.menuTitle}</span>
+                                </div>
                                 <button
-                                    key={it.href}
-                                    onClick={() => { setOpen(false); navigate(it.href); }}
-                                    className={`flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-semibold transition
-                                      ${location.pathname === it.href
-                                        ? "bg-primary-50 text-primary-700 border border-primary-100"
-                                        : "text-slate-700 hover:bg-slate-50"
-                                      }`}
+                                    onClick={() => setOpen(false)}
+                                    className="h-9 w-9 rounded-full bg-slate-100 text-slate-500 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition"
                                 >
-                                    <FontAwesomeIcon icon={it.icon} className={`${location.pathname === it.href ? "text-primary-600" : "text-slate-400"} w-5`} />
-                                    {it.label}
+                                    <FontAwesomeIcon icon={faXmark} />
                                 </button>
-                            ))}
-                        </div>
+                            </div>
 
-                        <div className="bg-slate-50 p-5 grid grid-cols-2 gap-3 border-t border-slate-100">
-                            <button
-                                onClick={() => { setOpen(false); navigate("/login"); }}
-                                className="inline-flex justify-center items-center rounded-xl border border-slate-200 bg-primary-600 py-3 text-sm font-semibold text-white hover:bg-primary-700 transition"
-                            >
-                                <FontAwesomeIcon icon={faRightToBracket} className="mr-2" />
-                                {t.login}
-                            </button>
+                            <div className="p-5 space-y-1">
+                                <div className="mb-4">
+                                    <PrayerBadge />
+                                </div>
 
-                            <button
-                                onClick={() => { setOpen(false); navigate("/donate"); }}
-                                className="inline-flex justify-center items-center rounded-xl bg-brandGreen-600 py-3 text-sm font-semibold text-white shadow-md hover:bg-brandGreen-700 transition"
-                            >
-                                <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" />
-                                {t.donate}
-                            </button>
-                        </div>
+                                <div className="rounded-xl border border-slate-100 bg-white p-3 text-xs text-slate-600 space-y-2 mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <FontAwesomeIcon icon={faPhone} className="text-brandGreen-600" />
+                                        {t.phoneLabel}:{" "}
+                                        <a
+                                            href={phoneLink}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="font-semibold text-slate-800"
+                                        >
+                                            {phoneNumber}
+                                        </a>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <FontAwesomeIcon icon={faEnvelope} className="text-brandGreen-600" />
+                                        {t.emailLabel}:{" "}
+                                        <a href={emailLink} className="font-semibold text-slate-800">
+                                            {emailText}
+                                        </a>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOpen(false);
+                                            navigate("/donate#rekening-resmi");
+                                        }}
+                                        className="inline-flex items-center gap-2 font-semibold text-brandGreen-700"
+                                    >
+                                        <FontAwesomeIcon icon={faHandHoldingHeart} />
+                                        {t.donationAccount}
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handleSearch} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 mb-2">
+                                    <FontAwesomeIcon icon={faMagnifyingGlass} className="text-slate-400" />
+                                    <input
+                                        value={searchQuery}
+                                        onChange={(e) => handleSearchChange(e.target.value)}
+                                        placeholder={t.searchPlaceholder}
+                                        list="landing-search-keywords"
+                                        className="w-full bg-transparent text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:outline-none"
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brandGreen-600 text-white transition hover:bg-brandGreen-700"
+                                        aria-label={t.searchButton}
+                                    >
+                                        <FontAwesomeIcon icon={faMagnifyingGlass} />
+                                    </button>
+                                </form>
+                                {searchFeedback && (
+                                    <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 mb-3">
+                                        {searchFeedback}
+                                    </div>
+                                )}
+
+                                <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-xs font-semibold text-slate-500 mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <FontAwesomeIcon icon={faGlobe} className="text-brandGreen-600" />
+                                        {t.language}
+                                    </div>
+                                    <div className="flex items-center gap-1 rounded-full bg-slate-50 p-1 ring-1 ring-slate-100">
+                                        <button
+                                            type="button"
+                                            onClick={() => setLocale("id")}
+                                            aria-label="Bahasa Indonesia"
+                                            className={`h-7 w-10 rounded-md ${locale === "id" ? "bg-brandGreen-600 ring-1 ring-brandGreen-700" : "bg-white"}`}
+                                        >
+                                            <img
+                                                src="/brand/Indonesia.svg"
+                                                alt="Indonesia"
+                                                className="h-full w-full rounded-sm object-cover"
+                                            />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setLocale("en")}
+                                            aria-label="English"
+                                            className={`h-7 w-10 rounded-md ${locale === "en" ? "bg-brandGreen-600 ring-1 ring-brandGreen-700" : "bg-white"}`}
+                                        >
+                                            <img
+                                                src="/brand/United-Kingdom.svg"
+                                                alt="English"
+                                                className="h-full w-full rounded-sm object-cover"
+                                            />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {items.map((it) => (
+                                    <button
+                                        key={it.href}
+                                        onClick={() => { setOpen(false); navigate(it.href); }}
+                                        className={`flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-semibold transition
+                                      ${location.pathname === it.href
+                                                ? "bg-primary-50 text-primary-700 border border-primary-100"
+                                                : "text-slate-700 hover:bg-slate-50"
+                                            }`}
+                                    >
+                                        <FontAwesomeIcon icon={it.icon} className={`${location.pathname === it.href ? "text-primary-600" : "text-slate-400"} w-5`} />
+                                        {it.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="bg-slate-50 p-5 grid grid-cols-2 gap-3 border-t border-slate-100">
+                                <button
+                                    onClick={() => { setOpen(false); navigate("/login"); }}
+                                    className="inline-flex justify-center items-center rounded-xl border border-slate-200 bg-primary-600 py-3 text-sm font-semibold text-white hover:bg-primary-700 transition"
+                                >
+                                    <FontAwesomeIcon icon={faRightToBracket} className="mr-2" />
+                                    {t.login}
+                                </button>
+
+                                <button
+                                    onClick={() => { setOpen(false); navigate("/donate"); }}
+                                    className="inline-flex justify-center items-center rounded-xl bg-brandGreen-600 py-3 text-sm font-semibold text-white shadow-md hover:bg-brandGreen-700 transition"
+                                >
+                                    <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" />
+                                    {t.donate}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </>

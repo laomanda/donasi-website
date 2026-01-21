@@ -71,7 +71,7 @@ export const landingDict: Dict = {
     "landing.promise.jemput.text": { id: "Tidak perlu ke mana-mana, kami menjemput amanah WAKAF langsung ke lokasi Anda.", en: "No need to travel; we collect your WAKAF directly at your location." },
     "landing.promise.konfirmasi.title": { id: "Konfirmasi Donasi", en: "Confirm Donation" },
     "landing.promise.konfirmasi.text": { id: "Sudah transfer? Konfirmasi donasi agar bukti setor tercatat dan dana segera disalurkan.", en: "Already transferred? Confirm so your donation is recorded and distributed promptly." },
-    "landing.promise.konsultasi.title": { id: "Konsultasi WAKAF", en: "WAKAF Consultation" },
+    "landing.promise.konsultasi.title": { id: "Konsultasi ZISWAF", en: "ZISWAF Consultation" },
     "landing.promise.konsultasi.text": { id: "Diskusikan wakaf, infak, sedekah, dan wakaf bersama konsultan kami agar tepat sasaran.", en: "Discuss wakaf, infaq, sadaqah, and waqf with our consultants for proper allocation." },
     "landing.promise.more": { id: "Selengkapnya", en: "Learn more" },
 

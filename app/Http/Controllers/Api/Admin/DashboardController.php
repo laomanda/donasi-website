@@ -34,7 +34,15 @@ class DashboardController extends Controller
             ],
             'recent_donations' => Donation::with('program')
                 ->orderByDesc('created_at')
-                ->limit(10)
+                ->limit(5)
+                ->get(),
+            'upcoming_pickups' => PickupRequest::whereIn('status', ['baru', 'dijadwalkan'])
+                ->orderByDesc('created_at')
+                ->limit(5)
+                ->get(),
+            'urgent_consultations' => ZiswafConsultation::where('status', 'baru')
+                ->orderBy('created_at', 'asc')
+                ->limit(5)
                 ->get(),
             'highlight_programs' => Program::highlight()->limit(5)->get(),
         ];

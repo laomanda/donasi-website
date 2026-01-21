@@ -46,7 +46,7 @@ import { EditorTasksPage } from '../pages/management/editor/EditorTasksPage'
 import { SearchPage } from '../pages/management/shared/SearchPage'
 import { AdminDashboardPage } from '../pages/management/admin/AdminDashboardPage'
 import { AdminDonationsPage } from '../pages/management/admin/AdminDonationsPage'
-import { AdminDonationReportPage } from '../pages/management/admin/AdminDonationReportPage'
+import { DonationReportPage } from '../pages/management/shared/DonationReportPage'
 import { AdminDonationManualCreatePage } from '../pages/management/admin/AdminDonationManualCreatePage'
 import { AdminDonationShowPage } from '../pages/management/admin/AdminDonationShowPage'
 import { AdminDonationConfirmationsPage } from '../pages/management/admin/AdminDonationConfirmationsPage'
@@ -63,7 +63,6 @@ import { SuperAdminUsersPage } from '../pages/management/superadmin/SuperAdminUs
 import { SuperAdminUserCreatePage } from '../pages/management/superadmin/SuperAdminUserCreatePage'
 import { SuperAdminUserEditPage } from '../pages/management/superadmin/SuperAdminUserEditPage'
 import { SuperAdminDashboardPage } from '../pages/management/superadmin/SuperAdminDashboardPage'
-import { SuperAdminDonationReportPage } from '../pages/management/superadmin/SuperAdminDonationReportPage'
 import { SuperAdminEditorTasksPage } from '../pages/management/superadmin/SuperAdminEditorTasksPage'
 import { SuperAdminEditorTaskCreatePage } from '../pages/management/superadmin/SuperAdminEditorTaskCreatePage'
 
@@ -123,7 +122,7 @@ export const router = createBrowserRouter([
             path: 'donations',
             element: <AdminDonationsPage />,
           },
-          { path: 'reports/donations', element: <AdminDonationReportPage /> },
+          { path: 'reports/donations', element: <DonationReportPage /> },
           {
             path: 'donation-confirmations',
             element: <AdminDonationConfirmationsPage />,
@@ -158,7 +157,7 @@ export const router = createBrowserRouter([
           },
           { path: 'users/create', element: <SuperAdminUserCreatePage /> },
           { path: 'users/:id/edit', element: <SuperAdminUserEditPage /> },
-          { path: 'reports/donations', element: <SuperAdminDonationReportPage /> },
+          { path: 'reports/donations', element: <DonationReportPage /> },
           { path: 'editor-tasks', element: <SuperAdminEditorTasksPage /> },
           { path: 'editor-tasks/create', element: <SuperAdminEditorTaskCreatePage /> },
           {

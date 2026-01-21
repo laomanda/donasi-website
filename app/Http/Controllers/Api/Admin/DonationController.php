@@ -66,7 +66,7 @@ class DonationController extends Controller
             'amount'          => ['required', 'numeric', 'min:1'],
             'is_anonymous'    => ['required', 'boolean'],
             'payment_method'  => ['required', 'string', 'max:100'],
-            'payment_channel' => ['nullable', 'string', 'max:100'],
+            'payment_channel' => ['nullable', 'string', 'max:255'],
             'notes'           => ['nullable', 'string'],
             'manual_proof_path' => ['nullable', 'string', 'max:255'],
         ]);

@@ -8,10 +8,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
-import { getAuthToken, getAuthUser } from "../../../lib/auth";
-import { resolveApiBaseUrl } from "../../../lib/urls";
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
+import { getAuthUser } from "../../../lib/auth";
+
 
 type EditorTaskItem = {
     id: number;
@@ -227,17 +225,9 @@ export function EditorTasksPage() {
     }, [statusFilter, priorityFilter, searchQuery, perPage]);
 
     useEffect(() => {
-        let active = true;
         let pollId: number | null = null;
-        let echo: Echo<any> | null = null;
-        let channelName: string | null = null;
 
         if (typeof window === "undefined") return () => { };
-
-        const token = getAuthToken();
-        const pusherKey = import.meta.env.VITE_PUSHER_APP_KEY as string | undefined;
-        const userIdRaw = storedUser?.id;
-        const userId = typeof userIdRaw === "number" ? userIdRaw : Number(userIdRaw);
 
         const refreshTasks = () => {
             if (backgroundRefreshRef.current) return;
@@ -257,65 +247,9 @@ export function EditorTasksPage() {
         };
 
         const fallbackInterval = 5_000;
-
-        if (!token || !pusherKey || !Number.isFinite(userId)) {
-            pollId = window.setInterval(refreshTasks, fallbackInterval);
-            return () => {
-                active = false;
-                if (pollId) window.clearInterval(pollId);
-            };
-        }
-
-        const cluster = import.meta.env.VITE_PUSHER_APP_CLUSTER as string | undefined;
-        const host = import.meta.env.VITE_PUSHER_HOST as string | undefined;
-        const portValue = import.meta.env.VITE_PUSHER_PORT as string | undefined;
-        const scheme = (import.meta.env.VITE_PUSHER_APP_SCHEME as string | undefined) ?? "https";
-        const port = Number(portValue || (scheme === "https" ? 443 : 80));
-
-        (window as any).Pusher = Pusher;
-        echo = new Echo({
-            broadcaster: "pusher",
-            key: pusherKey,
-            cluster,
-            forceTLS: scheme === "https",
-            wsHost: host || undefined,
-            wsPort: host ? port : undefined,
-            wssPort: host ? port : undefined,
-            enabledTransports: ["ws", "wss"],
-            authEndpoint: `${resolveApiBaseUrl()}/broadcasting/auth`,
-            auth: {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            },
-        });
-
-        channelName = `editor-tasks.${userId}`;
-        echo.private(channelName).listen(".tasks.count", () => {
-            if (!active) return;
-            refreshTasks();
-        });
-
-        echo.connector?.pusher?.connection.bind("connected", () => {
-            if (!active) return;
-            if (pollId) {
-                window.clearInterval(pollId);
-                pollId = null;
-            }
-            refreshTasks();
-        });
-
-        echo.connector?.pusher?.connection.bind("error", () => {
-            if (!active) return;
-            if (!pollId) pollId = window.setInterval(refreshTasks, fallbackInterval);
-        });
+        pollId = window.setInterval(refreshTasks, fallbackInterval);
 
         return () => {
-            active = false;
-            if (echo && channelName) {
-                echo.leave(channelName);
-            }
-            if (echo) echo.disconnect();
             if (pollId) window.clearInterval(pollId);
         };
     }, [storedUser]);

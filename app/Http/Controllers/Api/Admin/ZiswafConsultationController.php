@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ZiswafConsultation;
+use App\Support\AdminBadgeNotifier;
 use Illuminate\Http\Request;
 
 class ZiswafConsultationController extends Controller
@@ -37,6 +38,7 @@ class ZiswafConsultationController extends Controller
         $data['status'] = $data['status'] ?? 'baru';
 
         $consultation = ZiswafConsultation::create($data);
+        AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($consultation, 201);
     }
@@ -51,6 +53,7 @@ class ZiswafConsultationController extends Controller
         $data = $this->validatePayload($request, false);
 
         $ziswafConsultation->update($data);
+        AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($ziswafConsultation->refresh());
     }
@@ -63,6 +66,7 @@ class ZiswafConsultationController extends Controller
         ]);
 
         $ziswafConsultation->update($data);
+        AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($ziswafConsultation->refresh());
     }
@@ -70,6 +74,7 @@ class ZiswafConsultationController extends Controller
     public function destroy(ZiswafConsultation $ziswafConsultation)
     {
         $ziswafConsultation->delete();
+        AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json(['message' => 'Consultation deleted.']);
     }

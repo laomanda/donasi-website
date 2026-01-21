@@ -122,9 +122,7 @@ Route::prefix('v1')->group(function () {
         ->group(function () {
             Route::get('dashboard', AdminDashboardController::class)->name('dashboard');
 
-            Route::apiResource('programs', AdminProgramController::class);
-            Route::patch('programs/{program}/status', [AdminProgramController::class, 'updateStatus']);
-            Route::patch('programs/{program}/highlight', [AdminProgramController::class, 'toggleHighlight']);
+            Route::apiResource('programs', AdminProgramController::class)->only(['index', 'show']);
             Route::apiResource('banners', AdminBannerController::class)->except('show');
 
             Route::get('donations', [AdminDonationController::class, 'index']);
@@ -148,8 +146,7 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('service-requests', AdminServiceRequestController::class);
             Route::patch('service-requests/{service_request}/status', [AdminServiceRequestController::class, 'updateStatus']);
 
-            Route::apiResource('articles', AdminArticleController::class);
-            Route::post('articles/{article}/publish', [AdminArticleController::class, 'publish']);
+
 
             Route::apiResource('partners', AdminPartnerController::class)->except('show');
             Route::apiResource('organization-members', AdminOrganizationController::class);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\ZiswafConsultation;
+use App\Support\AdminBadgeNotifier;
 use Illuminate\Http\Request;
 
 class ConsultationController extends Controller
@@ -21,6 +22,7 @@ class ConsultationController extends Controller
         $data['status'] = 'baru';
 
         $consultation = ZiswafConsultation::create($data);
+        AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($consultation, 201);
     }

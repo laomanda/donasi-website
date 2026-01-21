@@ -9,7 +9,7 @@ module.exports = {
       colors: {
         // BRAND DPF
         primary: {
-          50:  "#fff7e6",
+          50: "#fff7e6",
           100: "#ffebbf",
           200: "#ffd68a",
           300: "#ffbf4d",
@@ -21,7 +21,7 @@ module.exports = {
           900: "#9a3412",
         },
         brandGreen: {
-          50:  "#f3faf3",
+          50: "#f3faf3",
           100: "#e1f4e1",
           200: "#bde4bd",
           300: "#8fcd8f",
@@ -31,6 +31,18 @@ module.exports = {
           700: "#295a29",
           800: "#1f4220",
           900: "#152d16",
+        },
+        brandBlueTeal: {
+          500: "#2B7A9B", // Custom Blue Teal
+          100: "#EAF5F8", // light bg
+        },
+        brandWarmOrange: {
+          500: "#F39C12", // Custom Warm Orange
+          100: "#FEF5E7", // light bg
+        },
+        brandPurple: {
+          500: "#8E44AD", // Custom Purple
+          100: "#F4ECF7", // light bg
         },
       },
       fontFamily: {
@@ -56,7 +68,7 @@ module.exports = {
         "2xl": "1.2rem",
       },
       boxShadow: {
-        soft: "0 18px 45px rgba(15, 23, 42, 0.06)", 
+        soft: "0 18px 45px rgba(15, 23, 42, 0.06)",
       },
     },
   },

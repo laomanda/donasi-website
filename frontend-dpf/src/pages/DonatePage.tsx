@@ -11,7 +11,7 @@ import {
 import { LandingLayout } from "../layouts/LandingLayout";
 import { WaveDivider } from "../components/landing/WaveDivider";
 import http from "../lib/http";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { resolveStorageBaseUrl } from "../lib/urls";
 import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
 import donasiUmumImage from "../brand/assets/Donasi-umum.png";
@@ -21,12 +21,26 @@ import { landingDict, translate as translateLanding } from "../i18n/landing";
 type BankAccount = {
     id: number;
     bank_name: string;
-    account_number: string;
-    account_name: string;
+    account_number?: string | null;
+    account_name?: string | null;
     branch?: string | null;
     is_visible?: boolean;
     notes?: string | null;
+    image_path?: string | null;
+    category?: string;
+    type?: string;
 };
+
+// ... (OrganizationResponse, DonationSummaryResponse, Program, etc. same as before)
+
+// ... (DonatePage component logic)
+// ... inside DonatePage
+
+
+// ... (rest of DonatePage)
+
+
+
 
 type OrganizationResponse = {
     bank_accounts?: BankAccount[];
@@ -233,7 +247,45 @@ function DonatePage() {
         requestAnimationFrame(() => donateFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
     }, [requestedProgramId, programs]);
 
+    // Handle hash scrolling
+    const location = useLocation();
+    useEffect(() => {
+        if (location.hash) {
+            const id = location.hash.replace("#", "");
+            const element = document.getElementById(id);
+            if (element) {
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 100);
+            }
+        }
+    }, [location.hash, loading]);
+
     const visibleAccounts = accounts.filter((a) => a.is_visible !== false);
+
+    // Group accounts
+    const groupedAccounts = useMemo(() => {
+        const groups: Record<string, BankAccount[]> = {};
+        visibleAccounts.forEach(acc => {
+            const cat = acc.category || 'bank_transfer';
+            if (!groups[cat]) groups[cat] = [];
+            groups[cat].push(acc);
+        });
+        return groups;
+    }, [visibleAccounts]);
+
+    const categoryLabels: Record<string, string> = {
+        bank_transfer: "Transfer Bank",
+        ewallet: "E-Wallet",
+        qris: "QRIS",
+        virtual_account: "Virtual Account",
+        other: "Lainnya"
+    };
+
+    const categoryOrder = ['bank_transfer', 'virtual_account', 'ewallet', 'qris', 'other'];
+    const sortedCategories = Object.keys(groupedAccounts).sort((a, b) => {
+        return categoryOrder.indexOf(a) - categoryOrder.indexOf(b);
+    });
     const selectedProgram = localizedPrograms.find((program) => String(program.id) === form.program_id) ?? null;
     const isGeneralDonation = !form.program_id;
     const selectedProgramImage = isGeneralDonation
@@ -438,40 +490,40 @@ function DonatePage() {
                                                 />
                                             </div>
                                             <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-                                            <div className="flex flex-wrap items-center gap-4">
-                                                <span>
-                                                    {t("donate.card.collected")}{" "}
-                                                    <span className="font-semibold text-slate-700">
-                                                        {hasProgramProgress ? formatCurrency(displayCollected, locale) : formatCurrency(0, locale)}
-                                                    </span>
-                                                </span>
-                                                <span>
-                                                    {t("donate.card.target")}{" "}
-                                                    <span className="font-semibold text-slate-700">
-                                                        {hasProgramProgress && displayTarget !== null
-                                                            ? formatCurrency(displayTarget, locale)
-                                                            : t("donate.card.flexible")}
-                                                    </span>
-                                                </span>
-                                                {isGeneralDonation && generalDonationCount > 0 && (
+                                                <div className="flex flex-wrap items-center gap-4">
                                                     <span>
-                                                        {t("donate.card.totalDonations")}{" "}
-                                                        <span className="font-semibold text-slate-700">{formatNumber(generalDonationCount)}</span>
+                                                        {t("donate.card.collected")}{" "}
+                                                        <span className="font-semibold text-slate-700">
+                                                            {hasProgramProgress ? formatCurrency(displayCollected, locale) : formatCurrency(0, locale)}
+                                                        </span>
                                                     </span>
+                                                    <span>
+                                                        {t("donate.card.target")}{" "}
+                                                        <span className="font-semibold text-slate-700">
+                                                            {hasProgramProgress && displayTarget !== null
+                                                                ? formatCurrency(displayTarget, locale)
+                                                                : t("donate.card.flexible")}
+                                                        </span>
+                                                    </span>
+                                                    {isGeneralDonation && generalDonationCount > 0 && (
+                                                        <span>
+                                                            {t("donate.card.totalDonations")}{" "}
+                                                            <span className="font-semibold text-slate-700">{formatNumber(generalDonationCount)}</span>
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {!isGeneralDonation && (
+                                                    <Link
+                                                        to={detailLink}
+                                                        className="inline-flex items-center justify-center rounded-full border border-transparent bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-brandGreen-700 hover:to-primary-700"
+                                                    >
+                                                        {t("donate.card.detail")}
+                                                    </Link>
                                                 )}
                                             </div>
-                                            {!isGeneralDonation && (
-                                                <Link
-                                                    to={detailLink}
-                                                    className="inline-flex items-center justify-center rounded-full border border-transparent bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-brandGreen-700 hover:to-primary-700"
-                                                >
-                                                    {t("donate.card.detail")}
-                                                </Link>
-                                            )}
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                             </div>
 
                             <div className="rounded-[24px] border border-slate-100 bg-gradient-to-br from-brandGreen-600 to-primary-600 p-8 text-white shadow-[0_28px_80px_-50px_rgba(16,185,129,0.6)]">
@@ -574,11 +626,10 @@ function DonatePage() {
                                                 key={value}
                                                 type="button"
                                                 onClick={() => handleChange("amount", value)}
-                                                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
-                                                    isActive
-                                                        ? "border-brandGreen-600 bg-brandGreen-600 text-white shadow-sm"
-                                                        : "border-slate-200 bg-white text-slate-700 hover:border-brandGreen-200 hover:text-brandGreen-700"
-                                                }`}
+                                                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${isActive
+                                                    ? "border-brandGreen-600 bg-brandGreen-600 text-white shadow-sm"
+                                                    : "border-slate-200 bg-white text-slate-700 hover:border-brandGreen-200 hover:text-brandGreen-700"
+                                                    }`}
                                             >
                                                 {formatNumber(amount)}
                                             </button>
@@ -586,13 +637,13 @@ function DonatePage() {
                                     })}
                                 </div>
                             </div>
-                                <InputField
-                                    label={t("donate.form.amount")}
-                                    value={form.amount}
-                                    onChange={(v) => handleChange("amount", v)}
-                                    required
-                                    error={formErrors.amount ? t(formErrors.amount) : ""}
-                                />
+                            <InputField
+                                label={t("donate.form.amount")}
+                                value={form.amount}
+                                onChange={(v) => handleChange("amount", v)}
+                                required
+                                error={formErrors.amount ? t(formErrors.amount) : ""}
+                            />
                             <label className="flex items-center gap-3 text-sm font-semibold text-slate-700">
                                 <input
                                     type="checkbox"
@@ -606,11 +657,10 @@ function DonatePage() {
 
                             {submitState.messageKey && (
                                 <div
-                                    className={`rounded-xl px-4 py-3 text-sm font-semibold ${
-                                        submitState.type === "success"
-                                            ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
-                                            : "border border-red-100 bg-red-50 text-red-700"
-                                    }`}
+                                    className={`rounded-xl px-4 py-3 text-sm font-semibold ${submitState.type === "success"
+                                        ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
+                                        : "border border-red-100 bg-red-50 text-red-700"
+                                        }`}
                                 >
                                     {t(submitState.messageKey)}
                                 </div>
@@ -694,9 +744,9 @@ function DonatePage() {
             </section>
 
             {/* REKENING */}
-            <section className="bg-slate-50">
+            <section id="rekening-resmi" className="bg-slate-50">
                 <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 mb-8">
                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-700">
                             <FontAwesomeIcon icon={faWallet} />
                         </div>
@@ -712,24 +762,39 @@ function DonatePage() {
                         </div>
                     )}
 
-                    <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {loading
-                            ? Array.from({ length: 3 }).map((_, idx) => <AccountSkeleton key={`acc-skel-${idx}`} />)
-                            : visibleAccounts.length > 0
-                                ? visibleAccounts.map((acc) => <AccountCard key={acc.id} account={acc} t={t} />)
-                                : (
-                                    <div className="sm:col-span-2 lg:col-span-3 rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-                                        {t("donasi.accounts.empty")}
+                    <div className="space-y-12">
+                        {loading ? (
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                {Array.from({ length: 3 }).map((_, idx) => <AccountSkeleton key={`acc-skel-${idx}`} />)}
+                            </div>
+                        ) : visibleAccounts.length === 0 ? (
+                            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+                                {t("donasi.accounts.empty")}
+                            </div>
+                        ) : (
+                            sortedCategories.map(cat => (
+                                <div key={cat} className="space-y-4">
+                                    <h3 className="text-lg font-bold text-slate-800 border-l-4 border-brandGreen-500 pl-3">
+                                        {categoryLabels[cat] || cat}
+                                    </h3>
+                                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                        {groupedAccounts[cat].map(acc => (
+                                            <AccountCard key={acc.id} account={acc} t={t} />
+                                        ))}
                                     </div>
-                                )}
+                                </div>
+                            ))
+                        )}
                     </div>
 
-                    <div className="mt-6 text-sm text-slate-600">
-                        {t("donate.accounts.note")}{" "}
-                        <a className="font-semibold text-brandGreen-700 hover:text-brandGreen-800" href="/konfirmasi-donasi">
-                            {t("donate.accounts.note.link")}
-                        </a>{" "}
-                        {t("donate.accounts.note.suffix")}
+                    <div className="mt-12 rounded-xl border border-slate-200 bg-white p-6 text-center">
+                        <p className="text-sm font-semibold text-slate-600">
+                            {t("donate.accounts.note")}{" "}
+                            <a className="text-brandGreen-700 underline decoration-2 underline-offset-2 hover:text-brandGreen-800" href="/konfirmasi-donasi">
+                                {t("donate.accounts.note.link")}
+                            </a>{" "}
+                            {t("donate.accounts.note.suffix")}
+                        </p>
                     </div>
                 </div>
             </section>
@@ -804,6 +869,8 @@ function InfoPill({ icon, label }: { icon: any; label: string }) {
 }
 
 function AccountCard({ account, t }: { account: BankAccount; t: (key: string, fallback?: string) => string }) {
+
+
     const initials = account.bank_name
         .split(/\s+/)
         .filter(Boolean)
@@ -812,46 +879,49 @@ function AccountCard({ account, t }: { account: BankAccount; t: (key: string, fa
         .slice(0, 3)
         .toUpperCase();
 
+    const imageUrl = getImageUrl(account.image_path);
+
     return (
-        <div className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_-32px_rgba(15,23,42,0.35)]">
+        <div className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_-32px_rgba(15,23,42,0.35)] transition hover:shadow-[0_20px_50px_-20px_rgba(15,23,42,0.45)]">
             <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-700">
-                        <span className="text-xs font-bold tracking-[0.16em]">{initials || "DPF"}</span>
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-50 border border-slate-100 p-1">
+                        {account.image_path ? (
+                            <img src={imageUrl} alt={account.bank_name} className="h-full w-full object-contain rounded-xl" />
+                        ) : (
+                            <span className="text-xs font-bold tracking-[0.16em] text-primary-700">{initials || "DPF"}</span>
+                        )}
                     </div>
                     <div>
-                        <p className="text-[11px] font-semibold text-slate-400">{t("donate.accounts.bankLabel")}</p>
-                        <p className="text-base font-body font-semibold text-slate-900">{account.bank_name}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t("donate.accounts.bankLabel")}</p>
+                        <p className="text-base font-body font-bold text-slate-900 leading-tight">{account.bank_name}</p>
                     </div>
                 </div>
-                <span className="rounded-full bg-brandGreen-50 px-3 py-1 text-[11px] font-semibold text-brandGreen-700 ring-1 ring-brandGreen-100">
-                    {t("donate.accounts.official")}
-                </span>
             </div>
 
-            <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                <p className="text-[11px] font-semibold text-slate-400">{t("donate.accounts.number")}</p>
-                <p className="mt-2 text-xl font-body font-semibold text-slate-900 tracking-[0.08em]">
-                    {account.account_number}
-                </p>
-            </div>
-
-            <div className="mt-4 space-y-2 text-sm">
-                <div className="flex items-center justify-between gap-3">
-                    <span className="text-[11px] font-semibold text-slate-400">{t("donate.accounts.holder")}</span>
-                    <span className="font-semibold text-slate-900">{account.account_name}</span>
+            <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3 border border-slate-100">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t("donate.accounts.number")}</p>
+                <div className="mt-1 flex items-center justify-between">
+                    <p className="text-xl font-body font-bold text-slate-900 tracking-[0.05em]">
+                        {account.account_number}
+                    </p>
+                    <button
+                        onClick={() => {
+                            if (account.account_number) navigator.clipboard.writeText(account.account_number);
+                        }}
+                        className="text-xs font-semibold text-brandGreen-600 hover:text-brandGreen-700"
+                        title="Salin"
+                    >
+                        Salin
+                    </button>
                 </div>
-                {account.branch && (
-                    <div className="flex items-center justify-between gap-3 text-slate-600">
-                        <span className="text-[11px] font-semibold text-slate-400">{t("donate.accounts.branch")}</span>
-                        <span className="font-semibold text-slate-700">{account.branch}</span>
-                    </div>
-                )}
-                {account.notes && (
-                    <div className="rounded-xl border border-slate-100 bg-white px-3 py-2 text-xs text-slate-600">
-                        {account.notes}
-                    </div>
-                )}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-slate-100 space-y-2 text-sm">
+                <div className="flex justify-between gap-3">
+                    <span className="text-xs font-semibold text-slate-500">{t("donate.accounts.holder")}</span>
+                    <span className="font-bold text-slate-900 text-right">{account.account_name}</span>
+                </div>
             </div>
         </div>
     );

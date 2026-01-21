@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PickupRequest;
+use App\Support\AdminBadgeNotifier;
 use Illuminate\Http\Request;
 
 class PickupRequestController extends Controller
@@ -37,6 +38,7 @@ class PickupRequestController extends Controller
         $data['status'] = $data['status'] ?? 'baru';
 
         $pickup = PickupRequest::create($data);
+        AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($pickup, 201);
     }
@@ -51,6 +53,7 @@ class PickupRequestController extends Controller
         $data = $this->validatePayload($request, false);
 
         $pickupRequest->update($data);
+        AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($pickupRequest->refresh());
     }
@@ -64,6 +67,7 @@ class PickupRequestController extends Controller
         ]);
 
         $pickupRequest->update($data);
+        AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($pickupRequest->refresh());
     }
@@ -71,6 +75,7 @@ class PickupRequestController extends Controller
     public function destroy(PickupRequest $pickupRequest)
     {
         $pickupRequest->delete();
+        AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json(['message' => 'Pickup request deleted.']);
     }

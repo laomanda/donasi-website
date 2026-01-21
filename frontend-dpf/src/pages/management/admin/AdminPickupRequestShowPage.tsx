@@ -54,11 +54,20 @@ const normalizePhone = (value?: string | null) => {
 
 const getStatusTone = (status: PickupStatus) => {
   const s = String(status ?? "").toLowerCase();
-  if (s === "baru") return "bg-amber-50 text-amber-700 ring-amber-100";
-  if (s === "dijadwalkan") return "bg-blue-50 text-blue-700 ring-blue-100";
-  if (s === "selesai") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
-  if (s === "dibatalkan") return "bg-red-50 text-red-700 ring-red-100";
-  return "bg-slate-100 text-slate-700 ring-slate-200";
+  if (s === "baru") return "bg-amber-500 text-white shadow-md shadow-amber-500/20";
+  if (s === "dijadwalkan") return "bg-blue-600 text-white shadow-md shadow-blue-600/20";
+  if (s === "selesai") return "bg-emerald-600 text-white shadow-md shadow-emerald-600/20";
+  if (s === "dibatalkan") return "bg-red-600 text-white shadow-md shadow-red-600/20";
+  return "bg-slate-600 text-white shadow-md shadow-slate-600/20";
+};
+
+const getHeaderColor = (status: PickupStatus) => {
+  const s = String(status ?? "").toLowerCase();
+  if (s === "baru") return "bg-amber-500";
+  if (s === "dijadwalkan") return "bg-blue-600";
+  if (s === "selesai") return "bg-emerald-600";
+  if (s === "dibatalkan") return "bg-red-600";
+  return "bg-slate-600";
 };
 
 const getStatusLabel = (status: PickupStatus) => {
@@ -164,6 +173,7 @@ export function AdminPickupRequestShowPage() {
         notes: notes.trim() || null,
       });
       toast.success("Status jemput wakaf diperbarui.", { title: "Berhasil" });
+      window.dispatchEvent(new Event("refresh-badges"));
       if (nextStatus === "dijadwalkan" && prevStatus !== "dijadwalkan") {
         const phone = normalizePhone(data?.donor_phone);
         if (phone) {
@@ -189,6 +199,7 @@ export function AdminPickupRequestShowPage() {
     try {
       await http.delete(`/admin/pickup-requests/${pickupId}`);
       toast.success("Permintaan jemput dihapus.", { title: "Berhasil" });
+      window.dispatchEvent(new Event("refresh-badges"));
       navigate("/admin/pickup-requests", { replace: true });
     } catch {
       toast.error("Gagal menghapus permintaan jemput.", { title: "Gagal" });
@@ -200,26 +211,37 @@ export function AdminPickupRequestShowPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-700 ring-1 ring-primary-100">
-              <span className="h-2 w-2 rounded-full bg-primary-600" />
-              Detail jemput wakaf
-            </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">
-              {loading ? "Memuat..." : data?.donor_name ?? `#${pickupId}`}
-            </h1>
-            <p className="mt-2 text-sm text-slate-600">Pantau status dan penugasan petugas.</p>
+      {/* Hero Header */}
+      <div className={`relative overflow-hidden rounded-[32px] ${getHeaderColor(String(data?.status ?? status))} shadow-xl transition-colors duration-500`}>
+        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
+        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
+
+        <div className="relative z-10 p-8 md:p-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-4">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/30 backdrop-blur-sm">
+                  <span className="h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                  Detail Jemput Wakaf
+                </span>
+                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
+                  {loading ? "Memuat..." : data?.donor_name ?? `#${pickupId}`}
+                </h1>
+                <p className="mt-2 max-w-2xl text-lg font-medium text-white/90">
+                  ID: {data?.id ?? "-"} • {data ? `${data.city}, ${data.district}` : "Lokasi belum ditentukan"}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/admin/pickup-requests")}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
+            >
+              <FontAwesomeIcon icon={faArrowLeft} />
+              Kembali
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate("/admin/pickup-requests")}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} />
-            Kembali
-          </button>
         </div>
       </div>
 
@@ -239,7 +261,7 @@ export function AdminPickupRequestShowPage() {
               </div>
               <span
                 className={[
-                  "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1",
+                  "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold shadow-sm",
                   getStatusTone(String(data?.status ?? status)),
                 ].join(" ")}
               >
@@ -294,7 +316,7 @@ export function AdminPickupRequestShowPage() {
         <aside className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:h-fit">
           <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm">
             <div className="flex items-start gap-4">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 ring-1 ring-primary-100">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/20">
                 <FontAwesomeIcon icon={faTruckRampBox} />
               </span>
               <div className="min-w-0 flex-1">
@@ -310,7 +332,7 @@ export function AdminPickupRequestShowPage() {
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                   disabled={!canSave || isLockedStatus}
                 >
                   {statusOptions.map((option) => (
@@ -327,7 +349,7 @@ export function AdminPickupRequestShowPage() {
                   value={assignedOfficer}
                   onChange={(e) => setAssignedOfficer(e.target.value)}
                   placeholder="Nama petugas (opsional)"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                   disabled={!canEditDetails}
                 />
               </label>
@@ -339,7 +361,7 @@ export function AdminPickupRequestShowPage() {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={4}
                   placeholder="Catatan admin (opsional)."
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                   disabled={!canEditDetails}
                 />
               </label>
@@ -347,7 +369,7 @@ export function AdminPickupRequestShowPage() {
               <button
                 type="button"
                 onClick={() => void onSave()}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-md shadow-emerald-500/20 transition hover:bg-emerald-700 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
                 disabled={!canSave}
               >
                 <FontAwesomeIcon icon={faFloppyDisk} />
@@ -366,7 +388,7 @@ export function AdminPickupRequestShowPage() {
           {isEditableStatus ? (
             <div className="rounded-[28px] border border-red-200 bg-white p-6 shadow-sm">
               <div className="flex items-start gap-4">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-700 ring-1 ring-red-100">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-600 text-white shadow-lg shadow-red-600/20">
                   <FontAwesomeIcon icon={faTrash} />
                 </span>
                 <div className="min-w-0 flex-1">

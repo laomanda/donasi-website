@@ -5,8 +5,14 @@ import {
   faArrowLeft,
   faCircleInfo,
   faFloppyDisk,
-  faPlus,
   faReceipt,
+  faHandHoldingHeart,
+  faMoneyBillWave,
+  faUser,
+  faEnvelope,
+  faPhone,
+  faCreditCard,
+  faAlignLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
@@ -128,223 +134,317 @@ export function AdminDonationManualCreatePage() {
       navigate("/admin/donations", { replace: true });
     } catch (err: any) {
       setErrors(normalizeErrors(err));
+      toast.error("Gagal menyimpan donasi. Periksa kembali input Anda.", { title: "Gagal" });
     } finally {
       setSaving(false);
     }
   };
 
-  return (
-    <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-700 ring-1 ring-primary-100">
-              <span className="h-2 w-2 rounded-full bg-primary-600" />
-              Donasi manual
-            </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Input Donasi</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Input transaksi offline (transfer/QR/konter) dengan status langsung lunas.
-            </p>
-          </div>
+  const inputClass = "mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-60";
+  const labelClass = "block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1";
 
-          <button
-            type="button"
-            onClick={() => navigate("/admin/donations")}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-            disabled={!canSubmit}
-          >
-            <FontAwesomeIcon icon={faArrowLeft} />
-            Kembali
-          </button>
+  return (
+    <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 pb-10">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-[32px] bg-emerald-700 shadow-xl">
+        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
+        <div className="absolute right-0 top-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl filter" />
+        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl filter" />
+
+        <div className="relative z-10 p-8 md:p-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-4">
+              <button
+                onClick={() => navigate("/admin/donations")}
+                className="group inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-emerald-50 backdrop-blur-sm transition hover:bg-white/20"
+              >
+                <FontAwesomeIcon icon={faArrowLeft} className="transition group-hover:-translate-x-1" />
+                Kembali
+              </button>
+
+              <div>
+                <h1 className="font-heading text-3xl font-bold text-white md:text-5xl">Input Donasi Manual</h1>
+                <p className="mt-2 text-lg text-emerald-100/90 font-medium max-w-2xl">
+                  Catat transaksi offline (transfer bank, tunai, atau QRIS) secara langsung ke dalam sistem. Status akan otomatis menjadi <span className="font-bold text-white underline decoration-emerald-400/50 underline-offset-4">Lunas</span>.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {errors.length ? (
-        <div className="rounded-[28px] border border-red-100 bg-red-50 p-5 text-sm font-semibold text-red-700">
-          <ul className="list-disc space-y-1 pl-5">
-            {errors.map((msg, idx) => (
-              <li key={idx}>{msg}</li>
-            ))}
-          </ul>
+        <div className="rounded-[24px] border border-rose-100 bg-rose-50 p-6 flex items-start gap-4 shadow-sm animate-pulse-soft">
+          <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-500 shrink-0">
+            <FontAwesomeIcon icon={faCircleInfo} />
+          </div>
+          <div>
+            <h3 className="font-bold text-rose-700">Validasi Gagal</h3>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-rose-600 font-medium">
+              {errors.map((msg, idx) => (
+                <li key={idx}>{msg}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        <div className="space-y-6 lg:col-span-8">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <div className="flex items-start gap-4">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 ring-1 ring-primary-100">
-                <FontAwesomeIcon icon={faReceipt} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Transaksi</p>
-                <h2 className="mt-2 font-heading text-xl font-semibold text-slate-900">Detail Pembayaran</h2>
-                <p className="mt-2 text-sm text-slate-600">Pastikan nominal dan metode pembayaran sesuai bukti.</p>
+      <div className="grid gap-8 lg:grid-cols-12">
+        {/* Main Form Area */}
+        <div className="space-y-8 lg:col-span-8">
+
+          {/* Transaction Details */}
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 ring-1 ring-emerald-100">
+                <FontAwesomeIcon icon={faReceipt} className="text-xl" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Detail Transaksi</h2>
+                <p className="text-sm text-slate-500 font-medium">Informasi program dan nominal donasi</p>
               </div>
             </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <label className="block sm:col-span-2">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Program (opsional)</span>
-                <select
-                  value={form.program_id}
-                  onChange={(e) => setForm((s) => ({ ...s, program_id: e.target.value }))}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                  disabled={programLoading || !canSubmit}
-                >
-                  <option value="">{programLoading ? "Memuat..." : "Tanpa program"}</option>
-                  {programOptions.map((p) => (
-                    <option key={p.id} value={String(p.id)}>
-                      {p.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className="block">
+                  <span className={labelClass}>Program Donasi</span>
+                  <div className="relative">
+                    <select
+                      value={form.program_id}
+                      onChange={(e) => setForm((s) => ({ ...s, program_id: e.target.value }))}
+                      className={`${inputClass} appearance-none`}
+                      disabled={programLoading || !canSubmit}
+                    >
+                      <option value="">{programLoading ? "Memuat data program..." : "Pilih Program (Opsional)"}</option>
+                      {programOptions.map((p) => (
+                        <option key={p.id} value={String(p.id)}>
+                          {p.title}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <FontAwesomeIcon icon={faHandHoldingHeart} />
+                    </div>
+                  </div>
+                </label>
+              </div>
 
-              <label className="block">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Nominal</span>
-                <input
-                  value={form.amount}
-                  onChange={(e) => setForm((s) => ({ ...s, amount: e.target.value }))}
-                  placeholder="Contoh: 50000"
-                  inputMode="numeric"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                  disabled={!canSubmit}
-                />
-                <p className="mt-2 text-xs font-semibold text-slate-500">Pratinjau: {formatCurrency(amountNumber)}</p>
-              </label>
+              <div className="sm:col-span-2">
+                <label className="block">
+                  <span className={labelClass}>Nominal Donasi (Rp)</span>
+                  <div className="relative">
+                    <input
+                      value={form.amount}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, "");
+                        if (val.length > 15) return;
+                        if (Number(val) > 1000000000000) return;
+                        setForm((s) => ({ ...s, amount: val }));
+                      }}
+                      placeholder="Contoh: 100000"
+                      inputMode="numeric"
+                      className={`${inputClass} pl-12 text-lg`}
+                      disabled={!canSubmit}
+                    />
+                    <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+                      Rp
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs font-bold text-emerald-600 bg-emerald-50 inline-block px-2 py-1 rounded-md border border-emerald-100">
+                    Terbaca: {formatCurrency(amountNumber)}
+                  </p>
+                </label>
+              </div>
 
-              <label className="block">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Metode</span>
-                <input
-                  value={form.payment_method}
-                  onChange={(e) => setForm((s) => ({ ...s, payment_method: e.target.value }))}
-                  placeholder="Mis. Transfer Bank"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                  disabled={!canSubmit}
-                />
-              </label>
+              <div>
+                <label className="block">
+                  <span className={labelClass}>Metode Pembayaran</span>
+                  <div className="relative">
+                    <input
+                      value={form.payment_method}
+                      onChange={(e) => setForm((s) => ({ ...s, payment_method: e.target.value }))}
+                      placeholder="Contoh: Transfer Bank"
+                      className={`${inputClass} pl-10`}
+                      disabled={!canSubmit}
+                    />
+                    <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <FontAwesomeIcon icon={faMoneyBillWave} />
+                    </div>
+                  </div>
+                </label>
+              </div>
 
-              <label className="block sm:col-span-2">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Channel (opsional)</span>
-                <input
-                  value={form.payment_channel}
-                  onChange={(e) => setForm((s) => ({ ...s, payment_channel: e.target.value }))}
-                  placeholder="Mis. BCA / QRIS / Konter"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                  disabled={!canSubmit}
-                />
-              </label>
+              <div>
+                <label className="block">
+                  <span className={labelClass}>Channel / Bank</span>
+                  <div className="relative">
+                    <input
+                      value={form.payment_channel}
+                      onChange={(e) => setForm((s) => ({ ...s, payment_channel: e.target.value }))}
+                      placeholder="Contoh: BCA / QRIS"
+                      className={`${inputClass} pl-10`}
+                      disabled={!canSubmit}
+                    />
+                    <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <FontAwesomeIcon icon={faCreditCard} />
+                    </div>
+                  </div>
+                </label>
+              </div>
 
-              <label className="block sm:col-span-2">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Catatan (opsional)</span>
-                <textarea
-                  value={form.notes}
-                  onChange={(e) => setForm((s) => ({ ...s, notes: e.target.value }))}
-                  rows={4}
-                  placeholder="Mis. konfirmasi via WhatsApp"
-                  className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                  disabled={!canSubmit}
-                />
-              </label>
-            </div>
-
-            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs font-semibold text-slate-600">
-              <span className="inline-flex items-start gap-2">
-                <FontAwesomeIcon icon={faCircleInfo} className="mt-0.5 text-slate-500" />
-                Donasi manual akan disimpan dengan status <span className="font-bold">paid</span>.
-              </span>
+              <div className="sm:col-span-2">
+                <label className="block">
+                  <span className={labelClass}>Catatan Tambahan</span>
+                  <div className="relative">
+                    <textarea
+                      value={form.notes}
+                      onChange={(e) => setForm((s) => ({ ...s, notes: e.target.value }))}
+                      rows={3}
+                      placeholder="Catatan internal atau pesan dari donatur..."
+                      className={`${inputClass} pl-10 resize-none`}
+                      disabled={!canSubmit}
+                    />
+                    <div className="pointer-events-none absolute left-4 top-5 text-slate-400">
+                      <FontAwesomeIcon icon={faAlignLeft} />
+                    </div>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <div className="flex items-start gap-4">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-700 ring-1 ring-amber-100">
-                <FontAwesomeIcon icon={faPlus} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Donatur</p>
-                <h2 className="mt-2 font-heading text-xl font-semibold text-slate-900">Informasi Donatur</h2>
-                <p className="mt-2 text-sm text-slate-600">Boleh anonim jika tidak ingin ditampilkan.</p>
+          {/* Donor Info */}
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="h-12 w-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 ring-1 ring-indigo-100">
+                <FontAwesomeIcon icon={faUser} className="text-xl" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Informasi Donatur</h2>
+                <p className="text-sm text-slate-500 font-medium">Data diri penyumbang (opsional)</p>
               </div>
             </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <label className="block sm:col-span-2">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Nama</span>
-                <input
-                  value={form.donor_name}
-                  onChange={(e) => setForm((s) => ({ ...s, donor_name: e.target.value }))}
-                  placeholder="Nama donatur"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                  disabled={!canSubmit}
-                />
-              </label>
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className="block">
+                  <span className={labelClass}>Nama Lengkap</span>
+                  <div className="relative">
+                    <input
+                      value={form.donor_name}
+                      onChange={(e) => setForm((s) => ({ ...s, donor_name: e.target.value }))}
+                      placeholder="Nama Donatur (atau Hamba Allah)"
+                      className={`${inputClass} pl-10`}
+                      disabled={!canSubmit}
+                    />
+                    <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <FontAwesomeIcon icon={faUser} />
+                    </div>
+                  </div>
+                </label>
+              </div>
 
-              <label className="block">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Email</span>
-                <input
-                  value={form.donor_email}
-                  onChange={(e) => setForm((s) => ({ ...s, donor_email: e.target.value }))}
-                  placeholder="opsional"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                  disabled={!canSubmit}
-                />
-              </label>
+              <div>
+                <label className="block">
+                  <span className={labelClass}>Email</span>
+                  <div className="relative">
+                    <input
+                      value={form.donor_email}
+                      onChange={(e) => setForm((s) => ({ ...s, donor_email: e.target.value }))}
+                      placeholder="email@contoh.com"
+                      className={`${inputClass} pl-10`}
+                      disabled={!canSubmit}
+                    />
+                    <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <FontAwesomeIcon icon={faEnvelope} />
+                    </div>
+                  </div>
+                </label>
+              </div>
 
-              <label className="block">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Telepon</span>
-                <input
-                  value={form.donor_phone}
-                  onChange={(e) => setForm((s) => ({ ...s, donor_phone: e.target.value }))}
-                  placeholder="opsional"
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
-                  disabled={!canSubmit}
-                />
-              </label>
+              <div>
+                <label className="block">
+                  <span className={labelClass}>Nomor Telepon</span>
+                  <div className="relative">
+                    <input
+                      value={form.donor_phone}
+                      onChange={(e) => setForm((s) => ({ ...s, donor_phone: e.target.value }))}
+                      placeholder="0812..."
+                      className={`${inputClass} pl-10`}
+                      disabled={!canSubmit}
+                    />
+                    <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <FontAwesomeIcon icon={faPhone} />
+                    </div>
+                  </div>
+                </label>
+              </div>
 
-              <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:col-span-2">
-                <input
-                  type="checkbox"
-                  checked={form.is_anonymous}
-                  onChange={(e) => setForm((s) => ({ ...s, is_anonymous: e.target.checked }))}
-                  className="mt-1 h-4 w-4"
-                  disabled={!canSubmit}
-                />
-                <span className="min-w-0">
-                  <span className="block text-sm font-bold text-slate-900">Anonimkan Donatur</span>
-                  <span className="mt-1 block text-xs font-semibold text-slate-600">
-                    Jika aktif, nama tidak tampil di landing.
-                  </span>
-                </span>
-              </label>
+              <div className="sm:col-span-2 mt-2">
+                <label className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer transition hover:bg-slate-100 hover:border-slate-300">
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={form.is_anonymous}
+                      onChange={(e) => setForm((s) => ({ ...s, is_anonymous: e.target.checked }))}
+                      className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 transition-all checked:border-emerald-500 checked:bg-emerald-500 hover:shadow-sm"
+                      disabled={!canSubmit}
+                    />
+                    <FontAwesomeIcon icon={faCircleInfo} className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] text-white opacity-0 peer-checked:opacity-100" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="block text-sm font-bold text-slate-900">Sembunyikan Nama (Hamba Allah)</span>
+                    <span className="text-xs text-slate-500 font-medium">Nama donatur tidak akan ditampilkan di halaman publik website.</span>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
         </div>
 
-        <aside className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:h-fit">
-          <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm">
-            <div className="flex items-start gap-4">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 ring-1 ring-primary-100">
-                <FontAwesomeIcon icon={faFloppyDisk} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Simpan</p>
-                <h2 className="mt-2 font-heading text-xl font-semibold text-slate-900">Konfirmasi Input</h2>
-                <p className="mt-2 text-sm text-slate-600">Pastikan data sudah benar sebelum disimpan.</p>
+        {/* Sidebar Actions */}
+        <aside className="lg:col-span-4 space-y-6">
+          <div className="sticky top-8 space-y-6">
+            <div className="rounded-[24px] border border-emerald-100 bg-white p-6 shadow-xl shadow-emerald-50/50">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                  <FontAwesomeIcon icon={faFloppyDisk} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900">Simpan Data</h3>
+                  <p className="text-xs text-slate-500">Konfirmasi input manual</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="rounded-xl bg-emerald-50 p-4 border border-emerald-100">
+                  <p className="text-xs font-bold text-emerald-800 uppercase mb-1">Total Donasi</p>
+                  <p className="text-2xl font-bold text-emerald-700 tracking-tight">{formatCurrency(amountNumber)}</p>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => void onSubmit()}
+                    disabled={!canSubmit}
+                    className="group w-full rounded-xl bg-emerald-600 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                  >
+                    {saving ? (
+                      "Memproses..."
+                    ) : (
+                      <span className="flex items-center justify-center gap-2">
+                        <FontAwesomeIcon icon={faFloppyDisk} className="text-emerald-200 group-hover:text-white transition" />
+                        Simpan Transaksi
+                      </span>
+                    )}
+                  </button>
+                  <p className="text-center text-[10px] text-slate-400 font-medium mt-3">
+                    Data akan disimpan sebagai donasi <span className="text-emerald-600 font-bold">LUNAS</span>.
+                  </p>
+                </div>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => void onSubmit()}
-              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-brandGreen-500 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-600 disabled:cursor-not-allowed disabled:bg-slate-300"
-              disabled={!canSubmit}
-            >
-              <FontAwesomeIcon icon={faFloppyDisk} />
-              {saving ? "Menyimpan..." : "Simpan donasi"}
-            </button>
           </div>
         </aside>
       </div>
@@ -353,4 +453,3 @@ export function AdminDonationManualCreatePage() {
 }
 
 export default AdminDonationManualCreatePage;
-

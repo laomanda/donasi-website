@@ -35,7 +35,7 @@ export function FloatingWhatsApp({
         </div>
 
         {/* Text Switcher Container */}
-        <div className="relative hidden min-[360px]:flex flex-col overflow-hidden text-xs sm:text-sm font-bold text-white h-4 sm:h-5 w-[110px]">
+        <div className="relative z-20 hidden min-[360px]:flex flex-col overflow-hidden text-xs sm:text-sm font-bold text-white h-4 sm:h-5 w-auto min-w-[120px]">
           <span className="absolute inset-0 flex items-center justify-start transition-transform duration-300 ease-out group-hover:-translate-y-6 sm:group-hover:-translate-y-8">
             {t("whatsapp.label")}
           </span>

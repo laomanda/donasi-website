@@ -55,11 +55,11 @@ const formatDateTime = (value?: string | null) => {
 
 const getStatusTone = (status: PickupStatus) => {
   const s = String(status ?? "").toLowerCase();
-  if (s === "baru") return "bg-amber-50 text-amber-700 ring-amber-100";
-  if (s === "dijadwalkan") return "bg-blue-50 text-blue-700 ring-blue-100";
-  if (s === "selesai") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
-  if (s === "dibatalkan") return "bg-red-50 text-red-700 ring-red-100";
-  return "bg-slate-100 text-slate-700 ring-slate-200";
+  if (s === "baru") return "bg-amber-500 text-white shadow-md shadow-amber-500/20";
+  if (s === "dijadwalkan") return "bg-blue-600 text-white shadow-md shadow-blue-600/20";
+  if (s === "selesai") return "bg-emerald-600 text-white shadow-md shadow-emerald-600/20";
+  if (s === "dibatalkan") return "bg-rose-600 text-white shadow-md shadow-rose-600/20";
+  return "bg-slate-600 text-white shadow-md shadow-slate-600/20";
 };
 
 const getStatusLabel = (status: PickupStatus) => {
@@ -128,6 +128,15 @@ export function AdminPickupRequestsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [perPage]);
 
+  // Real-time filtering effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void fetchRequests(1);
+    }, 500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, status]);
+
   useEffect(() => {
     selection.keepOnly(pageIds);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -143,7 +152,7 @@ export function AdminPickupRequestsPage() {
   const onReset = () => {
     setQ("");
     setStatus("");
-    void fetchRequests(1, { q: "", status: "" });
+    // Effect will trigger fetch
   };
 
   const onDeleteSelected = async () => {
@@ -163,6 +172,7 @@ export function AdminPickupRequestsPage() {
       }
 
       await fetchRequests(1);
+      window.dispatchEvent(new Event("refresh-badges"));
     } finally {
       setBulkDeleting(false);
     }
@@ -171,48 +181,81 @@ export function AdminPickupRequestsPage() {
   const openDetail = (id: number) => navigate(`/admin/pickup-requests/${id}`);
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6">
-      <div className="rounded-[28px] border border-primary-100 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary-700 ring-1 ring-primary-100">
-              <span className="h-2 w-2 rounded-full bg-primary-600" />
-              Layanan
-            </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Jemput Wakaf</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Pantau permintaan jemput, jadwalkan petugas, dan tutup permintaan.
-            </p>
+    <div className="mx-auto w-full max-w-7xl space-y-8 pb-10">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
+        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
+        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
+
+        <div className="relative z-10 p-8 md:p-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-4">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
+                  <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
+                  Operasional
+                </span>
+                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
+                  Jemput Wakaf
+                </h1>
+                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
+                  Kelola dan pantau permintaan penjemputan wakaf dari donatur dengan efisien dan tepat waktu.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3">
+              <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-emerald-50 backdrop-blur-sm">
+                Total Permintaan
+                <span className="font-bold text-white">{new Intl.NumberFormat("id-ID").format(total)}</span>
+              </span>
+            </div>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 shadow-sm">
-            <FontAwesomeIcon icon={faTruckRampBox} />
-            {pageLabel}
-          </span>
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Pencarian</span>
-              <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus-within:bg-white focus-within:ring-2 focus-within:ring-slate-200">
-                <FontAwesomeIcon icon={faMagnifyingGlass} className="text-slate-400" />
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Nama atau nomor WhatsApp..."
-                  className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none"
-                />
-              </div>
-            </label>
+      <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
+          <h3 className="font-heading text-lg font-bold text-slate-800 flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+              <FontAwesomeIcon icon={faFilter} />
+            </div>
+            Filter & Pencarian
+          </h3>
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={onReset}
+              className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline"
+            >
+              Reset Filter
+            </button>
+          )}
+        </div>
 
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400">Status</span>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <label className="block">
+            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Pencarian</span>
+            <div className="relative mt-2 group">
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
+                <FontAwesomeIcon icon={faMagnifyingGlass} />
+              </span>
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Nama atau No. WhatsApp..."
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+              />
+            </div>
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Status</span>
+            <div className="relative mt-2">
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
               >
                 <option value="">Semua status</option>
                 <option value="baru">Baru</option>
@@ -220,44 +263,31 @@ export function AdminPickupRequestsPage() {
                 <option value="selesai">Selesai</option>
                 <option value="dibatalkan">Dibatalkan</option>
               </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                <FontAwesomeIcon icon={faFilter} className="text-xs" />
+              </div>
+            </div>
+          </label>
+
+          <div className="flex items-end">
+            <label className="block w-full">
+              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Per Halaman</span>
+              <div className="relative mt-2">
+                <select
+                  value={perPage}
+                  onChange={(e) => setPerPage(Number(e.target.value))}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                >
+                  <option value={10}>10 Data</option>
+                  <option value={15}>15 Data</option>
+                  <option value={25}>25 Data</option>
+                  <option value={50}>50 Data</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
+                </div>
+              </div>
             </label>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
-              <span className="text-slate-400">
-                <FontAwesomeIcon icon={faFilter} />
-              </span>
-              <span>Per halaman</span>
-              <select
-                value={perPage}
-                onChange={(e) => setPerPage(Number(e.target.value))}
-                className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1 text-sm font-bold text-slate-700 focus:outline-none"
-              >
-                <option value={10}>10</option>
-                <option value={15}>15</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-              </select>
-            </label>
-
-            <button
-              type="button"
-              onClick={() => void fetchRequests(1)}
-              className="inline-flex items-center justify-center rounded-2xl bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-700"
-            >
-              Terapkan
-            </button>
-
-            {hasFilters ? (
-              <button
-                type="button"
-                onClick={onReset}
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-              >
-                Atur ulang
-              </button>
-            ) : null}
           </div>
         </div>
       </div>
@@ -277,10 +307,10 @@ export function AdminPickupRequestsPage() {
         disabled={loading || bulkDeleting}
       />
 
-      <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
         <div className="hidden overflow-x-auto md:block">
           <table className="min-w-full table-fixed">
-            <thead className="border-b border-primary-100 bg-primary-50">
+            <thead className="bg-slate-50">
               <tr>
                 <th className="w-[6%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   <input
@@ -340,37 +370,51 @@ export function AdminPickupRequestsPage() {
                   </td>
                 </tr>
               ) : (
-                items.map((item) => (
-                  <tr key={item.id} className="cursor-pointer transition hover:bg-slate-50" onClick={() => openDetail(item.id)}>
-                    <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={selection.isSelected(item.id)}
-                        onChange={() => selection.toggle(item.id)}
-                        aria-label={`Pilih permintaan ${item.donor_name}`}
-                        className="h-4 w-4"
-                      />
-                    </td>
-                    <td className="px-6 py-5">
-                      <p className="text-sm font-semibold text-slate-900">{item.donor_name}</p>
-                      <p className="mt-1 text-xs font-semibold text-slate-500">{item.donor_phone}</p>
-                    </td>
-                    <td className="px-6 py-5">
-                      <p className="line-clamp-1 text-sm font-semibold text-slate-900">{item.city}, {item.district}</p>
-                      <p className="mt-1 line-clamp-1 text-xs text-slate-500">{item.address_full}</p>
-                    </td>
-                    <td className="px-6 py-5">
-                      <p className="text-sm font-semibold text-slate-900">{item.wakaf_type}</p>
-                      <p className="mt-1 text-xs text-slate-500">{item.estimation ? item.estimation : "-"}</p>
-                    </td>
-                    <td className="px-6 py-5">
-                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${getStatusTone(String(item.status ?? ""))}`}>
-                        {getStatusLabel(String(item.status ?? ""))}
-                      </span>
-                    </td>
-                    <td className="px-6 py-5 text-sm font-semibold text-slate-600">{formatDateTime(item.created_at)}</td>
-                  </tr>
-                ))
+
+                items.map((item) => {
+                  const statusValue = String(item.status ?? "").trim().toLowerCase();
+                  let barColor = "border-l-slate-200";
+                  if (statusValue === "selesai") barColor = "border-l-emerald-500";
+                  else if (statusValue === "baru") barColor = "border-l-amber-500";
+                  else if (statusValue === "dijadwalkan") barColor = "border-l-blue-500";
+                  else if (statusValue === "dibatalkan") barColor = "border-l-rose-500";
+
+                  return (
+                    <tr
+                      key={item.id}
+                      className={`cursor-pointer transition hover:bg-slate-50 border-l-4 ${barColor}`}
+                      onClick={() => openDetail(item.id)}
+                    >
+                      <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selection.isSelected(item.id)}
+                          onChange={() => selection.toggle(item.id)}
+                          aria-label={`Pilih permintaan ${item.donor_name}`}
+                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        />
+                      </td>
+                      <td className="px-6 py-5">
+                        <p className="text-sm font-bold text-slate-900">{item.donor_name}</p>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">{item.donor_phone}</p>
+                      </td>
+                      <td className="px-6 py-5">
+                        <p className="line-clamp-1 text-sm font-semibold text-slate-900">{item.city}, {item.district}</p>
+                        <p className="mt-1 line-clamp-1 text-xs text-slate-500">{item.address_full}</p>
+                      </td>
+                      <td className="px-6 py-5">
+                        <p className="text-sm font-semibold text-slate-900">{item.wakaf_type}</p>
+                        <p className="mt-1 text-xs text-slate-500">{item.estimation ? item.estimation : "-"}</p>
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(String(item.status ?? ""))}`}>
+                          {getStatusLabel(String(item.status ?? ""))}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 text-sm font-semibold text-slate-600">{formatDateTime(item.created_at)}</td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -388,25 +432,35 @@ export function AdminPickupRequestsPage() {
           ) : items.length === 0 ? (
             <div className="p-6 text-center text-sm font-semibold text-slate-500">Belum ada permintaan.</div>
           ) : (
-            items.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => openDetail(item.id)}
-                className="w-full p-5 text-left transition hover:bg-slate-50"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-slate-900">{item.donor_name}</p>
-                    <p className="mt-1 truncate text-xs font-semibold text-slate-500">{item.city}, {item.district}</p>
+
+            items.map((item) => {
+              const statusValue = String(item.status ?? "").trim().toLowerCase();
+              let barColor = "border-l-slate-200";
+              if (statusValue === "selesai") barColor = "border-l-emerald-500";
+              else if (statusValue === "baru") barColor = "border-l-amber-500";
+              else if (statusValue === "dijadwalkan") barColor = "border-l-blue-500";
+              else if (statusValue === "dibatalkan") barColor = "border-l-rose-500";
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => openDetail(item.id)}
+                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-slate-900">{item.donor_name}</p>
+                      <p className="mt-1 truncate text-xs font-semibold text-slate-500">{item.city}, {item.district}</p>
+                    </div>
+                    <span className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(String(item.status ?? ""))}`}>
+                      {getStatusLabel(String(item.status ?? ""))}
+                    </span>
                   </div>
-                  <span className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${getStatusTone(String(item.status ?? ""))}`}>
-                    {getStatusLabel(String(item.status ?? ""))}
-                  </span>
-                </div>
-                <p className="mt-3 text-xs font-semibold text-slate-500">{formatDateTime(item.created_at)}</p>
-              </button>
-            ))
+                  <p className="mt-3 text-xs font-semibold text-slate-500">{formatDateTime(item.created_at)}</p>
+                </button>
+              );
+            })
           )}
         </div>
       </div>

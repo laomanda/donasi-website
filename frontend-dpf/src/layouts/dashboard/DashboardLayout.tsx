@@ -30,11 +30,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import dpfLogo from "../../brand/dpf-icon.png";
 import http from "../../lib/http";
-import { clearAuthToken, clearAuthUser, getAuthToken, getAuthUser } from "../../lib/auth";
+import { clearAuthToken, clearAuthUser, getAuthUser } from "../../lib/auth";
 import { readShowClock, SETTINGS_EVENT } from "../../lib/settings";
-import { resolveApiBaseUrl } from "../../lib/urls";
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
+
 
 export type DashboardRole = "superadmin" | "admin" | "editor";
 
@@ -301,6 +299,19 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   useEffect(() => {
     if (role !== "admin") return;
     let active = true;
+    let pollId: number | null = null;
+
+    const applyCounts = (values: { donationCount?: number; pickupCount?: number; consultationCount?: number }) => {
+      if (!active) return;
+      setAdminBadgeCounts((prev) => ({
+        ...prev,
+        ...(values.donationCount !== undefined
+          ? { "/admin/donation-confirmations": values.donationCount }
+          : {}),
+        ...(values.pickupCount !== undefined ? { "/admin/pickup-requests": values.pickupCount } : {}),
+        ...(values.consultationCount !== undefined ? { "/admin/consultations": values.consultationCount } : {}),
+      }));
+    };
 
     const loadCounts = async () => {
       try {
@@ -317,13 +328,10 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
         ]);
 
         if (!active) return;
-        const donationCount = normalizeCount(donationsRes.data?.total);
-        const pickupCount = normalizeCount(pickupsRes.data?.total);
-        const consultationCount = normalizeCount(consultationsRes.data?.total);
-        setAdminBadgeCounts({
-          "/admin/donation-confirmations": donationCount,
-          "/admin/pickup-requests": pickupCount,
-          "/admin/consultations": consultationCount,
+        applyCounts({
+          donationCount: normalizeCount(donationsRes.data?.total),
+          pickupCount: normalizeCount(pickupsRes.data?.total),
+          consultationCount: normalizeCount(consultationsRes.data?.total),
         });
       } catch {
         if (!active) return;
@@ -331,47 +339,24 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     };
 
     void loadCounts();
+
+    if (typeof window === "undefined") {
+      return () => {
+        active = false;
+      };
+    }
+
+    // Polling only (Pusher removed)
+    const fallbackInterval = 30_000;
+    pollId = window.setInterval(loadCounts, fallbackInterval);
+
+    const onRefresh = () => void loadCounts();
+    window.addEventListener("refresh-badges", onRefresh);
+
     return () => {
       active = false;
-    };
-  }, [role, location.pathname]);
-
-  useEffect(() => {
-    if (role !== "admin") return;
-    let active = true;
-
-    const loadCounts = async () => {
-      try {
-        const [donationsRes, pickupsRes, consultationsRes] = await Promise.all([
-          http.get<PaginationMeta>("/admin/donations", {
-            params: { status: "pending", payment_source: "manual", per_page: 1 },
-          }),
-          http.get<PaginationMeta>("/admin/pickup-requests", {
-            params: { status: "baru", per_page: 1 },
-          }),
-          http.get<PaginationMeta>("/admin/consultations", {
-            params: { status: "baru", per_page: 1 },
-          }),
-        ]);
-
-        if (!active) return;
-        const donationCount = normalizeCount(donationsRes.data?.total);
-        const pickupCount = normalizeCount(pickupsRes.data?.total);
-        const consultationCount = normalizeCount(consultationsRes.data?.total);
-        setAdminBadgeCounts({
-          "/admin/donation-confirmations": donationCount,
-          "/admin/pickup-requests": pickupCount,
-          "/admin/consultations": consultationCount,
-        });
-      } catch {
-        if (!active) return;
-      }
-    };
-
-    const intervalId = window.setInterval(loadCounts, 60_000);
-    return () => {
-      active = false;
-      window.clearInterval(intervalId);
+      if (pollId) window.clearInterval(pollId);
+      window.removeEventListener("refresh-badges", onRefresh);
     };
   }, [role]);
 
@@ -379,8 +364,6 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     if (role !== "editor") return;
     let active = true;
     let pollId: number | null = null;
-    let echo: Echo<any> | null = null;
-    let channelName: string | null = null;
 
     const applyCount = (count: number) => {
       if (!active) return;
@@ -411,70 +394,12 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
       };
     }
 
-    const token = getAuthToken();
-    const pusherKey = import.meta.env.VITE_PUSHER_APP_KEY as string | undefined;
-    const userIdRaw = (storedUser as StoredUser | null)?.id;
-    const userId = typeof userIdRaw === "number" ? userIdRaw : Number(userIdRaw);
-
+    // Polling only (Pusher removed)
     const fallbackInterval = 5_000;
-
-    if (!token || !pusherKey || !Number.isFinite(userId)) {
-      pollId = window.setInterval(loadCounts, fallbackInterval);
-      return () => {
-        active = false;
-        if (pollId) window.clearInterval(pollId);
-      };
-    }
-
-    const cluster = import.meta.env.VITE_PUSHER_APP_CLUSTER as string | undefined;
-    const host = import.meta.env.VITE_PUSHER_HOST as string | undefined;
-    const portValue = import.meta.env.VITE_PUSHER_PORT as string | undefined;
-    const scheme = (import.meta.env.VITE_PUSHER_APP_SCHEME as string | undefined) ?? "https";
-    const port = Number(portValue || (scheme === "https" ? 443 : 80));
-
-    (window as any).Pusher = Pusher;
-    echo = new Echo({
-      broadcaster: "pusher",
-      key: pusherKey,
-      cluster,
-      forceTLS: scheme === "https",
-      wsHost: host || undefined,
-      wsPort: host ? port : undefined,
-      wssPort: host ? port : undefined,
-      enabledTransports: ["ws", "wss"],
-      authEndpoint: `${resolveApiBaseUrl()}/broadcasting/auth`,
-      auth: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-
-    channelName = `editor-tasks.${userId}`;
-    echo.private(channelName).listen(".tasks.count", (payload: { count?: number }) => {
-      applyCount(normalizeCount(payload?.count));
-    });
-
-    echo.connector?.pusher?.connection.bind("connected", () => {
-      if (!active) return;
-      if (pollId) {
-        window.clearInterval(pollId);
-        pollId = null;
-      }
-      void loadCounts();
-    });
-
-    echo.connector?.pusher?.connection.bind("error", () => {
-      if (!active) return;
-      if (!pollId) pollId = window.setInterval(loadCounts, fallbackInterval);
-    });
+    pollId = window.setInterval(loadCounts, fallbackInterval);
 
     return () => {
       active = false;
-      if (echo && channelName) {
-        echo.leave(channelName);
-      }
-      if (echo) echo.disconnect();
       if (pollId) window.clearInterval(pollId);
     };
   }, [role, storedUser]);
@@ -646,12 +571,12 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
                           <FontAwesomeIcon icon={faGear} className="text-sm" />
                         </span>
                         <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-slate-800 group-hover:text-slate-900">
-                          Pengaturan
-                        </span>
-                        <span className="mt-0.5 block truncate text-xs font-semibold text-slate-500">
-                          Pengaturan akun.
-                        </span>
+                          <span className="block text-sm font-semibold text-slate-800 group-hover:text-slate-900">
+                            Pengaturan
+                          </span>
+                          <span className="mt-0.5 block truncate text-xs font-semibold text-slate-500">
+                            Pengaturan akun.
+                          </span>
                         </span>
                       </button>
 
@@ -664,12 +589,12 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
                           <FontAwesomeIcon icon={faArrowRotateRight} className="text-sm" />
                         </span>
                         <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-slate-800 group-hover:text-slate-900">
-                          Muat ulang halaman
-                        </span>
-                        <span className="mt-0.5 block truncate text-xs font-semibold text-slate-500">
-                          Muat ulang data terbaru.
-                        </span>
+                          <span className="block text-sm font-semibold text-slate-800 group-hover:text-slate-900">
+                            Muat ulang halaman
+                          </span>
+                          <span className="mt-0.5 block truncate text-xs font-semibold text-slate-500">
+                            Muat ulang data terbaru.
+                          </span>
                         </span>
                       </button>
 
@@ -682,10 +607,10 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
                           <FontAwesomeIcon icon={faRightFromBracket} className="text-sm" />
                         </span>
                         <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-red-700 group-hover:text-red-800">Keluar</span>
-                        <span className="mt-0.5 block truncate text-xs font-semibold text-red-600">
-                          Keluar dari dashboard.
-                        </span>
+                          <span className="block text-sm font-semibold text-red-700 group-hover:text-red-800">Keluar</span>
+                          <span className="mt-0.5 block truncate text-xs font-semibold text-red-600">
+                            Keluar dari dashboard.
+                          </span>
                         </span>
                       </button>
                     </div>

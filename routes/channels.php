@@ -13,3 +13,15 @@ Broadcast::channel('editor-tasks.{userId}', function ($user, $userId) {
 
     return (int) $user->id === (int) $userId;
 });
+
+Broadcast::channel('admin-badges.{userId}', function ($user, $userId) {
+    if (! $user || ! $user->is_active) {
+        return false;
+    }
+
+    if (! $user->hasAnyRole(['admin', 'superadmin'])) {
+        return false;
+    }
+
+    return (int) $user->id === (int) $userId;
+});
