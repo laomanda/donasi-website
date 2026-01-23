@@ -454,7 +454,7 @@ function TentangKamiPage() {
       </section>
 
       {/* LEGALITAS */}
-      <section id="legalitas" className="bg-white pb-20">
+      <section id="legalitas" className="bg-white pt-16 pb-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-[28px] border border-slate-100 bg-gradient-to-br from-white to-slate-50 p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)]">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-4">

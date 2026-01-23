@@ -12,7 +12,13 @@ class ProgramController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Program::query()->whereIn('status', ['active', 'draft', 'completed']);
+        $query = Program::query();
+
+        if ($request->has('status')) {
+            $query->where('status', $request->input('status'));
+        } else {
+            $query->whereIn('status', ['active', 'draft', 'completed']);
+        }
 
         $category = $request->string('category')->trim()->toString();
         if ($category !== '') {

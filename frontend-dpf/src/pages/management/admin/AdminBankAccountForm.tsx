@@ -91,6 +91,16 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
+
+  const uniqueCategories = useMemo(() => {
+    const set = new Set<string>();
+    // Add existing from peers
+    peers.forEach((p) => {
+      if (p.category) set.add(p.category);
+    });
+    return Array.from(set).sort();
+  }, [peers]);
 
   const getImageUrl = (path?: string | null) => {
     if (!path) return null;
@@ -342,22 +352,43 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
           <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <div className="grid grid-cols-1 gap-4">
               <div className="grid sm:grid-cols-2 gap-4">
-                <label className="block sm:col-span-2">
+                <label className="block sm:col-span-2 relative">
                   <span className="text-[11px] font-bold tracking-wide text-slate-400">
                     Kategori <span className="text-red-500">*</span>
                   </span>
-                  <select
-                    value={form.category}
-                    onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))}
-                    className="mt-2 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                    disabled={loading || saving || deleting}
-                  >
-                    <option value="bank_transfer">Transfer Bank</option>
-                    <option value="ewallet">E-Wallet</option>
-                    <option value="qris">QRIS</option>
-                    <option value="virtual_account">Virtual Account</option>
-                    <option value="other">Lainnya</option>
-                  </select>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={form.category}
+                      onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))}
+                      onFocus={() => setShowCategorySuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowCategorySuggestions(false), 200)}
+                      placeholder="Pilih atau ketik kategori baru..."
+                      className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                      disabled={loading || saving || deleting}
+                    />
+                    {showCategorySuggestions && (
+                      <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl py-1">
+                        {uniqueCategories.map((cat) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()} // Prevent blur
+                            onClick={() => {
+                              setForm((s) => ({ ...s, category: cat }));
+                              setShowCategorySuggestions(false);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition"
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-1.5 text-[10px] text-slate-400">
+                    Ketik untuk membuat kategori baru atau pilih dari daftar yang sudah ada.
+                  </p>
                 </label>
               </div>
 

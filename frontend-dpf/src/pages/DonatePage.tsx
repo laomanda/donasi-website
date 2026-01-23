@@ -7,6 +7,7 @@ import {
     faShieldHalved,
     faWallet,
     faPaperPlane,
+    faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
 import { WaveDivider } from "../components/landing/WaveDivider";
@@ -167,6 +168,8 @@ function DonatePage() {
     const formatNumber = (value: number | string | null | undefined) =>
         new Intl.NumberFormat(locale === "en" ? "en-US" : "id-ID").format(Number(value ?? 0));
 
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
     const requestedProgramId = (searchParams.get("program_id") ?? "").trim() || null;
     const localizedPrograms = useMemo(
         () =>
@@ -208,7 +211,7 @@ function DonatePage() {
         setLoading(true);
         Promise.all([
             http.get<OrganizationResponse>("/organization"),
-            http.get<{ data: Program[] }>("/programs").catch(() => ({ data: [] as any })),
+            http.get<{ data: Program[] }>("/programs?status=active&per_page=100").catch(() => ({ data: [] as any })),
             http.get<DonationSummaryResponse>("/donations/summary").catch(() => ({ data: { general: { amount: 0, count: 0 } } })),
         ])
             .then(([orgRes, progRes, summaryRes]) => {
@@ -772,18 +775,40 @@ function DonatePage() {
                                 {t("donasi.accounts.empty")}
                             </div>
                         ) : (
-                            sortedCategories.map(cat => (
-                                <div key={cat} className="space-y-4">
-                                    <h3 className="text-lg font-bold text-slate-800 border-l-4 border-brandGreen-500 pl-3">
-                                        {categoryLabels[cat] || cat}
-                                    </h3>
-                                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                                        {groupedAccounts[cat].map(acc => (
-                                            <AccountCard key={acc.id} account={acc} t={t} />
-                                        ))}
+                            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden divide-y divide-slate-100 shadow-sm">
+                                {sortedCategories.map(cat => (
+                                    <div key={cat} className="bg-white overflow-hidden transition-all duration-300">
+                                        <button
+                                            onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+                                            className={`flex w-full items-center justify-between px-6 py-5 text-left transition hover:bg-slate-50 ${activeCategory === cat ? 'bg-slate-50' : ''}`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`h-8 w-1.5 rounded-full transition-colors ${activeCategory === cat ? 'bg-brandGreen-500' : 'bg-slate-300'}`} />
+                                                <h3 className={`text-lg font-bold transition-colors ${activeCategory === cat ? 'text-brandGreen-800' : 'text-slate-700'}`}>
+                                                    {categoryLabels[cat] || cat}
+                                                </h3>
+                                            </div>
+                                            <div className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ${activeCategory === cat ? 'bg-brandGreen-100 text-brandGreen-600 rotate-180' : 'bg-slate-100 text-slate-400'}`}>
+                                                <FontAwesomeIcon icon={faChevronDown} />
+                                            </div>
+                                        </button>
+
+                                        <div
+                                            className={`grid transition-[grid-template-rows] duration-300 ease-out ${activeCategory === cat ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+                                        >
+                                            <div className="overflow-hidden">
+                                                <div className="border-t border-slate-100 bg-white px-6 py-6">
+                                                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                                        {groupedAccounts[cat].map(acc => (
+                                                            <AccountCard key={acc.id} account={acc} t={t} />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                ))}
+                            </div>
                         )}
                     </div>
 

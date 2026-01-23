@@ -183,33 +183,33 @@ function LayananPage() {
         </div>
 
         <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-20 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
-            <div className="space-y-6">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary-700 shadow-sm">
+          <div className="space-y-6">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary-700 shadow-sm">
               {t("layanan.hero.badge")}
-              </span>
-              <h1 className="font-heading text-4xl font-semibold leading-tight text-slate-900 sm:text-5xl">
+            </span>
+            <h1 className="font-heading text-4xl font-semibold leading-tight text-slate-900 sm:text-5xl">
               {t("layanan.hero.title.leading")} <span className="text-primary-500">{t("layanan.hero.title.highlight")}</span>
-              </h1>
-              <p className="max-w-2xl text-lg leading-relaxed text-slate-700">
+            </h1>
+            <p className="max-w-2xl text-lg leading-relaxed text-slate-700">
               {t("layanan.hero.subtitle")}
-              </p>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Link
-                  to="/jemput-wakaf"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-700"
-                >
-                  <FontAwesomeIcon icon={faTruckRampBox} />
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link
+                to="/jemput-wakaf"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-700"
+              >
+                <FontAwesomeIcon icon={faTruckRampBox} />
                 {t("layanan.hero.cta.pickup")}
-                </Link>
-                <a
-                  href="#layanan"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-50"
-                >
-                  <FontAwesomeIcon icon={faArrowRight} />
+              </Link>
+              <a
+                href="#layanan"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-50"
+              >
+                <FontAwesomeIcon icon={faArrowRight} />
                 {t("layanan.hero.cta.all")}
-                </a>
-              </div>
+              </a>
             </div>
+          </div>
 
           <div className="relative">
             <div className="rounded-[32px] border border-white/60 bg-white/80 p-6 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.4)] backdrop-blur">
@@ -270,31 +270,31 @@ function LayananPage() {
               const badge = t(service.badgeKey);
               const cta = t(service.ctaKey);
               return (
-              <article
-                key={service.titleKey}
-                className="group flex h-full w-full flex-col overflow-hidden rounded-[22px] border border-slate-100 bg-white shadow-[0_25px_60px_-40px_rgba(0,0,0,0.4)] transition-shadow hover:shadow-[0_28px_70px_-38px_rgba(0,0,0,0.45)]"
-              >
-                <div className="flex items-center justify-between px-5 pt-5">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-50 text-primary-700 shadow-sm">
-                    <FontAwesomeIcon icon={service.icon} className="text-lg" />
+                <article
+                  key={service.titleKey}
+                  className="group flex h-full w-full flex-col overflow-hidden rounded-[22px] border border-slate-100 bg-white shadow-[0_25px_60px_-40px_rgba(0,0,0,0.4)] transition-shadow hover:shadow-[0_28px_70px_-38px_rgba(0,0,0,0.45)]"
+                >
+                  <div className="flex items-center justify-between px-5 pt-5">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-50 text-primary-700 shadow-sm">
+                      <FontAwesomeIcon icon={service.icon} className="text-lg" />
+                    </div>
+                    <span className="rounded-full bg-primary-50 px-3 py-1 text-[11px] font-semibold text-primary-700">
+                      {badge}
+                    </span>
                   </div>
-                  <span className="rounded-full bg-primary-50 px-3 py-1 text-[11px] font-semibold text-primary-700">
-                    {badge}
-                  </span>
-                </div>
-                <div className="p-5 space-y-3">
-                  <h3 className="text-lg font-heading font-semibold text-slate-900">{title}</h3>
-                  <p className="text-sm leading-relaxed text-slate-600">{desc}</p>
-                  <Link
-                    to={service.link}
-                    className="inline-flex items-center gap-2 text-sm font-bold text-primary-700 transition hover:gap-3"
-                  >
-                    {cta}
-                    <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
-                  </Link>
-                </div>
-              </article>
-            );
+                  <div className="p-5 space-y-3">
+                    <h3 className="text-lg font-heading font-semibold text-slate-900">{title}</h3>
+                    <p className="text-sm leading-relaxed text-slate-600">{desc}</p>
+                    <Link
+                      to={service.link}
+                      className="inline-flex items-center gap-2 text-sm font-bold text-primary-700 transition hover:gap-3"
+                    >
+                      {cta}
+                      <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
+                    </Link>
+                  </div>
+                </article>
+              );
             })}
           </div>
         </div>
@@ -414,11 +414,10 @@ function LayananPage() {
               />
               {submitMessageKey && (
                 <div
-                  className={`rounded-xl px-4 py-3 text-sm font-semibold ${
-                    submitMessageKey === "success"
+                  className={`rounded-xl px-4 py-3 text-sm font-semibold ${submitMessageKey === "success"
                       ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
                       : "border border-red-100 bg-red-50 text-red-700"
-                  }`}
+                    }`}
                 >
                   {submitMessageKey === "success" ? t("layanan.form.submit.success") : t("layanan.form.submit.error")}
                 </div>
@@ -437,7 +436,7 @@ function LayananPage() {
       </section>
 
       {/* FAQ */}
-      <section className="bg-slate-50 pb-20">
+      <section className="bg-slate-50 pt-16 pb-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-700">
