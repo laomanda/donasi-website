@@ -12,7 +12,7 @@ import { LandingLayout } from "../layouts/LandingLayout";
 import http from "../lib/http";
 import { resolveStorageBaseUrl } from "../lib/urls";
 import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
-import donasiUmumImage from "../brand/assets/Donasi-umum.png";
+
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
 import { useSearchHighlight } from "../lib/highlight";
@@ -193,7 +193,7 @@ export function ProgramPage() {
     });
   }, [localizedPrograms, search, activeCategory, activeStatus]);
 
-  const showGeneralCard = !activeStatus || activeStatus === "active";
+
 
   // Handle active status color
   const getFilterClass = (isActive: boolean) =>
@@ -330,14 +330,13 @@ export function ProgramPage() {
                   ? Array.from({ length: 6 }).map((_, idx) => <ProgramSkeleton key={`prog-skel-${idx}`} />)
                   : (
                     <>
-                      {showGeneralCard && <GeneralDonationCard locale={locale} t={t} />}
                       {filtered.map((program) => <ProgramCard key={program.id} program={program} locale={locale} t={t} />)}
                     </>
                   )
                }
             </div>
 
-            {!loading && filtered.length === 0 && !showGeneralCard && (
+            {!loading && filtered.length === 0 && (
                <div className="mx-auto max-w-lg py-12 text-center">
                   <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-slate-100 text-slate-300">
                       <FontAwesomeIcon icon={faMagnifyingGlass} className="text-3xl" />
@@ -387,7 +386,7 @@ function ProgramCard({
     >
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
         <img
-          src={getImageUrl(program.program_images?.[0] ?? program.thumbnail_path)}
+          src={getImageUrl(program.thumbnail_path ?? program.program_images?.[0])}
           alt={program.title}
           className="h-full w-full object-cover"
           onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
@@ -461,57 +460,7 @@ function ProgramCard({
   );
 }
 
-function GeneralDonationCard({ locale, t }: { locale: "id" | "en"; t: (key: string, fallback?: string) => string }) {
-  const brandName = "Djalalaludin Pane Foundation";
-  return (
-    <article
-      className="flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-100 bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-lg hover:shadow-slate-200/50"
-      style={{ minHeight: "540px" }}
-    >
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
-        <img src={donasiUmumImage} alt={t("donate.program.general")} className="h-full w-full object-cover" />
-        <div className="absolute left-4 top-4">
-          <span className="rounded-full uppercase font-heading bg-primary-600 px-3 py-1 text-[11px] font-semibold text-white shadow-sm">
-            {t("donate.program.general")}
-          </span>
-        </div>
-      </div>
-      <div className="flex flex-1 flex-col gap-3 p-5">
-        <div className="flex items-center justify-between gap-3">
-          <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-emerald-200 bg-emerald-50 text-emerald-700">
-            {t("donate.program.general")}
-          </span>
-          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg ring-1 ring-emerald-100">
-            {locale === "en" ? "Always open" : "Selalu terbuka"}
-          </span>
-        </div>
 
-        <h3 className="text-lg font-heading font-semibold text-slate-900 leading-snug">{t("donate.program.general")}</h3>
-        <p className="text-sm text-slate-600 line-clamp-3 min-h-[60px]">{t("donate.program.generalDesc")}</p>
-        <div className="flex items-center gap-2">
-          <img src="/brand/dpf-icon.png" alt={brandName} className="h-6 w-6 rounded-md object-contain bg-white" />
-          <span className="text-sm font-semibold text-slate-800">{brandName}</span>
-          <FontAwesomeIcon icon={faCheckCircle} className="text-blue-500 text-xs" />
-        </div>
-
-        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
-          <span>{t("landing.programs.deadline")}</span>
-          <span className="text-slate-800">{t("landing.programs.deadline.unlimited")}</span>
-        </div>
-
-        <div className="mt-auto flex items-center justify-end border-t border-slate-100 pt-4">
-          <Link
-            to="/donate"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-brandGreen-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brandGreen-700 active:scale-[0.99]"
-          >
-            <FontAwesomeIcon icon={faHandHoldingHeart} />
-            {t("landing.programs.donate")}
-          </Link>
-        </div>
-      </div>
-    </article>
-  );
-}
 
 function ProgramSkeleton() {
   return (

@@ -29,9 +29,9 @@ export const landingDict: Dict = {
     "footer.cta.donate": { id: "Salurkan Donasi", en: "Give Donation" },
     "footer.address": {
       id:
-        "Jakarta:\nSignature Park Grande, Jl. Letjen M.T. Haryono No.Kav. 20, RT.4/RW.1, Cawang, Kec. Kramat jati, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13630.\nMedan:\nJl. Setia Budi No.123 c, Tj. Sari, Kec. Medan Selayang, Kota Medan, Sumatera Utara 20132",
+        "Jakarta:\nSignature Park Grande, Jl. Letjen M.T. Haryono No.Kav. 20, RT.4/RW.1, Cawang, Kec. Kramat jati, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13630.",
       en:
-        "Jakarta:\nSignature Park Grande, Jl. Letjen M.T. Haryono No.Kav. 20, RT.4/RW.1, Cawang, Kec. Kramat jati, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13630.\nMedan:\nJl. Setia Budi No.123 c, Tj. Sari, Kec. Medan Selayang, Kota Medan, Sumatera Utara 20132",
+        "Jakarta:\nSignature Park Grande, Jl. Letjen M.T. Haryono No.Kav. 20, RT.4/RW.1, Cawang, Kec. Kramat jati, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13630.",
     },
     "footer.phone": { id: "Telepon", en: "Phone" },
     "footer.email": { id: "Email", en: "Email" },

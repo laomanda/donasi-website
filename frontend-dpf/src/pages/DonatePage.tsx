@@ -15,7 +15,7 @@ import http from "../lib/http";
 import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { resolveStorageBaseUrl } from "../lib/urls";
 import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
-import donasiUmumImage from "../brand/assets/Donasi-umum.png";
+
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
 
@@ -47,12 +47,7 @@ type OrganizationResponse = {
     bank_accounts?: BankAccount[];
 };
 
-type DonationSummaryResponse = {
-    general?: {
-        amount?: number | string | null;
-        count?: number | null;
-    };
-};
+
 
 type Program = {
     id: number;
@@ -139,10 +134,7 @@ function DonatePage() {
     const [searchParams] = useSearchParams();
     const [accounts, setAccounts] = useState<BankAccount[]>([]);
     const [programs, setPrograms] = useState<Program[]>([]);
-    const [generalDonationSummary, setGeneralDonationSummary] = useState<{ amount: number; count: number }>({
-        amount: 0,
-        count: 0,
-    });
+
     const [loading, setLoading] = useState(true);
     const [errorKey, setErrorKey] = useState<string | null>(null);
     const [form, setForm] = useState({
@@ -212,16 +204,12 @@ function DonatePage() {
         Promise.all([
             http.get<OrganizationResponse>("/organization"),
             http.get<{ data: Program[] }>("/programs?status=active&per_page=100").catch(() => ({ data: [] as any })),
-            http.get<DonationSummaryResponse>("/donations/summary").catch(() => ({ data: { general: { amount: 0, count: 0 } } })),
+
         ])
-            .then(([orgRes, progRes, summaryRes]) => {
+            .then(([orgRes, progRes]) => {
                 if (!active) return;
                 setAccounts(orgRes.data?.bank_accounts ?? []);
                 setPrograms(progRes.data?.data ?? []);
-                setGeneralDonationSummary({
-                    amount: Number(summaryRes.data?.general?.amount ?? 0),
-                    count: Number(summaryRes.data?.general?.count ?? 0),
-                });
                 setErrorKey(null);
             })
             .catch(() => {
@@ -290,37 +278,22 @@ function DonatePage() {
         return categoryOrder.indexOf(a) - categoryOrder.indexOf(b);
     });
     const selectedProgram = localizedPrograms.find((program) => String(program.id) === form.program_id) ?? null;
-    const isGeneralDonation = !form.program_id;
-    const selectedProgramImage = isGeneralDonation
-        ? donasiUmumImage
-        : getImageUrl(selectedProgram?.program_images?.[0] ?? selectedProgram?.banner_path ?? selectedProgram?.thumbnail_path ?? null);
-    const selectedProgramTitle = isGeneralDonation
-        ? t("donate.program.general")
-        : selectedProgram?.title ?? t("donate.program.notFound");
-    const selectedProgramDesc = isGeneralDonation
-        ? t("donate.program.generalDesc")
-        : selectedProgram?.short_description ?? t("donate.program.fallbackDesc");
-    const selectedProgramStatus = isGeneralDonation
-        ? t("donate.program.status.general")
-        : normalizeProgramStatus(selectedProgram?.status, locale, t);
-    const selectedProgramCategory = isGeneralDonation ? null : selectedProgram?.category ?? t("landing.programs.defaultCategory");
+    
+    const selectedProgramImage = getImageUrl(selectedProgram?.program_images?.[0] ?? selectedProgram?.banner_path ?? selectedProgram?.thumbnail_path ?? null);
+    const selectedProgramTitle = selectedProgram?.title ?? t("donate.program.notFound");
+    const selectedProgramDesc = selectedProgram?.short_description ?? t("donate.program.fallbackDesc");
+    const selectedProgramStatus = normalizeProgramStatus(selectedProgram?.status, locale, t);
+    const selectedProgramCategory = selectedProgram?.category ?? t("landing.programs.defaultCategory");
     const selectedProgramSlug = selectedProgram?.slug ?? "";
     const selectedProgramTarget = selectedProgram?.target_amount ?? null;
     const selectedProgramCollected = selectedProgram?.collected_amount ?? null;
-    const generalDonationAmount = generalDonationSummary.amount ?? 0;
-    const generalDonationCount = generalDonationSummary.count ?? 0;
-    const displayCollected = isGeneralDonation ? generalDonationAmount : selectedProgramCollected;
-    const displayTarget = isGeneralDonation ? null : selectedProgramTarget;
+    
+    const displayCollected = selectedProgramCollected;
+    const displayTarget = selectedProgramTarget;
     const selectedProgramProgress = getProgress(selectedProgramCollected, selectedProgramTarget);
-    const hasProgramProgress = isGeneralDonation
-        ? generalDonationAmount > 0
-        : selectedProgramTarget !== null || selectedProgramCollected !== null;
-    const displayProgress = isGeneralDonation
-        ? generalDonationAmount > 0
-            ? 100
-            : 0
-        : selectedProgramProgress;
-    const detailLink = !isGeneralDonation && selectedProgramSlug ? `/program/${selectedProgramSlug}` : "/program";
+    const hasProgramProgress = selectedProgramTarget !== null || selectedProgramCollected !== null;
+    const displayProgress = selectedProgramProgress;
+    const detailLink = selectedProgramSlug ? `/program/${selectedProgramSlug}` : "/program";
 
     const handleChange = (key: keyof typeof form, value: string | boolean) => {
         setForm((prev) => ({ ...prev, [key]: value as any }));
@@ -508,21 +481,14 @@ function DonatePage() {
                                                                 : t("donate.card.flexible")}
                                                         </span>
                                                     </span>
-                                                    {isGeneralDonation && generalDonationCount > 0 && (
-                                                        <span>
-                                                            {t("donate.card.totalDonations")}{" "}
-                                                            <span className="font-semibold text-slate-700">{formatNumber(generalDonationCount)}</span>
-                                                        </span>
-                                                    )}
+
                                                 </div>
-                                                {!isGeneralDonation && (
                                                     <Link
                                                         to={detailLink}
                                                         className="inline-flex items-center justify-center rounded-full border border-transparent bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-brandGreen-700 hover:to-primary-700"
                                                     >
                                                         {t("donate.card.detail")}
                                                     </Link>
-                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -584,7 +550,7 @@ function DonatePage() {
                                 value={form.program_id}
                                 onChange={(v) => handleChange("program_id", v)}
                                 options={[
-                                    { value: "", label: t("donate.form.generalOption") },
+                                    { value: "", label: t("donate.form.selectPlaceholder", "Pilih Program") },
                                     ...localizedPrograms.map((p) => {
                                         const isClosed = ["completed", "selesai", "tersalurkan", "archived", "arsip"].includes(
                                             String(p.status ?? "").trim().toLowerCase()

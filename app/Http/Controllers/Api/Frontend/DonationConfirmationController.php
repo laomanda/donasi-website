@@ -21,7 +21,7 @@ class DonationConfirmationController extends Controller
             'bank_destination'    => ['required', 'string', 'max:255'],
             'purpose'             => ['required', 'string', 'max:255'], // contoh: nama program / donasi umum
             'notes'               => ['nullable', 'string'],
-            'proof'               => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
+            'proof'               => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
         ]);
 
         $proofPath = null;

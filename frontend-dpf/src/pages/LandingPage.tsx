@@ -16,7 +16,8 @@ import { resolveStorageBaseUrl } from "../lib/urls";
 import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
 import placeholderBanner from "../brand/placeholder-banner.png";
 import heroImage from "../brand/assets/Hero.png";
-import donasiUmumImage from "../brand/assets/Donasi-umum.png";
+import proposalWakafImage from "../brand/assets/proposal_wakaf.jpeg";
+
 import { useLang } from "../lib/i18n";
 import { landingDict, translate } from "../i18n/landing";
 
@@ -223,7 +224,82 @@ function LandingPage() {
       <ProgramsSection highlights={localizedHighlights} loading={loading} t={t} locale={locale} />
       <ArticlesSection articles={localizedArticles} loading={loading} t={t} locale={locale} />
       <PartnerSection partners={localizedPartners} t={t} locale={locale} />
+      <ProposalSection />
     </LandingLayout>
+  );
+}
+
+function ProposalSection() {
+  const { locale } = useLang();
+  
+  return (
+    <section className="bg-white pb-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-[#2F7D4E] to-[#E87C1E] px-6 py-10 shadow-2xl sm:px-12 sm:py-16">
+          {/* Background decoration */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-12 -top-12 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -right-12 -bottom-12 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+          </div>
+
+          <div className="relative flex flex-col items-center gap-10 lg:flex-row lg:justify-between lg:gap-16">
+            {/* Text Content */}
+            <div className="flex-1 text-center lg:text-left text-white space-y-6">
+              <div>
+                <span className="inline-block rounded-full bg-white/20 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-sm">
+                  {locale === "id" ? "Proposal Program" : "Program Proposal"}
+                </span>
+                <h2 className="mt-4 font-heading text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+                  {locale === "id" 
+                    ? "Pelajari Lebih Lanjut Tentang Program Wakaf Kami" 
+                    : "Learn More About Our Wakaf Programs"}
+                </h2>
+                <p className="mt-4 text-lg text-white/90 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                  {locale === "id"
+                    ? "Unduh materi lengkap mengenai program-program unggulan dan transparansi penggunaan dana wakaf."
+                    : "Download complete materials regarding our flagship programs and waqf fund transparency."}
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                 <a 
+                  href={proposalWakafImage}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-bold text-[#E87C1E] shadow-lg transition-transform hover:-translate-y-1 hover:shadow-xl active:scale-95"
+                >
+                  <FontAwesomeIcon icon={faReceipt} className="text-lg" />
+                  {locale === "id" ? "Lihat Proposal" : "View Proposal"}
+                </a>
+                <Link
+                  to="/donate"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/30 bg-white/10 px-8 py-3.5 text-sm font-bold text-white transition-all hover:bg-white/20 hover:border-white/50"
+                >
+                  <FontAwesomeIcon icon={faHandHoldingHeart} className="text-lg" />
+                  {locale === "id" ? "Donasi Sekarang" : "Donate Now"}
+                </Link>
+              </div>
+            </div>
+
+            {/* Image Preview */}
+            <div className="relative w-full max-w-sm flex-none lg:w-1/3">
+              <div className="relative aspect-[3/4] w-full rotate-3 transform rounded-2xl bg-white p-2 shadow-2xl transition-transform duration-500 hover:rotate-0 hover:scale-105">
+                <img
+                  src={proposalWakafImage}
+                  alt="Proposal Wakaf Preview"
+                  className="h-full w-full rounded-xl object-cover bg-slate-50"
+                />
+                
+                {/* Floating Badge */}
+                 <div className="absolute -right-4 -top-4 rounded-full bg-[#2F7D4E] p-4 text-white shadow-xl">
+                    <FontAwesomeIcon icon={faHandHoldingHeart} className="h-6 w-6" />
+                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -454,8 +530,8 @@ function ProgramsSection({ highlights, loading, t, locale }: { highlights: Progr
   const hasPrograms = highlights.length > 0;
 
   const visiblePrograms = highlights.slice(0, 6);
-  const showGeneralCard = true;
 
+  
   return (
     <section id="programs" className="relative bg-slate-50">
       <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -473,7 +549,7 @@ function ProgramsSection({ highlights, loading, t, locale }: { highlights: Progr
           </div>
           <Link
             to="/program"
-            className="inline-flex items-center gap-2 rounded-full border border-brandGreen-500 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:text-white hover:bg-brandGreen-500 hover:border-slate-200"
+            className="inline-flex items-center gap-2 rounded-full border border-brandGreen-500 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:text-white hover:text-white hover:bg-brandGreen-500 hover:border-slate-200"
           >
             {t("landing.programs.all")}
             <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
@@ -481,7 +557,6 @@ function ProgramsSection({ highlights, loading, t, locale }: { highlights: Progr
         </div>
 
         <div className="mt-10 grid gap-7 md:grid-cols-2 lg:grid-cols-3">
-          {showGeneralCard && <GeneralDonationCard t={t} />}
           {hasPrograms &&
             visiblePrograms.map((program) => <ProgramCard key={program.id} program={program} t={t} locale={locale} />)}
 
@@ -580,44 +655,7 @@ function ProgramCard({ program, t, locale }: { program: Program; t: (k: string, 
   );
 }
 
-function GeneralDonationCard({ t }: { t: (k: string, f?: string) => string }) {
-  return (
-    <article className="flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-100 bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-lg hover:shadow-slate-200/50">
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
-        <img src={donasiUmumImage} alt={t("donate.program.general")} className="h-full w-full object-cover" />
-        <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-semibold text-white">
-          <span className="rounded-full uppercase font-heading bg-primary-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm">
-            {t("donate.program.general")}
-          </span>
-        </div>
-      </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
-        <div className="flex items-center justify-between gap-3">
-          <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 bg-emerald-50 text-emerald-700 ring-emerald-100">
-            {t("donate.program.general")}
-          </span>
-          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg ring-1 ring-emerald-100">
-            {t("landing.programs.status.ongoing")}
-          </span>
-        </div>
-
-        <h3 className="text-lg font-heading font-semibold text-slate-900 leading-snug">{t("donate.program.general")}</h3>
-        <p className="text-sm text-slate-600 line-clamp-3">{t("donate.program.generalDesc")}</p>
-
-        <div className="mt-auto flex items-center justify-end border-t border-slate-100 pt-4">
-          <Link
-            to="/donate"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-brandGreen-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brandGreen-700 active:scale-[0.99]"
-          >
-            <FontAwesomeIcon icon={faHandHoldingHeart} />
-            {t("landing.programs.donate")}
-          </Link>
-        </div>
-      </div>
-    </article>
-  );
-}
 
 function ProgramSkeleton() {
   return (

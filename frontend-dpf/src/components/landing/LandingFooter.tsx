@@ -40,8 +40,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
       'landing.contact_email_link',
       'landing.contact_map_jakarta_embed',
       'landing.contact_map_jakarta_link',
-      'landing.contact_map_medan_embed',
-      'landing.contact_map_medan_link',
+
       'landing.social_whatsapp_link',
     ])
       .then((settings) => {
@@ -68,10 +67,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
   const jakartaMapLink =
     publicSettings['landing.contact_map_jakarta_link']?.trim() ||
     'https://maps.google.com/?q=-6.24460046114402,106.86403477404349'
-  const medanMapEmbed =
-    publicSettings['landing.contact_map_medan_embed']?.trim() ||
-    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15928.511404694102!2d98.62002560195295!3d3.5580108814351994!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30312fae9de99267%3A0xf1b47cb5a453853e!2sLAZNAS%20DPF!5e0!3m2!1sid!2sid!4v1768288065923!5m2!1sid!2sid'
-  const medanMapLink = publicSettings['landing.contact_map_medan_link']?.trim()
+
   const whatsappLink = publicSettings['landing.social_whatsapp_link']?.trim() || phoneLink
 
   return (
@@ -203,7 +199,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+        <div className="mt-10 grid gap-6 lg:grid-cols-1 max-w-2xl mx-auto">
           <div className="flex flex-col">
             <div className="overflow-hidden rounded-xl border border-white/10 shadow-lg">
               <iframe
@@ -228,32 +224,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
               Lihat di Google Maps (Jakarta)
             </a>
           </div>
-          <div className="flex flex-col">
-            <div className="overflow-hidden rounded-xl border border-white/10 shadow-lg">
-              <iframe
-                src={medanMapEmbed}
-                width="100%"
-                height="220"
-                style={{ border: 0 }}
-                loading="lazy"
-                title="Lokasi DPF Medan"
-                className="opacity-85 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
-                referrerPolicy="no-referrer-when-downgrade"
-                allowFullScreen
-              />
-            </div>
-            {medanMapLink ? (
-              <a
-                href={medanMapLink}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-white hover:text-emerald-300 transition-colors"
-              >
-                <FontAwesomeIcon icon={faMapLocationDot} className="h-4 w-4" />
-                Lihat di Google Maps (Medan)
-              </a>
-            ) : null}
-          </div>
+
         </div>
 
         {/* BOTTOM SECTION */}
