@@ -18,6 +18,7 @@ import {
   faCertificate,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
+import PhoneInput from "../components/ui/PhoneInput";
 import http from "../lib/http";
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
@@ -144,7 +145,6 @@ function LayananPage() {
   const validateForm = () => {
     const nextErrors: { name?: string; phone?: string; city?: string; service?: string } = {};
     const alphaSpace = /^[A-Za-z\s]+$/;
-    const digitsOnly = /^[0-9]+$/;
 
     if (!form.name.trim()) {
       nextErrors.name = "layanan.form.error.name.required";
@@ -160,7 +160,7 @@ function LayananPage() {
 
     if (!form.phone.trim()) {
       nextErrors.phone = "layanan.form.error.phone.required";
-    } else if (!digitsOnly.test(form.phone.trim())) {
+    } else if (form.phone.trim().length < 8) {
       nextErrors.phone = "layanan.form.error.phone.numeric";
     }
 
@@ -376,13 +376,15 @@ function LayananPage() {
                   required
                   error={errors.name ? t(errors.name) : ""}
                 />
-                <FormField
-                  label={t("layanan.form.fields.phone")}
-                  value={form.phone}
-                  onChange={(v) => handleChange("phone", v)}
-                  required
-                  error={errors.phone ? t(errors.phone) : ""}
-                />
+                <label className="space-y-1 text-sm font-medium text-slate-700">
+                  <span>{t("layanan.form.fields.phone")}</span>
+                  <PhoneInput
+                    value={form.phone}
+                    onChange={(v) => handleChange("phone", v || "")}
+                    disabled={submitting}
+                  />
+                  {errors.phone && <span className="text-xs font-semibold text-red-600">{t(errors.phone)}</span>}
+                </label>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormField

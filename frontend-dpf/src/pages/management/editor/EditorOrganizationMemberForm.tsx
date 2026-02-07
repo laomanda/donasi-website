@@ -4,6 +4,7 @@ import { faArrowLeft, faImage, faTrash } from "@fortawesome/free-solid-svg-icons
 import { useNavigate } from "react-router-dom";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
+import PhoneInput from "../../../components/ui/PhoneInput";
 
 type OrganizationMember = {
   id: number;
@@ -587,16 +588,27 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
               </label>
 
               <label className="block">
+                 {/* Custom label styling logic preserved by wrapping or letting PhoneInput handle it?
+                    PhoneInput component has its own label prop and styling.
+                    However, existing code uses a specific span style for label.
+                    I will use PhoneInput functionality but try to pass undefined label to it and use the existing custom label if I want to restrict layout changes,
+                    OR better: use PhoneInput's label prop if it matches the style. 
+                    The PhoneInput I created has a specific style: "text-sm font-semibold text-slate-700".
+                    The existing style here is: "text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400".
+                    They are quite different. I should probably keep the existing label and use PhoneInput just for the input part.
+                    My PhoneInput component renders a label IF the label prop is provided. If not, it just renders the input container.
+                    So I will NOT pass the 'label' prop to PhoneInput, and keep the existing label.
+                 */}
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   No. HP <span className="text-slate-400">(opsional)</span>
                 </span>
-                <input
-                  value={form.phone}
-                  onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))}
-                  placeholder="08xxxxxxxxxx"
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-                  disabled={loading || saving || deleting}
-                />
+                <div className="mt-2">
+                    <PhoneInput
+                        value={form.phone}
+                        onChange={(val) => setForm((s) => ({ ...s, phone: val || "" }))}
+                        disabled={loading || saving || deleting}
+                    />
+                </div>
               </label>
             </div>
 

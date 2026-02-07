@@ -28,17 +28,36 @@ class PrayerTimesService
         return Cache::remember($cacheKey, $this->secondsUntilEndOfDay(), function () use ($normalizedCity, $normalizedCountry, $method) {
             $baseUrl = rtrim(config('services.aladhan.base_url', 'https://api.aladhan.com/v1'), '/');
 
-            $response = Http::timeout(10)->get("{$baseUrl}/timingsByCity", [
-                'city'    => $normalizedCity,
-                'country' => $normalizedCountry,
-                'method'  => $method,
-            ]);
+            try {
+                $response = Http::timeout(5)->get("{$baseUrl}/timingsByCity", [
+                    'city'    => $normalizedCity,
+                    'country' => $normalizedCountry,
+                    'method'  => $method,
+                ]);
 
-            if (! $response->ok() || ! data_get($response->json(), 'data.timings')) {
-                abort(502, 'Gagal mengambil jadwal sholat.');
+                if (! $response->ok() || ! data_get($response->json(), 'data.timings')) {
+                    throw new \Exception('Failed to fetch from AlAdhan');
+                }
+
+                $data = $response->json('data');
+            } catch (\Throwable $th) {
+                // Return default/empty if API fails to avoid breaking the UI
+                return [
+                    'city'     => $normalizedCity,
+                    'country'  => $normalizedCountry,
+                    'method'   => $method,
+                    'timezone' => 'Asia/Jakarta',
+                    'date'     => Carbon::now()->format('d-m-Y'),
+                    'timings'  => [
+                        'Subuh'   => '--:--',
+                        'Dzuhur'  => '--:--',
+                        'Ashar'   => '--:--',
+                        'Maghrib' => '--:--',
+                        'Isya'    => '--:--',
+                    ],
+                ];
             }
 
-            $data = $response->json('data');
             $timezone = $data['meta']['timezone'] ?? 'Asia/Jakarta';
             $date = $data['date']['gregorian']['date'] ?? Carbon::now($timezone)->format('Y-m-d');
 

@@ -52,16 +52,15 @@ class DonationController extends Controller
                 'is_anonymous'          => $data['is_anonymous'],
                 'payment_source'        => 'midtrans',
                 'payment_method'        => 'snap',
-                // Midtrans dianggap langsung lunas sesuai kebutuhan management UI.
-                'status'                => 'paid',
-                'paid_at'               => now(),
+                // Status awal pending, menunggu callback/webhook Midtrans
+                'status'                => 'pending', 
+                'paid_at'               => null,
                 'notes'                 => $data['notes'] ?? null,
                 'midtrans_order_id'     => $orderId,
             ]);
 
-            if ($programId) {
-                Program::whereKey($programId)->increment('collected_amount', $created->amount);
-            }
+            // Removed optimistic increment logic here. 
+            // The collected_amount will be incremented in the webhook when status becomes 'paid'.
 
             return $created;
         });
@@ -150,5 +149,18 @@ class DonationController extends Controller
         $sequence++;
 
         return sprintf('%s-%04d', $prefix, $sequence);
+    }
+
+    public function cancel(Donation $donation)
+    {
+        if ($donation->status === 'paid') {
+            return response()->json(['message' => 'Donasi sudah dibayar, tidak dapat dibatalkan.'], 400);
+        }
+
+        $donation->update([
+            'status' => 'failed', // or 'cancelled'
+        ]);
+
+        return response()->json(['message' => 'Donasi berhasil dibatalkan.']);
     }
 }

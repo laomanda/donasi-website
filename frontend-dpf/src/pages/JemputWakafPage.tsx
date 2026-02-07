@@ -18,6 +18,7 @@ import {
 import { LandingLayout } from "../layouts/LandingLayout";
 import { WaveDivider } from "../components/landing/WaveDivider";
 import http from "../lib/http";
+import PhoneInput from "../components/ui/PhoneInput";
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
 
@@ -128,14 +129,13 @@ export function JemputWakafPage() {
 
   const validate = () => {
     const alphaSpace = /^[A-Za-z\s]+$/;
-    const digits = /^[0-9]+$/;
     const next: { [k: string]: string } = {};
 
     if (!form.donor_name.trim()) next.donor_name = "jemput.form.error.name.required";
     else if (!alphaSpace.test(form.donor_name.trim())) next.donor_name = "jemput.form.error.name.alpha";
 
     if (!form.donor_phone.trim()) next.donor_phone = "jemput.form.error.phone.required";
-    else if (!digits.test(form.donor_phone.trim())) next.donor_phone = "jemput.form.error.phone.numeric";
+    else if (form.donor_phone.trim().length < 8) next.donor_phone = "jemput.form.error.phone.numeric";
 
     if (!form.address_full.trim()) next.address_full = "jemput.form.error.address.required";
 
@@ -354,7 +354,15 @@ export function JemputWakafPage() {
             <form onSubmit={handleSubmit} className="rounded-[24px] border border-slate-100 bg-white p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)] space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <InputField label={t("jemput.form.fields.name")} value={form.donor_name} onChange={(v) => handleChange("donor_name", v)} required error={errors.donor_name ? t(errors.donor_name) : ""} />
-                <InputField label={t("jemput.form.fields.phone")} value={form.donor_phone} onChange={(v) => handleChange("donor_phone", v)} required error={errors.donor_phone ? t(errors.donor_phone) : ""} />
+                <label className="space-y-1 text-sm font-medium text-slate-700">
+                  <span>{t("jemput.form.fields.phone")}</span>
+                  <PhoneInput
+                    value={form.donor_phone}
+                    onChange={(v) => handleChange("donor_phone", v || "")}
+                    disabled={submitting}
+                  />
+                  {errors.donor_phone && <span className="text-xs font-semibold text-red-600">{t(errors.donor_phone)}</span>}
+                </label>
               </div>
               <InputField label={t("jemput.form.fields.address")} value={form.address_full} onChange={(v) => handleChange("address_full", v)} required error={errors.address_full ? t(errors.address_full) : ""} />
               <div className="grid gap-4 sm:grid-cols-2">

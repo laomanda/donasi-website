@@ -10,7 +10,10 @@ import {
     faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
+// SelectField import remove because it is locally defined
 import { WaveDivider } from "../components/landing/WaveDivider";
+import PhoneInput from "../components/ui/PhoneInput";
+// react-i18next import removed
 import http from "../lib/http";
 import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { resolveStorageBaseUrl } from "../lib/urls";
@@ -156,6 +159,7 @@ function DonatePage() {
     const [snapIframeUrl, setSnapIframeUrl] = useState<string | null>(null);
     const donateFormRef = useRef<HTMLFormElement | null>(null);
     const lastPrefilledProgramRef = useRef<string | null>(null);
+    const currentDonationIdRef = useRef<number | string | null>(null); // Store current donation ID
     const amountOptions = [10000, 20000, 50000, 100000];
     const formatNumber = (value: number | string | null | undefined) =>
         new Intl.NumberFormat(locale === "en" ? "en-US" : "id-ID").format(Number(value ?? 0));
@@ -305,10 +309,11 @@ function DonatePage() {
         const next: { [k: string]: string } = {};
         const alphaSpace = /^[A-Za-z\s]+$/;
         const digits = /^[0-9]+$/;
-        if (!form.name.trim()) next.name = "donate.form.error.name.required";
+        // Phone validation handled by library mostly, but we can check basic length
+         if (!form.name.trim()) next.name = "donate.form.error.name.required";
         else if (!alphaSpace.test(form.name.trim())) next.name = "donate.form.error.name.alpha";
         if (form.email && !/^\S+@\S+\.\S+$/.test(form.email.trim())) next.email = "donate.form.error.email.invalid";
-        if (form.phone && !digits.test(form.phone.trim())) next.phone = "donate.form.error.phone.numeric";
+        if (form.phone && form.phone.length < 8) next.phone = "donate.form.error.phone.numeric"; // Basic length check
         if (!form.amount.trim()) next.amount = "donate.form.error.amount.required";
         else if (!digits.test(form.amount.trim())) next.amount = "donate.form.error.amount.numeric";
         else if (Number(form.amount) < 1000) next.amount = "donate.form.error.amount.min";
@@ -336,6 +341,12 @@ function DonatePage() {
                 notes: form.notes || undefined,
             };
             const res = await http.post("/donations", payload);
+            
+            // Store donation ID for cancellation fallback
+            if (res.data?.donation?.id) {
+                currentDonationIdRef.current = res.data.donation.id;
+            }
+
             const snapToken = res.data?.snap_token as string | undefined;
             const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY as string | undefined;
 
@@ -354,12 +365,28 @@ function DonatePage() {
                 }
             }
 
+            console.log("Snap debug:", { snapLoaded, hasSnapPay: !!window.snap?.pay, hasRedirect: !!res.data?.redirect_url, clientKey });
+
             if (snapLoaded && window.snap?.pay) {
+                console.log("Using Window Snap Pay");
                 window.snap.pay(snapToken, {
                     onSuccess: () => setSubmitState({ type: "success", messageKey: "donate.form.status.success" }),
                     onPending: () => setSubmitState({ type: "success", messageKey: "donate.form.status.pending" }),
                     onError: () => setSubmitState({ type: "error", messageKey: "donate.form.status.failed" }),
-                    onClose: () => setSubmitState({ type: "error", messageKey: "donate.form.status.closed" }),
+                    onClose: () => {
+                        console.log("Snap closed"); // Debug log
+                        setSubmitState({ type: "error", messageKey: "donate.form.status.closed" });
+                        
+                        // Call cancellation endpoint
+                        if (res.data?.donation?.id) {
+                            console.log("Cancelling donation ID:", res.data.donation.id); // Debug log
+                            http.post(`/donations/${res.data.donation.id}/cancel`)
+                                .then(() => console.log("Cancellation request sent"))
+                                .catch((err) => console.error("Cancellation failed:", err));
+                        } else {
+                            console.error("No donation ID found in response", res.data);
+                        }
+                    },
                 });
             } else if (res.data?.redirect_url) {
                 setSnapIframeUrl(res.data.redirect_url);
@@ -577,10 +604,10 @@ function DonatePage() {
                                     onChange={(v) => handleChange("email", v)}
                                     error={formErrors.email ? t(formErrors.email) : ""}
                                 />
-                                <InputField
+                                <PhoneInput
                                     label={t("donate.form.phone")}
                                     value={form.phone}
-                                    onChange={(v) => handleChange("phone", v)}
+                                    onChange={(v) => handleChange("phone", v || "")}
                                     error={formErrors.phone ? t(formErrors.phone) : ""}
                                 />
                             </div>
@@ -826,7 +853,14 @@ function DonatePage() {
                             <p className="text-sm font-semibold text-slate-800">{t("donate.snap.modalTitle")}</p>
                             <button
                                 type="button"
-                                onClick={() => setSnapIframeUrl(null)}
+                                onClick={() => {
+                                    setSnapIframeUrl(null);
+                                    if (currentDonationIdRef.current) {
+                                        console.log("Cancelling fallback donation ID:", currentDonationIdRef.current);
+                                        http.post(`/donations/${currentDonationIdRef.current}/cancel`)
+                                            .catch((err) => console.error("Cancellation failed:", err));
+                                    }
+                                }}
                                 className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200"
                             >
                                 {t("donate.snap.cancel")}

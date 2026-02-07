@@ -58,7 +58,8 @@ class MidtransWebhookController extends Controller
     private function mapStatus(string $status): string
     {
         return match ($status) {
-            'capture', 'settlement', 'pending' => 'paid',
+            'capture', 'settlement'           => 'paid',
+            'pending'                         => 'pending',
             'deny', 'cancel'                  => 'failed',
             'expire'                          => 'expired',
             default                           => 'paid',

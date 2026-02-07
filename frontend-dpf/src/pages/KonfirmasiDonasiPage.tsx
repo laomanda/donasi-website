@@ -15,6 +15,7 @@ import {
 import { LandingLayout } from "../layouts/LandingLayout";
 import { WaveDivider } from "../components/landing/WaveDivider";
 import http from "../lib/http";
+import PhoneInput from "../components/ui/PhoneInput";
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
 
@@ -158,7 +159,7 @@ export function KonfirmasiDonasiPage() {
     else if (!alphaSpace.test(form.name.trim())) next.name = "konfirmasi.form.error.name.alpha";
 
     if (!form.phone.trim()) next.phone = "konfirmasi.form.error.phone.required";
-    else if (!digits.test(form.phone.trim())) next.phone = "konfirmasi.form.error.phone.numeric";
+    else if (form.phone.trim().length < 8) next.phone = "konfirmasi.form.error.phone.numeric";
 
     if (!form.amount.trim()) next.amount = "konfirmasi.form.error.amount.required";
     else if (!digits.test(form.amount.trim())) next.amount = "konfirmasi.form.error.amount.numeric";
@@ -377,7 +378,15 @@ export function KonfirmasiDonasiPage() {
             <form onSubmit={handleSubmit} className="rounded-[24px] border border-slate-100 bg-white p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)] space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <InputField label={t("konfirmasi.form.fields.name")} value={form.name} onChange={(v) => handleChange("name", v)} required error={errors.name ? t(errors.name) : ""} />
-                <InputField label={t("konfirmasi.form.fields.phone")} value={form.phone} onChange={(v) => handleChange("phone", v)} required error={errors.phone ? t(errors.phone) : ""} />
+                <label className="space-y-1 text-sm font-medium text-slate-700">
+                  <span>{t("konfirmasi.form.fields.phone")}</span>
+                  <PhoneInput
+                    value={form.phone}
+                    onChange={(v) => handleChange("phone", v || "")}
+                    disabled={submitting}
+                  />
+                  {errors.phone && <span className="text-xs font-semibold text-red-600">{t(errors.phone)}</span>}
+                </label>
               </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <InputField label={t("konfirmasi.form.fields.amount")} value={form.amount} onChange={(v) => handleChange("amount", v)} required error={errors.amount ? t(errors.amount) : ""} />

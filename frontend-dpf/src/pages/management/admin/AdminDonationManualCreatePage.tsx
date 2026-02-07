@@ -10,12 +10,12 @@ import {
   faMoneyBillWave,
   faUser,
   faEnvelope,
-  faPhone,
   faCreditCard,
   faAlignLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
+import PhoneInput from "../../../components/ui/PhoneInput";
 
 type ProgramOption = {
   id: number;
@@ -367,16 +367,11 @@ export function AdminDonationManualCreatePage() {
                 <label className="block">
                   <span className={labelClass}>Nomor Telepon</span>
                   <div className="relative">
-                    <input
-                      value={form.donor_phone}
-                      onChange={(e) => setForm((s) => ({ ...s, donor_phone: e.target.value }))}
-                      placeholder="0812..."
-                      className={`${inputClass} pl-10`}
-                      disabled={!canSubmit}
+                    <PhoneInput
+                        value={form.donor_phone}
+                        onChange={(val) => setForm((s) => ({ ...s, donor_phone: val || "" }))}
+                        disabled={!canSubmit}
                     />
-                    <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                      <FontAwesomeIcon icon={faPhone} />
-                    </div>
                   </div>
                 </label>
               </div>

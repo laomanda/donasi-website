@@ -8,12 +8,12 @@ import {
   faEyeSlash,
   faFloppyDisk,
   faLock,
-  faPhone,
   faUser,
   faUserShield,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
+import PhoneInput from "../../../components/ui/PhoneInput";
 
 type Role = {
   id: number;
@@ -148,8 +148,8 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
     setErrors([]);
     try {
       const trimmedPhone = form.phone.trim();
-      if (trimmedPhone !== "" && !/^\d+$/.test(trimmedPhone)) {
-        const message = "Nomor telepon hanya boleh berisi angka.";
+      if (trimmedPhone !== "" && trimmedPhone.length < 8) {
+        const message = "Nomor telepon terlalu pendek.";
         setErrors([message]);
         toast.error(message, { title: "Validasi gagal" });
         return;
@@ -281,21 +281,17 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
               </label>
 
               <label className="block group">
-                <span className="text-xs font-bold uppercase tracking-wide text-slate-400 group-focus-within:text-emerald-600 transition">Nomor Telepon</span>
-                <div className="relative mt-2">
-                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
-                    <FontAwesomeIcon icon={faPhone} />
-                  </span>
-                  <input
-                    type="tel"
-                    inputMode="numeric"
+                {/* PhoneInput handles label and required asterisk internally if passed, 
+                    but here we are using custom layout. 
+                    Let's use PhoneInput's built-in structure or wrap it. 
+                    The custom phone input I created handles the label.
+                */}
+                <PhoneInput
+                    label="Nomor Telepon"
                     value={form.phone}
-                    onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value.replace(/\D+/g, "") }))}
-                    placeholder="08xxxxxxxxxx"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3.5 pl-11 pr-4 text-sm font-bold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 placeholder:font-medium placeholder:text-slate-400"
+                    onChange={(val) => setForm((s) => ({ ...s, phone: val || "" }))}
                     disabled={loading || saving}
-                  />
-                </div>
+                />
               </label>
 
               <label className="block group">
