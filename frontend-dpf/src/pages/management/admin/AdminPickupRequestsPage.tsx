@@ -395,7 +395,7 @@ export function AdminPickupRequestsPage() {
                         />
                       </td>
                       <td className="px-6 py-5">
-                        <p className="text-sm font-bold text-slate-900">{item.donor_name}</p>
+                        <p className="line-clamp-1 text-sm font-bold text-slate-900">{item.donor_name}</p>
                         <p className="mt-1 text-xs font-semibold text-slate-500">{item.donor_phone}</p>
                       </td>
                       <td className="px-6 py-5">
@@ -450,8 +450,8 @@ export function AdminPickupRequestsPage() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-slate-900">{item.donor_name}</p>
-                      <p className="mt-1 truncate text-xs font-semibold text-slate-500">{item.city}, {item.district}</p>
+                      <p className="line-clamp-1 text-sm font-bold text-slate-900">{item.donor_name}</p>
+                      <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">{item.city}, {item.district}</p>
                     </div>
                     <span className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(String(item.status ?? ""))}`}>
                       {getStatusLabel(String(item.status ?? ""))}

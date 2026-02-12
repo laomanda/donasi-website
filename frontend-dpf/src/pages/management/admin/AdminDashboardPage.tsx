@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowUpRightFromSquare,
@@ -14,109 +14,8 @@ import {
   faTruckFast,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import http from "../../../lib/http";
-
-type AdminDashboardStats = {
-  donations_paid?: number;
-  monthly_donations?: number;
-  pickup_pending?: number;
-  consultation_new?: number;
-};
-
-type AdminDonationItem = {
-  id?: number;
-  donor_name?: string | null;
-  amount?: number | string | null;
-  status?: string | null;
-  created_at?: string | null;
-  program?: { title?: string | null } | null;
-};
-
-type PickupRequestItem = {
-  id: number;
-  donor_name?: string;
-  district?: string;
-  preferred_time?: string;
-  status: string;
-  created_at?: string;
-};
-
-type ConsultationItem = {
-  id: number;
-  name?: string;
-  topic?: string;
-  created_at?: string;
-};
-
-type AdminDashboardPayload = {
-  stats?: AdminDashboardStats;
-  recent_donations?: AdminDonationItem[];
-  upcoming_pickups?: PickupRequestItem[];
-  urgent_consultations?: ConsultationItem[];
-};
-
-type ToneKey = "emerald" | "primary" | "amber" | "violet" | "sky" | "rose" | "slate";
-
-const TONE_STYLES: Record<
-  ToneKey,
-  {
-    border: string;
-    accent: string;
-    iconBg: string;
-    iconText: string;
-    badge: string;
-  }
-> = {
-  emerald: {
-    border: "border-l-emerald-600",
-    accent: "#059669",
-    iconBg: "bg-emerald-600",
-    iconText: "text-white",
-    badge: "bg-emerald-600 text-white",
-  },
-  primary: {
-    border: "border-l-primary-600",
-    accent: "#f97316",
-    iconBg: "bg-primary-600",
-    iconText: "text-white",
-    badge: "bg-primary-600 text-white",
-  },
-  amber: {
-    border: "border-l-amber-500",
-    accent: "#f59e0b",
-    iconBg: "bg-amber-500",
-    iconText: "text-white",
-    badge: "bg-amber-500 text-white",
-  },
-  violet: {
-    border: "border-l-violet-600",
-    accent: "#7c3aed",
-    iconBg: "bg-violet-600",
-    iconText: "text-white",
-    badge: "bg-violet-600 text-white",
-  },
-  sky: {
-    border: "border-l-sky-600",
-    accent: "#0284c7",
-    iconBg: "bg-sky-600",
-    iconText: "text-white",
-    badge: "bg-sky-600 text-white",
-  },
-  rose: {
-    border: "border-l-rose-600",
-    accent: "#e11d48",
-    iconBg: "bg-rose-600",
-    iconText: "text-white",
-    badge: "bg-rose-600 text-white",
-  },
-  slate: {
-    border: "border-l-slate-700",
-    accent: "#334155",
-    iconBg: "bg-slate-700",
-    iconText: "text-white",
-    badge: "bg-slate-700 text-white",
-  },
-};
+import { useAdminDashboard } from "../../../hooks/useAdminDashboard";
+import { StatCard, TONE_STYLES } from "../../../components/management/StatCard";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -187,49 +86,9 @@ const getDonationStatusStyles = (status: string) => {
   };
 };
 
-function StatCard({
-  title,
-  value,
-  icon,
-  tone,
-  loading,
-  helper,
-}: {
-  title: string;
-  value: string;
-  icon: any;
-  tone: ToneKey;
-  loading: boolean;
-  helper?: string;
-}) {
-  const styles = TONE_STYLES[tone];
-  return (
-    <div
-      className="rounded-[24px] border border-slate-200 border-l-4 p-5 shadow-sm"
-      style={{ borderLeftColor: styles.accent }}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{title}</p>
-          <p className={`mt-2 text-2xl font-bold ${loading ? "text-slate-300" : "text-slate-900"}`}>{value}</p>
-          {helper ? <p className="mt-1 text-xs font-semibold text-slate-500">{helper}</p> : null}
-        </div>
-        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${styles.iconBg}`}>
-          <FontAwesomeIcon icon={icon} className={`text-lg ${styles.iconText}`} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
-
 export function AdminDashboardPage() {
   const navigate = useNavigate();
-  const isMounted = useRef(true);
-  const [data, setData] = useState<AdminDashboardPayload | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, loading, error, reload } = useAdminDashboard();
 
   const stats = useMemo(() => {
     const raw = data?.stats ?? {};
@@ -245,42 +104,6 @@ export function AdminDashboardPage() {
     const list = Array.isArray(data?.recent_donations) ? data?.recent_donations : [];
     return (list ?? []).slice(0, 10);
   }, [data]);
-
-  const load = async (silent = false) => {
-    if (!silent) {
-      setLoading(true);
-      setError(null);
-    }
-    try {
-      const res = await http.get<AdminDashboardPayload>("/admin/dashboard");
-      if (!isMounted.current) return;
-      setData(res.data);
-      if (silent) setError(null);
-    } catch {
-      if (!isMounted.current) return;
-      if (!silent) setError("Gagal memuat data dashboard admin.");
-    } finally {
-      if (!isMounted.current) return;
-      if (!silent) setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    isMounted.current = true;
-
-    // Initial load
-    void load();
-
-    // Polling every 2 seconds
-    const intervalId = setInterval(() => {
-      void load(true);
-    }, 2000);
-
-    return () => {
-      isMounted.current = false;
-      clearInterval(intervalId);
-    };
-  }, []);
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
@@ -338,7 +161,7 @@ export function AdminDashboardPage() {
             </div>
             <button
               type="button"
-              onClick={() => void load()}
+              onClick={() => reload()}
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-rose-600 shadow-sm transition hover:bg-rose-50"
             >
               <FontAwesomeIcon icon={faRotateRight} />
@@ -348,7 +171,7 @@ export function AdminDashboardPage() {
         </div>
       ) : null}
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
         <StatCard
           title="Donasi Lunas"
           value={loading ? "-" : formatCurrency(stats.donationsPaid)}

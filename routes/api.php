@@ -101,6 +101,7 @@ Route::prefix('v1')->group(function () {
         Route::post('donations/confirm', [FrontendDonationConfirmationController::class, 'store']);
         Route::post('pickups', [FrontendPickupRequestController::class, 'store']);
         Route::post('consultations', [FrontendConsultationController::class, 'store']);
+        Route::get('tags', [\App\Http\Controllers\Api\Frontend\TagController::class, 'index']);
     });
 
     /*
@@ -178,6 +179,7 @@ Route::prefix('v1')->group(function () {
             Route::get('tasks', [EditorEditorTaskController::class, 'index']);
             Route::get('tasks/{editor_task}', [EditorEditorTaskController::class, 'show']);
             Route::patch('tasks/{editor_task}', [EditorEditorTaskController::class, 'update']);
+            Route::apiResource('tags', \App\Http\Controllers\Api\Admin\TagController::class);
         });
 
     /*

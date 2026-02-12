@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import {
   faChevronRight,
+  faCircleCheck,
   faEnvelope,
   faMapLocationDot,
   faPhone,
@@ -15,6 +16,8 @@ import { Link } from 'react-router-dom'
 import { useLang } from '../../lib/i18n'
 import { landingDict, translate } from '../../i18n/landing'
 import { fetchPublicSettings } from '../../lib/publicSettings'
+import TagService from '../../services/TagService'
+import type { Tag } from '../../services/TagService'
 
 type FooterProgramLink = { label: string; href: string }
 
@@ -28,6 +31,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
   const { locale } = useLang()
   const t = (key: string, fallback?: string) => translate(landingDict, locale, key, fallback)
   const [publicSettings, setPublicSettings] = useState<Record<string, string>>({})
+  const [tags, setTags] = useState<Tag[]>([])
 
   useEffect(() => {
     let active = true
@@ -47,6 +51,13 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
         if (active) setPublicSettings(settings)
       })
       .catch(() => {})
+
+    TagService.getPublic()
+      .then((data) => {
+        if (active) setTags(data)
+      })
+      .catch(() => {})
+
     return () => {
       active = false
     }
@@ -197,15 +208,41 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
             </ul>
 
           </div>
+
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-1 max-w-2xl mx-auto">
-          <div className="flex flex-col">
+        {/* TAGS + MAP SECTION — Tags left, Map right */}
+        <div className="mt-12 flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+
+          {/* LEFT: Tags */}
+          {tags.length > 0 && (
+            <div className="flex-1 min-w-0">
+              <FooterHeading>Tag Populer</FooterHeading>
+              <div className="flex flex-wrap gap-3">
+                {tags.map((tag) => (
+                  <a
+                    key={tag.id}
+                    href={tag.url || "#"}
+                    target={tag.open_in_new_tab && tag.url ? "_blank" : "_self"}
+                    rel={tag.open_in_new_tab && tag.url ? "noreferrer" : undefined}
+                    className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-white/10 to-white/5 px-4 py-2.5 text-[13px] font-semibold text-slate-200 ring-1 ring-white/15 backdrop-blur-sm transition-all duration-300 hover:from-emerald-600 hover:to-emerald-500 hover:text-white hover:ring-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25"
+                  >
+                    <FontAwesomeIcon icon={faCircleCheck} className="h-3.5 w-3.5 text-emerald-400 transition-transform duration-300 group-hover:text-white group-hover:scale-110" />
+                    {tag.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* RIGHT: Google Maps */}
+          <div className="w-full lg:w-[380px] flex-shrink-0">
+            <FooterHeading>Lokasi Kami</FooterHeading>
             <div className="overflow-hidden rounded-xl border border-white/10 shadow-lg">
               <iframe
                 src={jakartaMapEmbed}
                 width="100%"
-                height="220"
+                height="200"
                 style={{ border: 0 }}
                 loading="lazy"
                 title="Lokasi DPF Jakarta"

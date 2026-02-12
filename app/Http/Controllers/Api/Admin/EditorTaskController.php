@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\EditorTask\StoreEditorTaskRequest;
+use App\Http\Requests\Admin\EditorTask\UpdateEditorTaskRequest;
+use App\Http\Resources\EditorTaskResource;
 use App\Models\EditorTask;
 use App\Models\EditorTaskAttachment;
 use App\Models\User;
@@ -44,23 +47,17 @@ class EditorTaskController extends Controller
         $tasks = $query->orderByDesc('created_at')
             ->paginate($request->integer('per_page', 15));
 
-        return response()->json($tasks);
+        return EditorTaskResource::collection($tasks);
     }
 
-    public function store(Request $request)
+    public function store(StoreEditorTaskRequest $request)
     {
-        $data = $this->validatePayload($request);
+        $data = $request->validated();
         $data['created_by'] = $request->user()?->id;
         $data['priority'] = $data['priority'] ?? 'normal';
         $data['status'] = $data['status'] ?? 'open';
-        if ($data['status'] === 'cancelled' && blank($data['cancel_reason'] ?? null)) {
-            return response()->json([
-                'message' => 'Alasan pembatalan wajib diisi.',
-            ], 422);
-        }
-        if ($data['status'] !== 'cancelled') {
-            $data['cancel_reason'] = null;
-        }
+        
+        // Handle defaults for nullable fields if blank string is sent (though validation should handle it)
         if (array_key_exists('assigned_to', $data) && blank($data['assigned_to'])) {
             $data['assigned_to'] = null;
         }
@@ -79,33 +76,31 @@ class EditorTaskController extends Controller
 
         EditorTaskNotifier::dispatchCountForAllEditors();
 
-        return response()->json($task->load(['attachments', 'creator:id,name,email', 'assignee:id,name,email']), 201);
+        return new EditorTaskResource(
+            $task->load(['attachments', 'creator', 'assignee'])
+        );
     }
 
     public function show(EditorTask $editor_task)
     {
-        return response()->json($editor_task->load(['attachments', 'creator:id,name,email', 'assignee:id,name,email']));
+        return new EditorTaskResource(
+            $editor_task->load(['attachments', 'creator', 'assignee'])
+        );
     }
 
-    public function update(Request $request, EditorTask $editor_task)
+    public function update(UpdateEditorTaskRequest $request, EditorTask $editor_task)
     {
-        $data = $this->validatePayload($request, true);
-
-        if (array_key_exists('status', $data) && $data['status'] === 'cancelled') {
-            if (blank($data['cancel_reason'] ?? null)) {
-                return response()->json([
-                    'message' => 'Alasan pembatalan wajib diisi.',
-                ], 422);
-            }
-        } elseif (array_key_exists('cancel_reason', $data)) {
-            $data['cancel_reason'] = null;
-        }
+        $data = $request->validated();
 
         if (array_key_exists('assigned_to', $data) && blank($data['assigned_to'])) {
             $data['assigned_to'] = null;
         }
         if (array_key_exists('due_at', $data) && blank($data['due_at'])) {
             $data['due_at'] = null;
+        }
+
+        if (array_key_exists('status', $data) && $data['status'] !== 'cancelled') {
+             $data['cancel_reason'] = null;
         }
 
         $editor_task->update($data);
@@ -117,7 +112,9 @@ class EditorTaskController extends Controller
 
         EditorTaskNotifier::dispatchCountForAllEditors();
 
-        return response()->json($editor_task->refresh()->load(['attachments', 'creator:id,name,email', 'assignee:id,name,email']));
+        return new EditorTaskResource(
+            $editor_task->refresh()->load(['attachments', 'creator', 'assignee'])
+        );
     }
 
     public function destroy(EditorTask $editor_task)
@@ -164,23 +161,6 @@ class EditorTaskController extends Controller
             ->get(['id', 'name', 'email']);
 
         return response()->json($editors);
-    }
-
-    private function validatePayload(Request $request, bool $isUpdate = false): array
-    {
-        $required = $isUpdate ? 'sometimes' : 'required';
-
-        return $request->validate([
-            'title' => [$required, 'string', 'max:180'],
-            'description' => ['nullable', 'string'],
-            'priority' => ['nullable', 'in:low,normal,high'],
-            'status' => ['nullable', 'in:open,in_progress,done,cancelled'],
-            'cancel_reason' => ['nullable', 'string', 'max:500'],
-            'due_at' => ['nullable', 'date'],
-            'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
-            'attachments' => ['nullable', 'array', 'max:5'],
-            'attachments.*' => ['file', 'max:10240', 'mimes:pdf,doc,docx,xls,xlsx,png,jpg,jpeg,zip'],
-        ]);
     }
 
     private function storeAttachments(EditorTask $task, array $attachments, ?int $userId): void

@@ -316,7 +316,7 @@ export function EditorOrganizationMembersPage() {
                             />
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-slate-900">{member.name}</p>
+                            <p className="line-clamp-1 text-sm font-bold text-slate-900">{member.name}</p>
                             <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">{member.position_title}</p>
                           </div>
                         </div>

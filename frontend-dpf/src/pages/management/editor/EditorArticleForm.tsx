@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
+import { translateCategoryToEn, CATEGORY_OPTIONS } from "../../../lib/categoryTranslations";
 
 type EditorArticle = {
   id: number;
@@ -127,9 +128,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
   const toast = useToast();
   const [form, setForm] = useState<ArticleFormState>(emptyForm);
   const [programOptions, setProgramOptions] = useState<Array<{ id: number; title: string }>>([]);
-  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
-  const [categoryPick, setCategoryPick] = useState("");
-  const [loading, setLoading] = useState(mode === "edit");
+    const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -252,22 +251,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
       .catch(() => undefined);
   }, []);
 
-  useEffect(() => {
-    http
-      .get("/editor/articles", { params: { per_page: 200 } })
-      .then((res) => {
-        const items = Array.isArray(res.data?.data) ? res.data.data : [];
-        const map = new Map<string, string>();
-        items.forEach((article: any) => {
-          const raw = String(article?.category ?? "").trim();
-          if (!raw) return;
-          const key = raw.toLowerCase();
-          if (!map.has(key)) map.set(key, raw);
-        });
-        setCategoryOptions(Array.from(map.values()).sort((a, b) => a.localeCompare(b)));
-      })
-      .catch(() => undefined);
-  }, []);
+
 
   const uploadThumbnail = async (file: File) => {
     setThumbnailUploadError(null);
@@ -391,12 +375,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
   };
 
   const payloadForRequest = (state: ArticleFormState) => {
-    const normalizedCategory = (() => {
-      const raw = state.category.trim();
-      if (!raw) return raw;
-      const match = categoryOptions.find((opt) => opt.toLowerCase() === raw.toLowerCase());
-      return match ?? raw;
-    })();
+    const normalizedCategory = state.category.trim();
     const payload: any = {
       title: state.title.trim(),
       title_en: state.title_en.trim() || null,
@@ -842,39 +821,28 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
                   Kategori (Bahasa Indonesia) <span className="text-red-500">*</span>
                 </span>
                 <input
+                  list="category-suggestions"
                   value={form.category}
-                  onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))}
-                  onBlur={() => {
-                    const raw = form.category.trim();
-                    if (!raw) return;
-                    const match = categoryOptions.find((opt) => opt.toLowerCase() === raw.toLowerCase());
-                    if (match && match !== form.category) {
-                      setForm((s) => ({ ...s, category: match }));
-                    }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setForm((s) => {
+                      const next = { ...s, category: value };
+                      const en = translateCategoryToEn(value);
+                      if (en) {
+                          next.category_en = en;
+                      }
+                      return next;
+                    });
                   }}
-                  placeholder="Contoh: edukasi, sosial, kesehatan"
+                  placeholder="Contoh: Berita"
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
-                <select
-                  value={categoryPick}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (!value) return;
-                    setForm((s) => ({ ...s, category: value }));
-                    setCategoryPick("");
-                  }}
-                  aria-label="Pilih kategori yang sudah ada"
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400 disabled:cursor-not-allowed disabled:opacity-70"
-                  disabled={loading || saving || deleting || categoryOptions.length === 0}
-                >
-                  <option value="">Pilih kategori yang sudah ada</option>
-                  {categoryOptions.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
+                <datalist id="category-suggestions">
+                    {CATEGORY_OPTIONS.sort().map((opt) => (
+                        <option key={opt} value={opt} />
+                    ))}
+                </datalist>
               </label>
 
               <label className="block">
@@ -884,7 +852,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
                 <input
                   value={form.category_en}
                   onChange={(e) => setForm((s) => ({ ...s, category_en: e.target.value }))}
-                  placeholder="Contoh: education"
+                  placeholder="Contoh: News"
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />

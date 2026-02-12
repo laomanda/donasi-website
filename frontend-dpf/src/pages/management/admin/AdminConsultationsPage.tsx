@@ -381,7 +381,7 @@ export function AdminConsultationsPage() {
                         />
                       </td>
                       <td className="px-6 py-5">
-                        <p className="text-sm font-bold text-slate-900">{item.name}</p>
+                        <p className="line-clamp-1 text-sm font-bold text-slate-900">{item.name}</p>
                         <p className="mt-1 text-xs font-semibold text-slate-500">
                           {item.phone ? item.phone : item.email ? item.email : "-"}
                         </p>
@@ -435,8 +435,8 @@ export function AdminConsultationsPage() {
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-slate-900">{item.name}</p>
-                      <p className="mt-1 truncate text-xs font-semibold text-slate-500">{item.topic}</p>
+                      <p className="line-clamp-1 text-sm font-bold text-slate-900">{item.name}</p>
+                      <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">{item.topic}</p>
                     </div>
                     <span className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(String(item.status ?? ""))}`}>
                       {getStatusLabel(String(item.status ?? ""))}

@@ -371,11 +371,11 @@ export function EditorProgramsPage() {
                     </td>
                     <td className="px-6 py-5">
                       <button type="button" onClick={() => goEdit(program.id)} className="group text-left">
-                        <p className="truncate text-sm font-bold text-slate-900 group-hover:text-brandGreen-700">
+                        <p className="line-clamp-1 text-sm font-bold text-slate-900 group-hover:text-brandGreen-700">
                           {program.title}
                         </p>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <span className="inline-flex max-w-full truncate rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+                          <span className="inline-flex max-w-full line-clamp-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
                             {program.category}
                           </span>
                           {program.is_highlight ? (

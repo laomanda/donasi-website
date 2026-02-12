@@ -116,7 +116,15 @@ export function LiterasiPage() {
     });
   }, [localizedArticles, search, activeCategory]);
 
-  const limited = filtered.slice(0, 12);
+  // Pagination State
+  const [visibleCount, setVisibleCount] = useState(9);
+
+  // Reset pagination when filter changes
+  useEffect(() => {
+    setVisibleCount(9);
+  }, [search, activeCategory]);
+
+  const limited = filtered.slice(0, visibleCount);
 
   // Styles untuk tombol filter
   const getFilterClass = (isActive: boolean) =>
@@ -234,6 +242,17 @@ export function LiterasiPage() {
             {!loading && limited.map((article) => <ArticleCard key={article.id} article={article} locale={locale} t={t} />)}
           </div>
 
+          {!loading && limited.length < filtered.length && (
+            <div className="mt-12 text-center">
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 5)}
+                className="inline-flex items-center gap-2 rounded-full bg-primary-700 px-8 py-3 text-sm font-bold text-white shadow-md ring-1 ring-slate-200 transition hover:bg-primary-800 hover:shadow-lg active:scale-95"
+              >
+                {t("literasi.loadMore", "Lihat Lebih Banyak")}
+              </button>
+            </div>
+          )}
+
           {!loading && limited.length === 0 && (
              <div className="mx-auto max-w-lg py-12 text-center">
                 <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-slate-300">
@@ -286,7 +305,7 @@ function ArticleCard({
           <img
             src={getImageUrl(article.thumbnail_path)}
             alt={article.title}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
             onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
           />
         </div>
@@ -299,7 +318,7 @@ function ArticleCard({
           </span>
         ) : null}
 
-        <h3 className="mt-4 line-clamp-2 min-h-[56px] font-heading text-lg font-semibold leading-snug text-slate-900">
+        <h3 className="mt-4 line-clamp-2 min-h-[56px] font-heading text-lg font-semibold leading-snug text-slate-900 transition group-hover:text-primary-600">
           <Link to={`/articles/${article.slug}`}>{article.title}</Link>
         </h3>
 

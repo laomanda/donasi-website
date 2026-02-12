@@ -24,6 +24,7 @@ import {
   faReceipt,
   faRightFromBracket,
   faSitemap,
+  faTags,
   faTruckRampBox,
   faUserGroup,
   faXmark,
@@ -120,6 +121,7 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
         { label: "Artikel", href: "/editor/articles", icon: faBookOpen },
         { label: "Program", href: "/editor/programs", icon: faHeart },
         { label: "Banner", href: "/editor/banners", icon: faImage },
+        { label: "Tags", href: "/editor/tags", icon: faTags },
       ],
     },
     {

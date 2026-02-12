@@ -103,6 +103,55 @@ const normalizeSourceLabel = (value: string | null | undefined) => {
   return value ?? "-";
 };
 
+function StatCard({
+  title,
+  value,
+  subValue,
+  icon,
+  gradient,
+  loading,
+  iconBg,
+}: {
+  role?: string;
+  title: string;
+  value: string;
+  subValue: string;
+  icon: any;
+  gradient: string;
+  loading: boolean;
+  iconBg?: string;
+}) {
+  // Dynamic font size calculation
+  const getFontSize = (text: string) => {
+    if (text.length > 20) return "text-xl md:text-2xl"; 
+    if (text.length > 13) return "text-2xl md:text-3xl";
+    return "text-3xl md:text-4xl";
+  };
+
+  const fontSizeClass = getFontSize(value);
+
+  return (
+    <div className={`relative overflow-hidden rounded-[32px] ${gradient} p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl`}>
+      <div className="absolute right-0 top-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+      <div className="absolute bottom-0 left-0 -mb-8 -ml-8 h-24 w-24 rounded-full bg-black/5 blur-xl" />
+
+      <div className="relative z-10 flex items-center justify-between gap-4">
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-white/80">{title}</p>
+          <div className={`font-heading font-bold text-white shadow-sm ${fontSizeClass}`}>
+            {loading ? <div className="h-8 w-24 animate-pulse rounded-lg bg-white/20" /> : value}
+          </div>
+          <p className="text-sm font-medium text-white/80">{subValue}</p>
+        </div>
+        
+        <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white backdrop-blur-sm shadow-inner ring-1 ring-white/30 ${iconBg || "bg-white/20"}`}>
+          <FontAwesomeIcon icon={icon} className="text-2xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function DonationReportPage({ role: propRole }: DonationReportPageProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -281,86 +330,54 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
         </div>
       </div>
 
-      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
         {/* Total Donasi Card */}
-        <div className="relative overflow-hidden rounded-[28px] border border-emerald-600 bg-emerald-600 p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
-          <div className="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
-          <div className="relative flex flex-col h-full justify-between z-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-white shadow-sm ring-1 ring-white/30 backdrop-blur-md">
-                <FontAwesomeIcon icon={faReceipt} className="text-xl" />
-              </div>
-              <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-100">Total Transaksi</span>
-            </div>
-            <div>
-              <p className="text-3xl font-heading font-bold text-white tracking-tight">
-                {loading ? "-" : formatCount(summary?.total_count)}
-              </p>
-              <p className="text-xs font-bold text-emerald-100 mt-1">Semua donasi berhasil</p>
-            </div>
-          </div>
-        </div>
+        <StatCard
+          role={role}
+          title="Total Transaksi"
+          value={loading ? "-" : formatCount(summary?.total_count)}
+          subValue="Semua donasi berhasil"
+          icon={faReceipt}
+          gradient="bg-emerald-600"
+          loading={loading}
+          iconBg="bg-white/20"
+        />
 
         {/* Total Nominal Card */}
-        <div className="relative overflow-hidden rounded-[28px] border border-brandBlueTeal-500 bg-brandBlueTeal-500 p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
-          <div className="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
-          <div className="relative flex flex-col h-full justify-between z-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-white shadow-sm ring-1 ring-white/30 backdrop-blur-md">
-                <FontAwesomeIcon icon={faCoins} className="text-xl" />
-              </div>
-              <span className="text-[11px] font-bold uppercase tracking-widest text-brandBlueTeal-100">Total Nominal</span>
-            </div>
-            <div>
-              <p className="text-3xl font-heading font-bold text-white tracking-tight">
-                {loading ? "-" : formatCurrency(summary?.total_amount ?? 0)}
-              </p>
-              <p className="text-xs font-bold text-brandBlueTeal-100 mt-1">Akumulasi dana terkumpul</p>
-            </div>
-          </div>
-        </div>
+        <StatCard
+          role={role}
+          title="Total Nominal"
+          value={loading ? "-" : formatCurrency(summary?.total_amount ?? 0)}
+          subValue="Akumulasi dana terkumpul"
+          icon={faCoins}
+          gradient="bg-brandBlueTeal-500"
+          loading={loading}
+          iconBg="bg-white/20"
+        />
 
         {/* Manual Card */}
-        <div className="relative overflow-hidden rounded-[28px] border border-brandWarmOrange-500 bg-brandWarmOrange-500 p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
-          <div className="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
-          <div className="relative flex flex-col h-full justify-between z-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-white shadow-sm ring-1 ring-white/30 backdrop-blur-md">
-                <FontAwesomeIcon icon={faHandHoldingDollar} className="text-xl" />
-              </div>
-              <span className="text-[11px] font-bold uppercase tracking-widest text-brandWarmOrange-100">Manual (Transfer)</span>
-            </div>
-            <div>
-              <p className="text-2xl font-heading font-bold text-white tracking-tight">
-                {loading ? "-" : formatCurrency(summary?.manual_amount ?? 0)}
-              </p>
-              <p className="text-xs font-bold text-brandWarmOrange-100 mt-1">
-                {loading ? "-" : `${formatCount(summary?.manual_count)} transaksi`}
-              </p>
-            </div>
-          </div>
-        </div>
+        <StatCard
+          role={role}
+          title="Manual (Transfer)"
+          value={loading ? "-" : formatCurrency(summary?.manual_amount ?? 0)}
+          subValue={loading ? "-" : `${formatCount(summary?.manual_count)} transaksi`}
+          icon={faHandHoldingDollar}
+          gradient="bg-brandWarmOrange-500"
+          loading={loading}
+          iconBg="bg-white/20"
+        />
 
         {/* Midtrans Card */}
-        <div className="relative overflow-hidden rounded-[28px] border border-brandPurple-500 bg-brandPurple-500 p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
-          <div className="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-white/20 blur-2xl" />
-          <div className="relative flex flex-col h-full justify-between z-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-white shadow-sm ring-1 ring-white/30 backdrop-blur-md">
-                <FontAwesomeIcon icon={faCreditCard} className="text-xl" />
-              </div>
-              <span className="text-[11px] font-bold uppercase tracking-widest text-brandPurple-100">Midtrans (Auto)</span>
-            </div>
-            <div>
-              <p className="text-2xl font-heading font-bold text-white tracking-tight">
-                {loading ? "-" : formatCurrency(summary?.midtrans_amount ?? 0)}
-              </p>
-              <p className="text-xs font-bold text-brandPurple-100 mt-1">
-                {loading ? "-" : `${formatCount(summary?.midtrans_count)} transaksi`}
-              </p>
-            </div>
-          </div>
-        </div>
+        <StatCard
+          role={role}
+          title="Midtrans (Auto)"
+          value={loading ? "-" : formatCurrency(summary?.midtrans_amount ?? 0)}
+          subValue={loading ? "-" : `${formatCount(summary?.midtrans_count)} transaksi`}
+          icon={faCreditCard}
+          gradient="bg-brandPurple-500"
+          loading={loading}
+          iconBg="bg-white/20"
+        />
       </section>
 
       <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

@@ -248,7 +248,7 @@ export function BannersPage() {
                               />
                             </div>
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-bold text-slate-900">Banner #{banner.display_order ?? 0}</p>
+                              <p className="line-clamp-1 text-sm font-bold text-slate-900">Banner #{banner.display_order ?? 0}</p>
                             </div>
                           </div>
                         </td>

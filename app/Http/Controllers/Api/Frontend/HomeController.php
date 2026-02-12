@@ -26,10 +26,10 @@ class HomeController extends Controller
                 ->get();
         }
 
-        $articles = Article::published()->limit(4)->get();
+        $articles = Article::published()->limit(3)->get();
 
         if ($articles->isEmpty()) {
-            $articles = Article::latest('created_at')->limit(4)->get();
+            $articles = Article::latest('created_at')->limit(3)->get();
         }
 
         $partners = Partner::active()->limit(12)->get();

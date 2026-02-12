@@ -91,11 +91,7 @@ const SEARCH_ITEMS = [
         labels: { id: "Konfirmasi Donasi", en: "Donation Confirmation" },
         keywords: ["konfirmasi", "confirmation", "transfer"],
     },
-    {
-        href: "/cara-donasi",
-        labels: { id: "Cara Donasi", en: "How to Donate" },
-        keywords: ["cara", "how", "donasi"],
-    },
+
 ];
 
 // Index konten statis landing untuk penelusuran bebas (tanpa dropdown)

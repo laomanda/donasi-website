@@ -23,7 +23,7 @@ import { ProgramDetailPage } from '../pages/ProgramDetailPage'
 import { KonsultasiPage } from '../pages/KonsultasiPage'
 import { JemputWakafPage } from '../pages/JemputWakafPage'
 import { KonfirmasiDonasiPage } from '../pages/KonfirmasiDonasiPage'
-import { CaraDonasiPage } from '../pages/CaraDonasiPage'
+
 import { EditorShell, AdminShell, SuperAdminShell } from '../layouts/dashboard/RoleShells'
 import { PreviewPage } from '../pages/PreviewPage'
 import { EditorDashboardPage } from '../pages/management/editor/EditorDashboardPage'
@@ -36,6 +36,8 @@ import { EditorProgramEditPage } from '../pages/management/editor/EditorProgramE
 import { BannersPage } from '../pages/management/shared/BannersPage'
 import { BannerFormPage } from '../pages/management/shared/BannerFormPage'
 import { PartnersPage } from '../pages/management/shared/PartnersPage'
+import { TagsPage } from '../pages/management/shared/TagsPage'
+import { TagFormPage } from '../pages/management/shared/TagFormPage'
 import { PartnerFormPage } from '../pages/management/shared/PartnerFormPage'
 import { EditorOrganizationMembersPage } from '../pages/management/editor/EditorOrganizationMembersPage'
 import { EditorOrganizationMemberCreatePage } from '../pages/management/editor/EditorOrganizationMemberCreatePage'
@@ -81,7 +83,7 @@ export const router = createBrowserRouter([
       { path: 'konsultasi', element: <KonsultasiPage /> },
       { path: 'jemput-wakaf', element: <JemputWakafPage /> },
       { path: 'konfirmasi-donasi', element: <KonfirmasiDonasiPage /> },
-      { path: 'cara-donasi', element: <CaraDonasiPage /> },
+
       { path: 'donate', element: <DonatePage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'preview', element: <PreviewPage /> },
@@ -101,6 +103,9 @@ export const router = createBrowserRouter([
           { path: 'partners/create', element: <PartnerFormPage mode="create" /> },
           { path: 'partners/:id/edit', element: <PartnerFormPage mode="edit" /> },
           { path: 'banners', element: <BannersPage /> },
+          { path: 'tags', element: <TagsPage /> },
+          { path: 'tags/create', element: <TagFormPage mode="create" /> },
+          { path: 'tags/:id/edit', element: <TagFormPage mode="edit" /> },
           { path: 'banners/create', element: <BannerFormPage mode="create" /> },
           { path: 'banners/:id/edit', element: <BannerFormPage mode="edit" /> },
           { path: 'organization-members', element: <EditorOrganizationMembersPage /> },

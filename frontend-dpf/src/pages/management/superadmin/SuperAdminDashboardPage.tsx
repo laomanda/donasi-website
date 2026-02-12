@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChartLine,
@@ -8,7 +8,6 @@ import {
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import http from "../../../lib/http";
 import {
   ArcElement,
   BarElement,
@@ -22,40 +21,11 @@ import {
   Tooltip,
 } from "chart.js";
 import { Bar, Doughnut, Line } from "react-chartjs-2";
+import { useSuperAdminDashboard } from "../../../hooks/useSuperAdminDashboard";
+import { StatCard } from "../../../components/management/StatCard";
+import type { TopProgram } from "../../../types/dashboard";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Filler);
-
-type SuperAdminStats = {
-  users_total?: number;
-  users_active?: number;
-  users_inactive?: number;
-  programs_total?: number;
-  articles_total?: number;
-  donations_paid?: number;
-  donations_pending?: number;
-};
-
-type RoleCount = {
-  id?: number;
-  name: string;
-  users_count?: number;
-};
-
-type TopProgram = {
-  id: number;
-  title: string;
-  status?: string | null;
-  donations_paid?: number;
-};
-
-type SuperAdminDashboardPayload = {
-  stats?: SuperAdminStats;
-  roles?: RoleCount[];
-  latest_users?: unknown;
-  top_programs?: TopProgram[];
-};
-
-
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -65,8 +35,6 @@ const formatCurrency = (value: number) =>
   }).format(value);
 
 const formatCount = (value: number) => new Intl.NumberFormat("id-ID").format(value);
-
-
 
 const normalizeNumber = (value: unknown) => {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
@@ -92,44 +60,6 @@ const badgeTone = (tone: "neutral" | "green" | "amber") => {
 
 const buildTrend = (base: number, multipliers: number[]) =>
   multipliers.map((mult) => Math.max(0, Math.round(base * mult)));
-
-function StatCard({
-  title,
-  value,
-  icon,
-  gradient,
-  loading,
-  valueClassName = "text-3xl md:text-4xl",
-}: {
-  title: string;
-  value: React.ReactNode;
-  icon: any;
-  gradient: string;
-  loading: boolean;
-  valueClassName?: string;
-}) {
-  return (
-    <div className={`relative overflow-hidden rounded-[32px] ${gradient} p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl`}>
-      <div className="absolute right-0 top-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-      <div className="absolute bottom-0 left-0 -mb-8 -ml-8 h-24 w-24 rounded-full bg-black/5 blur-xl" />
-
-      <div className="relative z-10 flex flex-col justify-between h-full gap-4">
-        <div className="flex items-start justify-between">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-white backdrop-blur-sm shadow-inner ring-1 ring-white/30">
-            <FontAwesomeIcon icon={icon} className="text-xl" />
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-white/80">{title}</p>
-          <div className={`font-heading font-bold text-white shadow-sm ${valueClassName}`}>
-            {loading ? <div className="h-8 w-24 animate-pulse rounded-lg bg-white/20" /> : value}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function ChartCard({
   title,
@@ -158,27 +88,7 @@ function ChartCard({
 
 export function SuperAdminDashboardPage() {
   const navigate = useNavigate();
-  const [data, setData] = useState<SuperAdminDashboardPayload | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchDashboard = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await http.get<SuperAdminDashboardPayload>("/superadmin/dashboard");
-      setData(res.data ?? null);
-    } catch {
-      setError("Gagal memuat dashboard super admin.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void fetchDashboard();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { data, loading, error } = useSuperAdminDashboard();
 
   const stats = useMemo(() => {
     const raw = data?.stats ?? {};
@@ -191,12 +101,12 @@ export function SuperAdminDashboardPage() {
       donationsPaid: normalizeNumber(raw.donations_paid),
       donationsPending: normalizeNumber(raw.donations_pending),
     };
-  }, [data?.stats]);
+  }, [data]);
 
   const topPrograms = useMemo(() => {
     const list = Array.isArray(data?.top_programs) ? data?.top_programs : [];
     return list.filter((p) => p && typeof p === "object" && typeof (p as any).id === "number") as TopProgram[];
-  }, [data?.top_programs]);
+  }, [data]);
 
   const usersChartData = useMemo(() => {
     return {
@@ -213,7 +123,7 @@ export function SuperAdminDashboardPage() {
         },
       ],
     };
-  }, [stats.usersActive, stats.usersInactive]);
+  }, [stats]);
 
   const usersChartOptions = useMemo(() => {
     return {
@@ -298,7 +208,7 @@ export function SuperAdminDashboardPage() {
         },
       ],
     };
-  }, [donationTrendLabels, stats.donationsPaid, stats.programsTotal]);
+  }, [donationTrendLabels, stats]);
 
   const donationTrendOptions = useMemo(() => {
     return {
@@ -423,7 +333,9 @@ export function SuperAdminDashboardPage() {
   }, []);
 
   return (
-    <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 pb-10">
+    <div className="dashboard-shell min-h-screen">
+      <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 p-4 md:p-8 pb-10">
+
       {/* Hero Header */}
       <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
         <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
@@ -470,20 +382,20 @@ export function SuperAdminDashboardPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
         <StatCard
           title="Total Pengguna"
           value={formatCount(stats.usersTotal)}
           icon={faUsers}
           loading={loading}
-          gradient="bg-[#1A9B7F]"
+          tone="emerald" // Using tone instead of gradient
         />
         <StatCard
           title="Pengguna Aktif"
           value={formatCount(stats.usersActive)}
           icon={faCircleCheck}
           loading={loading}
-          gradient="bg-[#29B6F6]"
+          tone="sky" // Using tone instead of gradient
         />
         <StatCard
           title="Konten Sistem"
@@ -495,16 +407,14 @@ export function SuperAdminDashboardPage() {
           }
           icon={faChartLine}
           loading={loading}
-          gradient="bg-[#66BB6A]"
-          valueClassName=""
+          tone="emerald" // Using tone instead of gradient
         />
         <StatCard
           title="Donasi Lunas"
           value={formatCurrency(stats.donationsPaid)}
           icon={faCoins}
           loading={loading}
-          gradient="bg-[#5C6BC0]"
-          valueClassName="text-2xl md:text-3xl truncate"
+          tone="violet" // Using tone instead of gradient
         />
       </div>
 
@@ -602,11 +512,14 @@ export function SuperAdminDashboardPage() {
               </table>
             </div>
           </div>
-        </div>
       </div>
     </div>
+  </div>
+</div>
   );
 }
 
-export default SuperAdminDashboardPage;
 
+
+
+export default SuperAdminDashboardPage;

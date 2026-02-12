@@ -517,7 +517,7 @@ export function AdminDonationsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-5">
-                        <p className="text-sm font-bold text-slate-900">{donor}</p>
+                        <p className="line-clamp-1 text-sm font-bold text-slate-900">{donor}</p>
                       </td>
                       <td className="px-6 py-5">
                         <p className="line-clamp-1 text-sm font-medium text-slate-600">{programTitle}</p>

@@ -419,7 +419,7 @@ export function AdminDonationConfirmationsPage() {
                         <p className="mt-1 text-xs font-semibold text-slate-500">Manual transfer</p>
                       </td>
                       <td className="px-6 py-5">
-                        <p className="text-sm font-semibold text-slate-900">{donor}</p>
+                        <p className="line-clamp-1 text-sm font-semibold text-slate-900">{donor}</p>
                       </td>
                       <td className="px-6 py-5 text-right text-sm font-bold text-slate-900">
                         {formatCurrency(donation.amount)}

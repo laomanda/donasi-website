@@ -253,13 +253,7 @@ function LayananPage() {
                 {t("layanan.services.cta.form")}
                 <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
               </a>
-              <a
-                href="/cara-donasi"
-                className="inline-flex items-center gap-2 rounded-full border border-brandGreen-200 bg-brandGreen-50 px-5 py-2.5 text-sm font-semibold text-brandGreen-700 shadow-sm transition hover:-translate-y-0.5 hover:border-brandGreen-300 hover:text-brandGreen-800"
-              >
-                {t("layanan.services.cta.donate")}
-                <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
-              </a>
+
             </div>
           </div>
 

@@ -8,6 +8,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
+import { translateCategoryToEn, CATEGORY_OPTIONS } from "../../../lib/categoryTranslations";
 
 type EditorProgram = {
     id: number;
@@ -135,8 +136,6 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
     const navigate = useNavigate();
     const toast = useToast();
     const [form, setForm] = useState<ProgramFormState>(emptyForm);
-    const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
-    const [categoryPick, setCategoryPick] = useState("");
     const [loading, setLoading] = useState(mode === "edit");
     const [saving, setSaving] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
@@ -344,31 +343,11 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
         }
     };
 
-    useEffect(() => {
-        http
-            .get("/editor/programs", { params: { per_page: 200 } })
-            .then((res) => {
-                const items = Array.isArray(res.data?.data) ? res.data.data : [];
-                const map = new Map<string, string>();
-                items.forEach((program: any) => {
-                    const raw = String(program?.category ?? "").trim();
-                    if (!raw) return;
-                    const key = raw.toLowerCase();
-                    if (!map.has(key)) map.set(key, raw);
-                });
-                setCategoryOptions(Array.from(map.values()).sort((a, b) => a.localeCompare(b)));
-            })
-            .catch(() => undefined);
-    }, []);
+
 
     const payloadForRequest = (state: ProgramFormState) => {
         const targetAmount = state.target_amount.trim();
-        const normalizedCategory = (() => {
-            const raw = state.category.trim();
-            if (!raw) return raw;
-            const match = categoryOptions.find((opt) => opt.toLowerCase() === raw.toLowerCase());
-            return match ?? raw;
-        })();
+        const normalizedCategory = state.category.trim();
         const payload: any = {
             title: state.title.trim(),
             title_en: state.title_en.trim() || null,
@@ -800,38 +779,29 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                                     Kategori (Bahasa Indonesia) <span className="text-red-500">*</span>
                                 </span>
                                 <input
+                                    list="category-suggestions"
                                     value={form.category}
-                                    onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))}
-                                    onBlur={() => {
-                                        const raw = form.category.trim();
-                                        if (!raw) return;
-                                        const match = categoryOptions.find((opt) => opt.toLowerCase() === raw.toLowerCase());
-                                        if (match && match !== form.category) {
-                                            setForm((s) => ({ ...s, category: match }));
-                                        }
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setForm((s) => {
+                                            const next = { ...s, category: value };
+                                            const en = translateCategoryToEn(value);
+                                            // Only auto-fill if translation exists (meaning it's a known category)
+                                            if (en) {
+                                                next.category_en = en;
+                                            }
+                                            return next;
+                                        });
                                     }}
                                     placeholder="Contoh: Pendidikan"
                                     className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                                     disabled={loading || saving || deleting}
                                 />
-                                <select
-                                    value={categoryPick}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (!value) return;
-                                        setForm((s) => ({ ...s, category: value }));
-                                        setCategoryPick("");
-                                    }}
-                                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400 disabled:cursor-not-allowed disabled:opacity-70"
-                                    disabled={loading || saving || deleting || categoryOptions.length === 0}
-                                >
-                                    <option value="">Pilih kategori yang sudah ada</option>
-                                    {categoryOptions.map((opt) => (
-                                        <option key={opt} value={opt}>
-                                            {opt}
-                                        </option>
+                                <datalist id="category-suggestions">
+                                    {CATEGORY_OPTIONS.sort().map((opt) => (
+                                        <option key={opt} value={opt} />
                                     ))}
-                                </select>
+                                </datalist>
                             </label>
 
                             <label className="block">
@@ -841,7 +811,7 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                                 <input
                                     value={form.category_en}
                                     onChange={(e) => setForm((s) => ({ ...s, category_en: e.target.value }))}
-                                    placeholder="Contoh: education"
+                                    placeholder="Contoh: Education"
                                     className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                                     disabled={loading || saving || deleting}
                                 />

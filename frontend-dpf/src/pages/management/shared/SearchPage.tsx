@@ -376,7 +376,7 @@ function ResultRow({
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-slate-900">{title}</p>
+          <p className="line-clamp-1 text-sm font-bold text-slate-900">{title}</p>
           {subtitle ? <p className="mt-1 line-clamp-2 text-xs text-slate-600">{subtitle}</p> : null}
           {(metaLeft || metaRight) && (
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-slate-600">

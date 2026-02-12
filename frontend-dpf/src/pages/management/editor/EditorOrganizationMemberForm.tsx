@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
 import PhoneInput from "../../../components/ui/PhoneInput";
+import { translateGroupToEn, ORGANIZATION_GROUPS } from "../../../lib/organizationGroups";
 
 type OrganizationMember = {
   id: number;
@@ -47,7 +48,7 @@ type FormState = {
   is_active: boolean;
 };
 
-const GROUP_SUGGESTIONS = ["pembina", "pengawas", "pengurus", "staff", "relawan", "lainnya"];
+
 
 const emptyForm: FormState = {
   name: "",
@@ -764,20 +765,32 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Properti</p>
 
             <div className="mt-5 space-y-4">
+
+
               <label className="block">
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Grup (Bahasa Indonesia) <span className="text-red-500">*</span>
                 </span>
                 <input
                   value={form.group}
-                  onChange={(e) => setForm((s) => ({ ...s, group: e.target.value }))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setForm((s) => {
+                        const next = { ...s, group: val };
+                        const en = translateGroupToEn(val);
+                        if (en) {
+                            next.group_en = en;
+                        }
+                        return next;
+                    });
+                  }}
                   placeholder="Mis. pengurus"
                   list="org-group-options"
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
                 <datalist id="org-group-options">
-                  {GROUP_SUGGESTIONS.map((g) => (
+                  {ORGANIZATION_GROUPS.map((g) => (
                     <option key={g} value={g} />
                   ))}
                 </datalist>

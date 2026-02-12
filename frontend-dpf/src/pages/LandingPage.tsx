@@ -332,9 +332,16 @@ function BannerSection({ banners }: { banners: Banner[] }) {
 
   const activeBanner = slides[activeIndex] ?? slides[0];
   const imageUrl = hasBanners && activeBanner?.image_path ? getImageUrl(activeBanner.image_path) : placeholderBanner;
+  /* 
+   * FIX: Disable parallax (bg-fixed) if using placeholder banner.
+   * User requested: "hapus efek parallax ... saat foto ... placeholder-banner.png bekerja"
+   */
+  const isPlaceholder = imageUrl === placeholderBanner;
+  const parallaxClass = isPlaceholder ? "" : "bg-fixed";
+
   const bannerImageClass = hasBanners
-    ? "h-full w-full bg-cover bg-center bg-fixed animate-banner-pan motion-reduce:animate-none"
-    : "h-full w-full bg-cover bg-center bg-fixed";
+    ? `h-full w-full bg-cover bg-center ${parallaxClass} animate-banner-pan motion-reduce:animate-none`
+    : `h-full w-full bg-cover bg-center ${parallaxClass}`;
 
   const slideVariants = {
     enter: { opacity: 0 },
@@ -674,7 +681,7 @@ function ProgramSkeleton() {
 /*                              Articles section                              */
 /* -------------------------------------------------------------------------- */
 function ArticlesSection({ articles, loading, t, locale }: { articles: Article[]; loading: boolean; t: (k: string, f?: string) => string; locale: "id" | "en" }) {
-  const limited = articles.slice(0, 6);
+  const limited = articles.slice(0, 3);
   const hasArticles = limited.length > 0;
 
   return (

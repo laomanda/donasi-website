@@ -193,7 +193,15 @@ export function ProgramPage() {
     });
   }, [localizedPrograms, search, activeCategory, activeStatus]);
 
+  // Pagination State
+  const [visibleCount, setVisibleCount] = useState(9);
 
+  // Reset pagination when filter changes
+  useEffect(() => {
+    setVisibleCount(9);
+  }, [search, activeCategory, activeStatus]);
+
+  const limited = filtered.slice(0, visibleCount);
 
   // Handle active status color
   const getFilterClass = (isActive: boolean) =>
@@ -325,16 +333,28 @@ export function ProgramPage() {
                </div>
             )}
 
+            {/* GRID PROGRAMS */}
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                {loading
                   ? Array.from({ length: 6 }).map((_, idx) => <ProgramSkeleton key={`prog-skel-${idx}`} />)
                   : (
                     <>
-                      {filtered.map((program) => <ProgramCard key={program.id} program={program} locale={locale} t={t} />)}
+                      {limited.map((program) => <ProgramCard key={program.id} program={program} locale={locale} t={t} />)}
                     </>
                   )
                }
             </div>
+
+            {!loading && limited.length < filtered.length && (
+                <div className="mt-12 text-center">
+                    <button
+                        onClick={() => setVisibleCount((prev) => prev + 5)}
+                        className="inline-flex items-center gap-2 rounded-full bg-primary-700 px-8 py-3 text-sm font-bold text-white shadow-md ring-1 ring-slate-200 transition hover:bg-primary-800 hover:shadow-lg active:scale-95"
+                    >
+                        {t("program.loadMore", "Lihat Lebih Banyak")}
+                    </button>
+                </div>
+            )}
 
             {!loading && filtered.length === 0 && (
                <div className="mx-auto max-w-lg py-12 text-center">

@@ -542,7 +542,7 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
                           {formatPriority(task.priority)}
                         </span>
                       </div>
-                      <h3 className="font-heading text-xl font-bold text-slate-900 transition">
+                      <h3 className="line-clamp-1 font-heading text-xl font-bold text-slate-900 transition">
                         {task.title ?? "Tugas tanpa judul"}
                       </h3>
                       {task.description && (

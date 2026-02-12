@@ -295,11 +295,13 @@ export function AdminBankAccountsPage() {
                           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm ring-1 ring-emerald-100">
                             <FontAwesomeIcon icon={faBuildingColumns} />
                           </div>
-                          <span className="text-sm font-bold text-slate-900">{acc.bank_name}</span>
+                          <span className="line-clamp-1 text-sm font-bold text-slate-900">{acc.bank_name}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5 text-sm font-bold text-slate-900">{acc.account_number}</td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-700">{acc.account_name}</td>
+                      <td className="px-6 py-5">
+                        <p className="line-clamp-1 text-sm font-semibold text-slate-700">{acc.account_name}</p>
+                      </td>
                       <td className="px-6 py-5">
                         <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(Boolean(acc.is_visible_public))}`}>
                           {acc.is_visible_public ? "Tampil" : "Disembunyikan"}

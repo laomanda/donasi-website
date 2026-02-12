@@ -356,8 +356,8 @@ export function EditorArticlesPage() {
                       />
                     </td>
                     <td className="px-6 py-5">
-                      <button type="button" onClick={() => goEdit(article.id)} className="group text-left">
-                        <p className="truncate text-sm font-bold text-slate-900 group-hover:text-brandGreen-700">
+                      <button type="button" onClick={() => goEdit(article.id)} className="group block w-full max-w-full text-left transition">
+                        <p className="line-clamp-1 text-sm font-bold text-slate-900 group-hover:text-brandGreen-700">
                           {article.title}
                         </p>
                         <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">{article.excerpt}</p>

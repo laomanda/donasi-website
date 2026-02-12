@@ -363,7 +363,7 @@ export function PartnersPage() {
                             />
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-slate-900">{partner.name}</p>
+                            <p className="line-clamp-1 text-sm font-bold text-slate-900">{partner.name}</p>
                             <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">
                               {partner.description ? partner.description : "Tanpa deskripsi."}
                             </p>
