@@ -14,7 +14,7 @@ import {
   faUserGraduate,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
-import { WaveDivider } from "../components/landing/WaveDivider";
+
 import http from "../lib/http";
 import PhoneInput from "../components/ui/PhoneInput";
 import { useLang } from "../lib/i18n";
@@ -109,7 +109,7 @@ export function KonsultasiPage() {
           <div className="absolute bottom-10 right-0 h-80 w-80 rounded-full bg-brandGreen-200/35 blur-[120px]" />
           <div className="absolute inset-x-10 top-1/3 h-24 rounded-full bg-white/60 blur-3xl" />
         </div>
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-18 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
           <div className="space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary-700 shadow-sm">
               {t("konsultasi.hero.badge")}
@@ -157,11 +157,11 @@ export function KonsultasiPage() {
         </div>
       </section>
 
-      <WaveDivider fillClassName="fill-white" className="-mt-1" />
+
 
       {/* BENEFITS */}
       <section className="bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="text-center space-y-3">
             <p className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-primary-700 shadow-sm">
               {t("konsultasi.benefits.badge")}
@@ -356,7 +356,7 @@ function InputField({
     ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
     : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
   return (
-    <label className="space-y-1 text-sm font-medium text-slate-700">
+    <label className="block space-y-2 text-sm font-bold text-slate-700">
       <span>{label}</span>
       <input
         type={type}
@@ -391,7 +391,7 @@ function TextareaField({
     ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
     : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
   return (
-    <label className="space-y-1 text-sm font-medium text-slate-700">
+    <label className="block space-y-2 text-sm font-bold text-slate-700">
       <span>{label}</span>
       <textarea
         value={value}

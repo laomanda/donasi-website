@@ -13,7 +13,6 @@ import {
   faTicket,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
-import { WaveDivider } from "../components/landing/WaveDivider";
 import http from "../lib/http";
 import PhoneInput from "../components/ui/PhoneInput";
 import { useLang } from "../lib/i18n";
@@ -27,6 +26,7 @@ type BankAccount = {
   branch?: string | null;
   is_visible?: boolean;
   notes?: string | null;
+  category?: string | null;
 };
 
 type OrganizationResponse = {
@@ -80,6 +80,8 @@ export function KonfirmasiDonasiPage() {
   const [submitting, setSubmitting] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
 
+  const [customPurpose, setCustomPurpose] = useState("");
+
   const handleChange = (key: keyof typeof form, value: string | File | null) => {
     setForm((prev) => ({ ...prev, [key]: value as any }));
     setErrors((prev) => ({ ...prev, [key]: "" }));
@@ -117,7 +119,7 @@ export function KonfirmasiDonasiPage() {
 
   const visibleAccounts = useMemo(() => accounts.filter((account) => account.is_visible !== false), [accounts]);
   const programOptions = useMemo(() => {
-    return programs
+    const list = programs
       .filter((program) => {
         const status = String(program.status ?? "").trim().toLowerCase();
         return status !== "draft" && status !== "segera";
@@ -126,16 +128,42 @@ export function KonfirmasiDonasiPage() {
         value: String(program.id),
         label: pickLocale(program.title, program.title_en) || t("landing.programs.defaultCategory"),
       }));
+      
+    // Add "Lainnya" option
+    list.push({ value: "Lainnya", label: locale === "en" ? "Other / General" : "Lainnya" });
+    return list;
   }, [programs, locale, t]);
 
-  const bankOptions = useMemo(
-    () =>
-      visibleAccounts.map((account) => ({
-        value: String(account.id),
-        label: `${account.bank_name} • ${account.account_number} a.n. ${account.account_name}`,
-      })),
-    [visibleAccounts]
-  );
+  const bankOptions = useMemo(() => {
+    const domesticData = visibleAccounts.filter(
+      (a) => !a.category || a.category === "domestic" || a.category === "bank_transfer"
+    );
+    const internationalData = visibleAccounts.filter((a) => a.category === "international");
+
+    const options: Array<{ label: string; options: Array<{ value: string; label: string }> }> = [];
+
+    if (domesticData.length > 0) {
+      options.push({
+        label: locale === "en" ? "Domestic (Locak Bank/QRIS)" : "Wakif Dalam Negeri (Bank Lokal/QRIS)",
+        options: domesticData.map((account) => ({
+          value: String(account.id),
+          label: `${account.bank_name} • ${account.account_number} a.n. ${account.account_name}`,
+        })),
+      });
+    }
+
+    if (internationalData.length > 0) {
+      options.push({
+        label: locale === "en" ? "International (Swift)" : "Wakif Luar Negeri (Swift/International)",
+        options: internationalData.map((account) => ({
+          value: String(account.id),
+          label: `${account.bank_name} • ${account.account_number} a.n. ${account.account_name}`,
+        })),
+      });
+    }
+
+    return options;
+  }, [visibleAccounts, locale]);
 
   const handleBankChange = (value: string) => {
     setForm((prev) => ({ ...prev, bank: value }));
@@ -146,6 +174,9 @@ export function KonfirmasiDonasiPage() {
   const handleProgramChange = (value: string) => {
     const selected = programOptions.find((program) => program.value === value);
     setForm((prev) => ({ ...prev, program_id: value, purpose: selected?.label ?? "" }));
+    if (value !== "Lainnya") {
+        setCustomPurpose("");
+    }
     setErrors((prev) => ({ ...prev, purpose: "" }));
     setStatusKey(null);
   };
@@ -168,8 +199,8 @@ export function KonfirmasiDonasiPage() {
     const selectedBank = visibleAccounts.find((account) => String(account.id) === form.bank);
     if (!selectedBank) next.bank = "konfirmasi.form.error.bank.required";
 
-    const selectedProgram = programOptions.find((program) => program.value === form.program_id);
-    if (!selectedProgram) next.purpose = "konfirmasi.form.error.purpose.required";
+    if (!form.program_id) next.purpose = "konfirmasi.form.error.purpose.required";
+    else if (form.program_id === "Lainnya" && !customPurpose.trim()) next.purpose = "konfirmasi.form.error.purpose.required";
 
     if (form.proof) {
       const allowed = ["image/jpeg", "image/png", "application/pdf"];
@@ -195,11 +226,13 @@ export function KonfirmasiDonasiPage() {
     setStatusKey(null);
     try {
       const selectedBank = visibleAccounts.find((account) => String(account.id) === form.bank);
-      const selectedProgram = programOptions.find((program) => program.value === form.program_id);
-      if (!selectedBank || !selectedProgram) {
+      const isCustom = form.program_id === "Lainnya";
+      const selectedProgram = !isCustom ? programOptions.find((program) => program.value === form.program_id) : null;
+
+      if (!selectedBank || (!selectedProgram && !isCustom)) {
         setErrors({
           bank: selectedBank ? "" : "konfirmasi.form.error.bank.required",
-          purpose: selectedProgram ? "" : "konfirmasi.form.error.purpose.required",
+          purpose: "konfirmasi.form.error.purpose.required",
         });
         setStatusKey("error");
         setSubmitting(false);
@@ -213,8 +246,17 @@ export function KonfirmasiDonasiPage() {
         "bank_destination",
         `${selectedBank.bank_name} ${selectedBank.account_number} a.n. ${selectedBank.account_name}`
       );
-      fd.append("program_id", selectedProgram.value);
-      fd.append("purpose", selectedProgram.label);
+      
+      if (isCustom) {
+        // If "Lainnya", we might omit program_id or send empty depending on backend.
+        // Assuming backend handles donation without specific program_id, or we send custom purpose string.
+        fd.append("program_id", ""); 
+        fd.append("purpose", customPurpose);
+      } else if (selectedProgram) {
+        fd.append("program_id", selectedProgram.value);
+        fd.append("purpose", selectedProgram.label);
+      }
+
       if (form.notes) fd.append("notes", form.notes);
       if (form.proof) fd.append("proof", form.proof);
 
@@ -240,7 +282,7 @@ export function KonfirmasiDonasiPage() {
           <div className="absolute bottom-10 right-0 h-80 w-80 rounded-full bg-brandGreen-200/35 blur-[120px]" />
           <div className="absolute inset-x-10 top-1/3 h-24 rounded-full bg-white/60 blur-3xl" />
         </div>
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-18 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
           <div className="space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary-700 shadow-sm">
               {t("konfirmasi.hero.badge")}
@@ -288,11 +330,9 @@ export function KonfirmasiDonasiPage() {
         </div>
       </section>
 
-      <WaveDivider fillClassName="fill-white" className="-mt-1" />
-
       {/* BENEFITS */}
       <section className="bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="text-center space-y-3">
             <p className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-primary-700 shadow-sm">
               {t("konfirmasi.benefits.badge")}
@@ -375,59 +415,125 @@ export function KonfirmasiDonasiPage() {
                 </li>
               </ul>
             </div>
-            <form onSubmit={handleSubmit} className="rounded-[24px] border border-slate-100 bg-white p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)] space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <InputField label={t("konfirmasi.form.fields.name")} value={form.name} onChange={(v) => handleChange("name", v)} required error={errors.name ? t(errors.name) : ""} />
-                <label className="space-y-1 text-sm font-medium text-slate-700">
-                  <span>{t("konfirmasi.form.fields.phone")}</span>
-                  <PhoneInput
-                    value={form.phone}
-                    onChange={(v) => handleChange("phone", v || "")}
-                    disabled={submitting}
-                  />
-                  {errors.phone && <span className="text-xs font-semibold text-red-600">{t(errors.phone)}</span>}
-                </label>
-              </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <InputField label={t("konfirmasi.form.fields.amount")} value={form.amount} onChange={(v) => handleChange("amount", v)} required error={errors.amount ? t(errors.amount) : ""} />
-              <SelectField
-                label={t("konfirmasi.form.fields.bank")}
-                value={form.bank}
-                onChange={handleBankChange}
-                required
-                error={errors.bank ? t(errors.bank) : ""}
-                options={bankOptions}
-                disabled={optionsLoading || bankOptions.length === 0}
-                placeholder={locale === "en" ? "Select destination bank" : "Pilih bank tujuan"}
-                loading={optionsLoading}
-              />
-            </div>
-            <SelectField
-              label={t("konfirmasi.form.fields.purpose")}
-              value={form.program_id}
-              onChange={handleProgramChange}
-              required
-              error={errors.purpose ? t(errors.purpose) : ""}
-              options={programOptions}
-              disabled={optionsLoading || programOptions.length === 0}
-              placeholder={locale === "en" ? "Select donation program" : "Pilih program tujuan"}
-              loading={optionsLoading}
-            />
-            {optionsError ? (
-              <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700">
-                {t(optionsError)}
-              </div>
-            ) : null}
-            <InputField label={t("konfirmasi.form.fields.notes")} value={form.notes} onChange={(v) => handleChange("notes", v)} />
-            <FileField label={t("konfirmasi.form.fields.proof")} onChange={(file) => handleChange("proof", file as any)} error={errors.proof ? t(errors.proof) : ""} />
-            {preview && (
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 shadow-sm">
-                <p className="text-xs font-semibold text-slate-600 mb-2">{t("konfirmasi.form.preview")}</p>
-                <div className="overflow-hidden rounded-xl border border-slate-100 bg-white">
-                  <img src={preview} alt="Preview" className="w-full max-h-72 object-contain" />
+            <form onSubmit={handleSubmit} className="relative space-y-8 rounded-[24px] border border-slate-100 bg-white p-6 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)] sm:p-8">
+              
+              {/* SECTION: DATA DONATUR */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                     <FontAwesomeIcon icon={faHeadset} className="text-sm" />
+                  </div>
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+                    {t("konfirmasi.form.section.donor")}
+                  </h4>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <InputField label={t("konfirmasi.form.fields.name")} value={form.name} onChange={(v) => handleChange("name", v)} required error={errors.name ? t(errors.name) : ""} />
+                  <label className="space-y-1 text-sm font-medium text-slate-700">
+                    <span>{t("konfirmasi.form.fields.phone")} <span className="text-red-500">*</span></span>
+                    <PhoneInput
+                      value={form.phone}
+                      onChange={(v) => handleChange("phone", v || "")}
+                      disabled={submitting}
+                    />
+                    {errors.phone && <span className="text-xs font-semibold text-red-600">{t(errors.phone)}</span>}
+                  </label>
                 </div>
               </div>
-            )}
+
+              {/* SECTION: DETAIL DONASI */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                     <FontAwesomeIcon icon={faHandHoldingHeart} className="text-sm" />
+                  </div>
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+                    {t("konfirmasi.form.section.donation")}
+                  </h4>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="space-y-1 text-sm font-medium text-slate-700">
+                      <span>{t("konfirmasi.form.fields.amount")}</span>
+                      <input
+                        value={form.amount}
+                        onChange={(e) => {
+                          // Allow only digits
+                          if (/^[0-9]*$/.test(e.target.value)) handleChange("amount", e.target.value);
+                        }}
+                        required
+                        className={`w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2 ${
+                          errors.amount
+                            ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
+                            : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100"
+                        }`}
+                        placeholder="0"
+                      />
+                      {errors.amount && <span className="text-xs font-semibold text-red-600">{t(errors.amount)}</span>}
+                    </label>
+                  <SelectField
+                    label={t("konfirmasi.form.fields.bank")}
+                    value={form.bank}
+                    onChange={handleBankChange}
+                    required
+                    error={errors.bank ? t(errors.bank) : ""}
+                    options={bankOptions}
+                    disabled={optionsLoading || bankOptions.length === 0}
+                    placeholder={locale === "en" ? "Select destination bank" : "Pilih bank tujuan"}
+                    loading={optionsLoading}
+                  />
+                </div>
+                <SelectField
+                  label={t("konfirmasi.form.fields.purpose")}
+                  value={form.program_id}
+                  onChange={handleProgramChange}
+                  required
+                  error={errors.purpose && form.program_id !== "Lainnya" ? t(errors.purpose) : ""}
+                  options={programOptions}
+                  disabled={optionsLoading || programOptions.length === 0}
+                  placeholder={locale === "en" ? "Select donation program" : "Pilih program tujuan"}
+                  loading={optionsLoading}
+                />
+                {form.program_id === "Lainnya" && (
+                    <InputField
+                        label={locale === "en" ? "Specify Donation Purpose" : "Tuliskan Tujuan Donasi"}
+                        value={customPurpose}
+                        onChange={(v) => {
+                            setCustomPurpose(v);
+                            setErrors(prev => ({...prev, purpose: ""}));
+                        }}
+                        required
+                        error={errors.purpose ? t(errors.purpose) : ""}
+                    />
+                )}
+                {optionsError ? (
+                  <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700">
+                    {t(optionsError)}
+                  </div>
+                ) : null}
+              </div>
+
+              {/* SECTION: BUKTI TRANSFER */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                     <FontAwesomeIcon icon={faMoneyBillWave} className="text-sm" />
+                  </div>
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+                    {t("konfirmasi.form.section.proof")}
+                  </h4>
+                </div>
+                <InputField label={t("konfirmasi.form.fields.notes")} value={form.notes} onChange={(v) => handleChange("notes", v)} />
+                <FileField label={t("konfirmasi.form.fields.proof")} onChange={(file) => handleChange("proof", file as any)} error={errors.proof ? t(errors.proof) : ""} />
+                {preview && (
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3 shadow-sm">
+                    <p className="text-xs font-semibold text-slate-600 mb-2">{t("konfirmasi.form.preview")}</p>
+                    <div className="overflow-hidden rounded-xl border border-slate-100 bg-white">
+                      <img src={preview} alt="Preview" className="w-full max-h-72 object-contain" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {statusKey && (
                 <div
                   className={`rounded-xl px-4 py-3 text-sm font-semibold ${
@@ -485,7 +591,7 @@ function InputField({
     ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
     : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
   return (
-    <label className="space-y-1 text-sm font-medium text-slate-700">
+    <label className="block space-y-2 text-sm font-bold text-slate-700">
       <span>{label}</span>
       <input
         value={value}
@@ -514,7 +620,7 @@ function SelectField({
   onChange: (v: string) => void;
   required?: boolean;
   error?: string;
-  options: Array<{ value: string; label: string }>;
+  options: Array<{ value: string; label: string } | { label: string; options: Array<{ value: string; label: string }> }>;
   disabled?: boolean;
   placeholder?: string;
   loading?: boolean;
@@ -526,7 +632,7 @@ function SelectField({
     : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
   const emptyLabel = loading ? "Memuat..." : placeholder ?? "Pilih";
   return (
-    <label className="space-y-1 text-sm font-medium text-slate-700">
+    <label className="block space-y-2 text-sm font-bold text-slate-700">
       <span>{label}</span>
       <select
         value={value}
@@ -536,11 +642,24 @@ function SelectField({
         className={`${base} ${state} ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-500" : ""}`}
       >
         <option value="">{emptyLabel}</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
+        {options.map((option, idx) => {
+          if ("options" in option) {
+            return (
+              <optgroup key={idx} label={option.label}>
+                {option.options.map((subArgs) => (
+                  <option key={subArgs.value} value={subArgs.value}>
+                    {subArgs.label}
+                  </option>
+                ))}
+              </optgroup>
+            );
+          }
+          return (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          );
+        })}
       </select>
       {error && <span className="text-xs font-semibold text-red-600">{error}</span>}
     </label>
@@ -554,7 +673,7 @@ function FileField({ label, onChange, error }: { label: string; onChange: (file:
     ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
     : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
   return (
-    <label className="space-y-1 text-sm font-medium text-slate-700">
+    <label className="block space-y-2 text-sm font-bold text-slate-700">
       <span>{label}</span>
       <div className={`${base} ${state} flex items-center gap-3`}>
         <div className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600">File</div>

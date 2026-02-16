@@ -60,6 +60,15 @@ const getImageUrl = (path?: string | null) => {
   return `${base}/${path}`;
 };
 
+const formatDate = (value?: string | null, locale: "id" | "en" = "id") => {
+  if (!value) return "";
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(value));
+};
+
 const getProgress = (collected: number | string | undefined, target: number | string | undefined) => {
   const safeTarget = Math.max(Number(target ?? 0), 1);
   const value = Math.round((Number(collected ?? 0) / safeTarget) * 100);
@@ -449,6 +458,10 @@ function ProgramCard({
         <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
           <span>{t("landing.programs.deadline")}</span>
           <span className="text-slate-800">{deadlineText}</span>
+        </div>
+        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400">
+             <span>{locale === 'en' ? 'Published:' : 'Diterbitkan:'}</span>
+             <span>{formatDate(program.published_at ?? program.created_at, locale)}</span>
         </div>
 
         <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">

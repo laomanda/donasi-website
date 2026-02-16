@@ -1,7 +1,8 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faBuildingColumns, faTrash, faImage, faUpload, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
+
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
 import { resolveStorageBaseUrl } from "../../../lib/urls";
@@ -12,6 +13,7 @@ type BankAccount = {
   account_number?: string | null;
   account_name?: string | null;
   image_path?: string | null;
+  qris_image_path?: string | null;
   category?: string;
   type?: string;
   is_visible_public: boolean;
@@ -26,6 +28,8 @@ type BankAccountFormState = {
   type: string;
   image: File | null;
   image_preview: string | null;
+  qris_image: File | null;
+  qris_image_preview: string | null;
   is_visible_public: boolean;
   order: string;
 };
@@ -34,10 +38,12 @@ const emptyForm: BankAccountFormState = {
   bank_name: "",
   account_number: "",
   account_name: "",
-  category: "bank_transfer",
-  type: "text",
+  category: "",
+  type: "domestic",
   image: null,
   image_preview: null,
+  qris_image: null,
+  qris_image_preview: null,
   is_visible_public: true,
   order: "0",
 };
@@ -91,16 +97,7 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
-
-  const uniqueCategories = useMemo(() => {
-    const set = new Set<string>();
-    // Add existing from peers
-    peers.forEach((p) => {
-      if (p.category) set.add(p.category);
-    });
-    return Array.from(set).sort();
-  }, [peers]);
+  const [inputMethod, setInputMethod] = useState<'manual' | 'qris'>('manual');
 
   const getImageUrl = (path?: string | null) => {
     if (!path) return null;
@@ -109,14 +106,22 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
     return `${base}/${path}`;
   };
 
+  const qrisFileInputRef = useRef<HTMLInputElement>(null);
+
   const isEditIdValid = typeof accountId === "number" && Number.isFinite(accountId) && accountId > 0;
   const orderNumber = Number(form.order);
   const orderIsValid = Number.isFinite(orderNumber) && Number.isInteger(orderNumber) && orderNumber >= 0;
 
+  // Filter peers based on location type (domestic/international)
+  const orderingPeers = useMemo(() => {
+      const currentType = form.type || 'domestic';
+      return peers.filter(p => (p.type || 'domestic') === currentType);
+  }, [peers, form.type]);
+
   const duplicateOrderOwner = useMemo(() => {
     if (!orderIsValid) return null;
-    return peers.find((acc) => acc.order === orderNumber && (mode === "create" || acc.id !== accountId)) ?? null;
-  }, [mode, orderIsValid, orderNumber, accountId, peers]);
+    return orderingPeers.find((acc) => acc.order === orderNumber && (mode === "create" || acc.id !== accountId)) ?? null;
+  }, [mode, orderIsValid, orderNumber, accountId, orderingPeers]);
 
   const orderError = useMemo(() => {
     if (!orderIsValid) return "Urutan tampil harus berupa angka bulat (>= 0).";
@@ -125,8 +130,16 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
   }, [duplicateOrderOwner, orderIsValid, orderNumber]);
 
   const suggestedOrder = useMemo(() => {
-    return getNextAvailableOrder(peers, mode === "edit" ? accountId : undefined);
-  }, [mode, accountId, peers]);
+    return getNextAvailableOrder(orderingPeers, mode === "edit" ? accountId : undefined);
+  }, [mode, accountId, orderingPeers]);
+
+  // Update order when switching location type
+  useEffect(() => {
+      if (mode === 'create' && !orderTouchedRef.current) {
+           const next = getNextAvailableOrder(orderingPeers);
+           setForm(s => ({ ...s, order: String(next) }));
+      }
+  }, [form.type, orderingPeers, mode]);
 
   const canSubmit = !loading && !saving && !deleting && !peersLoading && !peersError && !orderError;
   const canDelete = mode === "edit" && isEditIdValid && !loading && !saving && !deleting;
@@ -165,13 +178,19 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
             bank_name: found.bank_name ?? "",
             account_number: found.account_number ?? "",
             account_name: found.account_name ?? "",
-            category: found.category || "bank_transfer",
-            type: found.type || "text",
+            category: found.category || "",
+            type: found.type === 'international' ? 'international' : 'domestic',
             image: null,
             image_preview: getImageUrl(found.image_path) || null,
+            qris_image: null,
+            qris_image_preview: getImageUrl(found.qris_image_path) || null,
             is_visible_public: Boolean(found.is_visible_public),
             order: String(found.order ?? 0),
           });
+          // Auto-detect method based on existing data
+          if (found.qris_image_path && !found.account_number) {
+             setInputMethod('qris');
+          }
           return;
         }
 
@@ -232,6 +251,9 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
       if (form.image) {
         payload.append("image", form.image);
       }
+      if (form.qris_image) {
+        payload.append("qris_image", form.qris_image);
+      }
 
       const config = { headers: { "Content-Type": "multipart/form-data" } };
 
@@ -258,6 +280,17 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
         ...s,
         image: file,
         image_preview: URL.createObjectURL(file),
+      }));
+    }
+  };
+
+  const handleQrisFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setForm((s) => ({
+        ...s,
+        qris_image: file,
+        qris_image_preview: URL.createObjectURL(file),
       }));
     }
   };
@@ -351,94 +384,136 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
         <div className="space-y-6 lg:col-span-8">
           <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <div className="grid grid-cols-1 gap-4">
+              {/* Method Toggle */}
+              <div className="flex p-1 bg-slate-100 rounded-xl mb-4">
+                  <button
+                      type="button"
+                      onClick={() => {
+                          setInputMethod('manual');
+                          if (mode === 'create') setForm(s => ({...s, category: ''}));
+                      }}
+                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${inputMethod === 'manual' ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                      Input Manual
+                  </button>
+                  <button
+                      type="button"
+                      onClick={() => {
+                          setInputMethod('qris');
+                          if (mode === 'create') setForm(s => ({...s, category: 'QRIS'}));
+                      }}
+                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${inputMethod === 'qris' ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                      Scan QRIS
+                  </button>
+              </div>
+
               <div className="grid sm:grid-cols-2 gap-4">
+                {/* Location / Type Selection */}
+                <div className="block sm:col-span-2">
+                   <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Lokasi Wakif <span className="text-red-500">*</span>
+                   </span>
+                   <div className="flex flex-wrap items-center gap-4">
+                      <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition ${form.type === 'domestic' ? 'bg-emerald-50 border-emerald-200 ring-1 ring-emerald-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+                        <input 
+                           type="radio" 
+                           name="location_type"
+                           value="domestic"
+                           checked={form.type === 'domestic'}
+                           onChange={() => setForm(s => ({...s, type: 'domestic'}))}
+                           className="h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0"
+                        />
+                        <span className={`text-sm font-bold ${form.type === 'domestic' ? 'text-emerald-900' : 'text-slate-600'}`}>Wakif Dalam Negeri</span>
+                      </label>
+                      <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition ${form.type === 'international' ? 'bg-emerald-50 border-emerald-200 ring-1 ring-emerald-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+                        <input 
+                           type="radio" 
+                           name="location_type"
+                           value="international"
+                           checked={form.type === 'international'}
+                           onChange={() => setForm(s => ({...s, type: 'international'}))}
+                           className="h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0"
+                        />
+                        <span className={`text-sm font-bold ${form.type === 'international' ? 'text-emerald-900' : 'text-slate-600'}`}>Wakif Luar Negeri</span>
+                      </label>
+                   </div>
+                </div>
+
+                {/* Category Input (Free Text) */}
                 <label className="block sm:col-span-2 relative">
-                  <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                    Kategori <span className="text-red-500">*</span>
+                  <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Kategori / Grup <span className="text-red-500">*</span>
                   </span>
-                  <div className="relative">
-                    <input
-                      type="text"
+                  <input
                       value={form.category}
                       onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))}
-                      onFocus={() => setShowCategorySuggestions(true)}
-                      onBlur={() => setTimeout(() => setShowCategorySuggestions(false), 200)}
-                      placeholder="Pilih atau ketik kategori baru..."
-                      className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                      placeholder="Contoh: Wakaf"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
                       disabled={loading || saving || deleting}
-                    />
-                    {showCategorySuggestions && (
-                      <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl py-1">
-                        {uniqueCategories.map((cat) => (
-                          <button
-                            key={cat}
-                            type="button"
-                            onMouseDown={(e) => e.preventDefault()} // Prevent blur
-                            onClick={() => {
-                              setForm((s) => ({ ...s, category: cat }));
-                              setShowCategorySuggestions(false);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition"
-                          >
-                            {cat}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <p className="mt-1.5 text-[10px] text-slate-400">
-                    Ketik untuk membuat kategori baru atau pilih dari daftar yang sudah ada.
+                  />
+                  <p className="mt-2 text-xs text-slate-500">
+                    Grup rekening ini (bebas isi sendiri sesuai kebutuhan).
                   </p>
                 </label>
               </div>
 
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Nama Bank / Provider <span className="text-red-500">*</span>
+                <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  {inputMethod === 'qris' ? 'Provider / Nama QRIS' : 'Nama Bank'} <span className="text-red-500">*</span>
                 </span>
                 <input
                   value={form.bank_name}
                   onChange={(e) => setForm((s) => ({ ...s, bank_name: e.target.value }))}
-                  placeholder="Contoh: Bank Syariah Indonesia"
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                  placeholder={inputMethod === 'qris' ? "Contoh: Gopay, OVO, LinkAja" : "Contoh: Bank Syariah Indonesia"}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
                   disabled={loading || saving || deleting}
                 />
+                <p className="mt-2 text-xs text-slate-500">
+                  {inputMethod === 'qris'
+                    ? 'Nama penyedia jasa pembayaran, contoh: Gopay, OVO, LinkAja.'
+                    : 'Nama bank, contoh: Bank Syariah Indonesia, BCA, Mandiri.'}
+                </p>
               </label>
 
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Nomor rekening <span className="text-red-500">*</span>
-                </span>
-                <input
-                  value={form.account_number}
-                  onChange={(e) => setForm((s) => ({ ...s, account_number: e.target.value }))}
-                  placeholder="Contoh: 7123456789"
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                  disabled={loading || saving || deleting}
-                />
-              </label>
+              {inputMethod === 'manual' && (
+                <>
+                <label className="block">
+                    <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Nomor rekening <span className="text-red-500">*</span>
+                    </span>
+                    <input
+                    value={form.account_number}
+                    onChange={(e) => setForm((s) => ({ ...s, account_number: e.target.value }))}
+                    placeholder="Contoh: 7123456789"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                    disabled={loading || saving || deleting}
+                    />
+                </label>
 
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
-                  Atas nama <span className="text-red-500">*</span>
-                </span>
-                <input
-                  value={form.account_name}
-                  onChange={(e) => setForm((s) => ({ ...s, account_name: e.target.value }))}
-                  placeholder="Contoh: Yayasan DPF"
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                  disabled={loading || saving || deleting}
-                />
-              </label>
+                <label className="block">
+                    <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Atas nama <span className="text-red-500">*</span>
+                    </span>
+                    <input
+                    value={form.account_name}
+                    onChange={(e) => setForm((s) => ({ ...s, account_name: e.target.value }))}
+                    placeholder="Contoh: Yayasan DPF"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                    disabled={loading || saving || deleting}
+                    />
+                </label>
+                </>
+              )}
 
               {/* Image Upload */}
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                   Logo / Ikon Bank / QRIS
                 </span>
-                <div className="mt-2 flex items-start gap-4">
+                <div className="flex items-start gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
                   {form.image_preview ? (
-                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ring-1 ring-black/5">
                       <img
                         src={form.image_preview}
                         alt="Preview"
@@ -456,12 +531,15 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
                       </button>
                     </div>
                   ) : (
-                    <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-400">
-                      <FontAwesomeIcon icon={faImage} className="text-2xl" />
+                    <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-slate-400 shadow-sm">
+                      <FontAwesomeIcon icon={faImage} className="text-2xl opacity-50" />
                     </div>
                   )}
 
-                  <div className="flex-1">
+                  <div className="flex-1 space-y-3">
+                    <p className="text-sm font-medium text-slate-600">
+                      Upload logo bank atau ikon untuk identitas rekening.
+                    </p>
                     <input
                       type="file"
                       accept="image/*"
@@ -469,21 +547,84 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
                       onChange={handleFileChange}
                       className="hidden"
                     />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                      disabled={loading || saving || deleting}
-                    >
-                      <FontAwesomeIcon icon={faUpload} />
-                      {form.image_preview ? "Ganti Gambar" : "Upload Gambar"}
-                    </button>
-                    <p className="mt-2 text-xs text-slate-500">
-                      Format: JPG, PNG. Maksimal 2MB.
-                    </p>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 active:bg-slate-100"
+                          disabled={loading || saving || deleting}
+                        >
+                          <FontAwesomeIcon icon={faUpload} />
+                          {form.image_preview ? "Ganti Gambar" : "Pilih Gambar"}
+                        </button>
+                        <span className="text-xs font-medium text-slate-400">
+                          Format: JPG, PNG. Maksimal 2MB.
+                        </span>
+                    </div>
                   </div>
                 </div>
               </label>
+
+              {/* QRIS Image Upload - Only for QRIS mode */}
+              {inputMethod === 'qris' && (
+              <label className="block">
+                <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Gambar QRIS <span className="text-red-500">*</span>
+                </span>
+                <div className="flex items-start gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+                  {form.qris_image_preview ? (
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ring-1 ring-black/5">
+                      <img
+                        src={form.qris_image_preview}
+                        alt="Preview QRIS"
+                        className="h-full w-full object-contain p-2"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setForm((s) => ({ ...s, qris_image: null, qris_image_preview: null }));
+                          if (qrisFileInputRef.current) qrisFileInputRef.current.value = "";
+                        }}
+                        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500/80 text-white backdrop-blur hover:bg-red-600"
+                      >
+                        <FontAwesomeIcon icon={faTimes} className="text-xs" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-slate-400 shadow-sm">
+                      <FontAwesomeIcon icon={faImage} className="text-2xl opacity-50" />
+                    </div>
+                  )}
+
+                  <div className="flex-1 space-y-3">
+                    <p className="text-sm font-medium text-slate-600">
+                       Upload gambar QR Code yang bisa di-scan oleh donatur.
+                    </p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={qrisFileInputRef}
+                      onChange={handleQrisFileChange}
+                      className="hidden"
+                    />
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => qrisFileInputRef.current?.click()}
+                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 active:bg-slate-100"
+                          disabled={loading || saving || deleting}
+                        >
+                          <FontAwesomeIcon icon={faUpload} />
+                          {form.qris_image_preview ? "Ganti QRIS" : "Upload QRIS"}
+                        </button>
+                        <span className="text-xs font-medium text-slate-400">
+                           Wajib untuk mode QRIS.
+                        </span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+              )}
             </div>
           </div>
 
@@ -533,57 +674,55 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
           ) : null}
         </div>
 
-        <div className="space-y-6 lg:col-span-4">
+        <div className="space-y-6 lg:col-span-4 lg:sticky lg:top-28 h-fit">
           <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-xs font-bold tracking-wide text-slate-400">Properti</p>
 
             <div className="mt-5 space-y-4">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400">
+                <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                   Urutan tampil <span className="text-red-500">*</span>
                 </span>
                 <input
                   type="number"
-                  min={0}
-                  step={1}
-                  value={form.order}
-                  onChange={(e) => {
-                    orderTouchedRef.current = true;
-                    setForm((s) => ({ ...s, order: e.target.value }));
-                  }}
-                  placeholder="0"
-                  className={[
-                    "mt-2 w-full rounded-xl border px-4 py-3 text-sm font-bold text-slate-900 outline-none transition focus:ring-4",
-                    orderError
-                      ? "border-rose-300 bg-rose-50 focus:border-rose-500 focus:ring-rose-500/10"
-                      : "border-slate-200 bg-slate-50 focus:border-emerald-500 focus:bg-white focus:ring-emerald-500/10",
-                  ].join(" ")}
-                  disabled={loading || saving || deleting}
+                   min={0}
+                   step={1}
+                   value={form.order}
+                   onChange={(e) => {
+                     orderTouchedRef.current = true;
+                     setForm((s) => ({ ...s, order: e.target.value }));
+                   }}
+                   placeholder="0"
+                   className={[
+                     "w-full rounded-xl border px-4 py-3 text-sm font-bold text-slate-900 outline-none transition focus:ring-4",
+                     orderError
+                       ? "border-rose-300 bg-rose-50 focus:border-rose-500 focus:ring-rose-500/10"
+                       : "border-slate-200 bg-slate-50 focus:border-emerald-500 focus:bg-white focus:ring-emerald-500/10",
+                   ].join(" ")}
+                   disabled={loading || saving || deleting}
                 />
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs text-slate-500">Semakin kecil angkanya, semakin atas posisinya.</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      orderTouchedRef.current = true;
-                      setForm((s) => ({ ...s, order: String(suggestedOrder) }));
-                    }}
-                    disabled={peersLoading || Boolean(peersError) || loading || saving || deleting}
-                    className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    Gunakan urutan kosong
-                  </button>
+                   <p className="text-xs text-slate-500"> {form.type === 'international' ? 'Urutan dalam Wakif Luar Negeri' : 'Urutan dalam Wakif Dalam Negeri'}.</p>
+                   <button
+                     type="button"
+                     onClick={() => {
+                       orderTouchedRef.current = true;
+                       setForm((s) => ({ ...s, order: String(suggestedOrder) }));
+                     }}
+                     disabled={peersLoading || Boolean(peersError) || loading || saving || deleting}
+                     className="rounded-lg bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 active:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                   >
+                     Gunakan #{(suggestedOrder)}
+                   </button>
                 </div>
                 {peersLoading ? (
-                  <p className="mt-2 text-xs font-semibold text-slate-500">Memeriksa urutan yang sudah dipakai...</p>
+                  <p className="mt-2 text-xs font-semibold text-slate-500">Memeriksa urutan...</p>
                 ) : peersError ? (
                   <p className="mt-2 text-xs font-semibold text-red-700">{peersError}</p>
                 ) : orderError ? (
                   <p className="mt-2 text-xs font-semibold text-red-700">{orderError}</p>
                 ) : (
-                  <p className="mt-2 text-xs font-semibold text-brandGreen-700">
-                    Urutan tersedia. Rekomendasi urutan kosong: #{suggestedOrder}.
-                  </p>
+                  null
                 )}
               </label>
 

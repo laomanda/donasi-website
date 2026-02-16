@@ -182,4 +182,35 @@ class DonationController extends Controller
     {
         return Donation::find($donationId);
     }
+
+    /**
+     * Terminate donation (kirim WA manual dari admin).
+     */
+    public function sendWhatsapp(Request $request, \App\Services\WhatsappService $whatsappService, int $donationId)
+    {
+        $donation = $this->findDonation($donationId);
+
+        if (!$donation) {
+            return response()->json(['message' => 'Donation not found.'], 404);
+        }
+
+        $data = $request->validate([
+            'phone'   => ['required', 'string', 'max:20'],
+            'message' => ['required', 'string'],
+        ]);
+
+        // Kirim WA via Service (SKIPPED: Manual Link Mode)
+        // $success = $whatsappService->sendMessage($data['phone'], $data['message']);
+
+        // if ($donation->whatsapp_sent_at) {
+        //     return response()->json(['message' => 'WhatsApp message already sent.'], 400);
+        // }
+
+        // Since we are using manual link "wa.me", assume success if this endpoint is hit
+        $donation->update(['whatsapp_sent_at' => now()]);
+
+        return response()->json(['message' => 'WhatsApp status updated successfully.']);
+
+        return response()->json(['message' => 'Failed to send WhatsApp message.'], 500);
+    }
 }

@@ -18,6 +18,7 @@ class BankAccount extends Model
         'is_visible_public',
         'order',
         'image_path',
+        'qris_image_path',
         'category',
         'type',
     ];

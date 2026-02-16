@@ -9,6 +9,8 @@ import {
   faCoins,
   faHandHoldingDollar,
   faCreditCard,
+  faCrown,
+  faStar,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
@@ -38,6 +40,16 @@ type ReportSummary = {
   manual_amount?: number;
   midtrans_count?: number;
   midtrans_amount?: number;
+  top_donor?: {
+    donor_name: string;
+    total_amount: number;
+    donation_count: number;
+  } | null;
+  top_program?: {
+    program_title: string;
+    total_amount: number;
+    donation_count: number;
+  } | null;
 };
 
 type ReportPayload = {
@@ -363,6 +375,30 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
           subValue={loading ? "-" : `${formatCount(summary?.manual_count)} transaksi`}
           icon={faHandHoldingDollar}
           gradient="bg-brandWarmOrange-500"
+          loading={loading}
+          iconBg="bg-white/20"
+        />
+
+        {/* Top Donor Card */}
+        <StatCard
+          role={role}
+          title="Top Donatur"
+          value={loading ? "-" : (summary?.top_donor?.donor_name || "-")}
+          subValue={loading ? "-" : `Total: ${formatCurrency(summary?.top_donor?.total_amount)}`}
+          icon={faCrown}
+          gradient="bg-amber-500"
+          loading={loading}
+          iconBg="bg-white/20"
+        />
+
+        {/* Top Program Card */}
+        <StatCard
+          role={role}
+          title="Program Unggulan"
+          value={loading ? "-" : (summary?.top_program?.program_title || "-")}
+          subValue={loading ? "-" : `Terkumpul: ${formatCurrency(summary?.top_program?.total_amount)}`}
+          icon={faStar}
+          gradient="bg-indigo-500"
           loading={loading}
           iconBg="bg-white/20"
         />

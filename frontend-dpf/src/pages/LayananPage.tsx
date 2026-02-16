@@ -5,21 +5,17 @@ import {
   faArrowRight,
   faClipboardCheck,
   faClock,
-  faHandshakeSimple,
-  faHeadset,
-  faLocationDot,
-  faMobileScreenButton,
+  faTruckRampBox,
   faPaperPlane,
   faShieldHalved,
-  faTruckRampBox,
+  faHeadset,
   faStopwatch,
   faCircleDollarToSlot,
   faLocationArrow,
   faCertificate,
+  faFileLines,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
-import PhoneInput from "../components/ui/PhoneInput";
-import http from "../lib/http";
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
 
@@ -68,6 +64,7 @@ const STEPS = [
   { titleKey: "layanan.steps.2.title", descKey: "layanan.steps.2.desc", icon: faClock },
   { titleKey: "layanan.steps.3.title", descKey: "layanan.steps.3.desc", icon: faTruckRampBox },
   { titleKey: "layanan.steps.4.title", descKey: "layanan.steps.4.desc", icon: faPaperPlane },
+  { titleKey: "layanan.steps.5.title", descKey: "layanan.steps.5.desc", icon: faFileLines },
 ];
 
 const FAQS = [
@@ -96,81 +93,6 @@ const FAQS = [
 function LayananPage() {
   const { locale } = useLang();
   const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    city: "",
-    service: "",
-    notes: "",
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [submitMessageKey, setSubmitMessageKey] = useState<"success" | "error" | null>(null);
-  const [errors, setErrors] = useState<{ name?: string; phone?: string; city?: string; service?: string }>({});
-  const formRef = useRef<HTMLFormElement | null>(null);
-
-  const handleChange = (key: keyof typeof form, value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => ({ ...prev, [key]: "" }));
-    setSubmitMessageKey(null);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const validation = validateForm();
-    if (!validation.ok) {
-      setErrors(validation.errors);
-      setSubmitMessageKey("error");
-      return;
-    }
-
-    setSubmitting(true);
-    setSubmitMessageKey(null);
-    try {
-      await http.post("/service-requests", {
-        name: form.name,
-        phone: form.phone,
-        city: form.city,
-        service_type: form.service,
-        notes: form.notes,
-      });
-      setSubmitMessageKey("success");
-      setForm({ name: "", phone: "", city: "", service: "", notes: "" });
-    } catch {
-      setSubmitMessageKey("error");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const validateForm = () => {
-    const nextErrors: { name?: string; phone?: string; city?: string; service?: string } = {};
-    const alphaSpace = /^[A-Za-z\s]+$/;
-
-    if (!form.name.trim()) {
-      nextErrors.name = "layanan.form.error.name.required";
-    } else if (!alphaSpace.test(form.name.trim())) {
-      nextErrors.name = "layanan.form.error.name.alpha";
-    }
-
-    if (!form.city.trim()) {
-      nextErrors.city = "layanan.form.error.city.required";
-    } else if (!alphaSpace.test(form.city.trim())) {
-      nextErrors.city = "layanan.form.error.city.alpha";
-    }
-
-    if (!form.phone.trim()) {
-      nextErrors.phone = "layanan.form.error.phone.required";
-    } else if (form.phone.trim().length < 8) {
-      nextErrors.phone = "layanan.form.error.phone.numeric";
-    }
-
-    if (!form.service) {
-      nextErrors.service = "layanan.form.error.service.required";
-    }
-
-    const ok = Object.keys(nextErrors).length === 0;
-    return { ok, errors: nextErrors };
-  };
 
   return (
     <LandingLayout>
@@ -245,16 +167,6 @@ function LayananPage() {
                 {t("layanan.services.subtitle")}
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <a
-                href="#form-layanan"
-                className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-primary-200 hover:-translate-y-0.5"
-              >
-                {t("layanan.services.cta.form")}
-                <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
-              </a>
-
-            </div>
           </div>
 
           <div className="mt-10 grid gap-7 md:grid-cols-2 lg:grid-cols-3 items-stretch">
@@ -307,126 +219,32 @@ function LayananPage() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-5 items-stretch">
             {STEPS.map((step, idx) => (
               <div
                 key={step.titleKey}
-                className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_18px_45px_-30px_rgba(0,0,0,0.4)] transition-shadow hover:shadow-md"
+                className="group relative flex h-full flex-col rounded-[20px] bg-white p-6 shadow-sm ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)]"
               >
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brandGreen-50 text-brandGreen-700">
-                    <FontAwesomeIcon icon={step.icon} />
+                {/* Number Watermark */}
+                <div className="absolute -right-2 -top-2 h-16 w-16 rotate-12 rounded-full bg-gradient-to-br from-primary-50 to-white opacity-50 blur-xl transition-all group-hover:opacity-100 group-hover:blur-2xl" />
+                
+                <div className="relative mb-5 flex items-center justify-between">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-600 transition-colors group-hover:bg-brandGreen-600 group-hover:text-white">
+                    <FontAwesomeIcon icon={step.icon} className="text-lg" />
                   </div>
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white shadow-sm">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-50 text-xs font-bold text-slate-400 ring-1 ring-slate-100 transition-colors group-hover:bg-primary-50 group-hover:text-primary-600 group-hover:ring-primary-100">
                     {idx + 1}
                   </span>
                 </div>
-                <h3 className="text-lg font-heading font-semibold text-slate-900">{t(step.titleKey)}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">{t(step.descKey)}</p>
-                {idx < STEPS.length - 1 && (
-                  <div className="pointer-events-none absolute inset-y-0 right-2 hidden w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent lg:block" />
-                )}
+                
+                <h3 className="min-h-[3rem] text-base font-heading font-bold text-slate-800 leading-tight group-hover:text-brandGreen-700 transition-colors">
+                  {t(step.titleKey)}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-500">
+                  {t(step.descKey)}
+                </p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FORM CTA */}
-      <section id="form-layanan" className="bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-[0.9fr,1.1fr]">
-            <div className="rounded-[24px] border border-slate-100 bg-gradient-to-br from-brandGreen-600 to-primary-600 p-8 text-white shadow-[0_28px_80px_-50px_rgba(16,185,129,0.6)]">
-              <p className="text-sm font-bold uppercase tracking-[0.24em] text-emerald-50">{t("layanan.form.badge")}</p>
-              <h3 className="mt-3 text-3xl font-heading font-semibold leading-tight">
-                {t("layanan.form.heading")}
-              </h3>
-              <ul className="mt-6 space-y-3 text-sm leading-relaxed text-emerald-50">
-                <li className="flex gap-3">
-                  <FontAwesomeIcon icon={faMobileScreenButton} />
-                  {t("layanan.form.points.1")}
-                </li>
-                <li className="flex gap-3">
-                  <FontAwesomeIcon icon={faLocationDot} />
-                  {t("layanan.form.points.2")}
-                </li>
-                <li className="flex gap-3">
-                  <FontAwesomeIcon icon={faHandshakeSimple} />
-                  {t("layanan.form.points.3")}
-                </li>
-              </ul>
-            </div>
-
-            <form
-              ref={formRef}
-              onSubmit={handleSubmit}
-              className="rounded-[24px] border border-slate-100 bg-white p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)] space-y-4"
-            >
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField
-                  label={t("layanan.form.fields.name")}
-                  value={form.name}
-                  onChange={(v) => handleChange("name", v)}
-                  required
-                  error={errors.name ? t(errors.name) : ""}
-                />
-                <label className="space-y-1 text-sm font-medium text-slate-700">
-                  <span>{t("layanan.form.fields.phone")}</span>
-                  <PhoneInput
-                    value={form.phone}
-                    onChange={(v) => handleChange("phone", v || "")}
-                    disabled={submitting}
-                  />
-                  {errors.phone && <span className="text-xs font-semibold text-red-600">{t(errors.phone)}</span>}
-                </label>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField
-                  label={t("layanan.form.fields.city")}
-                  value={form.city}
-                  onChange={(v) => handleChange("city", v)}
-                  required
-                  error={errors.city ? t(errors.city) : ""}
-                />
-                <SelectField
-                  label={t("layanan.form.fields.service")}
-                  value={form.service}
-                  onChange={(v) => handleChange("service", v)}
-                  options={[
-                    { value: "", label: t("layanan.form.options.placeholder") },
-                    { value: "jemput", label: t("layanan.services.pickup.title") },
-                    { value: "konfirmasi", label: t("layanan.services.confirm.title") },
-                    { value: "konsultasi", label: t("layanan.services.consult.title") },
-                  ]}
-                  required
-                  error={errors.service ? t(errors.service) : ""}
-                />
-              </div>
-              <TextareaField
-                label={t("layanan.form.fields.notes")}
-                placeholder={t("layanan.form.fields.notes.placeholder")}
-                value={form.notes}
-                onChange={(v) => handleChange("notes", v)}
-              />
-              {submitMessageKey && (
-                <div
-                  className={`rounded-xl px-4 py-3 text-sm font-semibold ${submitMessageKey === "success"
-                      ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
-                      : "border border-red-100 bg-red-50 text-red-700"
-                    }`}
-                >
-                  {submitMessageKey === "success" ? t("layanan.form.submit.success") : t("layanan.form.submit.error")}
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <FontAwesomeIcon icon={faPaperPlane} />
-                {submitting ? t("layanan.form.submit.sending") : t("layanan.form.submit.label")}
-              </button>
-            </form>
           </div>
         </div>
       </section>
@@ -447,13 +265,13 @@ function LayananPage() {
           <div className="mt-8 space-y-3">
             {FAQS.map((item, idx) => (
               <div key={item.qKey} className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-soft">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-50 text-primary-700">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-50 text-sm font-bold text-primary-700">
                     {idx + 1}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-900">{t(item.qKey)}</p>
-                    <p className="text-sm leading-relaxed text-slate-600">{t(item.aKey)}</p>
+                    <h3 className="font-semibold text-slate-900">{t(item.qKey)}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600">{t(item.aKey)}</p>
                   </div>
                 </div>
               </div>
@@ -476,103 +294,6 @@ function StatLine({ label, value, icon }: { label: string; value: string; icon: 
         <p className="text-sm font-heading font-semibold text-slate-900">{value}</p>
       </div>
     </div>
-  );
-}
-
-function FormField({
-  label,
-  value,
-  onChange,
-  required,
-  error,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  required?: boolean;
-  error?: string;
-}) {
-  const baseClass =
-    "w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2";
-  const stateClass = error
-    ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
-    : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
-  return (
-    <label className="space-y-1 text-sm font-medium text-slate-700">
-      <span>{label}</span>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        className={`${baseClass} ${stateClass}`}
-      />
-      {error && <span className="text-xs font-semibold text-red-600">{error}</span>}
-    </label>
-  );
-}
-
-function SelectField({
-  label,
-  value,
-  onChange,
-  options,
-  required,
-  error,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: { value: string; label: string }[];
-  required?: boolean;
-  error?: string;
-}) {
-  const baseClass =
-    "w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2";
-  const stateClass = error
-    ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
-    : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
-  return (
-    <label className="space-y-1 text-sm font-medium text-slate-700">
-      <span>{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        className={`${baseClass} ${stateClass}`}
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      {error && <span className="text-xs font-semibold text-red-600">{error}</span>}
-    </label>
-  );
-}
-
-function TextareaField({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <label className="space-y-1 text-sm font-medium text-slate-700">
-      <span>{label}</span>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={4}
-        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:border-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-100"
-      />
-    </label>
   );
 }
 

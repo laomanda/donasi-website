@@ -17,6 +17,13 @@ import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
 import PhoneInput from "../../../components/ui/PhoneInput";
 
+type BankAccount = {
+  id: number;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+};
+
 type ProgramOption = {
   id: number;
   title: string;
@@ -79,6 +86,7 @@ export function AdminDonationManualCreatePage() {
 
   const [form, setForm] = useState<ManualDonationFormState>(emptyForm);
   const [programOptions, setProgramOptions] = useState<ProgramOption[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [programLoading, setProgramLoading] = useState(false);
 
   const [saving, setSaving] = useState(false);
@@ -103,6 +111,13 @@ export function AdminDonationManualCreatePage() {
         setProgramOptions([]);
       })
       .finally(() => active && setProgramLoading(false));
+
+    http.get<{ bank_accounts: BankAccount[] }>("/organization")
+      .then((res) => {
+        if (!active) return;
+        setBankAccounts(res.data?.bank_accounts || []);
+      })
+      .catch(console.error);
 
     return () => {
       active = false;
@@ -279,13 +294,19 @@ export function AdminDonationManualCreatePage() {
                 <label className="block">
                   <span className={labelClass}>Channel / Bank</span>
                   <div className="relative">
-                    <input
+                    <select
                       value={form.payment_channel}
                       onChange={(e) => setForm((s) => ({ ...s, payment_channel: e.target.value }))}
-                      placeholder="Contoh: BCA / QRIS"
-                      className={`${inputClass} pl-10`}
+                      className={`${inputClass} pl-10 appearance-none`}
                       disabled={!canSubmit}
-                    />
+                    >
+                      <option value="">Pilih Rekening Tujuan</option>
+                      {bankAccounts.map((acc) => (
+                        <option key={acc.id} value={`${acc.bank_name} - ${acc.account_number}`}>
+                          {acc.bank_name} - {acc.account_number} a.n {acc.account_name}
+                        </option>
+                      ))}
+                    </select>
                     <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                       <FontAwesomeIcon icon={faCreditCard} />
                     </div>

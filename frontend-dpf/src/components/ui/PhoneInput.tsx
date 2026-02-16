@@ -15,9 +15,9 @@ interface PhoneInputProps {
 
 const CustomPhoneInput = forwardRef<any, PhoneInputProps>(({ value, onChange, label, error, required, disabled }, ref) => {
     return (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
             {label && (
-                <label className="block text-sm font-semibold text-slate-700">
+                <label className="block text-sm font-semibold text-slate-700 leading-tight">
                     {label} {required && <span className="text-red-500">*</span>}
                 </label>
             )}

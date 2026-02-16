@@ -17,6 +17,8 @@ type BankAccount = {
   order: number;
   updated_at?: string | null;
   created_at?: string | null;
+  category?: string | null;
+  type?: string | null;
 };
 
 const formatDate = (value: string | null | undefined) => {
@@ -227,6 +229,7 @@ export function AdminBankAccountsPage() {
                 <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Bank</th>
                 <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Nomor</th>
                 <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Atas nama</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Kategori</th>
                 <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status</th>
                 <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Diperbarui</th>
               </tr>
@@ -260,7 +263,7 @@ export function AdminBankAccountsPage() {
                 ))
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
+                  <td colSpan={8} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
                     Belum ada rekening yang cocok.
                   </td>
                 </tr>
@@ -301,6 +304,24 @@ export function AdminBankAccountsPage() {
                       <td className="px-6 py-5 text-sm font-bold text-slate-900">{acc.account_number}</td>
                       <td className="px-6 py-5">
                         <p className="line-clamp-1 text-sm font-semibold text-slate-700">{acc.account_name}</p>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex flex-col items-start gap-1.5">
+                            <span
+                            className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                                acc.type === "international"
+                                ? "bg-blue-50 text-blue-700 ring-1 ring-blue-600/20"
+                                : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                            }`}
+                            >
+                            {acc.type === "international" ? "Luar Negeri" : "Dalam Negeri"}
+                            </span>
+                            {acc.category && (
+                                <span className="text-xs font-semibold text-slate-600">
+                                {acc.category}
+                                </span>
+                            )}
+                        </div>
                       </td>
                       <td className="px-6 py-5">
                         <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(Boolean(acc.is_visible_public))}`}>

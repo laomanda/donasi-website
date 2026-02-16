@@ -8,239 +8,150 @@ import {
     faWallet,
     faPaperPlane,
     faChevronDown,
+    faMapMarkerAlt,
+    faGlobe,
+    faQrcode,
+    faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import { LandingLayout } from "../layouts/LandingLayout";
-// SelectField import remove because it is locally defined
-import { WaveDivider } from "../components/landing/WaveDivider";
-import PhoneInput from "../components/ui/PhoneInput";
-// react-i18next import removed
-import http from "../lib/http";
-import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { resolveStorageBaseUrl } from "../lib/urls";
-import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
-
+import { useLocation, Link } from "react-router-dom";
+import http from "../lib/http";
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { LandingLayout } from "../layouts/LandingLayout";
+import PhoneInput from "../components/ui/PhoneInput";
+
+import DpfIcon from "../brand/dpf-icon.png";
+
+// Helper definitions
+const formatCurrency = (val: string | number, _locale?: string) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(val));
+};
+
+const formatNumber = (val: string | number) => {
+    return new Intl.NumberFormat('id-ID').format(Number(val));
+};
+
+const getImageUrl = (path?: string | null) => {
+    if (!path) return undefined;
+    if (path.startsWith("http")) return path;
+    return `${resolveStorageBaseUrl()}/${path}`; 
+};
+
+const normalizeProgramStatus = (status: string | undefined | null, _locale: string, _t: any) => {
+    if (!status) return "";
+    return status;
+};
+
+const ensureSnapLoaded = (clientKey: string) => {
+    return new Promise((resolve) => {
+        if (typeof window !== 'undefined' && window.snap) {
+            resolve(true);
+            return;
+        }
+        const script = document.createElement("script");
+        script.src = "https://app.sandbox.midtrans.com/snap/snap.js"; 
+        script.setAttribute("data-client-key", clientKey);
+        script.onload = () => resolve(true);
+        document.body.appendChild(script);
+    });
+};
+
+const amountOptions = [50000, 100000, 250000, 500000];
+
+const STEPS = [
+    { titleKey: "donate.steps.1.title", descKey: "donate.steps.1.desc", icon: faCheckCircle },
+    { titleKey: "donate.steps.2.title", descKey: "donate.steps.2.desc", icon: faWallet },
+    { titleKey: "donate.steps.3.title", descKey: "donate.steps.3.desc", icon: faPaperPlane },
+];
+
+declare global {
+    interface Window {
+        snap: any;
+    }
+}
+
 
 type BankAccount = {
     id: number;
     bank_name: string;
     account_number?: string | null;
     account_name?: string | null;
-    branch?: string | null;
-    is_visible?: boolean;
-    notes?: string | null;
     image_path?: string | null;
-    category?: string;
-    type?: string;
-};
-
-// ... (OrganizationResponse, DonationSummaryResponse, Program, etc. same as before)
-
-// ... (DonatePage component logic)
-// ... inside DonatePage
-
-
-// ... (rest of DonatePage)
-
-
-
-
-type OrganizationResponse = {
-    bank_accounts?: BankAccount[];
-};
-
-
-
-type Program = {
-    id: number;
-    title: string;
-    title_en?: string | null;
-    status: string;
-    short_description?: string | null;
-    short_description_en?: string | null;
-    thumbnail_path?: string | null;
-    banner_path?: string | null;
-    program_images?: string[] | null;
+    qris_image_path?: string | null;
     category?: string | null;
-    category_en?: string | null;
-    slug?: string;
-    target_amount?: number | string | null;
-    collected_amount?: number | string | null;
-    deadline_days?: number | string | null;
+    type?: string | null;
+    is_visible?: boolean;
+    order?: number;
 };
 
-declare global {
-    interface Window {
-        snap?: {
-            pay: (token: string, callbacks?: Record<string, any>) => void;
-        };
-    }
-}
-
-const STEPS = [
-    { titleKey: "donate.steps.1.title", descKey: "donate.steps.1.desc", icon: faHandHoldingHeart },
-    { titleKey: "donate.steps.2.title", descKey: "donate.steps.2.desc", icon: faCreditCard },
-    { titleKey: "donate.steps.3.title", descKey: "donate.steps.3.desc", icon: faWallet },
-    { titleKey: "donate.steps.4.title", descKey: "donate.steps.4.desc", icon: faShieldHalved },
-    { titleKey: "donate.steps.5.title", descKey: "donate.steps.5.desc", icon: faPaperPlane },
-];
-
-const getImageUrl = (path?: string | null) => {
-    if (!path) return imagePlaceholder;
-    if (path.startsWith("http")) return path;
-    const base = resolveStorageBaseUrl();
-    return `${base}/${path}`;
+type FormState = {
+    program_id: string;
+    amount: string;
+    name: string;
+    email: string;
+    phone: string;
+    notes: string;
+    is_anonymous: boolean;
 };
 
-const normalizeProgramStatus = (
-    status?: string | null,
-    locale: "id" | "en" = "id",
-    t?: (key: string, fallback?: string) => string
-) => {
-    const translateFn = t ?? ((key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback));
-    const raw = String(status ?? "").trim();
-    if (!raw) return translateFn("donate.program.status.unset");
-    const s = raw.toLowerCase();
-    if (s === "active" || s === "berjalan") return translateFn("landing.programs.status.ongoing");
-    if (s === "completed" || s === "selesai" || s === "archived" || s === "arsip") {
-        return translateFn("landing.programs.status.completed");
-    }
-    if (s === "draft" || s === "segera") return translateFn("landing.programs.status.upcoming");
-    return raw;
-};
-
-const formatCurrency = (value: number | string | null | undefined, locale: "id" | "en") =>
-    new Intl.NumberFormat(locale === "en" ? "en-US" : "id-ID", {
-        style: "currency",
-        currency: "IDR",
-        maximumFractionDigits: 0,
-        minimumFractionDigits: 0,
-    }).format(Number(value ?? 0));
-
-const getProgress = (collected?: number | string | null, target?: number | string | null) => {
-    const safeTarget = Math.max(Number(target ?? 0), 1);
-    const value = Math.round((Number(collected ?? 0) / safeTarget) * 100);
-    return Number.isNaN(value) ? 0 : value;
-};
-
-const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" | "en" = "id") => {
-    const idText = (idVal ?? "").trim();
-    const enText = (enVal ?? "").trim();
-    if (locale === "en") return enText || idText;
-    return idText || enText;
+type SubmitState = {
+    type: "success" | "error" | null;
+    messageKey: string | null;
 };
 
 function DonatePage() {
     const { locale } = useLang();
     const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
-    const [searchParams] = useSearchParams();
     const [accounts, setAccounts] = useState<BankAccount[]>([]);
-    const [programs, setPrograms] = useState<Program[]>([]);
-
+    const [qrisImage, setQrisImage] = useState<string | null>(null);
+    const [localizedPrograms, setLocalizedPrograms] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeCategory, setActiveCategory] = useState<string | null>("bank_transfer");
     const [errorKey, setErrorKey] = useState<string | null>(null);
-    const [form, setForm] = useState({
+    const donateFormRef = useRef<HTMLFormElement>(null);
+    
+    const [form, setForm] = useState<FormState>({
         program_id: "",
+        amount: "",
         name: "",
         email: "",
         phone: "",
-        amount: "",
-        is_anonymous: false,
         notes: "",
+        is_anonymous: false,
     });
-    const [formErrors, setFormErrors] = useState<{ [k: string]: string }>({});
-    const [submitState, setSubmitState] = useState<{ type: "success" | "error" | null; messageKey: string | null }>({
-        type: null,
-        messageKey: null,
-    });
+    const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+    const [submitState, setSubmitState] = useState<SubmitState>({ type: null, messageKey: null });
     const [submitting, setSubmitting] = useState(false);
-    const snapLoader = useRef<Promise<void> | null>(null);
     const [snapIframeUrl, setSnapIframeUrl] = useState<string | null>(null);
-    const donateFormRef = useRef<HTMLFormElement | null>(null);
-    const lastPrefilledProgramRef = useRef<string | null>(null);
-    const currentDonationIdRef = useRef<number | string | null>(null); // Store current donation ID
-    const amountOptions = [10000, 20000, 50000, 100000];
-    const formatNumber = (value: number | string | null | undefined) =>
-        new Intl.NumberFormat(locale === "en" ? "en-US" : "id-ID").format(Number(value ?? 0));
-
-    const [activeCategory, setActiveCategory] = useState<string | null>(null);
-
-    const requestedProgramId = (searchParams.get("program_id") ?? "").trim() || null;
-    const localizedPrograms = useMemo(
-        () =>
-            programs.map((p) => ({
-                ...p,
-                title: pickLocale(p.title, p.title_en, locale),
-                category: pickLocale(p.category, p.category_en, locale),
-                short_description: pickLocale(p.short_description, p.short_description_en, locale),
-            })),
-        [programs, locale]
-    );
-
-    useEffect(() => {
-        const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY as string | undefined;
-        if (!clientKey) return;
-        ensureSnapLoaded(clientKey);
-    }, []);
-
-    const ensureSnapLoaded = (clientKey: string) => {
-        if (window.snap?.pay) return Promise.resolve();
-        if (snapLoader.current) return snapLoader.current;
-        snapLoader.current = new Promise<void>((resolve, reject) => {
-            const script = document.createElement("script");
-            const isProd = import.meta.env.VITE_MIDTRANS_ENV === "production";
-            script.src = isProd
-                ? "https://app.midtrans.com/snap/snap.js"
-                : "https://app.sandbox.midtrans.com/snap/snap.js";
-            script.type = "text/javascript";
-            script.dataset.clientKey = clientKey;
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error(t("donate.snap.loadError")));
-            document.body.appendChild(script);
-        });
-        return snapLoader.current;
-    };
+    const currentDonationIdRef = useRef<string | number | null>(null);
 
     useEffect(() => {
         let active = true;
         setLoading(true);
         Promise.all([
-            http.get<OrganizationResponse>("/organization"),
-            http.get<{ data: Program[] }>("/programs?status=active&per_page=100").catch(() => ({ data: [] as any })),
-
-        ])
-            .then(([orgRes, progRes]) => {
-                if (!active) return;
-                setAccounts(orgRes.data?.bank_accounts ?? []);
-                setPrograms(progRes.data?.data ?? []);
-                setErrorKey(null);
-            })
-            .catch(() => {
-                if (!active) return;
-                setErrorKey("donate.error.load");
-            })
-            .finally(() => active && setLoading(false));
-        return () => {
-            active = false;
-        };
+            http.get<{ bank_accounts: BankAccount[] }>("/organization"),
+            http.get<{ data: any[] }>("/programs")
+        ]).then(([orgRes, progRes]) => {
+            if (!active) return;
+            setAccounts(orgRes.data?.bank_accounts || []);
+            setLocalizedPrograms(progRes.data?.data || []);
+        }).catch(err => {
+            console.error(err);
+            setErrorKey("donate.accounts.error");
+        }).finally(() => {
+            if (active) setLoading(false);
+        });
+        return () => { active = false; };
     }, []);
 
-    useEffect(() => {
-        if (!requestedProgramId) {
-            lastPrefilledProgramRef.current = null;
-            return;
-        }
-        if (lastPrefilledProgramRef.current === requestedProgramId) return;
-        if (programs.length === 0) return;
+    // Placeholder for getProgress if not imported
+    const getProgress = (collected: any, target: any) => {
+        if (!target) return 0;
+        return Math.min(100, Math.round((Number(collected || 0) / Number(target)) * 100));
+    };
 
-        const exists = programs.some((p) => String(p.id) === requestedProgramId);
-        lastPrefilledProgramRef.current = requestedProgramId;
-        if (!exists) return;
-
-        setForm((prev) => ({ ...prev, program_id: requestedProgramId }));
-        requestAnimationFrame(() => donateFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
-    }, [requestedProgramId, programs]);
+    const [wakifLocation, setWakifLocation] = useState<'domestic' | 'international'>('domestic');
 
     // Handle hash scrolling
     const location = useLocation();
@@ -256,7 +167,12 @@ function DonatePage() {
         }
     }, [location.hash, loading]);
 
-    const visibleAccounts = accounts.filter((a) => a.is_visible !== false);
+    const visibleAccounts = accounts.filter((a) => {
+        if (a.is_visible === false) return false;
+        // Use 'type' for location. Default to 'domestic' if missing.
+        const locationType = a.type === 'international' ? 'international' : 'domestic';
+        return locationType === wakifLocation;
+    });
 
     // Group accounts
     const groupedAccounts = useMemo(() => {
@@ -271,6 +187,8 @@ function DonatePage() {
 
     const categoryLabels: Record<string, string> = {
         bank_transfer: "Transfer Bank",
+        domestic: "Transfer Bank",
+        international: "Transfer Internasional",
         ewallet: "E-Wallet",
         qris: "QRIS",
         virtual_account: "Virtual Account",
@@ -282,12 +200,16 @@ function DonatePage() {
         return categoryOrder.indexOf(a) - categoryOrder.indexOf(b);
     });
     const selectedProgram = localizedPrograms.find((program) => String(program.id) === form.program_id) ?? null;
+    const isGeneralDonation = !form.program_id; /* "General Donation" here actually means "Empty State / No Program Selected" based on user request */
     
-    const selectedProgramImage = getImageUrl(selectedProgram?.program_images?.[0] ?? selectedProgram?.banner_path ?? selectedProgram?.thumbnail_path ?? null);
-    const selectedProgramTitle = selectedProgram?.title ?? t("donate.program.notFound");
-    const selectedProgramDesc = selectedProgram?.short_description ?? t("donate.program.fallbackDesc");
+    // Logic: If program selected & has image -> use it. If not -> use DpfIcon.
+    const selectedProgramImage = getImageUrl(selectedProgram?.program_images?.[0] ?? selectedProgram?.banner_path ?? selectedProgram?.thumbnail_path) ?? DpfIcon;
+    
+    // Logic: If program -> use title. If general (empty) -> use "Select Program" title.
+    const selectedProgramTitle = selectedProgram?.title ?? t("donate.program.empty.title");
+    const selectedProgramDesc = selectedProgram?.short_description ?? t("donate.program.empty.desc");
     const selectedProgramStatus = normalizeProgramStatus(selectedProgram?.status, locale, t);
-    const selectedProgramCategory = selectedProgram?.category ?? t("landing.programs.defaultCategory");
+    const selectedProgramCategory = selectedProgram?.category ?? null; // Hide category if empty
     const selectedProgramSlug = selectedProgram?.slug ?? "";
     const selectedProgramTarget = selectedProgram?.target_amount ?? null;
     const selectedProgramCollected = selectedProgram?.collected_amount ?? null;
@@ -312,8 +234,9 @@ function DonatePage() {
         // Phone validation handled by library mostly, but we can check basic length
          if (!form.name.trim()) next.name = "donate.form.error.name.required";
         else if (!alphaSpace.test(form.name.trim())) next.name = "donate.form.error.name.alpha";
-        if (form.email && !/^\S+@\S+\.\S+$/.test(form.email.trim())) next.email = "donate.form.error.email.invalid";
-        if (form.phone && form.phone.length < 8) next.phone = "donate.form.error.phone.numeric"; // Basic length check
+        if (form.phone && !/^\S+@\S+\.\S+$/.test(form.email.trim())) next.email = "donate.form.error.email.invalid";
+        if (!form.phone || !form.phone.trim()) next.phone = "donate.form.error.phone.required"; // Required check
+        else if (form.phone.length < 8) next.phone = "donate.form.error.phone.numeric"; // Basic length check
         if (!form.amount.trim()) next.amount = "donate.form.error.amount.required";
         else if (!digits.test(form.amount.trim())) next.amount = "donate.form.error.amount.numeric";
         else if (Number(form.amount) < 1000) next.amount = "donate.form.error.amount.min";
@@ -369,28 +292,49 @@ function DonatePage() {
 
             if (snapLoaded && window.snap?.pay) {
                 console.log("Using Window Snap Pay");
+                
+                // Start polling immediately in background
+                pollPaymentStatus(res.data?.donation?.id);
+
                 window.snap.pay(snapToken, {
-                    onSuccess: () => setSubmitState({ type: "success", messageKey: "donate.form.status.success" }),
-                    onPending: () => setSubmitState({ type: "success", messageKey: "donate.form.status.pending" }),
-                    onError: () => setSubmitState({ type: "error", messageKey: "donate.form.status.failed" }),
-                    onClose: () => {
-                        console.log("Snap closed"); // Debug log
-                        setSubmitState({ type: "error", messageKey: "donate.form.status.closed" });
-                        
-                        // Call cancellation endpoint
-                        if (res.data?.donation?.id) {
-                            console.log("Cancelling donation ID:", res.data.donation.id); // Debug log
-                            http.post(`/donations/${res.data.donation.id}/cancel`)
-                                .then(() => console.log("Cancellation request sent"))
-                                .catch((err) => console.error("Cancellation failed:", err));
-                        } else {
-                            console.error("No donation ID found in response", res.data);
+                    onSuccess: async (result: any) => {
+                        console.log("Snap onSuccess", result);
+                        setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
+                        // Polling already running, but one final check won't hurt
+                        await pollPaymentStatus(res.data?.donation?.id);
+                    },
+                    onPending: async (result: any) => {
+                        console.log("Snap onPending", result);
+                        // Update UI message but let polling continue
+                        setSubmitState({ type: "success", messageKey: "donate.form.status.pending" });
+                    },
+                    onError: (result: any) => {
+                        console.error("Snap onError", result);
+                        setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
+                    },
+                    onClose: async () => {
+                        console.log("Snap closed");
+                        // 1. Cek status sekali lagi, siapa tahu sudah sukses tapi callback belum triggered
+                        try {
+                            const statusRes = await http.post(`/donations/${res.data?.donation?.id}/check-status`);
+                            if (statusRes.data?.status === 'paid') {
+                                setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
+                                setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
+                                return;
+                            }
+                        } catch (e) {
+                             // ignore
                         }
+
+                        // 2. Jika belum paid, anggap gagal/dibatalkan user
+                        setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
                     },
                 });
             } else if (res.data?.redirect_url) {
                 setSnapIframeUrl(res.data.redirect_url);
                 setSubmitState({ type: "success", messageKey: "donate.form.status.snapEmbedded" });
+                 // Start polling immediately for redirect/embedded too
+                 pollPaymentStatus(res.data?.donation?.id);
             } else {
                 setSubmitState({ type: "error", messageKey: "donate.form.status.snapUnavailable" });
             }
@@ -398,6 +342,45 @@ function DonatePage() {
             setSubmitState({ type: "error", messageKey: "donate.form.status.error" });
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    // Helper untuk polling status pembayaran
+    const pollPaymentStatus = async (donationId: number | string) => {
+        if (!donationId) return;
+        
+        const maxRetries = 10;
+        const delay = 3000; // 3 detik
+
+        for (let i = 0; i < maxRetries; i++) {
+            try {
+                console.log(`Checking status attempt ${i + 1}/${maxRetries} for donation ${donationId}`);
+                const statusRes = await http.post(`/donations/${donationId}/check-status`);
+                const status = statusRes.data?.status;
+                
+                if (status === 'paid') {
+                    console.log("Donation marked as PAID!");
+                    setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
+                    setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
+                    // Optional: Redirect or show confetti
+                    break;
+                }
+                
+                if (status === 'failed' || status === 'expired' || status === 'refunded') {
+                    console.log(`Donation marked as ${status}`);
+                    setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
+                    break;
+                }
+
+                // If pending, continue polling
+            } catch (e) {
+                console.error("Failed to check status", e);
+            }
+            
+            // Tunggu sebelum retry berikutnya
+            if (i < maxRetries - 1) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
         }
     };
 
@@ -410,7 +393,7 @@ function DonatePage() {
                     <div className="absolute bottom-10 right-0 h-80 w-80 rounded-full bg-brandGreen-200/35 blur-[120px]" />
                     <div className="absolute inset-x-10 top-1/3 h-24 rounded-full bg-white/60 blur-3xl" />
                 </div>
-                <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-18 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
+                <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
                     <div className="space-y-6">
                         <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-primary-700 shadow-sm">
                             {t("donate.hero.badge")}
@@ -458,12 +441,10 @@ function DonatePage() {
                 </div>
             </section>
 
-            <WaveDivider fillClassName="fill-white" className="-mt-1" />
-
-            {/* DONASI ONLINE (Midtrans) */}
+            {/* DONASI ONLINE */}
             <section className="bg-white">
-                <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-                    <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
+                <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+                    <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
                         <div className="space-y-6">
                             <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_-45px_rgba(15,23,42,0.35)]">
                                 <div className="relative">
@@ -472,9 +453,11 @@ function DonatePage() {
                                         alt={selectedProgramTitle}
                                         className="h-56 w-full bg-slate-100 object-contain sm:h-60"
                                     />
-                                    <div className="absolute right-4 top-4 rounded-full bg-primary-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm">
-                                        {selectedProgramStatus}
-                                    </div>
+                                    {!isGeneralDonation && (
+                                        <div className="absolute right-4 top-4 rounded-full bg-primary-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm">
+                                            {selectedProgramStatus}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="space-y-3 p-6">
                                     <h4 className="text-xl font-body font-semibold text-slate-900">{selectedProgramTitle}</h4>
@@ -486,89 +469,60 @@ function DonatePage() {
                                             </span>
                                         )}
                                         <div className="space-y-3">
-                                            <div className="h-2 w-full rounded-full bg-slate-100">
-                                                <div
-                                                    className="h-full rounded-full bg-brandGreen-600"
-                                                    style={{ width: `${hasProgramProgress ? Math.min(displayProgress, 100) : 0}%` }}
-                                                />
-                                            </div>
-                                            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-                                                <div className="flex flex-wrap items-center gap-4">
-                                                    <span>
-                                                        {t("donate.card.collected")}{" "}
-                                                        <span className="font-semibold text-slate-700">
-                                                            {hasProgramProgress ? formatCurrency(displayCollected, locale) : formatCurrency(0, locale)}
-                                                        </span>
-                                                    </span>
-                                                    <span>
-                                                        {t("donate.card.target")}{" "}
-                                                        <span className="font-semibold text-slate-700">
-                                                            {hasProgramProgress && displayTarget !== null
-                                                                ? formatCurrency(displayTarget, locale)
-                                                                : t("donate.card.flexible")}
-                                                        </span>
-                                                    </span>
-
+                                            {/* Hide Progress Bar if General Donation (Empty State) */}
+                                            {!isGeneralDonation && (
+                                                <div className="h-2 w-full rounded-full bg-slate-100">
+                                                    <div
+                                                        className="h-full rounded-full bg-brandGreen-600"
+                                                        style={{ width: `${hasProgramProgress ? Math.min(displayProgress, 100) : 0}%` }}
+                                                    />
                                                 </div>
-                                                    <Link
-                                                        to={detailLink}
-                                                        className="inline-flex items-center justify-center rounded-full border border-transparent bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-brandGreen-700 hover:to-primary-700"
-                                                    >
-                                                        {t("donate.card.detail")}
-                                                    </Link>
+                                            )}
+                                            
+                                            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+                                                {/* Hide Stats if General Donation (Empty State) */}
+                                                {!isGeneralDonation && (
+                                                    <div className="flex flex-wrap items-center gap-4">
+                                                        <span>
+                                                            {t("donate.card.collected")}{" "}
+                                                            <span className="font-semibold text-slate-700">
+                                                                {hasProgramProgress ? formatCurrency(displayCollected, locale) : formatCurrency(0, locale)}
+                                                            </span>
+                                                        </span>
+                                                        <span>
+                                                            {t("donate.card.target")}{" "}
+                                                            <span className="font-semibold text-slate-700">
+                                                                {hasProgramProgress && displayTarget !== null
+                                                                    ? formatCurrency(displayTarget, locale)
+                                                                    : t("donate.card.flexible")}
+                                                            </span>
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                                    {/* Change Button Action based on State */}
+                                                    {isGeneralDonation ? (
+                                                        <a
+                                                            href="/program"
+                                                            className="inline-flex items-center justify-center rounded-full border border-transparent bg-brandGreen-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brandGreen-700"
+                                                        >
+                                                            {t("donate.program.empty.cta")}
+                                                        </a>
+                                                    ) : (
+                                                        <Link
+                                                            to={detailLink}
+                                                            className="inline-flex items-center justify-center rounded-full border border-transparent bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-brandGreen-700 hover:to-primary-700"
+                                                        >
+                                                            {t("donate.card.detail")}
+                                                        </Link>
+                                                    )}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="rounded-[24px] border border-slate-100 bg-gradient-to-br from-brandGreen-600 to-primary-600 p-8 text-white shadow-[0_28px_80px_-50px_rgba(16,185,129,0.6)]">
-                                <div className="flex flex-wrap items-start justify-between gap-4">
-                                    <div>
-                                        <p className="text-sm font-bold text-emerald-50">{t("donate.midtrans.badge")}</p>
-                                        <h3 className="mt-3 text-3xl font-body font-semibold leading-tight">{t("donate.midtrans.title")}</h3>
-                                        <p className="mt-2 text-sm text-emerald-50">{t("donate.midtrans.desc")}</p>
-                                    </div>
-                                </div>
-                                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                                    <div className="rounded-2xl bg-white/10 p-4">
-                                        <p className="text-xs font-semibold text-emerald-100">{t("donate.midtrans.methods.title")}</p>
-                                        <ul className="mt-3 space-y-2 text-sm text-emerald-50">
-                                            <li className="flex items-center gap-2">
-                                                <FontAwesomeIcon icon={faCreditCard} />
-                                                {t("donate.midtrans.methods.1")}
-                                            </li>
-                                            <li className="flex items-center gap-2">
-                                                <FontAwesomeIcon icon={faWallet} />
-                                                {t("donate.midtrans.methods.2")}
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div className="rounded-2xl bg-white/10 p-4">
-                                        <p className="text-xs font-semibold text-emerald-100">{t("donate.midtrans.benefits.title")}</p>
-                                        <ul className="mt-3 space-y-2 text-sm text-emerald-50">
-                                            <li className="flex items-center gap-2">
-                                                <FontAwesomeIcon icon={faCheckCircle} />
-                                                {t("donate.midtrans.benefits.1")}
-                                            </li>
-                                            <li className="flex items-center gap-2">
-                                                <FontAwesomeIcon icon={faHandHoldingHeart} />
-                                                {t("donate.midtrans.benefits.2")}
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div className="mt-4 flex flex-wrap gap-3 text-xs text-emerald-50/90">
-                                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
-                                        <FontAwesomeIcon icon={faShieldHalved} />
-                                        {t("donate.midtrans.badges.receipt")}
-                                    </span>
-                                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
-                                        <FontAwesomeIcon icon={faCheckCircle} />
-                                        {t("donate.midtrans.badges.notify")}
-                                    </span>
-                                </div>
-                            </div>
+
                         </div>
 
                         <form ref={donateFormRef} onSubmit={handleSubmit} className="rounded-[24px] border border-slate-100 bg-white p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)] space-y-4">
@@ -609,6 +563,7 @@ function DonatePage() {
                                     value={form.phone}
                                     onChange={(v) => handleChange("phone", v || "")}
                                     error={formErrors.phone ? t(formErrors.phone) : ""}
+                                    required
                                 />
                             </div>
                             <div className="space-y-3">
@@ -651,7 +606,7 @@ function DonatePage() {
                             </label>
                             <InputField label={t("donate.form.notes")} value={form.notes} onChange={(v) => handleChange("notes", v)} />
 
-                            {submitState.messageKey && (
+                            {submitState.messageKey && submitState.messageKey !== "donate.form.status.snapEmbedded" && (
                                 <div
                                     className={`rounded-xl px-4 py-3 text-sm font-semibold ${submitState.type === "success"
                                         ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
@@ -701,7 +656,7 @@ function DonatePage() {
                             style={{ width: 'calc(100% - 100px)', marginLeft: '50px' }}>
                         </div>
 
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {STEPS.map((step, idx) => (
                                 <div key={step.titleKey} className="relative">
                                     {/* Card */}
@@ -742,13 +697,40 @@ function DonatePage() {
             {/* REKENING */}
             <section id="rekening-resmi" className="bg-slate-50">
                 <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+
+                    {/* Wakif Location Switcher */}
+                    <div className="mb-8 flex justify-center">
+                        <div className="inline-flex rounded-xl bg-slate-100 p-1">
+                            <button
+                                onClick={() => setWakifLocation('domestic')}
+                                className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-all ${wakifLocation === 'domestic'
+                                    ? 'bg-white text-brandGreen-700 shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
+                            >
+                                <FontAwesomeIcon icon={faMapMarkerAlt} />
+                                Wakif Dalam Negeri
+                            </button>
+                            <button
+                                onClick={() => setWakifLocation('international')}
+                                className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-all ${wakifLocation === 'international'
+                                    ? 'bg-white text-brandGreen-700 shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-700'
+                                    }`}
+                            >
+                                <FontAwesomeIcon icon={faGlobe} />
+                                Wakif Luar Negeri
+                            </button>
+                        </div>
+                    </div>
+
                     <div className="flex items-center gap-3 mb-8">
                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-700">
                             <FontAwesomeIcon icon={faWallet} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-brandGreen-700">{t("donasi.accounts.badge")}</p>
-                            <h2 className="text-2xl font-body font-semibold text-slate-900">{t("donasi.accounts.heading")}</h2>
+                            <p className="text-xs font-bold text-brandGreen-700">{t("donate.accounts.badge")}</p>
+                            <h2 className="text-2xl font-body font-semibold text-slate-900">{t("donate.accounts.heading")}</h2>
                         </div>
                     </div>
 
@@ -765,7 +747,7 @@ function DonatePage() {
                             </div>
                         ) : visibleAccounts.length === 0 ? (
                             <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-                                {t("donasi.accounts.empty")}
+                                {t("donate.accounts.empty")}
                             </div>
                         ) : (
                             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden divide-y divide-slate-100 shadow-sm">
@@ -793,7 +775,12 @@ function DonatePage() {
                                                 <div className="border-t border-slate-100 bg-white px-6 py-6">
                                                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                                         {groupedAccounts[cat].map(acc => (
-                                                            <AccountCard key={acc.id} account={acc} t={t} />
+                                                            <AccountCard
+                                                                key={acc.id}
+                                                                account={acc}
+                                                                t={t}
+                                                                onShowQris={(url) => setQrisImage(url)}
+                                                            />
                                                         ))}
                                                     </div>
                                                 </div>
@@ -819,24 +806,24 @@ function DonatePage() {
 
             {/* CTA */}
             <section className="bg-white pb-20">
-                <div className="mx-auto max-w-5xl rounded-[28px] border border-slate-100 bg-gradient-to-r from-brandGreen-600 to-primary-600 px-6 py-10 text-white shadow-[0_28px_80px_-50px_rgba(16,185,129,0.6)] sm:px-10">
-                    <div className="grid gap-6 sm:grid-cols-[1.2fr,0.8fr] sm:items-center">
-                        <div className="space-y-3">
+                <div className="mx-auto max-w-7xl rounded-[28px] border border-slate-100 bg-gradient-to-r from-brandGreen-600 to-primary-600 px-6 py-10 text-white shadow-[0_28px_80px_-50px_rgba(16,185,129,0.6)] sm:px-10">
+                    <div className="flex flex-col items-center justify-between gap-8 lg:flex-row">
+                        <div className="space-y-3 text-center lg:text-left">
                             <p className="text-sm font-bold text-emerald-50">{t("donate.cta.badge")}</p>
                             <h3 className="text-3xl font-body font-semibold leading-tight">{t("donate.cta.heading")}</h3>
                             <p className="text-sm text-emerald-50">{t("donate.cta.subtitle")}</p>
                         </div>
-                        <div className="flex flex-col gap-3 sm:items-end">
+                        <div className="flex flex-col gap-3 sm:flex-row">
                             <a
                                 href="/program"
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5"
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5"
                             >
                                 <FontAwesomeIcon icon={faHandHoldingHeart} />
                                 {t("donate.cta.program")}
                             </a>
                             <a
                                 href="/konfirmasi-donasi"
-                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/60 bg-white/10 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5"
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/60 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-white/20"
                             >
                                 <FontAwesomeIcon icon={faPaperPlane} />
                                 {t("donate.cta.confirmManual")}
@@ -869,12 +856,36 @@ function DonatePage() {
                         <div className="w-full bg-slate-100" style={{ height: "520px" }}>
                             <iframe
                                 src={snapIframeUrl}
-                                title={t("donate.midtrans.title")}
+                                title={t("donate.payment.iframeTitle")}
                                 className="h-full w-full border-0"
                                 allow="payment *; geolocation *"
                             />
                         </div>
 
+                    </div>
+                </div>
+            )}
+
+            {/* QRIS Modal */}
+            {qrisImage && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 px-4 backdrop-blur-sm" onClick={() => setQrisImage(null)}>
+                    <div className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl transition-all p-6" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-slate-800">Scan QRIS</h3>
+                            <button
+                                type="button"
+                                onClick={() => setQrisImage(null)}
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
+                            >
+                                <FontAwesomeIcon icon={faTimes} />
+                            </button>
+                        </div>
+                        <div className="aspect-square w-full rounded-2xl bg-white p-2 border border-slate-100">
+                            <img src={qrisImage} alt="QRIS Code" className="h-full w-full object-contain" />
+                        </div>
+                        <p className="mt-4 text-center text-sm font-medium text-slate-500">
+                            Scan kode QR di atas menggunakan aplikasi e-wallet atau mobile banking Anda.
+                        </p>
                     </div>
                 </div>
             )}
@@ -893,7 +904,15 @@ function InfoPill({ icon, label }: { icon: any; label: string }) {
     );
 }
 
-function AccountCard({ account, t }: { account: BankAccount; t: (key: string, fallback?: string) => string }) {
+function AccountCard({
+    account,
+    t,
+    onShowQris,
+}: {
+    account: BankAccount;
+    t: (key: string, fallback?: string) => string;
+    onShowQris: (url: string) => void;
+}) {
 
 
     const initials = account.bank_name
@@ -917,6 +936,7 @@ function AccountCard({ account, t }: { account: BankAccount; t: (key: string, fa
                             <span className="text-xs font-bold tracking-[0.16em] text-primary-700">{initials || "DPF"}</span>
                         )}
                     </div>
+
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t("donate.accounts.bankLabel")}</p>
                         <p className="text-base font-body font-bold text-slate-900 leading-tight">{account.bank_name}</p>
@@ -947,6 +967,16 @@ function AccountCard({ account, t }: { account: BankAccount; t: (key: string, fa
                     <span className="text-xs font-semibold text-slate-500">{t("donate.accounts.holder")}</span>
                     <span className="font-bold text-slate-900 text-right">{account.account_name}</span>
                 </div>
+                {account.qris_image_path && (
+                    <button
+                        type="button"
+                        onClick={() => onShowQris(getImageUrl(account.qris_image_path!) as string)}
+                        className="mt-3 w-full rounded-xl border border-brandGreen-200 bg-brandGreen-50 py-2.5 text-center text-sm font-bold text-brandGreen-700 hover:bg-brandGreen-100 transition"
+                    >
+                        <FontAwesomeIcon icon={faQrcode} className="mr-2" />
+                        Lihat / Scan QRIS
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -986,8 +1016,8 @@ function SelectField({
     options: { value: string; label: string; disabled?: boolean }[];
 }) {
     return (
-        <label className="space-y-1 text-sm font-medium text-slate-700">
-            <span>{label}</span>
+        <label className="space-y-1.5 text-sm font-medium text-slate-700">
+            <span className="leading-tight">{label}</span>
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
@@ -1022,8 +1052,8 @@ function InputField({
         ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
         : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
     return (
-        <label className="space-y-1 text-sm font-medium text-slate-700">
-            <span>{label}</span>
+        <label className="space-y-1.5 text-sm font-medium text-slate-700">
+            <span className="leading-tight">{label}</span>
             <input
                 value={value}
                 onChange={(e) => onChange(e.target.value)}

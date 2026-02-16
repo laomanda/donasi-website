@@ -15,7 +15,7 @@ import {
   faTimeline,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
-import { WaveDivider } from "../components/landing/WaveDivider";
+
 import http from "../lib/http";
 import { resolveStorageBaseUrl } from "../lib/urls";
 import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
@@ -222,7 +222,7 @@ function TentangKamiPage() {
           <div className="absolute inset-x-10 top-1/3 h-24 rounded-full bg-white/60 blur-3xl" />
         </div>
 
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-20 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
           <div className="space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary-700 shadow-sm">
               {t("about.hero.badge")}
@@ -271,11 +271,8 @@ function TentangKamiPage() {
         </div>
       </section>
 
-      <WaveDivider fillClassName="fill-white" className="-mt-1" />
-
-      {/* TENTANG KAMI */}
       <section className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="rounded-[28px] border border-slate-100 bg-gradient-to-br from-white to-slate-50 p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.4)]">
             <div className="flex items-start gap-4 border-b border-slate-100 pb-6">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-700">

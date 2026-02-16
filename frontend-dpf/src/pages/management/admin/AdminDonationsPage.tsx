@@ -9,11 +9,13 @@ import {
   faPlus,
   faReceipt,
 } from "@fortawesome/free-solid-svg-icons";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
 import { runWithConcurrency } from "../../../lib/bulk";
 import { useBulkSelection } from "../../../components/ui/useBulkSelection";
 import { BulkActionsBar } from "../../../components/ui/BulkActionsBar";
+import WhatsappConfirmationModal from "../../../components/management/admin/WhatsappConfirmationModal";
 
 type DonationStatus = "pending" | "paid" | "failed" | "expired" | "cancelled" | string;
 
@@ -21,6 +23,8 @@ type Donation = {
   id: number;
   donation_code?: string | null;
   donor_name?: string | null;
+  donor_phone?: string | null;
+  whatsapp_sent_at?: string | null;
   amount?: number | string | null;
   status?: DonationStatus | null;
   payment_source?: string | null;
@@ -121,6 +125,10 @@ export function AdminDonationsPage() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((d) => d.id), [items]);
+
+  // WhatsApp Modal State
+  const [isWhatsappModalOpen, setIsWhatsappModalOpen] = useState(false);
+  const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
 
   const hasFilters = Boolean(
     q.trim() || status || paymentSource || programId.trim() || dateFrom.trim() || dateTo.trim()
@@ -250,6 +258,12 @@ export function AdminDonationsPage() {
     }
   };
 
+  const handleOpenWhatsapp = (donation: Donation, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedDonation(donation);
+    setIsWhatsappModalOpen(true);
+  };
+
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
       {/* Header Section - Solid & Professional */}
@@ -286,6 +300,24 @@ export function AdminDonationsPage() {
         <div className="absolute -right-12 -top-12 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
         <div className="absolute -bottom-12 -left-12 h-64 w-64 rounded-full bg-emerald-400/20 blur-3xl" />
       </div>
+
+      {/* WhatsApp Modal */}
+      {selectedDonation && (
+        <WhatsappConfirmationModal 
+            isOpen={isWhatsappModalOpen}
+            onClose={() => setIsWhatsappModalOpen(false)}
+            donationId={selectedDonation.id}
+            donorName={selectedDonation.donor_name || "Hamba Allah"}
+            donorPhone={selectedDonation.donor_phone || ""}
+            amount={selectedDonation.amount || 0}
+            programTitle={selectedDonation.program?.title || "Program Umum"}
+            donationCode={selectedDonation.donation_code || "-"}
+            onSuccess={() => {
+                setIsWhatsappModalOpen(false);
+                void fetchDonations(page); // Refresh data to update status
+            }}
+        />
+      )}
 
       {/* Filters Section */}
       <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -518,6 +550,12 @@ export function AdminDonationsPage() {
                       </td>
                       <td className="px-6 py-5">
                         <p className="line-clamp-1 text-sm font-bold text-slate-900">{donor}</p>
+                        {donation.donor_phone && (
+                          <div className="flex items-center gap-1 mt-1 text-xs text-slate-400">
+                             <FontAwesomeIcon icon={faWhatsapp} className="text-emerald-500" />
+                             {donation.donor_phone}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-5">
                         <p className="line-clamp-1 text-sm font-medium text-slate-600">{programTitle}</p>
@@ -526,9 +564,30 @@ export function AdminDonationsPage() {
                         <p className="text-sm font-bold text-slate-900">{formatCurrency(donation.amount)}</p>
                       </td>
                       <td className="px-6 py-5 text-center">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${tone}`}>
-                          {getStatusLabel(statusValue)}
-                        </span>
+                        <div className="flex flex-wrap items-center justify-center gap-2">
+                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${tone}`}>
+                            {getStatusLabel(statusValue)}
+                            </span>
+                            
+                            {/* WhatsApp Button - Always active, updates timestamp on resend */}
+                            {statusValue === 'paid' && (
+                                <div className="flex flex-col items-center gap-1">
+                                    <button
+                                        onClick={(e) => handleOpenWhatsapp(donation, e)}
+                                        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1.5 rounded-lg hover:bg-emerald-100 hover:text-emerald-700 transition ring-1 ring-emerald-200"
+                                        title="Kirim Bukti via WhatsApp"
+                                    >
+                                        <FontAwesomeIcon icon={faWhatsapp} className="text-base" />
+                                        <span>{donation.whatsapp_sent_at ? "Kirim Ulang" : "Kirim WA"}</span>
+                                    </button>
+                                    {donation.whatsapp_sent_at && (
+                                        <span className="text-[9px] text-slate-400 font-medium">
+                                            {formatDateTime(donation.whatsapp_sent_at)}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -553,29 +612,48 @@ export function AdminDonationsPage() {
               else if (statusValue === "failed" || statusValue === "cancelled") barColor = "border-l-rose-500";
 
               return (
-                <button
-                  key={donation.id}
-                  type="button"
-                  onClick={() => openDonation(donation.id)}
-                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor}`}
+                <div
+                    key={donation.id}
+                    className={`relative w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor}`}
                 >
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <p className="text-xs font-bold font-mono text-slate-400">{String(donation.donation_code ?? "-")}</p>
-                      <p className="font-bold text-slate-900 text-base">{formatCurrency(donation.amount)}</p>
-                    </div>
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(statusValue)}`}>
-                      {getStatusLabel(statusValue)}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-slate-700 mb-1">{String(donation.donor_name ?? "Anonim")}</p>
-                  <p className="text-xs text-slate-500 line-clamp-1 mb-3">{String(donation.program?.title ?? "Tanpa program")}</p>
+                    <div onClick={() => openDonation(donation.id)} className="cursor-pointer">
+                        <div className="flex justify-between items-start mb-3">
+                            <div>
+                            <p className="text-xs font-bold font-mono text-slate-400">{String(donation.donation_code ?? "-")}</p>
+                            <p className="font-bold text-slate-900 text-base">{formatCurrency(donation.amount)}</p>
+                            </div>
+                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(statusValue)}`}>
+                            {getStatusLabel(statusValue)}
+                            </span>
+                        </div>
+                        <p className="text-sm font-semibold text-slate-700 mb-1">{String(donation.donor_name ?? "Anonim")}</p>
+                        <p className="text-xs text-slate-500 line-clamp-1 mb-3">{String(donation.program?.title ?? "Tanpa program")}</p>
 
-                  <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-                    <span className="text-xs font-bold uppercase text-slate-400 tracking-wider text-[10px]">{normalizeSourceLabel(donation.payment_source)}</span>
-                    <span className="text-xs font-medium text-slate-500">{formatDateTime(donation.created_at)}</span>
-                  </div>
-                </button>
+                        <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                            <span className="text-xs font-bold uppercase text-slate-400 tracking-wider text-[10px]">{normalizeSourceLabel(donation.payment_source)}</span>
+                            <span className="text-xs font-medium text-slate-500">{formatDateTime(donation.created_at)}</span>
+                        </div>
+                    </div>
+                
+                     {/* WhatsApp Button Mobile */}
+                     {statusValue === 'paid' && (
+                        <div className="mt-3 flex justify-between items-center">
+                             {donation.whatsapp_sent_at && (
+                                <span className="text-[10px] text-slate-400">
+                                    <FontAwesomeIcon icon={faWhatsapp} className="mr-1" />
+                                    {formatDateTime(donation.whatsapp_sent_at)}
+                                </span>
+                            )}
+                            <button
+                                onClick={(e) => handleOpenWhatsapp(donation, e)}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 transition ring-1 ring-emerald-200 ml-auto"
+                            >
+                                <FontAwesomeIcon icon={faWhatsapp} className="text-sm" />
+                                {donation.whatsapp_sent_at ? "Kirim Ulang" : "Kirim Tanda Terima"}
+                            </button>
+                        </div>
+                    )}
+                </div>
               )
             })
           )}
@@ -609,4 +687,3 @@ export function AdminDonationsPage() {
 }
 
 export default AdminDonationsPage;
-

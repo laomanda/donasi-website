@@ -5,10 +5,11 @@ import {
   faMagnifyingGlass,
   faXmark,
   faSliders,
-  faNewspaper
+  faNewspaper,
+  faCalendarDays
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
-import { WaveDivider } from "../components/landing/WaveDivider";
+
 import http from "../lib/http";
 import { resolveStorageBaseUrl } from "../lib/urls";
 import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
@@ -222,10 +223,7 @@ export function LiterasiPage() {
          </div>
       </section>
 
-      {/* WAVE SEPARATOR */}
-      <WaveDivider fillClassName="fill-white" flipY className="-mt-[1px]" />
-
-      <section className="bg-slate-50 pb-24">
+      <section className="bg-slate-50 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
           {errorKey && (
@@ -338,7 +336,8 @@ function ArticleCard({
               </p>
             </div>
           </div>
-          <span className="text-xs font-semibold text-slate-500">
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
+             <FontAwesomeIcon icon={faCalendarDays} />
             {formatDate(article.published_at, locale, t)}
           </span>
         </div>

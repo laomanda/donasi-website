@@ -16,7 +16,6 @@ import {
   faTruckRampBox,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
-import { WaveDivider } from "../components/landing/WaveDivider";
 import http from "../lib/http";
 import PhoneInput from "../components/ui/PhoneInput";
 import { useLang } from "../lib/i18n";
@@ -147,7 +146,42 @@ export function JemputWakafPage() {
 
     if (!form.wakaf_type.trim()) next.wakaf_type = "jemput.form.error.wakaf.required";
 
+    if (form.estimation.trim() && !/^[0-9.,\s]+$/.test(form.estimation)) {
+        next.estimation = "jemput.form.error.estimation.numeric";
+    }
+
+    // Since we use type="time", browser validation handles most, but we can add check if needed.
+    // However, user asked for validation "validasi yang benar".
+    // If browser support isn't perfect, we check regex.
+    if (form.preferred_time.trim() && !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(form.preferred_time)) {
+       next.preferred_time = "jemput.form.error.time.invalid";
+    }
+
     return { ok: Object.keys(next).length === 0, errors: next };
+  };
+
+  const [programs, setPrograms] = useState<{ id: number; title: string; title_en?: string | null }[]>([]);
+  const [customWakaf, setCustomWakaf] = useState("");
+  const [estimationUnit, setEstimationUnit] = useState("Kg");
+
+  useEffect(() => {
+    http.get<{ data: { id: number; title: string; title_en?: string | null }[] }>("/programs")
+      .then((res) => setPrograms(res.data.data || []))
+      .catch(() => setPrograms([]));
+  }, []);
+
+  const pickLocale = (idVal?: string | null, enVal?: string | null) => {
+    const idText = (idVal ?? "").trim();
+    const enText = (enVal ?? "").trim();
+    if (locale === "en") return enText || idText;
+    return idText || enText;
+  };
+
+  const handleWakafTypeChange = (value: string) => {
+    handleChange("wakaf_type", value);
+    if (value !== "Lainnya") {
+      setCustomWakaf("");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -167,8 +201,8 @@ export function JemputWakafPage() {
         address_full: form.address_full,
         city: form.city,
         district: form.district,
-        zakat_type: form.wakaf_type,
-        estimation: form.estimation || undefined,
+        zakat_type: form.wakaf_type === "Lainnya" ? customWakaf : form.wakaf_type,
+        estimation: form.estimation ? `${form.estimation} ${estimationUnit}` : undefined,
         preferred_time: form.preferred_time || undefined,
       });
       setStatus({ type: "success", message: t("jemput.form.submit.success") });
@@ -182,6 +216,8 @@ export function JemputWakafPage() {
         estimation: "",
         preferred_time: "",
       });
+      setCustomWakaf("");
+      setEstimationUnit("Kg");
     } catch {
       setStatus({ type: "error", message: t("jemput.form.submit.error") });
     } finally {
@@ -198,7 +234,7 @@ export function JemputWakafPage() {
           <div className="absolute bottom-10 right-0 h-80 w-80 rounded-full bg-brandGreen-200/35 blur-[120px]" />
           <div className="absolute inset-x-10 top-1/3 h-24 rounded-full bg-white/60 blur-3xl" />
         </div>
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-18 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-20 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
             <div className="space-y-6">
               <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary-700 shadow-sm">
               {t("jemput.hero.badge")}
@@ -227,15 +263,17 @@ export function JemputWakafPage() {
               </div>
             </div>
           <div className="relative">
-            <div className="rounded-[32px] border border-white/60 bg-white/80 p-6 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.4)] backdrop-blur">
-              <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-brandGreen-600 to-primary-600 px-4 py-3 text-white shadow-lg">
-                <FontAwesomeIcon icon={faShieldHalved} className="text-lg" />
+            <div className="rounded-[40px] border border-white/60 bg-white/60 p-8 shadow-[0_30px_90px_-50px_rgba(0,0,0,0.3)] backdrop-blur-md">
+              <div className="flex items-center gap-4 rounded-3xl bg-gradient-to-r from-brandGreen-600 to-primary-600 px-6 py-5 text-white shadow-xl shadow-brandGreen-900/10">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-white backdrop-blur-sm">
+                  <FontAwesomeIcon icon={faShieldHalved} className="text-xl" />
+                </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em]">{t("jemput.hero.trust.badge")}</p>
-                  <p className="text-base font-bold leading-tight">{t("jemput.hero.trust.title")}</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-100">{t("jemput.hero.trust.badge")}</p>
+                  <p className="text-lg font-heading font-bold leading-tight">{t("jemput.hero.trust.title")}</p>
                 </div>
               </div>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <InfoPill icon={faClock} label={t("jemput.hero.pills.1")} />
                 <InfoPill icon={faCheckCircle} label={t("jemput.hero.pills.2")} />
                 <InfoPill icon={faLocationDot} label={t("jemput.hero.pills.3")} />
@@ -245,8 +283,6 @@ export function JemputWakafPage() {
           </div>
         </div>
       </section>
-
-      <WaveDivider fillClassName="fill-white" className="-mt-1" />
 
       {/* BENEFITS */}
       <section className="bg-white">
@@ -351,72 +387,171 @@ export function JemputWakafPage() {
                   .
                 </p>
               </div>
-            <form onSubmit={handleSubmit} className="rounded-[24px] border border-slate-100 bg-white p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)] space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <InputField label={t("jemput.form.fields.name")} value={form.donor_name} onChange={(v) => handleChange("donor_name", v)} required error={errors.donor_name ? t(errors.donor_name) : ""} />
-                <label className="space-y-1 text-sm font-medium text-slate-700">
-                  <span>{t("jemput.form.fields.phone")}</span>
-                  <PhoneInput
-                    value={form.donor_phone}
-                    onChange={(v) => handleChange("donor_phone", v || "")}
-                    disabled={submitting}
+            <form onSubmit={handleSubmit} className="relative space-y-8 rounded-[24px] border border-slate-100 bg-white p-6 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)] sm:p-8">
+              
+              {/* SECTION: DATA DONATUR */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                     <FontAwesomeIcon icon={faHeadset} className="text-sm" />
+                  </div>
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+                    {locale === "en" ? "Donor Details" : "Data Donatur"}
+                  </h4>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <InputField label={t("jemput.form.fields.name")} value={form.donor_name} onChange={(v) => handleChange("donor_name", v)} required error={errors.donor_name ? t(errors.donor_name) : ""} />
+                  <label className="space-y-1 text-sm font-medium text-slate-700">
+                    <span>{t("jemput.form.fields.phone")}</span>
+                    <PhoneInput
+                      value={form.donor_phone}
+                      onChange={(v) => handleChange("donor_phone", v || "")}
+                      disabled={submitting}
+                    />
+                    {errors.donor_phone && <span className="text-xs font-semibold text-red-600">{t(errors.donor_phone)}</span>}
+                  </label>
+                </div>
+              </div>
+
+              {/* SECTION: LOKASI */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                     <FontAwesomeIcon icon={faLocationDot} className="text-sm" />
+                  </div>
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+                    {locale === "en" ? "Pickup Location" : "Lokasi Penjemputan"}
+                  </h4>
+                </div>
+                <InputField label={t("jemput.form.fields.address")} value={form.address_full} onChange={(v) => handleChange("address_full", v)} required error={errors.address_full ? t(errors.address_full) : ""} />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="space-y-1 text-sm font-medium text-slate-700">
+                    <span>{t("jemput.form.fields.city")}</span>
+                    <select
+                      value={selectedCityId}
+                      onChange={(e) => handleCitySelect(e.target.value)}
+                      required
+                      className={`w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2 ${
+                        errors.city
+                          ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
+                          : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100"
+                      }`}
+                    >
+                      <option value="">{t("jemput.form.fields.city")}</option>
+                      {JABODETABEK_CITIES.map((city) => (
+                        <option key={city.id} value={city.id}>
+                          {city.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.city && <span className="text-xs font-semibold text-red-600">{t(errors.city)}</span>}
+                  </label>
+                  <label className="space-y-1 text-sm font-medium text-slate-700">
+                    <span>{t("jemput.form.fields.district")}</span>
+                    <select
+                      value={form.district}
+                      onChange={(e) => handleChange("district", e.target.value)}
+                      required
+                      disabled={!selectedCityId || districtLoading}
+                      className={`w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2 ${
+                        errors.district
+                          ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
+                          : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100"
+                      } ${!selectedCityId || districtLoading ? "bg-slate-100 text-slate-400" : ""}`}
+                    >
+                      <option value="">
+                        {districtLoading ? "Memuat kecamatan..." : t("jemput.form.fields.district")}
+                      </option>
+                      {districts.map((district) => (
+                        <option key={district.id} value={district.name}>
+                          {district.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.district && <span className="text-xs font-semibold text-red-600">{t(errors.district)}</span>}
+                  </label>
+                </div>
+              </div>
+
+              {/* SECTION: DETAIL WAKAF */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
+                     <FontAwesomeIcon icon={faBoxOpen} className="text-sm" />
+                  </div>
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+                    {locale === "en" ? "Item Details" : "Detail Barang Wakaf"}
+                  </h4>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="space-y-1 text-sm font-medium text-slate-700">
+                    <span>{t("jemput.form.fields.wakaf")}</span>
+                    <select
+                      value={form.wakaf_type}
+                      onChange={(e) => handleWakafTypeChange(e.target.value)}
+                      required
+                      className={`w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2 ${
+                        errors.wakaf_type
+                          ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
+                          : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100"
+                      }`}
+                    >
+                      <option value="">{t("jemput.form.fields.wakaf")}</option>
+                      {programs.map((p) => (
+                        <option key={p.id} value={pickLocale(p.title, p.title_en)}>{pickLocale(p.title, p.title_en)}</option>
+                      ))}
+                      <option value="Lainnya">{locale === "en" ? "Other" : "Lainnya"}</option>
+                    </select>
+                    {errors.wakaf_type && <span className="text-xs font-semibold text-red-600">{t(errors.wakaf_type)}</span>}
+                  </label>
+
+                  <label className="space-y-1 text-sm font-medium text-slate-700">
+                    <span>{t("jemput.form.fields.estimation")}</span>
+                    <div className="group flex rounded-xl border border-slate-200 bg-white shadow-sm transition focus-within:border-primary-200 focus-within:ring-2 focus-within:ring-primary-100">
+                      <input
+                        value={form.estimation}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (/^[0-9.,\s]*$/.test(v)) handleChange("estimation", v);
+                        }}
+                        className="w-full flex-1 rounded-l-xl border-none bg-transparent px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:ring-0"
+                        placeholder="0"
+                      />
+                      <div className="mr-0.5 my-1 w-px bg-slate-100" />
+                      <select
+                        value={estimationUnit}
+                        onChange={(e) => setEstimationUnit(e.target.value)}
+                        className="w-24 rounded-r-xl border-none bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-700 focus:bg-white focus:ring-0"
+                      >
+                        <option value="Kg">Kg</option>
+                        <option value="Box">Box</option>
+                        <option value="Pcs">Pcs</option>
+                        <option value="Unit">Unit</option>
+                        <option value="Jam">Jam</option>
+                      </select>
+                    </div>
+                    {errors.estimation && <span className="text-xs font-semibold text-red-600">{t(errors.estimation)}</span>}
+                  </label>
+                </div>
+
+                {form.wakaf_type === "Lainnya" && (
+                  <InputField
+                    label={locale === "en" ? "Specify Other Wakaf" : "Tuliskan Jenis Wakaf Lainnya"}
+                    value={customWakaf}
+                    onChange={(v) => setCustomWakaf(v)}
+                    required
                   />
-                  {errors.donor_phone && <span className="text-xs font-semibold text-red-600">{t(errors.donor_phone)}</span>}
-                </label>
+                )}
+
+                <InputField
+                  label={t("jemput.form.fields.time")}
+                  value={form.preferred_time}
+                  onChange={(v) => handleChange("preferred_time", v)}
+                  type="time"
+                  error={errors.preferred_time ? t(errors.preferred_time) : ""}
+                />
               </div>
-              <InputField label={t("jemput.form.fields.address")} value={form.address_full} onChange={(v) => handleChange("address_full", v)} required error={errors.address_full ? t(errors.address_full) : ""} />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-1 text-sm font-medium text-slate-700">
-                  <span>{t("jemput.form.fields.city")}</span>
-                  <select
-                    value={selectedCityId}
-                    onChange={(e) => handleCitySelect(e.target.value)}
-                    required
-                    className={`w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2 ${
-                      errors.city
-                        ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
-                        : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100"
-                    }`}
-                  >
-                    <option value="">{t("jemput.form.fields.city")}</option>
-                    {JABODETABEK_CITIES.map((city) => (
-                      <option key={city.id} value={city.id}>
-                        {city.label}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.city && <span className="text-xs font-semibold text-red-600">{t(errors.city)}</span>}
-                </label>
-                <label className="space-y-1 text-sm font-medium text-slate-700">
-                  <span>{t("jemput.form.fields.district")}</span>
-                  <select
-                    value={form.district}
-                    onChange={(e) => handleChange("district", e.target.value)}
-                    required
-                    disabled={!selectedCityId || districtLoading}
-                    className={`w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2 ${
-                      errors.district
-                        ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
-                        : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100"
-                    } ${!selectedCityId || districtLoading ? "bg-slate-100 text-slate-400" : ""}`}
-                  >
-                    <option value="">
-                      {districtLoading ? "Memuat kecamatan..." : t("jemput.form.fields.district")}
-                    </option>
-                    {districts.map((district) => (
-                      <option key={district.id} value={district.name}>
-                        {district.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.district && <span className="text-xs font-semibold text-red-600">{t(errors.district)}</span>}
-                </label>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <InputField label={t("jemput.form.fields.wakaf")} value={form.wakaf_type} onChange={(v) => handleChange("wakaf_type", v)} required error={errors.wakaf_type ? t(errors.wakaf_type) : ""} />
-                <InputField label={t("jemput.form.fields.estimation")} value={form.estimation} onChange={(v) => handleChange("estimation", v)} />
-              </div>
-              <InputField label={t("jemput.form.fields.time")} value={form.preferred_time} onChange={(v) => handleChange("preferred_time", v)} />
+
               {status.message && (
                 <div
                   className={`rounded-xl px-4 py-3 text-sm font-semibold ${
@@ -447,11 +582,11 @@ export function JemputWakafPage() {
 
 function InfoPill({ icon, label }: { icon: any; label: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm">
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-700">
-        <FontAwesomeIcon icon={icon} />
-      </span>
-      <span>{label}</span>
+    <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+        <FontAwesomeIcon icon={icon} className="text-lg" />
+      </div>
+      <span className="font-semibold text-slate-800 leading-tight">{label}</span>
     </div>
   );
 }
@@ -462,12 +597,14 @@ function InputField({
   onChange,
   required,
   error,
+  type = "text",
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   required?: boolean;
   error?: string;
+  type?: string;
 }) {
   const base =
     "w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2";
@@ -478,6 +615,7 @@ function InputField({
     <label className="space-y-1 text-sm font-medium text-slate-700">
       <span>{label}</span>
       <input
+        type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}

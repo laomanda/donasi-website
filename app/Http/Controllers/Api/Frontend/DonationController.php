@@ -163,4 +163,92 @@ class DonationController extends Controller
 
         return response()->json(['message' => 'Donasi berhasil dibatalkan.']);
     }
+
+    public function checkStatus(Donation $donation, \App\Services\MidtransService $midtransService)
+    {
+        $this->setupMidtrans();
+
+        try {
+            // @ts-ignore
+            $status = (object) \Midtrans\Transaction::status($donation->midtrans_order_id);
+            \Illuminate\Support\Facades\Log::info('DonationController::checkStatus Result', [
+                'order_id' => $donation->midtrans_order_id,
+                'midtrans_response' => (array) $status
+            ]);
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            if (strpos($msg, '404') !== false) {
+                 \Illuminate\Support\Facades\Log::warning('DonationController::checkStatus: Transaction not found (404)', ['order_id' => $donation->midtrans_order_id]);
+                 return response()->json([
+                     'message' => 'Transaksi belum ditemukan di sistem pembayaran (atau belum dibayar).',
+                     'status' => 'pending', 
+                     'donation' => $donation
+                 ]);
+            }
+
+            \Illuminate\Support\Facades\Log::error('DonationController::checkStatus Error', ['message' => $msg]);
+            return response()->json(['message' => 'Gagal mengecek status ke Midtrans: ' . $msg], 500);
+        }
+
+        $transactionStatus = $status->transaction_status;
+        $fraudStatus = $status->fraud_status ?? null;
+
+        $newStatus = $midtransService->mapTransactionStatus($transactionStatus, $fraudStatus);
+        $previousStatus = $donation->status;
+
+        \Illuminate\Support\Facades\Log::info('DonationController::checkStatus Mapping', [
+            'order_id' => $donation->midtrans_order_id,
+            'transaction_status' => $transactionStatus,
+            'fraud_status' => $fraudStatus,
+            'mapped_new_status' => $newStatus,
+            'previous_status' => $previousStatus
+        ]);
+
+        // Jika status tidak berubah, tidak perlu update berat
+        if ($newStatus === $previousStatus) {
+            return response()->json([
+                'message' => 'Status belum berubah.',
+                'status' => $newStatus,
+                'donation' => $donation
+            ]);
+        }
+
+        $donation->update([
+            'status' => $newStatus,
+            'paid_at' => $newStatus === 'paid' ? now() : $donation->paid_at,
+            'midtrans_raw_response' => (array) $status,
+        ]);
+
+        $this->syncProgramAmount($donation->fresh(), $previousStatus, $newStatus);
+
+        return response()->json([
+            'message' => 'Status berhasil diperbarui.',
+            'status' => $newStatus,
+            'donation' => $donation->fresh()
+        ]);
+    }
+
+
+    private function syncProgramAmount(Donation $donation, ?string $oldStatus, string $newStatus): void
+    {
+        if (! $donation->program_id) {
+            return;
+        }
+
+        $program = $donation->program;
+
+        if (! $program) {
+            return;
+        }
+
+        if ($oldStatus !== 'paid' && $newStatus === 'paid') {
+            \Illuminate\Support\Facades\Log::info('SyncProgramAmount: Incrementing', ['program_id' => $program->id, 'amount' => $donation->amount]);
+            $program->increment('collected_amount', $donation->amount);
+        } elseif ($oldStatus === 'paid' && $newStatus !== 'paid') {
+            \Illuminate\Support\Facades\Log::info('SyncProgramAmount: Decrementing', ['program_id' => $program->id, 'amount' => $donation->amount]);
+            $program->decrement('collected_amount', $donation->amount);
+        } else {
+             \Illuminate\Support\Facades\Log::info('SyncProgramAmount: No change', ['old' => $oldStatus, 'new' => $newStatus]);
+        }
+    }
 }

@@ -97,6 +97,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('donations/summary', [FrontendDonationController::class, 'summary']);
         Route::post('donations', [FrontendDonationController::class, 'store']);
+        Route::post('donations/{donation}/check-status', [FrontendDonationController::class, 'checkStatus']);
         Route::post('donations/{donation}/cancel', [FrontendDonationController::class, 'cancel']);
         Route::post('donations/confirm', [FrontendDonationConfirmationController::class, 'store']);
         Route::post('pickups', [FrontendPickupRequestController::class, 'store']);
@@ -131,6 +132,7 @@ Route::prefix('v1')->group(function () {
             Route::post('donations/manual', [AdminDonationController::class, 'storeManual']);
             Route::get('donations/{donation}', [AdminDonationController::class, 'show']);
             Route::patch('donations/{donation}/status', [AdminDonationController::class, 'updateStatus']);
+            Route::post('donations/{donation}/send-whatsapp', [AdminDonationController::class, 'sendWhatsapp']);
             Route::delete('donations/{donation}', [AdminDonationController::class, 'destroy']);
             Route::get('reports/donations', [DonationReportController::class, 'index']);
             Route::get('reports/donations/export', [DonationReportController::class, 'export']);

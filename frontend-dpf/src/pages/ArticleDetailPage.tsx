@@ -17,6 +17,7 @@ import { resolveStorageBaseUrl } from "../lib/urls";
 import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { sanitizeHtml } from "../lib/sanitize";
 
 type PublicArticle = {
   id: number;
@@ -62,13 +63,7 @@ const getImageUrl = (path?: string | null) => {
   return `${base}/${path}`;
 };
 
-const sanitizeHtml = (html: string) => {
-  return html
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
-    .replace(/\son\w+="[^"]*"/gi, "")
-    .replace(/\son\w+='[^']*'/gi, "")
-    .replace(/javascript:/gi, "");
-};
+
 
 type BadgeTone = "neutral" | "primary" | "green";
 

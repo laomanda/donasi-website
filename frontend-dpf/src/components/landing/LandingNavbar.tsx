@@ -144,7 +144,7 @@ const SEARCH_INDEX: { href: string; corpus: string }[] = [
         href: "/donate",
         corpus: `
             Donasi online
-            Midtrans snap
+            Pembayaran otomatis
             Transfer bank
             Rekening donasi
             Donasi umum

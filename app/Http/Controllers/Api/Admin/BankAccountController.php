@@ -23,6 +23,10 @@ class BankAccountController extends Controller
             $data['image_path'] = $request->file('image')->store('banks', 'public');
         }
 
+        if ($request->hasFile('qris_image')) {
+            $data['qris_image_path'] = $request->file('qris_image')->store('qris', 'public');
+        }
+
         $account = BankAccount::create($data);
 
         return response()->json($account, 201);
@@ -41,6 +45,14 @@ class BankAccountController extends Controller
             $data['image_path'] = $request->file('image')->store('banks', 'public');
         }
 
+        if ($request->hasFile('qris_image')) {
+            // Delete old QRIS image
+            if ($bankAccount->qris_image_path && Storage::disk('public')->exists($bankAccount->qris_image_path)) {
+                Storage::disk('public')->delete($bankAccount->qris_image_path);
+            }
+            $data['qris_image_path'] = $request->file('qris_image')->store('qris', 'public');
+        }
+
         $bankAccount->update($data);
 
         return response()->json($bankAccount->refresh());
@@ -50,6 +62,9 @@ class BankAccountController extends Controller
     {
         if ($bankAccount->image_path && Storage::disk('public')->exists($bankAccount->image_path)) {
             Storage::disk('public')->delete($bankAccount->image_path);
+        }
+        if ($bankAccount->qris_image_path && Storage::disk('public')->exists($bankAccount->qris_image_path)) {
+            Storage::disk('public')->delete($bankAccount->qris_image_path);
         }
         $bankAccount->delete();
 
@@ -65,8 +80,9 @@ class BankAccountController extends Controller
             'is_visible_public'=> ['required', 'boolean'], // or string 1/0 if FormData
             'order'            => ['required', 'integer', 'min:0'],
             'category'         => ['nullable', 'string', 'max:50'],
-            'type'             => ['nullable', 'string', 'in:text,image_only'],
+            'type'             => ['nullable', 'string', 'in:text,image_only,domestic,international'],
             'image'            => ['nullable', 'image', 'max:2048'], // 2MB max
+            'qris_image'       => ['nullable', 'image', 'max:2048'], // 2MB max
         ]);
     }
 }

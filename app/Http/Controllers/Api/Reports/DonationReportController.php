@@ -114,6 +114,34 @@ class DonationReportController extends Controller
         $midtransCount = (clone $midtransBase)->count();
         $midtransAmount = (float) (clone $midtransBase)->sum('amount');
 
+        // Top Donor
+        $topDonor = (clone $base)
+            ->selectRaw('donor_name, SUM(amount) as total_amount, COUNT(id) as donation_count')
+            ->where('status', 'paid')
+            ->whereNotNull('donor_name')
+            ->groupBy('donor_name')
+            ->orderByDesc('total_amount')
+            ->first();
+
+        // Top Program
+        $topProgramData = (clone $base)
+            ->selectRaw('program_id, SUM(amount) as total_amount, COUNT(id) as donation_count')
+            ->where('status', 'paid')
+            ->whereNotNull('program_id')
+            ->groupBy('program_id')
+            ->orderByDesc('total_amount')
+            ->with('program:id,title')
+            ->first();
+            
+        $topProgram = null;
+        if ($topProgramData && $topProgramData->program) {
+            $topProgram = [
+                'program_title' => $topProgramData->program->title,
+                'total_amount' => (float) $topProgramData->total_amount,
+                'donation_count' => (int) $topProgramData->donation_count
+            ];
+        }
+
         return [
             'total_count' => $totalCount,
             'total_amount' => $totalAmount,
@@ -121,6 +149,12 @@ class DonationReportController extends Controller
             'manual_amount' => $manualAmount,
             'midtrans_count' => $midtransCount,
             'midtrans_amount' => $midtransAmount,
+            'top_donor' => $topDonor ? [
+                'donor_name' => $topDonor->donor_name,
+                'total_amount' => (float) $topDonor->total_amount,
+                'donation_count' => (int) $topDonor->donation_count
+            ] : null,
+            'top_program' => $topProgram,
         ];
     }
 
