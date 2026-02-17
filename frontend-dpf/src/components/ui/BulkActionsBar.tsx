@@ -9,6 +9,7 @@ export function BulkActionsBar({
   onSelectAllPage,
   onDeleteSelected,
   disabled,
+  hideDelete,
 }: {
   count: number;
   itemLabel: string;
@@ -16,6 +17,7 @@ export function BulkActionsBar({
   onSelectAllPage: () => void;
   onDeleteSelected: () => Promise<void> | void;
   disabled?: boolean;
+  hideDelete?: boolean;
 }) {
   const [confirming, setConfirming] = useState(false);
 
@@ -56,26 +58,28 @@ export function BulkActionsBar({
             Batalkan
           </button>
 
-          {!confirming ? (
-            <button
-              type="button"
-              onClick={() => setConfirming(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white px-4 py-2.5 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-              disabled={disabled}
-            >
-              <FontAwesomeIcon icon={faTrash} />
-              Hapus dipilih
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => void onDeleteSelected()}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-              disabled={disabled}
-            >
-              <FontAwesomeIcon icon={faTrash} />
-              Konfirmasi hapus
-            </button>
+          {!hideDelete && (
+            !confirming ? (
+              <button
+                type="button"
+                onClick={() => setConfirming(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white px-4 py-2.5 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                disabled={disabled}
+              >
+                <FontAwesomeIcon icon={faTrash} />
+                Hapus dipilih
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void onDeleteSelected()}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                disabled={disabled}
+              >
+                <FontAwesomeIcon icon={faTrash} />
+                Konfirmasi hapus
+              </button>
+            )
           )}
         </div>
       </div>

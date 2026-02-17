@@ -15,6 +15,7 @@ class RolePermissionSeeder extends Seeder
             'superadmin',
             'admin',
             'editor',
+            'pelihat',
         ];
 
         foreach ($roles as $roleName) {

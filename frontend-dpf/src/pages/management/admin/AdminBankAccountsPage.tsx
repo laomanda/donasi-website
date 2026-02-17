@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBuildingColumns, faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
+import { getAuthUser } from "../../../lib/auth";
 import { useToast } from "../../../components/ui/ToastProvider";
 import { runWithConcurrency } from "../../../lib/bulk";
 import { useBulkSelection } from "../../../components/ui/useBulkSelection";
@@ -42,6 +43,9 @@ export function AdminBankAccountsPage() {
   const [error, setError] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const selection = useBulkSelection<number>();
+
+  const authUser = useMemo(() => getAuthUser(), []);
+  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
 
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<"" | "active" | "inactive">("");
@@ -149,14 +153,16 @@ export function AdminBankAccountsPage() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => navigate("/admin/bank-accounts/create")}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white text-emerald-700 px-6 py-4 text-sm font-bold shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-50 hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <FontAwesomeIcon icon={faPlus} />
-              Tambah Rekening
-            </button>
+            {!isViewer && (
+              <button
+                type="button"
+                onClick={() => navigate("/admin/bank-accounts/create")}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white text-emerald-700 px-6 py-4 text-sm font-bold shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-50 hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <FontAwesomeIcon icon={faPlus} />
+                Tambah Rekening
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -209,6 +215,7 @@ export function AdminBankAccountsPage() {
         onSelectAllPage={() => selection.toggleAll(filteredIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
+        hideDelete={isViewer}
       />
 
       <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
@@ -276,8 +283,8 @@ export function AdminBankAccountsPage() {
                   return (
                     <tr
                       key={acc.id}
-                      className={`cursor-pointer transition hover:bg-slate-50 border-l-4 ${barColor}`}
-                      onClick={() => navigate(`/admin/bank-accounts/${acc.id}/edit`)}
+                      className={`${isViewer ? "" : "cursor-pointer"} transition hover:bg-slate-50 border-l-4 ${barColor}`}
+                      onClick={() => !isViewer && navigate(`/admin/bank-accounts/${acc.id}/edit`)}
                     >
                       <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                         <input
@@ -359,8 +366,8 @@ export function AdminBankAccountsPage() {
                 <button
                   key={acc.id}
                   type="button"
-                  onClick={() => navigate(`/admin/bank-accounts/${acc.id}/edit`)}
-                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor}`}
+                  onClick={() => !isViewer && navigate(`/admin/bank-accounts/${acc.id}/edit`)}
+                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor} ${isViewer ? "cursor-default" : ""}`}
                 >
                   <div className="flex items-start gap-3">
                     <span onClick={(e) => e.stopPropagation()}>

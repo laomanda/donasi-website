@@ -31,6 +31,7 @@ type Donation = {
   paid_at?: string | null;
   created_at?: string | null;
   program?: { id?: number; title?: string | null } | null;
+  donor_qualification?: string;
 };
 
 type ReportSummary = {
@@ -183,6 +184,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<DonationStatus>("");
   const [paymentSource, setPaymentSource] = useState("");
+  const [qualification, setQualification] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
@@ -190,7 +192,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hasFilters = Boolean(q.trim() || status || paymentSource || dateFrom.trim() || dateTo.trim());
+  const hasFilters = Boolean(q.trim() || status || paymentSource || qualification || dateFrom.trim() || dateTo.trim());
 
   const fetchReports = async (
     nextPage: number,
@@ -198,6 +200,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
       q: string;
       status: DonationStatus;
       paymentSource: string;
+      qualification: string;
       dateFrom: string;
       dateTo: string;
       perPage: number;
@@ -206,6 +209,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
     const qValue = (overrides?.q ?? q).trim();
     const statusValue = overrides?.status ?? status;
     const sourceValue = (overrides?.paymentSource ?? paymentSource).trim();
+    const qualificationValue = (overrides?.qualification ?? qualification).trim();
     const fromValue = (overrides?.dateFrom ?? dateFrom).trim();
     const toValue = (overrides?.dateTo ?? dateTo).trim();
     const perPageValue = overrides?.perPage ?? perPage;
@@ -220,6 +224,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
           q: qValue || undefined,
           status: statusValue || undefined,
           payment_source: sourceValue || undefined,
+          qualification: qualificationValue || undefined,
           date_from: fromValue || undefined,
           date_to: toValue || undefined,
         },
@@ -244,7 +249,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
 
     return () => clearTimeout(handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, status, paymentSource, dateFrom, dateTo, perPage]);
+  }, [q, status, paymentSource, qualification, dateFrom, dateTo, perPage]);
 
   const pageLabel = useMemo(() => {
     if (!total) return "Tidak ada data.";
@@ -257,6 +262,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
     setQ("");
     setStatus("");
     setPaymentSource("");
+    setQualification("");
     setDateFrom("");
     setDateTo("");
   };
@@ -278,6 +284,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
           q: q.trim() || undefined,
           status: status || undefined,
           payment_source: paymentSource.trim() || undefined,
+          qualification: qualification.trim() || undefined,
           date_from: dateFrom.trim() || undefined,
           date_to: dateTo.trim() || undefined,
           format,
@@ -436,82 +443,108 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
         </div>
 
         <div className="grid gap-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Cari</span>
-              <div className="relative mt-2 group">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
-                  <FontAwesomeIcon icon={faMagnifyingGlass} />
-                </span>
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Kode / Nama..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                />
-              </div>
-            </label>
-
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Status</span>
-              <div className="relative mt-2">
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                >
-                  <option value="">Semua Status</option>
-                  <option value="pending">Menunggu</option>
-                  <option value="paid">Lunas</option>
-                  <option value="failed">Gagal</option>
-                  <option value="expired">Kedaluwarsa</option>
-                  <option value="cancelled">Dibatalkan</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
-                </div>
-              </div>
-            </label>
-
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Sumber</span>
-              <div className="relative mt-2">
-                <select
-                  value={paymentSource}
-                  onChange={(e) => setPaymentSource(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                >
-                  <option value="">Semua Sumber</option>
-                  <option value="midtrans">Midtrans</option>
-                  <option value="manual">Manual</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
-                </div>
-              </div>
-            </label>
-
-            <div className="grid grid-cols-2 gap-2">
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Dari Tgl</span>
-                <div className="relative mt-2">
+          <div className="space-y-4">
+            {/* Top Row: Search & Dates */}
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <label className="lg:col-span-2 block">
+                <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Cari</span>
+                <div className="relative mt-2 group">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
+                    <FontAwesomeIcon icon={faMagnifyingGlass} />
+                  </span>
                   <input
-                    type="date"
-                    value={dateFrom}
-                    onChange={(e) => setDateFrom(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder="Cari berdasarkan Kode Donasi, Nama Donatur, atau Email..."
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
                   />
                 </div>
               </label>
+
+              <div className="grid grid-cols-2 gap-4">
+                <label className="block">
+                  <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Dari Tgl</span>
+                  <div className="relative mt-2">
+                    <input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                    />
+                  </div>
+                </label>
+                <label className="block">
+                  <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Sampai</span>
+                  <div className="relative mt-2">
+                    <input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                    />
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Bottom Row: Filters */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Sampai</span>
+                <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Status</span>
                 <div className="relative mt-2">
-                  <input
-                    type="date"
-                    value={dateTo}
-                    onChange={(e) => setDateTo(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                  />
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                  >
+                    <option value="">Semua Status</option>
+                    <option value="pending">Menunggu</option>
+                    <option value="paid">Lunas</option>
+                    <option value="failed">Gagal</option>
+                    <option value="expired">Kedaluwarsa</option>
+                    <option value="cancelled">Dibatalkan</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                    <FontAwesomeIcon icon={faFilter} className="text-xs" />
+                  </div>
+                </div>
+              </label>
+
+              <label className="block">
+                <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Kualifikasi</span>
+                <div className="relative mt-2">
+                  <select
+                    value={qualification}
+                    onChange={(e) => setQualification(e.target.value)}
+                    className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                  >
+                    <option value="">Semua Kualifikasi</option>
+                    <option value="baru">Donatur Baru</option>
+                    <option value="tetap">Donatur Tetap</option>
+                    <option value="lama">Donatur Lama</option>
+                    <option value="anonim">Anonim</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                    <FontAwesomeIcon icon={faFilter} className="text-xs" />
+                  </div>
+                </div>
+              </label>
+
+              <label className="block">
+                <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Sumber</span>
+                <div className="relative mt-2">
+                  <select
+                    value={paymentSource}
+                    onChange={(e) => setPaymentSource(e.target.value)}
+                    className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                  >
+                    <option value="">Semua Sumber</option>
+                    <option value="midtrans">Midtrans</option>
+                    <option value="manual">Manual</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                    <FontAwesomeIcon icon={faFilter} className="text-xs" />
+                  </div>
                 </div>
               </label>
             </div>
@@ -556,16 +589,19 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
           <table className="min-w-full table-fixed">
             <thead className="bg-slate-50">
               <tr>
-                <th className="w-[16%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[14%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Kode
                 </th>
-                <th className="w-[20%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[18%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Donatur
                 </th>
-                <th className="w-[24%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[12%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Kualifikasi
+                </th>
+                <th className="w-[20%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Program
                 </th>
-                <th className="w-[10%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[8%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Sumber
                 </th>
                 <th className="w-[10%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
@@ -646,6 +682,11 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
                         <p className="mt-1 text-xs font-semibold text-slate-500">
                           {donation.payment_method ? String(donation.payment_method) : "-"}
                         </p>
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase text-slate-600">
+                            {donation.donor_qualification || '-'}
+                        </span>
                       </td>
                       <td className="px-6 py-5">
                         <p className="line-clamp-1 text-sm font-semibold text-slate-900">{programTitle}</p>

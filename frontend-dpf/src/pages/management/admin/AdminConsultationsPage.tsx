@@ -9,6 +9,7 @@ import {
   faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
+import { getAuthUser } from "../../../lib/auth";
 import { useToast } from "../../../components/ui/ToastProvider";
 import { runWithConcurrency } from "../../../lib/bulk";
 import { useBulkSelection } from "../../../components/ui/useBulkSelection";
@@ -81,6 +82,9 @@ export function AdminConsultationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const authUser = useMemo(() => getAuthUser(), []);
+  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
 
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((item) => item.id), [items]);
@@ -298,6 +302,7 @@ export function AdminConsultationsPage() {
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
+        hideDelete={isViewer}
       />
 
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">

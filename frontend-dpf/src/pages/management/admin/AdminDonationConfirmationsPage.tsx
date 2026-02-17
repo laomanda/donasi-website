@@ -8,6 +8,7 @@ import {
   faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
+import { getAuthUser } from "../../../lib/auth";
 import { useToast } from "../../../components/ui/ToastProvider";
 import { runWithConcurrency } from "../../../lib/bulk";
 import { useBulkSelection } from "../../../components/ui/useBulkSelection";
@@ -89,6 +90,10 @@ export function AdminDonationConfirmationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const authUser = useMemo(() => getAuthUser(), []);
+  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
+
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((d) => d.id), [items]);
   const skipAutoFetchRef = useRef(false);
@@ -322,6 +327,7 @@ export function AdminDonationConfirmationsPage() {
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
+        hideDelete={isViewer}
       />
 
       <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">

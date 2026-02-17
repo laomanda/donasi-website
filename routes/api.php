@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\ProgramController as AdminProgramController;
 use App\Http\Controllers\Api\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Api\Admin\ZiswafConsultationController as AdminZiswafConsultationController;
 use App\Http\Controllers\Api\Admin\ServiceRequestController as AdminServiceRequestController;
+use App\Http\Controllers\Api\Admin\AllocationController as AdminAllocationController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordController;
 use App\Http\Controllers\Api\Editor\ArticleController as EditorArticleController;
@@ -39,6 +40,7 @@ use App\Http\Controllers\Api\Reports\DonationReportController;
 use App\Http\Controllers\Api\Editor\EditorTaskController as EditorEditorTaskController;
 use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboardController;
 use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
+use App\Http\Controllers\Api\Mitra\MitraDashboardController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -74,6 +76,10 @@ Route::prefix('v1')->group(function () {
             Route::get('me', [AuthController::class, 'me']);
             Route::put('password', [PasswordController::class, 'update']);
         });
+
+        // Register Mitra
+        Route::post('mitra/register', [AuthController::class, 'registerMitra']);
+        Route::post('google', [AuthController::class, 'googleLogin']);
     });
 
     /*
@@ -119,45 +125,80 @@ Route::prefix('v1')->group(function () {
     | ADMIN (Role: admin atau superadmin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role:admin|superadmin'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role:admin|superadmin|pelihat'])
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
             Route::get('dashboard', AdminDashboardController::class)->name('dashboard');
 
+            Route::get('editor-tasks/editors', [AdminEditorTaskController::class, 'editors']);
+            Route::apiResource('editor-tasks', AdminEditorTaskController::class)->only(['index', 'show']);
+            Route::middleware('role:admin|superadmin')->group(function () {
+                Route::post('donations/manual', [AdminDonationController::class, 'storeManual']);
+                Route::patch('donations/{donation}/status', [AdminDonationController::class, 'updateStatus']);
+                Route::post('donations/{donation}/send-whatsapp', [AdminDonationController::class, 'sendWhatsapp']);
+                Route::delete('donations/{donation}', [AdminDonationController::class, 'destroy']);
+                
+                Route::apiResource('editor-tasks', AdminEditorTaskController::class)->except(['index', 'show']);
+                Route::delete('editor-tasks/{editor_task}/attachments/{attachment}', [AdminEditorTaskController::class, 'destroyAttachment']);
+                
+                Route::apiResource('pickup-requests', AdminPickupRequestController::class)->except(['index', 'show']);
+                Route::patch('pickup-requests/{pickup_request}/status', [AdminPickupRequestController::class, 'updateStatus']);
+                
+                Route::apiResource('consultations', AdminZiswafConsultationController::class)
+                    ->parameters(['consultations' => 'ziswaf_consultation'])
+                    ->except(['index', 'show']);
+                Route::patch('consultations/{ziswaf_consultation}/status', [AdminZiswafConsultationController::class, 'updateStatus']);
+
+                Route::apiResource('service-requests', AdminServiceRequestController::class)->except(['index', 'show']);
+                Route::patch('service-requests/{service_request}/status', [AdminServiceRequestController::class, 'updateStatus']);
+
+                Route::apiResource('partners', AdminPartnerController::class)->except(['index', 'show']);
+                Route::apiResource('organization-members', AdminOrganizationController::class)->except(['index', 'show']);
+                Route::apiResource('bank-accounts', AdminBankAccountController::class)->except(['index', 'show', 'show']);
+                
+                Route::put('settings', [AdminSettingController::class, 'update']);
+                Route::apiResource('banners', AdminBannerController::class)->except(['index', 'show']);
+
+                // Allocations (Mitra Wallet)
+                Route::apiResource('allocations', AdminAllocationController::class)->only(['store', 'destroy']);
+            });
+
             Route::apiResource('programs', AdminProgramController::class)->only(['index', 'show']);
-            Route::apiResource('banners', AdminBannerController::class)->except('show');
+            Route::apiResource('banners', AdminBannerController::class)->only(['index']);
+            Route::apiResource('partners', AdminPartnerController::class)->only(['index']);
+            Route::apiResource('organization-members', AdminOrganizationController::class)->only(['index', 'show']);
+            Route::apiResource('bank-accounts', AdminBankAccountController::class)->only(['index']);
 
             Route::get('donations', [AdminDonationController::class, 'index']);
-            Route::post('donations/manual', [AdminDonationController::class, 'storeManual']);
             Route::get('donations/{donation}', [AdminDonationController::class, 'show']);
-            Route::patch('donations/{donation}/status', [AdminDonationController::class, 'updateStatus']);
-            Route::post('donations/{donation}/send-whatsapp', [AdminDonationController::class, 'sendWhatsapp']);
-            Route::delete('donations/{donation}', [AdminDonationController::class, 'destroy']);
+            Route::get('donations/{donation}/export', [AdminDonationController::class, 'export']);
+            
+            
             Route::get('reports/donations', [DonationReportController::class, 'index']);
             Route::get('reports/donations/export', [DonationReportController::class, 'export']);
-            Route::get('editor-tasks/editors', [AdminEditorTaskController::class, 'editors']);
-            Route::apiResource('editor-tasks', AdminEditorTaskController::class);
-            Route::delete('editor-tasks/{editor_task}/attachments/{attachment}', [AdminEditorTaskController::class, 'destroyAttachment']);
-
-            Route::apiResource('pickup-requests', AdminPickupRequestController::class);
-            Route::patch('pickup-requests/{pickup_request}/status', [AdminPickupRequestController::class, 'updateStatus']);
-
+            
+            Route::apiResource('pickup-requests', AdminPickupRequestController::class)->only(['index', 'show']);
             Route::apiResource('consultations', AdminZiswafConsultationController::class)
-                ->parameters(['consultations' => 'ziswaf_consultation']);
-            Route::patch('consultations/{ziswaf_consultation}/status', [AdminZiswafConsultationController::class, 'updateStatus']);
-
-            Route::apiResource('service-requests', AdminServiceRequestController::class);
-            Route::patch('service-requests/{service_request}/status', [AdminServiceRequestController::class, 'updateStatus']);
-
-
-
-            Route::apiResource('partners', AdminPartnerController::class)->except('show');
-            Route::apiResource('organization-members', AdminOrganizationController::class);
-            Route::apiResource('bank-accounts', AdminBankAccountController::class)->except('show');
+                ->parameters(['consultations' => 'ziswaf_consultation'])
+                ->only(['index', 'show']);
+            Route::apiResource('service-requests', AdminServiceRequestController::class)->only(['index', 'show']);
 
             Route::get('settings', [AdminSettingController::class, 'index']);
-            Route::put('settings', [AdminSettingController::class, 'update']);
+            Route::get('allocations', [AdminAllocationController::class, 'index']);
+        });
+
+    /*
+    |--------------------------------------------------------------------------
+    | MITRA (Role: mitra)
+    |--------------------------------------------------------------------------
+    |
+    */
+    Route::middleware(['auth:sanctum', 'is_active', 'role:mitra'])
+        ->prefix('mitra')
+        ->name('mitra.')
+        ->group(function () {
+            Route::get('dashboard', [MitraDashboardController::class, 'index']);
         });
 
     /*

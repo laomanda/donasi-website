@@ -30,6 +30,12 @@ class DonationReportController extends Controller
         $perPage = $request->integer('per_page', 20);
         $donations = $query->orderByDesc('created_at')->paginate($perPage);
 
+        // Transform the Paginator Collection to append the accessor
+        $donations->getCollection()->transform(function ($donation) {
+            $donation->append('donor_qualification');
+            return $donation;
+        });
+
         $payload = $donations->toArray();
         $payload['summary'] = $summary;
 
@@ -98,19 +104,50 @@ class DonationReportController extends Controller
             });
         }
 
+        $qualification = $request->string('qualification')->trim()->toString();
+        if ($qualification !== '') {
+            if ($qualification === 'anonim') {
+                // Anonim: No phone number
+                $query->whereNull('donor_phone')->orWhere('donor_phone', '');
+            } else {
+                // Qualified donors: Must have phone number
+                $query->whereNotNull('donor_phone')->where('donor_phone', '!=', '');
+
+                // Subquery to count paid donations per phone
+                $phones = Donation::select('donor_phone')
+                    ->whereNotNull('donor_phone')
+                    ->where('donor_phone', '!=', '')
+                    ->where('status', 'paid')
+                    ->groupBy('donor_phone');
+
+                if ($qualification === 'baru') {
+                    $phones->havingRaw('COUNT(id) <= 1');
+                } elseif ($qualification === 'tetap') {
+                    $phones->havingRaw('COUNT(id) > 1 AND COUNT(id) <= 5');
+                } elseif ($qualification === 'lama') {
+                    $phones->havingRaw('COUNT(id) > 5');
+                }
+                
+                $query->whereIn('donor_phone', $phones);
+            }
+        }
+
         return $query;
     }
 
     private function buildSummary(Builder $base): array
     {
-        $totalCount = (clone $base)->count();
-        $totalAmount = (float) (clone $base)->sum('amount');
+        // Force stats to only count PAID donations
+        $paidBase = (clone $base)->where('status', 'paid');
 
-        $manualBase = (clone $base)->where('payment_source', 'manual');
+        $totalCount = (clone $paidBase)->count();
+        $totalAmount = (float) (clone $paidBase)->sum('amount');
+
+        $manualBase = (clone $paidBase)->where('payment_source', 'manual');
         $manualCount = (clone $manualBase)->count();
         $manualAmount = (float) (clone $manualBase)->sum('amount');
 
-        $midtransBase = (clone $base)->where('payment_source', 'midtrans');
+        $midtransBase = (clone $paidBase)->where('payment_source', 'midtrans');
         $midtransCount = (clone $midtransBase)->count();
         $midtransAmount = (float) (clone $midtransBase)->sum('amount');
 
@@ -171,6 +208,8 @@ class DonationReportController extends Controller
             'date_from' => $request->string('date_from')->trim()->toString(),
             'date_to' => $request->string('date_to')->trim()->toString(),
             'q' => $request->string('q')->trim()->toString(),
+            'qualification' => $request->string('qualification')->trim()->toString(),
+            'qualification_label' => ucfirst($request->string('qualification')->trim()->toString() ?: 'Semua'),
         ];
     }
 

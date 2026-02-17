@@ -24,7 +24,11 @@ import { KonsultasiPage } from '../pages/KonsultasiPage'
 import { JemputWakafPage } from '../pages/JemputWakafPage'
 import { KonfirmasiDonasiPage } from '../pages/KonfirmasiDonasiPage'
 
-import { EditorShell, AdminShell, SuperAdminShell } from '../layouts/dashboard/RoleShells'
+import { EditorShell, AdminShell, SuperAdminShell, MitraShell } from '../layouts/dashboard/RoleShells'
+import { MitraRegisterPage } from '../pages/auth/MitraRegisterPage'
+import { MitraDashboardPage } from '../pages/management/mitra/MitraDashboardPage'
+import { MitraAllocationsPage } from '../pages/management/mitra/MitraAllocationsPage'
+import { MitraDonationsPage } from '../pages/management/mitra/MitraDonationsPage'
 import { PreviewPage } from '../pages/PreviewPage'
 import { EditorDashboardPage } from '../pages/management/editor/EditorDashboardPage'
 import { EditorArticlesPage } from '../pages/management/editor/EditorArticlesPage'
@@ -56,6 +60,7 @@ import { AdminConsultationsPage } from '../pages/management/admin/AdminConsultat
 import { AdminConsultationShowPage } from '../pages/management/admin/AdminConsultationShowPage'
 import { AdminPickupRequestsPage } from '../pages/management/admin/AdminPickupRequestsPage'
 import { AdminPickupRequestShowPage } from '../pages/management/admin/AdminPickupRequestShowPage'
+import { AdminAllocationsPage } from '../pages/management/admin/allocations/AdminAllocationsPage'
 import { AdminBankAccountsPage } from '../pages/management/admin/AdminBankAccountsPage'
 import { AdminBankAccountCreatePage } from '../pages/management/admin/AdminBankAccountCreatePage'
 import { AdminBankAccountEditPage } from '../pages/management/admin/AdminBankAccountEditPage'
@@ -86,6 +91,7 @@ export const router = createBrowserRouter([
 
       { path: 'donate', element: <DonatePage /> },
       { path: 'login', element: <LoginPage /> },
+      { path: 'register-mitra', element: <MitraRegisterPage /> },
       { path: 'preview', element: <PreviewPage /> },
       {
         path: 'editor',
@@ -141,6 +147,7 @@ export const router = createBrowserRouter([
           { path: 'bank-accounts', element: <AdminBankAccountsPage /> },
           { path: 'bank-accounts/create', element: <AdminBankAccountCreatePage /> },
           { path: 'bank-accounts/:id/edit', element: <AdminBankAccountEditPage /> },
+          { path: 'allocations', element: <AdminAllocationsPage /> },
           { path: 'editor-tasks', element: <AdminEditorTasksPage /> },
           { path: 'editor-tasks/create', element: <AdminEditorTaskCreatePage /> },
           { path: 'search', element: <SearchPage role="admin" /> },
@@ -170,6 +177,17 @@ export const router = createBrowserRouter([
             element: <SearchPage role="superadmin" />,
           },
           { path: 'settings', element: <SettingsPage role="superadmin" /> },
+        ],
+      },
+      {
+        path: 'mitra',
+        element: <MitraShell />,
+        children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          { path: 'dashboard', element: <MitraDashboardPage /> },
+          { path: 'allocations', element: <MitraAllocationsPage /> },
+          { path: 'donations', element: <MitraDonationsPage /> },
+          { path: 'settings', element: <SettingsPage role="mitra" /> },
         ],
       },
       { path: 'error/400', element: <Error400 /> },

@@ -7,6 +7,7 @@ import {
   faReceipt,
   faTruck,
   faUserGroup,
+  faHandshake,
 } from "@fortawesome/free-solid-svg-icons";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -891,6 +892,38 @@ function PartnerSection({ partners, t, locale }: { partners: Partner[]; t: (k: s
           <p className="text-sm font-medium text-slate-400">{t("landing.partners.empty")}</p>
         </div>
       )}
+
+      {/* Corporate Partner CTA */}
+      <div className="mx-auto mt-16 max-w-4xl px-4 text-center">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brandGreen-700 via-brandGreen-600 to-primary-600 px-6 py-10 sm:px-12 sm:py-12 shadow-2xl shadow-brandGreen-900/20">
+          {/* Decorative Background */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -right-20 -bottom-20 h-64 w-64 rounded-full bg-primary-500/20 blur-3xl" />
+          </div>
+
+          <div className="relative z-10 flex flex-col items-center gap-6">
+            <h3 className="font-heading text-2xl font-bold text-white sm:text-3xl">
+              {locale === "id" ? "Ingin Berkolaborasi?" : "Want to Collaborate?"}
+            </h3>
+            <p className="text-slate-300 max-w-lg text-base">
+              {locale === "id"
+                ? "Jadilah bagian dari perubahan baik. Diskusikan peluang kemitraan strategis bersama kami."
+                : "Be part of the good change. Discuss strategic partnership opportunities with us."}
+            </p>
+
+            <a
+              href="https://wa.me/6281311768254?text=Assalamu%27alaikum%2C%20saya%20tertarik%20untuk%20mendiskusikan%20program%20kemitraan%2FCSR%20dengan%20Djalaludin%20Pane%20Foundation."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-slate-900 shadow-lg transition-transform hover:bg-slate-200"
+            >
+              <FontAwesomeIcon icon={faHandshake} className="text-primary-600" />
+              {locale === "id" ? "Hubungi Kami" : "Contact Us"}
+            </a>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

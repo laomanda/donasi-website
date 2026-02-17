@@ -20,6 +20,7 @@ import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
 import { LandingLayout } from "../layouts/LandingLayout";
 import PhoneInput from "../components/ui/PhoneInput";
+import { getAuthUser } from "../lib/auth";
 
 import DpfIcon from "../brand/dpf-icon.png";
 
@@ -145,6 +146,19 @@ function DonatePage() {
         return () => { active = false; };
     }, []);
 
+    // Pre-fill form for Mitra/Logged-in User
+    useEffect(() => {
+        const user = getAuthUser() as any;
+        if (user) {
+            setForm(prev => ({
+                ...prev,
+                name: user.name || prev.name,
+                email: user.email || prev.email,
+                phone: user.phone || prev.phone,
+            }));
+        }
+    }, []);
+
     // Placeholder for getProgress if not imported
     const getProgress = (collected: any, target: any) => {
         if (!target) return 0;
@@ -262,6 +276,7 @@ function DonatePage() {
                 amount: Number(form.amount),
                 is_anonymous: form.is_anonymous,
                 notes: form.notes || undefined,
+                user_id: getAuthUser()?.id || undefined,
             };
             const res = await http.post("/donations", payload);
             

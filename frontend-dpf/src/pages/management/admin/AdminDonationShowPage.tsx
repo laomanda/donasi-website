@@ -18,6 +18,7 @@ import {
   faExclamationCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
+import { getAuthUser } from "../../../lib/auth";
 import { useToast } from "../../../components/ui/ToastProvider";
 
 type DonationStatus = "pending" | "paid" | "failed" | "expired" | "cancelled" | string;
@@ -143,6 +144,10 @@ export function AdminDonationShowPage() {
 
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const authUser = useMemo(() => getAuthUser(), []);
+  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
 
   const canLoad = Number.isFinite(donationId) && donationId > 0;
   const isMidtrans = String(data?.payment_source ?? "").toLowerCase() === "midtrans";
@@ -151,6 +156,27 @@ export function AdminDonationShowPage() {
   const isStatusLocked = persistedStatus !== "" && persistedStatus !== "pending";
   const canSave = canLoad && !loading && !saving && !deleting && !isMidtrans && isPendingStatus;
   const canDelete = canLoad && !loading && !saving && !deleting && isPendingStatus;
+
+  const exportPdf = async () => {
+    if (!canLoad) return;
+    setExporting(true);
+    try {
+      const res = await http.get(`/admin/donations/${donationId}/export`, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `invoice-${data?.donation_code || donationId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+    } catch {
+      toast.error("Gagal mengunduh bukti donasi.", { title: "Export Gagal" });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const proofUrl = useMemo(() => resolveStorageUrl(data?.manual_proof_path), [data?.manual_proof_path]);
 
@@ -268,13 +294,15 @@ export function AdminDonationShowPage() {
         <div className="relative z-10 p-8 md:p-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="space-y-4">
-              <button
-                onClick={() => navigate("/admin/donations")}
-                className="group inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur-sm transition hover:bg-white/20"
-              >
-                <FontAwesomeIcon icon={faArrowLeft} className="transition group-hover:-translate-x-1" />
-                Kembali ke List
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => navigate("/admin/donations")}
+                  className="group inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur-sm transition hover:bg-white/20"
+                >
+                  <FontAwesomeIcon icon={faArrowLeft} className="transition group-hover:-translate-x-1" />
+                  Kembali
+                </button>
+              </div>
 
               <div>
                 <div className="flex items-center gap-3">
@@ -444,7 +472,7 @@ export function AdminDonationShowPage() {
                       value={status}
                       onChange={(e) => setStatus(e.target.value)}
                       className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
-                      disabled={!canSave || isStatusLocked}
+                      disabled={!canSave || isStatusLocked || isViewer}
                     >
                       {statusOptions.map((option) => (
                         <option key={option.value} value={option.value} disabled={option.disabled}>
@@ -461,7 +489,7 @@ export function AdminDonationShowPage() {
                       value={paidAtLocal}
                       onChange={(e) => setPaidAtLocal(e.target.value)}
                       className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
-                      disabled={!canSave}
+                      disabled={!canSave || isViewer}
                     />
                   </label>
 
@@ -472,7 +500,7 @@ export function AdminDonationShowPage() {
                       onChange={(e) => setNotes(e.target.value)}
                       rows={3}
                       className="mt-1.5 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
-                      disabled={!canSave}
+                      disabled={!canSave || isViewer}
                       placeholder="Contoh: Transfer valid via BCA..."
                     />
                   </label>
@@ -485,7 +513,7 @@ export function AdminDonationShowPage() {
                   ) : (
                     <button
                       onClick={() => void onSaveStatus()}
-                      disabled={!canSave}
+                      disabled={!canSave || isViewer}
                       className="w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                     >
                       Simpan Perubahan
@@ -494,8 +522,29 @@ export function AdminDonationShowPage() {
                 </div>
               </div>
 
+              {/* Document Card */}
+              <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500">
+                    <FontAwesomeIcon icon={faReceipt} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900">Dokumen & Cetak</h3>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => void exportPdf()}
+                  disabled={exporting}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-primary-200 bg-primary-500 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <FontAwesomeIcon icon={faReceipt} className="text-white" />
+                  {exporting ? "Mengunduh..." : "Cetak Bukti Donasi"}
+                </button>
+              </div>
+
               {/* Delete Zone */}
-              {isPendingStatus && (
+              {isPendingStatus && !isViewer && (
                 <div className="rounded-[24px] border border-rose-100 bg-white p-6 shadow-sm">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="h-10 w-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">

@@ -34,4 +34,14 @@ class User extends Authenticatable
         'last_login_at'     => 'datetime',
         'is_active'         => 'boolean',
     ];
+
+    public function donations()
+    {
+        return $this->hasMany(Donation::class);
+    }
+
+    public function allocations()
+    {
+        return $this->hasMany(Allocation::class);
+    }
 }

@@ -11,6 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import http from "../../../lib/http";
+import { getAuthUser } from "../../../lib/auth";
 import { useToast } from "../../../components/ui/ToastProvider";
 import { runWithConcurrency } from "../../../lib/bulk";
 import { useBulkSelection } from "../../../components/ui/useBulkSelection";
@@ -129,6 +130,9 @@ export function AdminDonationsPage() {
   // WhatsApp Modal State
   const [isWhatsappModalOpen, setIsWhatsappModalOpen] = useState(false);
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
+
+  const authUser = useMemo(() => getAuthUser(), []);
+  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
 
   const hasFilters = Boolean(
     q.trim() || status || paymentSource || programId.trim() || dateFrom.trim() || dateTo.trim()
@@ -283,16 +287,18 @@ export function AdminDonationsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => navigate("/admin/donations/manual")}
-              className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-emerald-700 shadow-md transition-all hover:bg-emerald-50 hover:scale-105 active:scale-95"
-            >
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition group-hover:bg-emerald-200">
-                <FontAwesomeIcon icon={faPlus} className="text-xs" />
-              </span>
-              Input Manual
-            </button>
+            {!isViewer && (
+              <button
+                type="button"
+                onClick={() => navigate("/admin/donations/manual")}
+                className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-emerald-700 shadow-md transition-all hover:bg-emerald-50 hover:scale-105 active:scale-95"
+              >
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition group-hover:bg-emerald-200">
+                  <FontAwesomeIcon icon={faPlus} className="text-xs" />
+                </span>
+                Input Manual
+              </button>
+            )}
           </div>
         </div>
 
@@ -463,6 +469,7 @@ export function AdminDonationsPage() {
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
+        hideDelete={isViewer}
       />
 
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
@@ -570,7 +577,7 @@ export function AdminDonationsPage() {
                             </span>
                             
                             {/* WhatsApp Button - Always active, updates timestamp on resend */}
-                            {statusValue === 'paid' && (
+                            {statusValue === 'paid' && !isViewer && (
                                 <div className="flex flex-col items-center gap-1">
                                     <button
                                         onClick={(e) => handleOpenWhatsapp(donation, e)}
@@ -636,7 +643,7 @@ export function AdminDonationsPage() {
                     </div>
                 
                      {/* WhatsApp Button Mobile */}
-                     {statusValue === 'paid' && (
+                     {statusValue === 'paid' && !isViewer && (
                         <div className="mt-3 flex justify-between items-center">
                              {donation.whatsapp_sent_at && (
                                 <span className="text-[10px] text-slate-400">

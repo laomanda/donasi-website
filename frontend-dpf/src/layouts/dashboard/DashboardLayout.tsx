@@ -35,7 +35,7 @@ import { clearAuthToken, clearAuthUser, getAuthUser } from "../../lib/auth";
 import { readShowClock, SETTINGS_EVENT } from "../../lib/settings";
 
 
-export type DashboardRole = "superadmin" | "admin" | "editor";
+export type DashboardRole = "superadmin" | "admin" | "editor" | "pelihat" | "mitra";
 
 type RoleTheme = {
   appName: string;
@@ -74,6 +74,8 @@ const ROLE_LABEL: Record<DashboardRole, string> = {
   superadmin: "SuperAdmin",
   admin: "Admin",
   editor: "Editor",
+  pelihat: "Pelihat",
+  mitra: "Mitra",
 };
 
 const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
@@ -97,6 +99,24 @@ const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
   },
   editor: {
     appName: "Manajemen DPF",
+    accentRing: "focus-visible:ring-brandGreen-400",
+    navActiveBg: "bg-slate-900",
+    navActiveText: "text-white",
+    navActiveIcon: "text-brandGreen-400",
+    pillBg: "bg-slate-900",
+    pillText: "text-slate-100",
+  },
+  pelihat: {
+    appName: "Manajemen DPF",
+    accentRing: "focus-visible:ring-brandGreen-400",
+    navActiveBg: "bg-slate-900",
+    navActiveText: "text-white",
+    navActiveIcon: "text-brandGreen-400",
+    pillBg: "bg-slate-900",
+    pillText: "text-slate-100",
+  },
+  mitra: {
+    appName: "Dashboard Mitra",
     accentRing: "focus-visible:ring-brandGreen-400",
     navActiveBg: "bg-slate-900",
     navActiveText: "text-white",
@@ -188,6 +208,50 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       ],
     },
   ],
+  pelihat: [
+    {
+      title: "Ringkasan",
+      items: [{ label: "Dashboard", href: "/admin/dashboard", icon: faGaugeHigh }],
+    },
+    {
+      title: "Operasional",
+      items: [
+        { label: "Donasi", href: "/admin/donations", icon: faReceipt },
+        { label: "Konfirmasi Donasi", href: "/admin/donation-confirmations", icon: faClipboardCheck },
+        // "Tugas Editor" is excluded for Pelihat
+        { label: "Jemput Wakaf", href: "/admin/pickup-requests", icon: faTruckRampBox },
+        { label: "Konsultasi", href: "/admin/consultations", icon: faHeadset },
+      ],
+    },
+    {
+      title: "Keuangan",
+      items: [
+        { label: "Laporan Donasi", href: "/admin/reports/donations", icon: faChartLine },
+        { label: "Rekening", href: "/admin/bank-accounts", icon: faBuildingColumns },
+      ],
+    },
+    {
+      title: "Sistem",
+      items: [{ label: "Pengaturan", href: "/admin/settings", icon: faGears }],
+    },
+  ],
+  mitra: [
+    {
+      title: "Ringkasan",
+      items: [{ label: "Dashboard", href: "/mitra/dashboard", icon: faGaugeHigh }],
+    },
+    {
+      title: "Transparansi",
+      items: [
+        { label: "Bukti Alokasi", href: "/mitra/allocations", icon: faHandshake },
+        { label: "Riwayat Donasi", href: "/mitra/donations", icon: faReceipt },
+      ],
+    },
+    {
+      title: "Dukungan",
+      items: [{ label: "Pengaturan", href: "/mitra/settings", icon: faGear }],
+    },
+  ],
 };
 
 const normalizeRoleValue = (value: string) => value.toLowerCase().replace(/[^a-z]/g, "");
@@ -213,6 +277,8 @@ const resolveUserRoles = (user: StoredUser | null): DashboardRole[] => {
   if (normalized.has("superadmin")) roles.push("superadmin");
   if (normalized.has("admin")) roles.push("admin");
   if (normalized.has("editor")) roles.push("editor");
+  if (normalized.has("pelihat")) roles.push("pelihat");
+  if (normalized.has("mitra")) roles.push("mitra");
   return roles;
 };
 

@@ -9,6 +9,7 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
+import { getAuthUser } from "../../../lib/auth";
 import { useToast } from "../../../components/ui/ToastProvider";
 
 type PickupStatus = "baru" | "dijadwalkan" | "selesai" | "dibatalkan" | string;
@@ -100,9 +101,12 @@ export function AdminPickupRequestShowPage() {
   const isLockedStatus = persistedStatus === "selesai" || persistedStatus === "dibatalkan";
   const limitToComplete = persistedStatus === "dijadwalkan";
 
+  const authUser = useMemo(() => getAuthUser(), []);
+  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
+
   const canLoad = Number.isFinite(pickupId) && pickupId > 0;
   const isEditableStatus = persistedStatus === "baru";
-  const canSave = canLoad && !loading && !saving && !deleting && !isLockedStatus;
+  const canSave = canLoad && !loading && !saving && !deleting && !isLockedStatus && !isViewer;
   const canEditDetails = canSave && isEditableStatus;
   const statusOptions = useMemo(
     () => {
@@ -385,7 +389,7 @@ export function AdminPickupRequestShowPage() {
             </div>
           </div>
 
-          {isEditableStatus ? (
+          {isEditableStatus && !isViewer ? (
             <div className="rounded-[28px] border border-red-200 bg-white p-6 shadow-sm">
               <div className="flex items-start gap-4">
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-600 text-white shadow-lg shadow-red-600/20">

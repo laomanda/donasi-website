@@ -87,6 +87,7 @@
             <th>Kode</th>
             <th>Donatur</th>
             <th>Program</th>
+            <th>Kualifikasi</th>
             <th>Sumber</th>
             <th>Status</th>
             <th class="right">Nominal</th>
@@ -109,6 +110,7 @@
               <td>{{ $code }}</td>
               <td>{{ $donor }}</td>
               <td>{{ $program }}</td>
+              <td><strong>{{ $donation->donor_qualification }}</strong></td>
               <td>{{ $source }}</td>
               <td>{{ $status }}</td>
               <td class="right">{{ $formatCurrency($amount) }}</td>

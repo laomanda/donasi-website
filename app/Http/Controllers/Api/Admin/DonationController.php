@@ -213,4 +213,21 @@ class DonationController extends Controller
 
         return response()->json(['message' => 'Failed to send WhatsApp message.'], 500);
     }
+
+    public function export(int $donationId)
+    {
+        $donation = $this->findDonation($donationId);
+
+        if (!$donation) {
+            return response()->json(['message' => 'Donation not found.'], 404);
+        }
+
+        $donation->load('program');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.donation_invoice', [
+            'donation' => $donation,
+        ])->setPaper('a5', 'portrait');
+
+        return $pdf->download("invoice-{$donation->donation_code}.pdf");
+    }
 }
