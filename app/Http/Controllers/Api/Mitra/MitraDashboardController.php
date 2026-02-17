@@ -17,53 +17,139 @@ class MitraDashboardController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Total Kontribusi (Lunas)
-        $totalContribution = Donation::where('user_id', $user->id)
+        // 1. Total & Count Stats
+        $totalDonations = Donation::where('user_id', $user->id)
             ->where('status', 'paid')
             ->sum('amount');
 
-        // 2. Donasi Pending
-        $pendingDonationsCount = Donation::where('user_id', $user->id)
-            ->where('status', 'pending')
+        $donationCount = Donation::where('user_id', $user->id)
+            ->where('status', 'paid')
             ->count();
 
-        // 3. Program Didukung (Unik)
-        $supportedProgramsCount = Donation::where('user_id', $user->id)
+        $totalAllocations = Allocation::where('user_id', $user->id)->sum('amount');
+        $allocationCount = Allocation::where('user_id', $user->id)->count();
+
+        $currentBalance = $totalDonations - $totalAllocations;
+
+        // 2a. Grafik Tren Donasi Bulanan (6 Bulan Terakhir)
+        $sixMonthsAgo = now()->subMonths(5)->startOfMonth();
+        $monthlyStats = Donation::where('user_id', $user->id)
             ->where('status', 'paid')
-            ->whereNotNull('program_id')
-            ->distinct('program_id')
-            ->count('program_id');
+            ->where('created_at', '>=', $sixMonthsAgo)
+            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month_key, SUM(amount) as total_amount')
+            ->groupBy('month_key')
+            ->orderBy('month_key', 'asc')
+            ->get()
+            ->keyBy('month_key');
 
-        // 4. Saldo Saat Ini (Total Paid - Total Allocated)
-        $totalAllocated = Allocation::where('user_id', $user->id)->sum('amount');
-        $currentBalance = $totalContribution - $totalAllocated;
+        $monthlyDonations = [];
+        $currentMonth = $sixMonthsAgo->copy();
+        for ($i = 0; $i < 6; $i++) {
+            $key = $currentMonth->format('Y-m');
+            $monthLabel = $currentMonth->translatedFormat('M'); // Jan, Feb, etc. based on locale
+            
+            $monthlyDonations[] = [
+                'label' => $monthLabel,
+                'amount' => (int) ($monthlyStats[$key]->total_amount ?? 0),
+            ];
+            $currentMonth->addMonth();
+        }
 
-        // 5. Riwayat Donasi Terbaru
-        $recentDonations = Donation::with('program')
+        // 2b. Grafik Tren Harian (7 Hari Terakhir)
+        // User request: rekap 7 hari saja
+        $sevenDaysAgo = now()->subDays(6)->startOfDay();
+        $dailyStats = Donation::where('user_id', $user->id)
+            ->where('status', 'paid')
+            ->where('created_at', '>=', $sevenDaysAgo)
+            ->selectRaw('DATE(created_at) as date_key, SUM(amount) as total_amount')
+            ->groupBy('date_key')
+            ->orderBy('date_key', 'asc')
+            ->get()
+            ->keyBy('date_key');
+
+        $weeklyDonations = []; // Variable name kept as 'weekly' to match frontend interface
+        $currentDay = $sevenDaysAgo->copy();
+        for ($i = 0; $i < 7; $i++) {
+            $key = $currentDay->format('Y-m-d');
+            $dayLabel = $currentDay->translatedFormat('D, d M'); // Sen, 17 Feb
+            
+            $weeklyDonations[] = [
+                'label' => $dayLabel,
+                'amount' => (int) ($dailyStats[$key]->total_amount ?? 0),
+            ];
+            $currentDay->addDay();
+        }
+
+        // 3. Grafik Distribusi Alokasi (Berdasarkan Program)
+        $allocationDistributionRaw = Allocation::with('program')
             ->where('user_id', $user->id)
-            ->latest()
+            ->selectRaw('program_id, SUM(amount) as total_amount')
+            ->groupBy('program_id')
+            ->orderByDesc('total_amount')
             ->take(5)
             ->get();
 
-        // 6. Riwayat Alokasi Dana (Ledger)
-        $recentAllocations = Allocation::with('program')
+        $allocationDistribution = $allocationDistributionRaw->map(function ($item) {
+            return [
+                'name' => $item->program ? $item->program->title : 'Umum',
+                'value' => (int) $item->total_amount,
+            ];
+        });
+
+
+        // Jika kosong, beri default agar grafik tidak error (opsional, atau biarkan kosong)
+        if ($allocationDistribution->isEmpty() && $totalAllocations > 0) {
+             $allocationDistribution = [[
+                 'name' => 'Umum',
+                 'value' => (int) $totalAllocations
+             ]];
+        }
+
+        // Hitung persentase jika perlu, tapi Recharts Pie bisa pakai raw value. 
+        // Frontend mengharapkan value angka.
+
+        // 4. Riwayat Terbaru
+        $recentDonations = Donation::with('user')
             ->where('user_id', $user->id)
             ->latest()
-            ->take(10)
-            ->get();
+            ->take(7)
+            ->get()
+            ->map(function ($donation) {
+                return [
+                    'id' => $donation->id,
+                    'amount' => (int) $donation->amount,
+                    'status' => $donation->status,
+                    'created_at' => $donation->created_at->toIso8601String(),
+                    'donatur_name' => $donation->donor_name ?: ($donation->user ? $donation->user->name : 'Hamba Allah'),
+                ];
+            });
+
+
+        $recentAllocations = Allocation::where('user_id', $user->id)
+            ->latest()
+            ->take(7)
+            ->get()
+            ->map(function ($allocation) {
+                return [
+                    'id' => $allocation->id,
+                    'amount' => (int) $allocation->amount,
+                    'title' => $allocation->description,
+                    'created_at' => $allocation->created_at->toIso8601String(),
+                    'proof_path' => $allocation->proof_path,
+                ];
+            });
 
         return response()->json([
-            'status' => 'success',
-            'data' => [
-                'stats' => [
-                    'total_contribution' => (float) $totalContribution,
-                    'current_balance'    => (float) $currentBalance,
-                    'pending_count'      => $pendingDonationsCount,
-                    'programs_count'     => $supportedProgramsCount,
-                ],
-                'recent_donations'   => $recentDonations,
-                'recent_allocations' => $recentAllocations,
-            ]
+            'total_donations' => (int) $totalDonations,
+            'total_allocations' => (int) $totalAllocations,
+            'remaining_balance' => (int) $currentBalance,
+            'donation_count' => $donationCount,
+            'allocation_count' => $allocationCount,
+            'monthly_donations' => $monthlyDonations,
+            'weekly_donations' => $weeklyDonations,
+            'allocation_distribution' => $allocationDistribution,
+            'recent_donations' => $recentDonations,
+            'recent_allocations' => $recentAllocations,
         ]);
     }
 }

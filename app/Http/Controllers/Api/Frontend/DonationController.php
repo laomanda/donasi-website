@@ -52,11 +52,11 @@ class DonationController extends Controller
                 'is_anonymous'          => $data['is_anonymous'],
                 'payment_source'        => 'midtrans',
                 'payment_method'        => 'snap',
-                // Status awal pending, menunggu callback/webhook Midtrans
                 'status'                => 'pending', 
                 'paid_at'               => null,
                 'notes'                 => $data['notes'] ?? null,
                 'midtrans_order_id'     => $orderId,
+                'user_id'               => auth('sanctum')->id(),
             ]);
 
             // Removed optimistic increment logic here. 

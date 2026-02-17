@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\ProgramController as AdminProgramController;
 use App\Http\Controllers\Api\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Api\Admin\ZiswafConsultationController as AdminZiswafConsultationController;
 use App\Http\Controllers\Api\Admin\ServiceRequestController as AdminServiceRequestController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\Admin\AllocationController as AdminAllocationController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordController;
@@ -41,6 +42,7 @@ use App\Http\Controllers\Api\Editor\EditorTaskController as EditorEditorTaskCont
 use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboardController;
 use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
 use App\Http\Controllers\Api\Mitra\MitraDashboardController;
+use App\Http\Controllers\Api\Mitra\MitraAllocationController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -161,7 +163,11 @@ Route::prefix('v1')->group(function () {
                 Route::apiResource('banners', AdminBannerController::class)->except(['index', 'show']);
 
                 // Allocations (Mitra Wallet)
+                Route::get('users/{user}/allocatable-programs', [AdminAllocationController::class, 'getAllocatablePrograms']);
                 Route::apiResource('allocations', AdminAllocationController::class)->only(['store', 'destroy']);
+                
+                // Users (for dropdowns etc)
+                Route::get('users', [AdminUserController::class, 'index']);
             });
 
             Route::apiResource('programs', AdminProgramController::class)->only(['index', 'show']);
@@ -199,6 +205,8 @@ Route::prefix('v1')->group(function () {
         ->name('mitra.')
         ->group(function () {
             Route::get('dashboard', [MitraDashboardController::class, 'index']);
+            Route::get('allocations', [MitraAllocationController::class, 'index']);
+            Route::get('allocations/{allocation}', [MitraAllocationController::class, 'show']);
         });
 
     /*

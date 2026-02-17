@@ -243,7 +243,7 @@ function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brandGreen-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brandGreen-700/25 transition hover:-translate-y-0.5 hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brandGreen-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brandGreen-700/25 transition hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <FontAwesomeIcon icon={faRightToBracket} />
               {submitting ? t("auth.processing") : t("login.title")}
@@ -262,7 +262,7 @@ function LoginPage() {
               type="button"
               disabled={submitting}
               onClick={() => loginWithGoogle()}
-              className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
             >
               <svg className="h-5 w-5" viewBox="0 0 48 48">
                 <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>

@@ -17,6 +17,20 @@ class AllocationController extends Controller
     {
         $query = Allocation::with(['user', 'program']);
 
+        if ($request->has('q')) {
+            $q = $request->q;
+            $query->where(function($sub) use ($q) {
+                $sub->where('description', 'like', "%{$q}%")
+                    ->orWhereHas('user', function($u) use ($q) {
+                        $u->where('name', 'like', "%{$q}%")
+                          ->orWhere('email', 'like', "%{$q}%");
+                    })
+                    ->orWhereHas('program', function($p) use ($q) {
+                        $p->where('title', 'like', "%{$q}%");
+                    });
+            });
+        }
+
         if ($request->has('user_id')) {
             $query->where('user_id', $request->user_id);
         }
@@ -78,6 +92,55 @@ class AllocationController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Alokasi berhasil dihapus.'
+        ]);
+    }
+
+    /**
+     * Get programs that can be allocated for a specific user
+     */
+    public function getAllocatablePrograms($userId)
+    {
+        // 1. Get Confirm/Paid Donations grouped by program
+        $donations = \App\Models\Donation::where('user_id', $userId)
+            ->where('status', 'paid')
+            ->selectRaw('program_id, SUM(amount) as total_donated')
+            ->groupBy('program_id')
+            ->get()
+            ->keyBy('program_id');
+
+        // 2. Get Allocations grouped by program
+        $allocations = Allocation::where('user_id', $userId)
+            ->selectRaw('program_id, SUM(amount) as total_allocated')
+            ->groupBy('program_id')
+            ->get()
+            ->keyBy('program_id');
+
+        // 3. Calculate remaining balance per program
+        $allocatable = [];
+
+        foreach ($donations as $programId => $donation) {
+            $allocated = $allocations[$programId]->total_allocated ?? 0;
+            $remaining = $donation->total_donated - $allocated;
+
+            if ($remaining > 0) {
+                // Fetch program title
+                $programTitle = 'Dana Umum / Tak Terikat';
+                if ($programId) {
+                    $program = \App\Models\Program::find($programId);
+                    $programTitle = $program ? $program->title : 'Unknown Program';
+                }
+
+                $allocatable[] = [
+                    'program_id' => $programId, // null for General
+                    'program_title' => $programTitle,
+                    'remaining_balance' => $remaining
+                ];
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $allocatable
         ]);
     }
 }

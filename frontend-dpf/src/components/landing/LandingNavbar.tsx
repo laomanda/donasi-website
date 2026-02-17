@@ -17,15 +17,43 @@ import {
     faEnvelope,
     faGlobe,
     faCaretDown,
-    faCaretUp
+    faCaretUp,
+    faGaugeHigh
 } from "@fortawesome/free-solid-svg-icons";
 
 import dpfLogo from "../../brand/dpf-icon.png";
 import { useLang } from "../../lib/i18n";
 import { PrayerBadge } from "./PrayerBadge";
 import { fetchPublicSettings } from "../../lib/publicSettings";
+import { getAuthToken, getAuthUser } from "../../lib/auth";
 
 type NavItem = { label: { id: string; en: string }; href: string; icon: IconProp };
+
+const resolveUserDashboard = (): string | null => {
+    const token = getAuthToken();
+    if (!token) return null;
+    const user = getAuthUser();
+    if (!user) return null;
+
+    const candidates: string[] = [];
+    if (Array.isArray(user.roles)) {
+        user.roles.forEach((r) => {
+            if (r && typeof r.name === "string") candidates.push(r.name);
+        });
+    }
+    if (typeof user.role_label === "string") candidates.push(user.role_label);
+
+    const normalized = new Set(
+        candidates.map((v) => v.toLowerCase().replace(/[^a-z]/g, ""))
+    );
+
+    if (normalized.has("superadmin")) return "/superadmin/dashboard";
+    if (normalized.has("admin")) return "/admin/dashboard";
+    if (normalized.has("editor")) return "/editor/dashboard";
+    if (normalized.has("mitra")) return "/mitra/dashboard";
+    if (normalized.has("pelihat")) return "/pelihat/dashboard";
+    return "/editor/dashboard";
+};
 
 const NAV_ITEMS: NavItem[] = [
     { label: { id: "Beranda", en: "Home" }, href: "/", icon: faHouse },
@@ -228,6 +256,7 @@ const COPY = {
         menuTitle: "Menu",
         currentTime: "Waktu saat ini",
         login: "Masuk",
+        dashboard: "Dashboard",
         donate: "Donasi",
         tagline: "Amanah | Profesional",
     },
@@ -243,6 +272,7 @@ const COPY = {
         menuTitle: "Menu",
         currentTime: "Current time",
         login: "Login",
+        dashboard: "Dashboard",
         donate: "Donate",
         tagline: "Trust | Professional",
     },
@@ -309,11 +339,14 @@ export function LandingNavbar() {
     const langOptionActiveClass = heroMode ? "bg-white/15 border-l-4 border-white/70" : "bg-brandGreen-50 border-l-4 border-brandGreen-500";
     const langOptionHoverClass = heroMode ? "hover:bg-white/10" : "hover:bg-slate-50";
     const loginButtonClass = heroMode
-        ? "inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 text-white px-5 py-2 text-sm font-semibold shadow-sm hover:bg-white/20 transition-colors"
-        : "inline-flex items-center justify-center rounded-full border border-slate-200 bg-primary-600 text-white px-5 py-2 text-sm font-semibold shadow-sm hover:border-slate-300 hover:bg-primary-700 transition-colors";
+        ? "inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/20 transition-colors"
+        : "inline-flex items-center justify-center rounded-full border border-slate-200 bg-primary-600 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:border-slate-300 hover:bg-primary-700 transition-colors";
+    const dashboardButtonClass = heroMode
+        ? "inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/20 transition-colors"
+        : "inline-flex items-center justify-center rounded-full border border-slate-200 bg-slate-800 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-slate-900 transition-colors";
     const donateButtonClass = heroMode
-        ? "inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 text-white px-5 py-2 text-sm font-semibold shadow-sm hover:bg-white/20 transition-colors"
-        : "inline-flex items-center justify-center rounded-full bg-brandGreen-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brandGreen-700 transition-colors";
+        ? "inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/20 transition-colors"
+        : "inline-flex items-center justify-center rounded-full bg-brandGreen-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brandGreen-700 transition-colors";
     const showWave = !heroMode && !scrolled;
 
     const items = useMemo(
@@ -518,7 +551,7 @@ export function LandingNavbar() {
                 <div className="relative">
                     <div className={`relative z-[20] ${navShellClass}`}>
                         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                            <Link to="/" className="flex items-center gap-3 group">
+                            <Link to="/" className="flex items-center gap-2.5 group">
                                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white border border-slate-200 shadow-sm transition-transform group-hover:scale-105">
                                     <img
                                         src={dpfLogo}
@@ -536,13 +569,13 @@ export function LandingNavbar() {
                                 </div>
                             </Link>
 
-                            <nav className="hidden lg:flex items-center gap-2">
+                            <nav className="hidden lg:flex items-center gap-1">
                                 {items.map((it) => (
                                     <NavLink
                                         key={it.href}
                                         to={it.href}
                                         className={({ isActive }) => `
-                                            flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200
+                                            flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-all duration-200
                                             ${isActive ? navItemActiveClass : navItemIdleClass}
                                         `}
                                     >
@@ -559,7 +592,7 @@ export function LandingNavbar() {
                                 ))}
                             </nav>
 
-                            <div className="hidden lg:flex items-center gap-3 overflow-visible">
+                            <div className="hidden lg:flex items-center gap-2 overflow-visible">
                                 {/* Language Switch (dipindah ke sisi kanan) */}
                                 <div className="relative z-[70]" ref={langRef}>
                                     <button
@@ -604,13 +637,29 @@ export function LandingNavbar() {
                                     </div>
                                 </div>
 
-                                <NavLink
-                                    to="/login"
-                                    className={loginButtonClass}
-                                >
-                                    <FontAwesomeIcon icon={faRightToBracket} className="mr-2 text-xs" />
-                                    {t.login}
-                                </NavLink>
+                                {(() => {
+                                    const dashPath = resolveUserDashboard();
+                                    if (dashPath) {
+                                        return (
+                                            <NavLink
+                                                to={dashPath}
+                                                className={dashboardButtonClass}
+                                            >
+                                                <FontAwesomeIcon icon={faGaugeHigh} className="mr-2 text-xs" />
+                                                {t.dashboard}
+                                            </NavLink>
+                                        );
+                                    }
+                                    return (
+                                        <NavLink
+                                            to="/login"
+                                            className={loginButtonClass}
+                                        >
+                                            <FontAwesomeIcon icon={faRightToBracket} className="mr-2 text-xs" />
+                                            {t.login}
+                                        </NavLink>
+                                    );
+                                })()}
                                 <button
                                     type="button"
                                     onClick={() => navigate("/donate")}
@@ -793,11 +842,19 @@ export function LandingNavbar() {
 
                             <div className="bg-slate-50 p-5 grid grid-cols-2 gap-3 border-t border-slate-100">
                                 <button
-                                    onClick={() => { setOpen(false); navigate("/login"); }}
-                                    className="inline-flex justify-center items-center rounded-xl border border-slate-200 bg-primary-600 py-3 text-sm font-semibold text-white hover:bg-primary-700 transition"
+                                    onClick={() => {
+                                        setOpen(false);
+                                        const dashPath = resolveUserDashboard();
+                                        navigate(dashPath || "/login");
+                                    }}
+                                    className={`inline-flex justify-center items-center rounded-xl py-3 text-sm font-semibold text-white transition ${
+                                        resolveUserDashboard()
+                                            ? "bg-slate-800 hover:bg-slate-900"
+                                            : "border border-slate-200 bg-primary-600 hover:bg-primary-700"
+                                    }`}
                                 >
-                                    <FontAwesomeIcon icon={faRightToBracket} className="mr-2" />
-                                    {t.login}
+                                    <FontAwesomeIcon icon={resolveUserDashboard() ? faGaugeHigh : faRightToBracket} className="mr-2" />
+                                    {resolveUserDashboard() ? t.dashboard : t.login}
                                 </button>
 
                                 <button

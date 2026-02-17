@@ -27,7 +27,8 @@ import { KonfirmasiDonasiPage } from '../pages/KonfirmasiDonasiPage'
 import { EditorShell, AdminShell, SuperAdminShell, MitraShell } from '../layouts/dashboard/RoleShells'
 import { MitraRegisterPage } from '../pages/auth/MitraRegisterPage'
 import { MitraDashboardPage } from '../pages/management/mitra/MitraDashboardPage'
-import { MitraAllocationsPage } from '../pages/management/mitra/MitraAllocationsPage'
+import { MitraAllocationsPage } from "../pages/management/mitra/MitraAllocationsPage";
+import { MitraAllocationDetailPage } from "../pages/management/mitra/MitraAllocationDetailPage";
 import { MitraDonationsPage } from '../pages/management/mitra/MitraDonationsPage'
 import { PreviewPage } from '../pages/PreviewPage'
 import { EditorDashboardPage } from '../pages/management/editor/EditorDashboardPage'
@@ -61,6 +62,7 @@ import { AdminConsultationShowPage } from '../pages/management/admin/AdminConsul
 import { AdminPickupRequestsPage } from '../pages/management/admin/AdminPickupRequestsPage'
 import { AdminPickupRequestShowPage } from '../pages/management/admin/AdminPickupRequestShowPage'
 import { AdminAllocationsPage } from '../pages/management/admin/allocations/AdminAllocationsPage'
+import { AdminAllocationCreatePage } from '../pages/management/admin/allocations/AdminAllocationCreatePage'
 import { AdminBankAccountsPage } from '../pages/management/admin/AdminBankAccountsPage'
 import { AdminBankAccountCreatePage } from '../pages/management/admin/AdminBankAccountCreatePage'
 import { AdminBankAccountEditPage } from '../pages/management/admin/AdminBankAccountEditPage'
@@ -148,6 +150,7 @@ export const router = createBrowserRouter([
           { path: 'bank-accounts/create', element: <AdminBankAccountCreatePage /> },
           { path: 'bank-accounts/:id/edit', element: <AdminBankAccountEditPage /> },
           { path: 'allocations', element: <AdminAllocationsPage /> },
+          { path: 'allocations/create', element: <AdminAllocationCreatePage /> },
           { path: 'editor-tasks', element: <AdminEditorTasksPage /> },
           { path: 'editor-tasks/create', element: <AdminEditorTaskCreatePage /> },
           { path: 'search', element: <SearchPage role="admin" /> },
@@ -186,6 +189,7 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', element: <MitraDashboardPage /> },
           { path: 'allocations', element: <MitraAllocationsPage /> },
+          { path: 'allocations/:id', element: <MitraAllocationDetailPage /> },
           { path: 'donations', element: <MitraDonationsPage /> },
           { path: 'settings', element: <SettingsPage role="mitra" /> },
         ],

@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faPlus, 
-  faTrash, 
   faExternalLinkAlt,
+  faMagnifyingGlass,
+  faCoins,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../../lib/http";
 import { toast } from "react-hot-toast";
@@ -15,260 +17,189 @@ type Allocation = {
   proof_path: string | null;
   created_at: string;
   user: { name: string; email: string };
-  program?: { name: string };
+  program?: { title: string };
 };
 
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  role_label: string;
-};
-
-type Program = {
-  id: number;
-  name: string;
+const formatDate = (value: string | null | undefined) => {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 export function AdminAllocationsPage() {
   const [loading, setLoading] = useState(true);
   const [allocations, setAllocations] = useState<Allocation[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [q, setQ] = useState("");
+  const [total, setTotal] = useState(0);
 
-  const [formData, setFormData] = useState({
-    user_id: "",
-    program_id: "",
-    amount: "",
-    description: "",
-    proof: null as File | null,
-  });
-
-  const fetchData = async () => {
+  const fetchData = async (search = "") => {
+    setLoading(true);
     try {
-      const [allocRes, usersRes, progRes] = await Promise.all([
-        http.get("/admin/allocations"),
-        http.get("/superadmin/users"), // Assuming we can get users here to filter mitra
-        http.get("/admin/programs"),
-      ]);
-      setAllocations(allocRes.data.data.data);
-      // Filter only Mitra role
-      setUsers(usersRes.data.data.data.filter((u: any) => u.role_label?.toLowerCase() === 'mitra' || u.roles?.some((r:any) => r.name === 'mitra')));
-      setPrograms(progRes.data.data.data);
+      const { data } = await http.get("/admin/allocations", {
+        params: { q: search, per_page: 50 },
+      });
+      setAllocations(data.data.data);
+      setTotal(data.data.total);
     } catch (err) {
       console.error(err);
+      toast.error("Gagal memuat data alokasi.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-
-    const data = new FormData();
-    data.append("user_id", formData.user_id);
-    data.append("program_id", formData.program_id);
-    data.append("amount", formData.amount);
-    data.append("description", formData.description);
-    if (formData.proof) {
-      data.append("proof", formData.proof);
-    }
-
-    try {
-      await http.post("/admin/allocations", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      toast.success("Dana berhasil dialokasikan.");
-      setIsModalOpen(false);
-      setFormData({ user_id: "", program_id: "", amount: "", description: "", proof: null });
-      fetchData();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Gagal mengalokasikan dana.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm("Hapus alokasi ini? Saldo Mitra akan dikembalikan (dihitung ulang).")) return;
-    try {
-      await http.delete(`/admin/allocations/${id}`);
-      toast.success("Alokasi dihapus.");
-      fetchData();
-    } catch (err) {
-      toast.error("Gagal menghapus.");
-    }
-  };
-
-  if (loading) return <div className="p-8 text-center text-slate-500">Memuat data...</div>;
+    const timer = setTimeout(() => {
+      fetchData(q);
+    }, 500); // 500ms debounce
+    return () => clearTimeout(timer);
+  }, [q]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-2xl font-bold text-slate-900">Manajemen Alokasi Mitra</h1>
-          <p className="text-sm text-slate-500">Kelola penggunaan dana dari Dompet Mitra.</p>
-        </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800"
-        >
-          <FontAwesomeIcon icon={faPlus} />
-          Alokasi Baru
-        </button>
-      </div>
+    <div className="mx-auto w-full max-w-7xl space-y-6">
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
+        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
+        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
 
-      <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="bg-slate-50/50 text-xs font-bold uppercase tracking-widest text-slate-500">
-              <th className="px-6 py-4">Tanggal</th>
-              <th className="px-6 py-4">Mitra</th>
-              <th className="px-6 py-4">Program / Deskripsi</th>
-              <th className="px-6 py-4 text-right">Nominal</th>
-              <th className="px-6 py-4 text-center">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {allocations.map((alloc) => (
-              <tr key={alloc.id} className="text-sm hover:bg-slate-50/30">
-                <td className="px-6 py-4 text-slate-500 tabular-nums">
-                  {new Date(alloc.created_at).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4">
-                  <p className="font-bold text-slate-900">{alloc.user.name}</p>
-                  <p className="text-xs text-slate-500">{alloc.user.email}</p>
-                </td>
-                <td className="px-6 py-4">
-                  <p className="font-bold text-slate-900">{alloc.description}</p>
-                  <p className="text-xs text-slate-500">{alloc.program?.name ?? "Program Umum"}</p>
-                </td>
-                <td className="px-6 py-4 text-right font-bold text-red-600">
-                  -{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(alloc.amount)}
-                </td>
-                <td className="px-6 py-4">
-                   <div className="flex items-center justify-center gap-2">
-                      {alloc.proof_path && (
-                        <a 
-                          href={`http://localhost:8000/storage/${alloc.proof_path}`} 
-                          target="_blank" 
-                          className="p-2 text-slate-400 hover:text-slate-900 transition"
-                        >
-                          <FontAwesomeIcon icon={faExternalLinkAlt} />
-                        </a>
-                      )}
-                      <button 
-                        onClick={() => handleDelete(alloc.id)}
-                        className="p-2 text-slate-400 hover:text-red-600 transition"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modal Alokasi Baru */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl animate-in zoom-in-95 duration-200">
-            <h3 className="font-heading text-xl font-bold text-slate-900">Alokasikan Dana Mitra</h3>
-            <p className="mt-1 text-sm text-slate-500">Dana akan dikurangi dari total kontribusi lunas Mitra.</p>
-
-            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-              <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Pilih Mitra</label>
-                <select
-                  required
-                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3 text-sm focus:ring-brandGreen-500 focus:outline-none"
-                  value={formData.user_id}
-                  onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
-                >
-                  <option value="">-- Pilih Mitra --</option>
-                  {users.map((u) => (
-                    <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
-                  ))}
-                </select>
+        <div className="relative z-10 p-8 md:p-10">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-4">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
+                  <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
+                  Keuangan
+                </span>
+                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
+                  Alokasi Mitra
+                </h1>
+                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
+                  Kelola dan pantau penggunaan dana dari Dompet Mitra.
+                </p>
               </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Program</label>
-                <select
-                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3 text-sm focus:ring-brandGreen-500 focus:outline-none"
-                  value={formData.program_id}
-                  onChange={(e) => setFormData({ ...formData, program_id: e.target.value })}
-                >
-                  <option value="">Program Umum / Lainnya</option>
-                  {programs.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
+              <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-emerald-50">
+                <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/20 px-3 py-1.5 ring-1 ring-white/10">
+                  Total Transaksi: <span className="font-bold text-white">{total}</span>
+                </span>
               </div>
+            </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Nominal Alokasi</label>
-                <input
-                  type="number"
-                  required
-                  placeholder="Rp..."
-                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3 text-sm focus:ring-brandGreen-500 focus:outline-none"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Keterangan / Tujuan</label>
-                <textarea
-                  required
-                  rows={3}
-                  placeholder="Contoh: Operasional Program A Tahap 1"
-                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3 text-sm focus:ring-brandGreen-500 focus:outline-none"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Bukti Penggunaan (Foto/Nota)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition"
-                  onChange={(e) => setFormData({ ...formData, proof: e.target.files?.[0] || null })}
-                />
-              </div>
-
-              <div className="mt-8 flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 rounded-xl border border-slate-200 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 rounded-xl bg-slate-900 py-3 text-sm font-bold text-white transition hover:bg-slate-800 disabled:opacity-50"
-                >
-                  {submitting ? "Memproses..." : "Konfirmasi Alokasi"}
-                </button>
-              </div>
-            </form>
+            <Link
+              to="/admin/allocations/create"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white text-emerald-700 px-6 py-4 text-sm font-bold shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-50 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <FontAwesomeIcon icon={faPlus} />
+              Alokasi Baru
+            </Link>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="grid flex-1 gap-4 sm:grid-cols-1">
+            <label className="block">
+              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Pencarian</span>
+              <div className="mt-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition">
+                <FontAwesomeIcon icon={faMagnifyingGlass} className="text-slate-400" />
+                <input
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Cari Mitra, Program, atau Keterangan..."
+                  className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                />
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Tanggal</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Mitra</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Program / Deskripsi</th>
+                <th className="px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Nominal</th>
+                <th className="px-6 py-4 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td className="px-6 py-5"><div className="h-4 w-24 rounded bg-slate-100" /></td>
+                    <td className="px-6 py-5"><div className="h-4 w-32 rounded bg-slate-100" /></td>
+                    <td className="px-6 py-5"><div className="h-4 w-40 rounded bg-slate-100" /></td>
+                    <td className="px-6 py-5"><div className="h-4 w-20 rounded bg-slate-100 ml-auto" /></td>
+                    <td className="px-6 py-5"><div className="h-8 w-8 rounded bg-slate-100 mx-auto" /></td>
+                  </tr>
+                ))
+              ) : allocations.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
+                    Belum ada data alokasi yang cocok.
+                  </td>
+                </tr>
+              ) : (
+                allocations.map((alloc) => (
+                  <tr key={alloc.id} className="transition hover:bg-slate-50 border-l-4 border-l-transparent hover:border-l-emerald-500">
+                    <td className="px-6 py-5 text-sm font-semibold text-slate-500 tabular-nums">
+                      {formatDate(alloc.created_at)}
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm ring-1 ring-emerald-100">
+                          <FontAwesomeIcon icon={faCoins} />
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900">{alloc.user.name}</p>
+                          <p className="text-xs text-slate-500">{alloc.user.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <p className="font-bold text-slate-900">{alloc.description}</p>
+                      <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">
+                        {alloc.program?.title ?? "Program Umum"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 text-right font-bold text-red-600">
+                      -{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(alloc.amount)}
+                    </td>
+                    <td className="px-6 py-5">
+                       <div className="flex items-center justify-center gap-2">
+                          {alloc.proof_path ? (
+                            <a 
+                              href={`http://localhost:8000/storage/${alloc.proof_path}`} 
+                              target="_blank" 
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-white hover:text-emerald-600 hover:shadow-sm transition"
+                              title="Lihat Bukti"
+                            >
+                              <FontAwesomeIcon icon={faExternalLinkAlt} className="text-xs" />
+                            </a>
+                          ) : (
+                            <span className="text-xs text-slate-400 italic">No Action</span>
+                          )}
+                       </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
