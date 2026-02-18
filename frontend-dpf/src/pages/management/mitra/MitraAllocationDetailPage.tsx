@@ -7,13 +7,12 @@ import {
   faCalendarAlt, 
   faFileInvoice, 
   faExternalLinkAlt,
-  faMoneyBillWave,
   faCheckCircle,
-  faReceipt,
-  faInfoCircle
+  faReceipt
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import { useLang } from "../../../lib/i18n";
+import { mitraDict, translate } from "../../../i18n/mitra";
 
 type Allocation = {
   id: number;
@@ -33,6 +32,7 @@ export function MitraAllocationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [allocation, setAllocation] = useState<Allocation | null>(null);
   const { locale } = useLang();
+  const t = (key: string, fallback?: string) => translate(mitraDict, locale, key, fallback);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,8 +48,8 @@ export function MitraAllocationDetailPage() {
     fetchData();
   }, [id]);
 
-  if (loading) return <div className="p-8 text-center text-slate-500 font-bold animate-pulse">Memuat data...</div>;
-  if (!allocation) return <div className="p-8 text-center text-red-500 font-bold">Data tidak ditemukan</div>;
+  if (loading) return null;
+  if (!allocation) return <div className="p-8 text-center text-red-500 font-bold">{t("mitra.data_not_found")}</div>;
 
   const formatIDR = (val: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -76,68 +76,80 @@ export function MitraAllocationDetailPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <button 
-            onClick={() => navigate(-1)} 
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900 shadow-sm ring-1 ring-slate-200 transition"
-        >
-            <FontAwesomeIcon icon={faArrowLeft} />
-        </button>
-        <div>
-            <h1 className="font-heading text-2xl font-bold text-slate-900">Detail Alokasi Dana</h1>
-            <p className="text-sm text-slate-500 font-medium">#{allocation.id}</p>
+    <div className="mx-auto w-full max-w-7xl space-y-6">
+      {/* Header Section - Solid & Clean */}
+      <div className="relative overflow-hidden rounded-[28px] bg-emerald-600 p-8 md:p-10">
+        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-5">
+            <button 
+                onClick={() => navigate(-1)} 
+                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-white/20 transition hover:bg-white/20"
+            >
+                <FontAwesomeIcon icon={faArrowLeft} className="text-lg" />
+            </button>
+            <div className="min-w-0">
+               <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/10">
+                {t("mitra.allocation_unit")}
+               </span>
+               <h1 className="mt-2 font-heading text-3xl font-bold text-white sm:text-4xl">
+                 ID: #{allocation.id}
+               </h1>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Info */}
         <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+            <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8 space-y-8">
                 
                 {/* Amount & Program */}
-                <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between p-6 rounded-2xl bg-slate-50 border border-slate-100">
-                    <div className="space-y-1">
-                        <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Nominal Alokasi</p>
-                        <p className="font-heading text-3xl font-bold text-slate-900">{formatIDR(allocation.amount)}</p>
+                <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between p-8 rounded-3xl bg-slate-50 border border-slate-100">
+                    <div className="space-y-2">
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">{t("mitra.allocation_nominal")}</p>
+                        <p className="text-3xl font-extrabold text-slate-900 tabular-nums">
+                            {formatIDR(allocation.amount)}
+                        </p>
                     </div>
-                    <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white border border-slate-200 shadow-sm">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-                             <FontAwesomeIcon icon={faBuildingColumns} className="text-xs" />
+                    <div className="flex items-center gap-4 px-5 py-3 rounded-2xl">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl text-emerald-600">
+                             <FontAwesomeIcon icon={faBuildingColumns} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold uppercase text-slate-400">Sumber Dana</p>
-                            <p className="text-sm font-bold text-slate-700">{allocation.program?.title ?? "Dana Umum"}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t("mitra.allocation_program")}</p>
+                            <p className="text-base font-bold text-emerald-600">{allocation.program?.title ?? t("mitra.general_program")}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Description */}
-                <div className="space-y-2">
-                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                        <FontAwesomeIcon icon={faFileInvoice} className="text-slate-400" />
-                        Keterangan / Tujuan
+                <div className="space-y-4">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                        <FontAwesomeIcon icon={faFileInvoice} className="text-emerald-500" />
+                        {t("mitra.purpose")}
                     </h3>
-                    <div className="p-4 rounded-xl border border-slate-100 bg-slate-50 text-slate-700 text-sm leading-relaxed">
+                    <div className="p-6 rounded-2xl border border-slate-100 bg-slate-50 text-slate-800 text-base leading-relaxed font-medium">
                         {allocation.description}
                     </div>
                 </div>
 
                 {/* Meta */}
-                <div className="grid grid-cols-2 gap-4">
-                     <div className="p-4 rounded-xl border border-slate-100 bg-slate-50">
-                        <p className="text-xs text-slate-400 mb-1">Tanggal Alokasi</p>
-                        <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                            <FontAwesomeIcon icon={faCalendarAlt} className="text-slate-300" />
-                            {formatDate(allocation.created_at)}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div className="p-5 rounded-2xl border border-slate-100 bg-slate-50 transition hover:bg-emerald-50/20">
+                        <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">{t("mitra.allocation_date")}</p>
+                        <p className="text-sm font-bold text-slate-900 flex items-center gap-3">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-lg text-emerald-600 transition">
+                                <FontAwesomeIcon icon={faCalendarAlt} />
+                            </span>
+                            <span className="whitespace-nowrap">{formatDate(allocation.created_at)}</span>
                         </p>
                      </div>
-                     <div className="p-4 rounded-xl border border-slate-100 bg-slate-50">
-                        <p className="text-xs text-slate-400 mb-1">Status</p>
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                            Berhasil / Selesai
+                     <div className="p-5 rounded-2xl border border-slate-100 bg-slate-50 transition hover:bg-emerald-50/20">
+                        <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">{t("mitra.transaction_status")}</p>
+                        <span className="inline-flex items-center gap-2 text-emerald-600 text-sm font-bold">
+                            <FontAwesomeIcon icon={faCheckCircle} />
+                            {t("mitra.verified_success")}
                         </span>
                      </div>
                 </div>
@@ -146,38 +158,37 @@ export function MitraAllocationDetailPage() {
 
         {/* Proof Section */}
         <div className="space-y-6">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-full flex flex-col">
-                <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <FontAwesomeIcon icon={faReceipt} className="text-slate-400" />
-                    Bukti Penggunaan
+            <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm h-full flex flex-col sm:p-8">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
+                    <FontAwesomeIcon icon={faReceipt} className="text-emerald-500" />
+                    {t("mitra.proof_usage")}
                 </h3>
                 
                 {allocation.proof_path ? (
-                    <div className="space-y-4 flex-1">
-                        <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 group">
+                    <div className="space-y-6 flex-1 flex flex-col">
+                        <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 flex-1">
                             <img 
                                 src={StorageUrl(allocation.proof_path)} 
                                 alt="Bukti Alokasi" 
-                                className="h-full w-full object-cover transition duration-500 group-hover:scale-105" 
+                                className="h-full w-full object-cover" 
                             />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition" />
                         </div>
                         <a 
                             href={StorageUrl(allocation.proof_path)} 
                             target="_blank" 
                             rel="noreferrer"
-                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 transition shadow-sm"
+                            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-4 text-sm font-bold text-white hover:bg-slate-800 transition"
                         >
                             <FontAwesomeIcon icon={faExternalLinkAlt} />
-                            Buka Ukuran Penuh
+                            {t("mitra.full_size")}
                         </a>
                     </div>
                 ) : (
-                    <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-8 text-center">
-                        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-300">
-                             <FontAwesomeIcon icon={faFileInvoice} className="text-xl" />
+                    <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-10 text-center">
+                        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-300">
+                             <FontAwesomeIcon icon={faFileInvoice} className="text-2xl" />
                         </div>
-                        <p className="text-sm font-medium text-slate-500">Tidak ada bukti foto dilampirkan.</p>
+                        <p className="text-sm font-bold text-slate-500">{t("mitra.no_proof")}</p>
                     </div>
                 )}
             </div>

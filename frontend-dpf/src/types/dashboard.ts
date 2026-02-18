@@ -67,3 +67,37 @@ export type SuperAdminDashboardPayload = {
   top_programs?: TopProgram[];
 };
 
+export type PelihatStats = {
+  total_revenue?: number;
+  active_donors?: number;
+  today_donations?: number;
+  success_rate?: number;
+};
+
+export type PelihatTrends = {
+  total_revenue?: number;
+  active_donors?: number;
+  today_donations?: number;
+  success_rate?: number;
+};
+
+export type WeeklyChartItem = {
+  name: string;
+  date: string;
+  amount: number;
+};
+
+export type DistributionItem = {
+  name: string;
+  value: number;
+};
+
+export type PelihatDashboardPayload = {
+  stats?: PelihatStats;
+  trends?: PelihatTrends;
+  chart_data?: WeeklyChartItem[];
+  distribution?: DistributionItem[];
+  recent_donations?: AdminDonationItem[];
+  pickup_pending?: number;
+  consultation_new?: number;
+};

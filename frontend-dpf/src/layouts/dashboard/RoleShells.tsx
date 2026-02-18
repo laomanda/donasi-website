@@ -46,7 +46,9 @@ function RequireDashboardRole({ role }: { role: DashboardRole }) {
   }
 
   if (!roles.includes(role)) {
-    return <Navigate to={`/${roles[0]}/dashboard`} replace />;
+    const home = roles[0];
+    const redirectPath = `/${home}/dashboard`;
+    return <Navigate to={redirectPath} replace />;
   }
 
   return (
@@ -61,22 +63,15 @@ export function EditorShell() {
 }
 
 export function AdminShell() {
-  const user = getAuthUser();
-  const isPelihat = user?.roles?.some(r => r.name === 'pelihat');
-  
-  if (isPelihat) {
-    return (
-      <DashboardLayout role="pelihat">
-        <Outlet />
-      </DashboardLayout>
-    );
-  }
-
   return <RequireDashboardRole role="admin" />;
 }
 
 export function SuperAdminShell() {
   return <RequireDashboardRole role="superadmin" />;
+}
+
+export function PelihatShell() {
+  return <RequireDashboardRole role="pelihat" />;
 }
 
 export function MitraShell() {

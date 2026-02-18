@@ -1,128 +1,304 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
-  <head>
+<head>
     <meta charset="utf-8">
-    <title>Laporan Donasi</title>
+    <title>Laporan Donasi - {{ $generatedAt->format('d/m/Y') }}</title>
     <style>
-      * { box-sizing: border-box; }
-      body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #1f2937; margin: 0; }
-      h1 { font-size: 20px; margin: 0 0 6px; }
-      p { margin: 0 0 4px; }
-      .page { padding: 24px; }
-      .meta { margin-bottom: 16px; }
-      .filters, .summary { width: 100%; border-collapse: collapse; margin-top: 8px; }
-      .filters td, .summary td { padding: 6px 8px; border: 1px solid #e5e7eb; }
-      .filters td:first-child, .summary td:first-child { width: 160px; font-weight: bold; color: #374151; }
-      .table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-      .table th, .table td { padding: 8px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
-      .table th { background: #f9fafb; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; }
-      .muted { color: #6b7280; font-size: 11px; }
-      .right { text-align: right; }
+        /* Pengaturan Halaman */
+        @page {
+            margin: 1.2cm;
+            footer: html_footer;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 10px;
+            color: #334155;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* Kop Surat */
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header-table td { border: none; }
+
+        .brand-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e293b;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .report-label {
+            text-align: right;
+            font-size: 14px;
+            font-weight: bold;
+            color: #64748b;
+        }
+
+        /* Informasi Filter */
+        .filter-section {
+            width: 100%;
+            margin-bottom: 20px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .filter-table { width: 100%; }
+        .filter-table td { padding: 2px 5px; border: none; }
+        .label { color: #64748b; width: 100px; font-weight: bold; }
+
+        /* Ringkasan (KPI) */
+        .summary-container {
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .summary-box {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .summary-box td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            background: #ffffff;
+        }
+
+        .summary-val {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .summary-lbl {
+            display: block;
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        /* Tabel Data Utama */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            page-break-inside: auto;
+        }
+
+        .table thead {
+            display: table-header-group;
+        }
+
+        .table th {
+            background-color: #1e293b;
+            color: #ffffff;
+            text-align: left;
+            padding: 10px 8px;
+            text-transform: uppercase;
+            font-size: 9px;
+            letter-spacing: 0.5px;
+            border: 1px solid #1e293b;
+        }
+
+        .table td {
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        .table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* Utilitas Teks */
+        .right { text-align: right; }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .amount { 
+            font-family: 'Courier', monospace; 
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .status-badge {
+            font-size: 8px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: right;
+            font-size: 9px;
+            color: #94a3b8;
+            margin-top: 30px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 5px;
+        }
+
+        /* Mencegah row terpotong */
+        tr { page-break-inside: avoid; page-break-after: auto; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
+
     @php
       $formatCurrency = function ($value) {
-          $amount = is_numeric($value) ? (float) $value : 0;
-          return 'Rp ' . number_format($amount, 0, ',', '.');
+          return 'Rp ' . number_format((float)$value, 0, ',', '.');
       };
       $formatDate = function ($value) {
-          if (! $value) return '-';
-          try {
-              return \Carbon\Carbon::parse($value)->format('d M Y H:i');
-          } catch (\Throwable $e) {
-              return '-';
-          }
+          return $value ? \Carbon\Carbon::parse($value)->translatedFormat('d M Y H:i') : '-';
       };
     @endphp
 
-    <div class="page">
-      <div class="meta">
-        <h1>Laporan Donasi</h1>
-        <p class="muted">Dibuat: {{ $generatedAt->format('d M Y H:i') }}</p>
-      </div>
+    <!-- Header / Kop -->
+    <table class="header-table">
+        <tr>
+            <td>
+                <h1 class="brand-title">Djalaludin Pane Foundation </h1>
+                <p style="margin: 0; font-size: 9px; color: #64748b;">
+                    Signature Park Grande, Jl. Letjen M.T. Haryono No.Kav. 20, RT.4/RW.1, Cawang, Kec. Kramat jati, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13630.<br>
+                    Email: layanan@dpf.or.id | Telp: 0813-1176-8254
+                </p>
+            </td>
+            <td class="report-label">
+                {{ __('reports.donation_report_title') }}
+                <div style="font-size: 10px; font-weight: normal; margin-top: 5px;">
+                    {{ __('reports.document_id') }}: REG/{{ now()->format('Ymd/His') }}
+                </div>
+            </td>
+        </tr>
+    </table>
 
-      <table class="filters">
-        <tr>
-          <td>Periode</td>
-          <td>{{ $filters['date_from'] ?: '-' }} s/d {{ $filters['date_to'] ?: '-' }}</td>
-        </tr>
-        <tr>
-          <td>Sumber</td>
-          <td>{{ $filters['payment_source_label'] }}</td>
-        </tr>
-        <tr>
-          <td>Status</td>
-          <td>{{ $filters['status_label'] }}</td>
-        </tr>
-        <tr>
-          <td>Kata kunci</td>
-          <td>{{ $filters['q'] ?: '-' }}</td>
-        </tr>
-      </table>
+    <!-- Parameter Laporan -->
+    <div class="filter-section">
+        <table class="filter-table">
+            <tr>
+                <td class="label">{{ __('reports.period') }}</td>
+                <td>: {{ $filters['date_from'] ?: __('reports.all') }} {{ __('reports.until') }} {{ $filters['date_to'] ?: __('reports.all') }}</td>
+                <td class="label">{{ __('reports.printing_time') }}</td>
+                <td>: {{ $generatedAt->translatedFormat('d F Y H:i') }}</td>
+            </tr>
+            <tr>
+                <td class="label">{{ __('reports.payment_method') }}</td>
+                <td>: {{ $filters['payment_source_label'] }}</td>
+                <td class="label">{{ __('reports.data_status') }}</td>
+                <td>: {{ $filters['status_label'] }}</td>
+            </tr>
+        </table>
+    </div>
 
-      <table class="summary">
-        <tr>
-          <td>Total Donasi</td>
-          <td>{{ number_format($summary['total_count'] ?? 0, 0, ',', '.') }} transaksi</td>
-        </tr>
-        <tr>
-          <td>Total Nominal</td>
-          <td>{{ $formatCurrency($summary['total_amount'] ?? 0) }}</td>
-        </tr>
-        <tr>
-          <td>Manual</td>
-          <td>{{ number_format($summary['manual_count'] ?? 0, 0, ',', '.') }} transaksi - {{ $formatCurrency($summary['manual_amount'] ?? 0) }}</td>
-        </tr>
-        <tr>
-          <td>Midtrans</td>
-          <td>{{ number_format($summary['midtrans_count'] ?? 0, 0, ',', '.') }} transaksi - {{ $formatCurrency($summary['midtrans_amount'] ?? 0) }}</td>
-        </tr>
-      </table>
+    <!-- Summary KPI -->
+    <div class="summary-container">
+        <table class="summary-box">
+            <tr>
+                <td style="width: 25%;">
+                    <span class="summary-lbl">{{ __('reports.total_transactions') }}</span>
+                    <span class="summary-val">{{ number_format($summary['total_count'] ?? 0, 0, ',', '.') }}</span>
+                </td>
+                <td style="width: 35%; background-color: #f1f5f9;">
+                    <span class="summary-lbl">{{ __('reports.total_donation_amount') }}</span>
+                    <span class="summary-val" style="color: #059669; font-size: 16px;">
+                        {{ $formatCurrency($summary['total_amount'] ?? 0) }}
+                    </span>
+                </td>
+                <td style="width: 40%;">
+                    <span class="summary-lbl">{{ __('reports.source_details') }}</span>
+                    <div style="font-size: 9px;">
+                        {{ __('reports.manual') }}: <strong>{{ $formatCurrency($summary['manual_amount'] ?? 0) }}</strong> 
+                        ({{ $summary['manual_count'] }} trx)<br>
+                        {{ __('reports.digital') }}: <strong>{{ $formatCurrency($summary['midtrans_amount'] ?? 0) }}</strong> 
+                        ({{ $summary['midtrans_count'] }} trx)
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
 
-      <table class="table">
+    <!-- Table Data -->
+    <table class="table">
         <thead>
-          <tr>
-            <th style="width: 36px;">No</th>
-            <th>Kode</th>
-            <th>Donatur</th>
-            <th>Program</th>
-            <th>Kualifikasi</th>
-            <th>Sumber</th>
-            <th>Status</th>
-            <th class="right">Nominal</th>
-            <th>Waktu</th>
-          </tr>
+            <tr>
+                <th style="width: 30px;" class="center">{{ __('reports.no') }}</th>
+                <th style="width: 80px;">{{ __('reports.code') }}</th>
+                <th>{{ __('reports.donor') }}</th>
+                <th>{{ __('reports.program_qualification') }}</th>
+                <th style="width: 70px;">{{ __('reports.method') }}</th>
+                <th style="width: 70px;" class="center">{{ __('reports.status') }}</th>
+                <th style="width: 100px;" class="right">{{ __('reports.nominal') }}</th>
+                <th style="width: 90px;">{{ __('reports.success_time') }}</th>
+            </tr>
         </thead>
         <tbody>
-          @forelse ($donations as $index => $donation)
-            @php
-              $code = $donation->donation_code ?: sprintf('#%s', $donation->id);
-              $donor = $donation->donor_name ?: 'Anonim';
-              $program = $donation->program?->title ?: 'Tanpa program';
-              $source = $donation->payment_source ?: '-';
-              $status = $donation->status ?: '-';
-              $amount = $donation->amount ?? 0;
-              $when = $donation->paid_at ?: $donation->created_at;
-            @endphp
+            @forelse ($donations as $index => $donation)
             <tr>
-              <td>{{ $index + 1 }}</td>
-              <td>{{ $code }}</td>
-              <td>{{ $donor }}</td>
-              <td>{{ $program }}</td>
-              <td><strong>{{ $donation->donor_qualification }}</strong></td>
-              <td>{{ $source }}</td>
-              <td>{{ $status }}</td>
-              <td class="right">{{ $formatCurrency($amount) }}</td>
-              <td>{{ $formatDate($when) }}</td>
+                <td class="center">{{ $index + 1 }}</td>
+                <td class="bold">{{ $donation->donation_code ?: '#' . $donation->id }}</td>
+                <td>
+                    <div class="bold">{{ $donation->donor_name ?: __('reports.hamba_allah') }}</div>
+                    <div style="font-size: 8px; color: #64748b;">ID: DON-{{ $donation->id }}</div>
+                </td>
+                <td>
+                    {{ $donation->program?->title ?: __('reports.general_dana') }}
+                    <br><small><i>Kualifikasi: {{ $donation->donor_qualification ?: '-' }}</i></small>
+                </td>
+                <td>{{ $donation->payment_source ?: '-' }}</td>
+                <td class="center">
+                    <span class="status-badge">{{ $donation->status }}</span>
+                </td>
+                <td class="right amount">{{ $formatCurrency($donation->amount ?? 0) }}</td>
+                <td>{{ $formatDate($donation->paid_at ?: $donation->created_at) }}</td>
             </tr>
-          @empty
+            @empty
             <tr>
-              <td colspan="8">Tidak ada data donasi.</td>
+                <td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;">
+                    {{ __('reports.no_data_found') }}
+                </td>
             </tr>
-          @endforelse
+            @endforelse
         </tbody>
-      </table>
+        @if($donations->count() > 0)
+        <tfoot>
+            <tr>
+                <td colspan="6" class="right bold" style="background: #f1f5f9;">{{ __('reports.total_overall') }}</td>
+                <td class="right amount" style="background: #f1f5f9; font-size: 11px;">
+                    {{ $formatCurrency($summary['total_amount'] ?? 0) }}
+                </td>
+                <td style="background: #f1f5f9;"></td>
+            </tr>
+        </tfoot>
+        @endif
+    </table>
+
+    <!-- Tanda Tangan (Opsional) -->
+    <div style="margin-top: 40px; width: 100%;">
+        <table style="width: 100%; border: none;">
+            <tr>
+                <td style="border: none; width: 70%;"></td>
+                <td style="border: none; text-align: center;">
+                    {{ now()->translatedFormat('d F Y') }}<br>
+                    {{ __('reports.treasurer') }},<br><br><br><br>
+                    <strong>( __________________________ )</strong>
+                </td>
+            </tr>
+        </table>
     </div>
-  </body>
+
+    <div class="footer">
+        {{ __('reports.footer_note') }} {{ now()->format('d/m/Y H:i:s') }}
+    </div>
+
+</body>
 </html>

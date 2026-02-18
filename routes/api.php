@@ -43,6 +43,7 @@ use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboa
 use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
 use App\Http\Controllers\Api\Mitra\MitraDashboardController;
 use App\Http\Controllers\Api\Mitra\MitraAllocationController;
+use App\Http\Controllers\Api\Pelihat\PelihatDashboardController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -196,6 +197,18 @@ Route::prefix('v1')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | PELIHAT (Role: pelihat, admin, superadmin)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['auth:sanctum', 'is_active', 'role:pelihat|admin|superadmin'])
+        ->prefix('pelihat')
+        ->name('pelihat.')
+        ->group(function () {
+            Route::get('dashboard', PelihatDashboardController::class)->name('dashboard');
+        });
+
+    /*
+    |--------------------------------------------------------------------------
     | MITRA (Role: mitra)
     |--------------------------------------------------------------------------
     |
@@ -205,8 +218,12 @@ Route::prefix('v1')->group(function () {
         ->name('mitra.')
         ->group(function () {
             Route::get('dashboard', [MitraDashboardController::class, 'index']);
+            Route::get('allocations/export/pdf', [MitraAllocationController::class, 'downloadPdf']);
             Route::get('allocations', [MitraAllocationController::class, 'index']);
             Route::get('allocations/{allocation}', [MitraAllocationController::class, 'show']);
+            Route::get('donations', [\App\Http\Controllers\Api\Mitra\MitraDonationController::class, 'index']);
+            Route::get('donations/export/pdf', [\App\Http\Controllers\Api\Mitra\MitraDonationController::class, 'exportPdf']);
+            Route::get('donations/{donation}/export', [\App\Http\Controllers\Api\Mitra\MitraDonationController::class, 'export']);
         });
 
     /*

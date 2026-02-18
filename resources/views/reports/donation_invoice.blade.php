@@ -142,7 +142,7 @@
                 <p>Telp: 0813-1176-8254 | Email: layanan@dpf.or.id</p>
             </td>
             <td class="document-type">
-                <h2>KUITANSI</h2>
+                <h2>{{ __('reports.receipt_title') }}</h2>
                 <div style="font-size: 10px; color: #666;">No: {{ $donation->donation_code }}</div>
             </td>
         </tr>
@@ -152,23 +152,23 @@
     <table class="meta-table">
         <tr>
             <td width="35%">
-                <div class="label">Diterima Dari</div>
-                <div class="value">{{ $donation->donor_name ?: 'Hamba Allah' }}</div>
+                <div class="label">{{ __('reports.received_from') }}</div>
+                <div class="value">{{ $donation->donor_name ?: __('reports.hamba_allah') }}</div>
                 <div style="font-size: 10px; color: #666; margin-top:2px">
                     {{ $donation->donor_email ?: '-' }} <br>
                     {{ $donation->donor_phone ?: '-' }}
                 </div>
             </td>
             <td width="35%">
-                <div class="label">Tanggal Donasi</div>
+                <div class="label">{{ __('reports.donation_date') }}</div>
                 <div class="value">{{ \Carbon\Carbon::parse($donation->created_at)->translatedFormat('d F Y') }}</div>
                 
-                <div class="label" style="margin-top:8px">Metode</div>
+                <div class="label" style="margin-top:8px">{{ __('reports.method') }}</div>
                 <div class="value">{{ $donation->payment_method ?: 'Transfer' }} ({{ ucfirst($donation->payment_source) }})</div>
             </td>
             <td width="30%" class="text-right" style="vertical-align: middle;">
                 @if($donation->status === 'paid')
-                    <div class="status-badge">LUNAS / PAID</div>
+                    <div class="status-badge">{{ __('reports.paid_status') }}</div>
                 @else
                     <div class="status-badge" style="border-color: #e67e22; color: #e67e22;">{{ strtoupper($donation->status) }}</div>
                 @endif
@@ -181,14 +181,18 @@
         <table width="100%">
             <tr>
                 <td style="vertical-align: middle;">
-                    <div class="label">Telah Diterima Sejumlah</div>
+                    <div class="label">{{ __('reports.received_amount') }}</div>
                     <div class="amount-big">Rp {{ number_format($donation->amount, 0, ',', '.') }}</div>
                 </td>
             </tr>
             <tr>
                 <td>
                     <div class="terbilang">
-                        "# {{ \App\Helpers\Terbilang::make($donation->amount) }} Rupiah #"
+                        @if(App::getLocale() === 'id')
+                           "# {{ \App\Helpers\Terbilang::make($donation->amount) }} Rupiah #"
+                        @else
+                           "# {{ ucwords((new \NumberFormatter('en', \NumberFormatter::SPELLOUT))->format($donation->amount)) }} Rupiah #"
+                        @endif
                     </div>
                 </td>
             </tr>
@@ -199,16 +203,16 @@
     <table class="table-items">
         <thead>
             <tr>
-                <th>Deskripsi Program / Peruntukan</th>
-                <th class="text-right">Subtotal</th>
+                <th>{{ __('reports.program_description') }}</th>
+                <th class="text-right">{{ __('reports.subtotal') }}</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>
-                    <div class="text-bold">{{ $donation->program ? $donation->program->title : 'Donasi Umum' }}</div>
+                    <div class="text-bold">{{ $donation->program ? $donation->program->title : __('reports.general_dana') }}</div>
                     @if($donation->notes)
-                        <div style="font-size: 10px; color: #777; margin-top: 3px;">Catatan: {{ $donation->notes }}</div>
+                        <div style="font-size: 10px; color: #777; margin-top: 3px;">{{ __('reports.notes') }}: {{ $donation->notes }}</div>
                     @endif
                 </td>
                 <td class="text-right text-bold">Rp {{ number_format($donation->amount, 0, ',', '.') }}</td>
@@ -216,7 +220,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <td class="text-right" style="padding-top: 10px; border: none;"><strong>TOTAL AKHIR</strong></td>
+                <td class="text-right" style="padding-top: 10px; border: none;"><strong>{{ __('reports.final_total') }}</strong></td>
                 <td class="text-right" style="padding-top: 10px; border: none;"><span class="amount-big" style="font-size: 16px;">Rp {{ number_format($donation->amount, 0, ',', '.') }}</span></td>
             </tr>
         </tfoot>
@@ -229,13 +233,13 @@
                 <td width="60%"></td>
                 <td width="40%">
                     <div class="signature-box">
-                        <div class="label">Jakarta, {{ \Carbon\Carbon::parse($donation->paid_at ?: now())->translatedFormat('d F Y') }}</div>
-                        <div class="label" style="margin-top: 5px;">Bendahara Yayasan,</div>
+                        <div class="label">{{ \Carbon\Carbon::parse($donation->paid_at ?: now())->translatedFormat('d F Y') }}</div>
+                        <div class="label" style="margin-top: 5px;">{{ __('reports.foundation_treasurer') }},</div>
                         <div class="signature-space">
                             
                         </div>
                         <div class="value" style="text-decoration: underline;">Sistem DPF</div>
-                        <div style="font-size: 9px;">Otomatisasi Dokumen</div>
+                        <div style="font-size: 9px;">{{ __('reports.automation_note') }}</div>
                     </div>
                 </td>
             </tr>
@@ -244,7 +248,7 @@
 
     <!-- Footer -->
     <div class="footer-note">
-        <p>Terima kasih atas donasi Anda. "Satu Donasi, Berjuta Harapan"</p>
+        <p>{{ __('reports.thanks_note') }}</p>
         <p style="font-weight: bold;">www.dpf.or.id</p>
     </div>
 </body>

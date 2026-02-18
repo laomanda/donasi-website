@@ -24,7 +24,7 @@ type ApiErrorData = {
   errors?: unknown;
 };
 
-type DashboardRole = "superadmin" | "admin" | "editor";
+type DashboardRole = "superadmin" | "admin" | "editor" | "pelihat" | "mitra";
 
 const extractApiErrorMessage = (err: unknown): string | null => {
   if (!err || typeof err !== "object") return null;
@@ -73,6 +73,8 @@ const resolveDashboardRole = (user: unknown): DashboardRole | null => {
   if (normalized.has("superadmin")) return "superadmin";
   if (normalized.has("admin")) return "admin";
   if (normalized.has("editor")) return "editor";
+  if (normalized.has("pelihat")) return "pelihat";
+  if (normalized.has("mitra")) return "mitra";
   return null;
 };
 
@@ -102,7 +104,8 @@ function LoginPage() {
         
         toast.success(t("login.google_success"));
         const role = resolveDashboardRole(user) ?? "editor";
-        navigate(`/${role}/dashboard`, { replace: true });
+        const redirectPath = `/${role}/dashboard`;
+        navigate(redirectPath, { replace: true });
       } catch (err) {
         toast.error(t("login.google_fail"));
       } finally {
@@ -147,7 +150,8 @@ function LoginPage() {
       }
 
       const role = resolveDashboardRole(res.data?.user) ?? "editor";
-      navigate(`/${role}/dashboard`, { replace: true });
+      const redirectPath = `/${role}/dashboard`;
+      navigate(redirectPath, { replace: true });
     } catch (err: unknown) {
       setError(extractApiErrorMessage(err) ?? (locale === "en" ? "Invalid email or password." : "Email atau kata sandi salah."));
     } finally {

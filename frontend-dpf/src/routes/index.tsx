@@ -24,12 +24,13 @@ import { KonsultasiPage } from '../pages/KonsultasiPage'
 import { JemputWakafPage } from '../pages/JemputWakafPage'
 import { KonfirmasiDonasiPage } from '../pages/KonfirmasiDonasiPage'
 
-import { EditorShell, AdminShell, SuperAdminShell, MitraShell } from '../layouts/dashboard/RoleShells'
+import { EditorShell, AdminShell, SuperAdminShell, MitraShell, PelihatShell } from '../layouts/dashboard/RoleShells'
 import { MitraRegisterPage } from '../pages/auth/MitraRegisterPage'
 import { MitraDashboardPage } from '../pages/management/mitra/MitraDashboardPage'
 import { MitraAllocationsPage } from "../pages/management/mitra/MitraAllocationsPage";
 import { MitraAllocationDetailPage } from "../pages/management/mitra/MitraAllocationDetailPage";
 import { MitraDonationsPage } from '../pages/management/mitra/MitraDonationsPage'
+import { PelihatDashboardPage } from '../pages/management/pelihat/PelihatDashboardPage'
 import { PreviewPage } from '../pages/PreviewPage'
 import { EditorDashboardPage } from '../pages/management/editor/EditorDashboardPage'
 import { EditorArticlesPage } from '../pages/management/editor/EditorArticlesPage'
@@ -192,6 +193,14 @@ export const router = createBrowserRouter([
           { path: 'allocations/:id', element: <MitraAllocationDetailPage /> },
           { path: 'donations', element: <MitraDonationsPage /> },
           { path: 'settings', element: <SettingsPage role="mitra" /> },
+        ],
+      },
+      {
+        path: 'pelihat',
+        element: <PelihatShell />,
+        children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          { path: 'dashboard', element: <PelihatDashboardPage /> },
         ],
       },
       { path: 'error/400', element: <Error400 /> },

@@ -102,8 +102,40 @@ export const mitraDict: Dict = {
     "table.title": { id: "Keperluan", en: "Purpose" },
     "table.date": { id: "Tanggal", en: "Date" },
 
-    // Common
+    // Common labels
     "common.view_all": { id: "Lihat Semua", en: "View All" },
+    "common.id": { id: "ID", en: "ID" },
+    "common.date": { id: "Tanggal", en: "Date" },
+    "common.amount": { id: "Nominal", en: "Amount" },
+    "common.status": { id: "Status", en: "Status" },
+    "common.details": { id: "Detail", en: "Details" },
+
+    "mitra.download_report": { id: "Download Laporan PDF", en: "Download PDF Report" },
+    "mitra.filter_search": { id: "Filter & Pencarian", en: "Filter & Search" },
+    "mitra.reset_filter": { id: "Reset Filter", en: "Reset Filter" },
+    "mitra.search_placeholder": { id: "Cari alokasi...", en: "Search allocations..." },
+    "mitra.date_from": { id: "Dari Tanggal", en: "Date From" },
+    "mitra.date_to": { id: "Sampai", en: "To" },
+    "mitra.allocation_unit": { id: "Alokasi Dana", en: "Fund Allocation" },
+    "mitra.allocation_nominal": { id: "Nominal Alokasi", en: "Allocation Amount" },
+    "mitra.allocation_program": { id: "Program Alokasi", en: "Allocation Program" },
+    "mitra.purpose": { id: "Keterangan / Tujuan", en: "Purpose / Description" },
+    "mitra.allocation_date": { id: "Tanggal Alokasi", en: "Allocation Date" },
+    "mitra.transaction_status": { id: "Status Transaksi", en: "Transaction Status" },
+    "mitra.verified_success": { id: "Berhasil Terverifikasi", en: "Successfully Verified" },
+    "mitra.proof_usage": { id: "Bukti Penggunaan", en: "Proof of Usage" },
+    "mitra.full_size": { id: "Buka Ukuran Penuh", en: "Open Full Size" },
+    "mitra.no_proof": { id: "Tidak ada bukti foto dilampirkan.", en: "No proof photo attached." },
+    "mitra.data_not_found": { id: "Data tidak ditemukan", en: "Data not found" },
+
+    // Donation Specifics
+    "mitra.donations_subtitle": { id: "Pantau riwayat donasi yang Anda terima secara transparan.", en: "Monitor your received donation history transparently." },
+    "mitra.export_pdf": { id: "Ekspor PDF", en: "Export PDF" },
+    "mitra.search_program_placeholder": { id: "Cari nama program...", en: "Search program name..." },
+    "mitra.date_to_label": { id: "Sampai Tanggal", en: "To Date" },
+    "mitra.donation_code": { id: "Kode Donasi", en: "Donation Code" },
+    "mitra.program": { id: "Program", en: "Program" },
+    "mitra.showing_info": { id: "Menampilkan {count} dari {total} donasi", en: "Showing {count} of {total} donations" },
 };
 
 export function translate(dict: Dict, locale: Locale, key: string, fallback?: string) {

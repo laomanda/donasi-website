@@ -109,7 +109,7 @@ export function MitraDashboardPage() {
 
   return (
     <div 
-      className="space-y-8 pb-12 animate-in fade-in duration-500"
+      className="space-y-8 pb-12"
     >
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -213,7 +213,7 @@ export function MitraDashboardPage() {
                     }}
                   />
                   <Tooltip 
-                    contentStyle={{ borderRadius: "16px", border: "none", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}
+                    contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "none" }}
                     formatter={(value: number) => [formatIDR(value), t("stats.amount", "Nominal")]}
                   />
                   <Area 
@@ -252,7 +252,7 @@ export function MitraDashboardPage() {
                     ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ borderRadius: "16px", border: "none", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}
+                    contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "none" }}
                     formatter={(value: number) => [formatIDR(value), t("stats.amount", "Nominal")]}
                   />
                 </PieChart>
