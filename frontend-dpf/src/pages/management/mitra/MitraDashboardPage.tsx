@@ -158,7 +158,12 @@ export function MitraDashboardPage() {
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">{t("chart.trend_title", "Tren Donasi")}</h3>
-                <p className="text-xs font-semibold text-slate-500">{t("chart.trend_subtitle", "Statistik 6 bulan terakhir")}</p>
+                <p className="text-xs font-semibold text-slate-500">
+                  {filterType === "monthly" 
+                    ? t("chart.trend_subtitle_monthly", "Statistik 6 bulan terakhir")
+                    : t("chart.trend_subtitle_weekly", "Statistik 4 minggu terakhir")
+                  }
+                </p>
               </div>
               <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-1">
                 <button 
@@ -278,7 +283,7 @@ export function MitraDashboardPage() {
                   <div key={item.name} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                      <span className="text-sm font-semibold text-slate-600 truncate max-w-[150px]">{item.name}</span>
+                      <span className="text-sm font-bold text-slate-800">{item.name}</span>
                     </div>
                     <span className="text-sm font-bold text-slate-900">
                         {total > 0 ? Math.round((item.value / total) * 100) : 0}%

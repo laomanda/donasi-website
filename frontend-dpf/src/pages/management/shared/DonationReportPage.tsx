@@ -663,10 +663,8 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
                   else if (statusValue === "failed") barColor = "border-l-rose-500";
                   else if (statusValue === "expired") barColor = "border-l-slate-400";
 
-                  // Determine detail link based on role
-                  const detailLink = role === 'superadmin'
-                    ? `/superadmin/donations/${donation.id}`
-                    : `/admin/donations/${donation.id}`;
+                  const basePath = location.pathname.split('/').slice(0, 2).join('/');
+                  const detailLink = `${basePath}/donations/${donation.id}`;
 
                   return (
                     <tr
@@ -739,9 +737,8 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
               else if (statusValue === "failed") barColor = "border-l-rose-500";
               else if (statusValue === "expired") barColor = "border-l-slate-400";
 
-              const detailLink = role === 'superadmin'
-                ? `/superadmin/donations/${donation.id}`
-                : `/admin/donations/${donation.id}`;
+              const basePath = location.pathname.split('/').slice(0, 2).join('/');
+              const detailLink = `${basePath}/donations/${donation.id}`;
 
               return (
                 <div

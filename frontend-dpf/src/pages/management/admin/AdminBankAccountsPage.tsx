@@ -54,7 +54,7 @@ export function AdminBankAccountsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await http.get<BankAccount[]>("/admin/bank-accounts");
+      const res = await http.get<BankAccount[]>("/editor/bank-accounts");
       const list = Array.isArray(res.data) ? res.data : [];
       setItems(list);
     } catch {
@@ -103,7 +103,7 @@ export function AdminBankAccountsPage() {
     setBulkDeleting(true);
     try {
       const result = await runWithConcurrency(selection.selectedIds, 4, async (id) => {
-        await http.delete(`/admin/bank-accounts/${id}`);
+        await http.delete(`/editor/bank-accounts/${id}`);
       });
 
       if (result.failed.length) {
@@ -156,7 +156,7 @@ export function AdminBankAccountsPage() {
             {!isViewer && (
               <button
                 type="button"
-                onClick={() => navigate("/admin/bank-accounts/create")}
+                onClick={() => navigate("/editor/bank-accounts/create")}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white text-emerald-700 px-6 py-4 text-sm font-bold shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-50 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <FontAwesomeIcon icon={faPlus} />
@@ -284,7 +284,7 @@ export function AdminBankAccountsPage() {
                     <tr
                       key={acc.id}
                       className={`${isViewer ? "" : "cursor-pointer"} transition hover:bg-slate-50 border-l-4 ${barColor}`}
-                      onClick={() => !isViewer && navigate(`/admin/bank-accounts/${acc.id}/edit`)}
+                      onClick={() => !isViewer && navigate(`/editor/bank-accounts/${acc.id}/edit`)}
                     >
                       <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                         <input
@@ -366,7 +366,7 @@ export function AdminBankAccountsPage() {
                 <button
                   key={acc.id}
                   type="button"
-                  onClick={() => !isViewer && navigate(`/admin/bank-accounts/${acc.id}/edit`)}
+                  onClick={() => !isViewer && navigate(`/editor/bank-accounts/${acc.id}/edit`)}
                   className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor} ${isViewer ? "cursor-default" : ""}`}
                 >
                   <div className="flex items-start gap-3">

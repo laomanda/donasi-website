@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faSave, faBuildingColumns, faTimes } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../../lib/http";
-import { toast } from "react-hot-toast";
+import { useToast } from "../../../../components/ui/ToastProvider";
 
 type User = {
   id: number;
@@ -20,6 +20,7 @@ type AllocatableProgram = {
 
 export function AdminAllocationCreatePage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [allocatablePrograms, setAllocatablePrograms] = useState<AllocatableProgram[]>([]);
@@ -56,21 +57,21 @@ export function AdminAllocationCreatePage() {
 
     if (!userId) return;
 
-    const toastId = toast.loading("Mengecek saldo program...");
+    const loadingToastId = toast.info("Mengecek saldo program...", { durationMs: 0 });
     try {
       const { data } = await http.get(`/admin/users/${userId}/allocatable-programs`);
       setAllocatablePrograms(data.data || []);
-      toast.dismiss(toastId);
+      toast.dismiss(loadingToastId);
       
       if (data.data.length === 0) {
-        toast.error("Mitra ini belum memiliki saldo donasi yang bisa dialokasikan.", { duration: 5000 });
+        toast.error("Mitra ini belum memiliki saldo donasi yang bisa dialokasikan.", { durationMs: 5000 });
       } else {
         toast.success(`Ditemukan ${data.data.length} program dengan saldo.`);
       }
     } catch (err) {
       console.error(err);
       toast.error("Gagal memuat saldo program.");
-      toast.dismiss(toastId);
+      toast.dismiss(loadingToastId);
     }
   };
 
@@ -86,17 +87,9 @@ export function AdminAllocationCreatePage() {
   const maxAmount = getSelectedProgramBalance();
 
   const handleAmountChange = (val: string) => {
-    // Remove non-numeric
-    const numVal = Number(val);
-    if (numVal > maxAmount) {
-       // Optional: block input or show error. Let's strict block for now? 
-       // Better to allow typing but show error or cap it? 
-       // User requested "nominal tidak bisa lebih dari saldo", so strict cap or error.
-       // Let's cap it effectively or valid state check.
-       // Actually user logic: "field nominal akan langsung terisi... tidak bisa lebih"
-       // Let's just update state, but validation will happen on render/submit or onBlur
-    }
-    setFormData({ ...formData, amount: val });
+    // Hanya ambil angka (menghilangkan format titik)
+    const rawVal = val.replace(/\D/g, "");
+    setFormData({ ...formData, amount: rawVal });
   };
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,24 +235,12 @@ export function AdminAllocationCreatePage() {
                 <div className="relative">
                   <span className="absolute left-4 top-3 text-slate-400 font-bold">Rp</span>
                   <input
-                    type="number"
+                    type="text"
                     required
                     placeholder="0"
                     disabled={!formData.program_id && formData.program_id !== ""} 
-                    // Note: formData.program_id "" is valid for General Fund IF selected.
-                    // But here we rely on select value. If "General" is selected, value is "".
-                    // So we check if user has selected something. 
-                    // Let's rely on maxAmount > 0 check instead or just logical flow.
-                    // Actually, enable input only if program selected?
-                    // Getting a bit complex with "General" being "".
-                    // Let's simplfy: disable if no allocatable program selected.
-                    // But how to distinguish "Not Selected" vs "Selected General"?
-                    // Select default option value is also "".
-                    // We can check if allocatablePrograms has match.
-                    min={1}
-                    max={maxAmount}
                     className={`block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition ${Number(formData.amount) > maxAmount ? 'border-red-500 ring-4 ring-red-500/10' : ''}`}
-                    value={formData.amount}
+                    value={formData.amount ? new Intl.NumberFormat('id-ID').format(Number(formData.amount)) : ''}
                     onChange={(e) => handleAmountChange(e.target.value)}
                   />
                 </div>

@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -103,6 +103,7 @@ const normalizeSourceLabel = (value: string | null | undefined) => {
 
 export function AdminDonationsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
 
   const [items, setItems] = useState<Donation[]>([]);
@@ -237,7 +238,8 @@ export function AdminDonationsPage() {
     // The effect will trigger the fetch
   };
 
-  const openDonation = (id: number) => navigate(`/admin/donations/${id}`);
+  const basePath = location.pathname.split('/').slice(0, 2).join('/');
+  const openDonation = (id: number) => navigate(`${basePath}/donations/${id}`);
 
   const onDeleteSelected = async () => {
     if (selection.count === 0) return;
@@ -487,9 +489,9 @@ export function AdminDonationsPage() {
                 </th>
                 <th className="w-[18%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Kode</th>
                 <th className="w-[20%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Donatur</th>
-                <th className="w-[30%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Program</th>
-                <th className="w-[14%] px-6 py-5 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Nominal</th>
-                <th className="w-[12%] px-6 py-5 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status</th>
+                <th className="w-[26%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Program</th>
+                <th className="w-[11%] px-6 py-5 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Nominal</th>
+                <th className="w-[19%] px-6 py-5 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -549,7 +551,7 @@ export function AdminDonationsPage() {
                       <td className="px-6 py-5">
                         <p className="font-mono text-sm font-bold text-slate-700 group-hover:text-emerald-700 transition">{code}</p>
                         <div className="mt-1 flex items-center gap-2">
-                          <span className="inline-flex items-center rounded bg-slate-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white shadow-sm">
+                          <span className="inline-flex items-center rounded bg-slate-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white shadow-sm whitespace-nowrap">
                             {source}
                           </span>
                           <span className="text-[10px] font-medium text-slate-400">{formatDateTime(donation.created_at)}</span>
@@ -581,7 +583,7 @@ export function AdminDonationsPage() {
                                 <div className="flex flex-col items-center gap-1">
                                     <button
                                         onClick={(e) => handleOpenWhatsapp(donation, e)}
-                                        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1.5 rounded-lg hover:bg-emerald-100 hover:text-emerald-700 transition ring-1 ring-emerald-200"
+                                        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1.5 rounded-lg hover:bg-emerald-100 hover:text-emerald-700 transition ring-1 ring-emerald-200 whitespace-nowrap"
                                         title="Kirim Bukti via WhatsApp"
                                     >
                                         <FontAwesomeIcon icon={faWhatsapp} className="text-base" />

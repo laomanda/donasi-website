@@ -21,6 +21,7 @@ import { landingDict, translate as translateLanding } from "../i18n/landing";
 import { LandingLayout } from "../layouts/LandingLayout";
 import PhoneInput from "../components/ui/PhoneInput";
 import { getAuthUser } from "../lib/auth";
+import { motion, AnimatePresence } from "framer-motion";
 
 import DpfIcon from "../brand/dpf-icon.png";
 
@@ -100,6 +101,64 @@ type SubmitState = {
     type: "success" | "error" | null;
     messageKey: string | null;
 };
+
+const quotes = [
+    {
+        text: "Hai orang-orang yang beriman, nafkahkanlah (di jalan Allah) sebagian dari hasil usahamu yang baik-baik dan sebagian dari apa yang Kami keluarkan dari bumi untuk kamu.",
+        source: "(Qs. Al Baqarah: 267)"
+    },
+    {
+        text: "Kamu sekali-kali tidak sampai pada kebaikan (yang sempurna), sebelum kamu nafkahkan sebagian harta yang kamu cintai.",
+        source: "(Qs. Ali Imran: 92)"
+    },
+    {
+        text: "Jika seorang anak Adam meninggal dunia, maka terputuslah amalannya kecuali tiga perkara yaitu: sedekah jariyah, ilmu yang dimanfaatkan, atau doa anak yang sholeh",
+        source: "(HR. Muslim no. 1631)"
+    },
+    {
+        text: "Sebagian besar ulama berpendapat bahwa yang dimaksud dengan hadits tersebut (sedekah jariyah) adalah Wakaf, karena sedekah jariyah adalah sedekah yang berkelanjutan manfaatnya.",
+        source: ""
+    }
+];
+
+function QuoteSlideshow() {
+    const [index, setIndex] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setIndex((prev) => (prev + 1) % quotes.length);
+        }, 7000);
+        return () => clearInterval(timer);
+    }, []);
+
+    return (
+        <section className="relative overflow-hidden bg-slate-50 py-12 sm:py-16">
+            <div className="mx-auto max-w-4xl px-6 text-center">
+                <div className="relative h-48 sm:h-40 flex items-center justify-center">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -15 }}
+                            transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+                            className="w-full"
+                        >
+                            <p className="font-heading text-lg font-medium italic leading-relaxed text-slate-800 sm:text-2xl">
+                                "{quotes[index].text}"
+                            </p>
+                            {quotes[index].source && (
+                                <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-primary-600 sm:text-sm">
+                                    {quotes[index].source}
+                                </p>
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </div>
+        </section>
+    );
+}
 
 function DonatePage() {
     const { locale } = useLang();
@@ -708,6 +767,9 @@ function DonatePage() {
                     </div>
                 </div>
             </section>
+
+            {/* QUOTE SLIDESHOW */}
+            <QuoteSlideshow />
 
             {/* REKENING */}
             <section id="rekening-resmi" className="bg-slate-50">

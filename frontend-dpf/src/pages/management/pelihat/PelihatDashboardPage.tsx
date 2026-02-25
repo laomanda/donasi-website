@@ -23,8 +23,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
 } from "recharts";
 
 // --- Utility Functions ---
@@ -48,6 +46,7 @@ const formatDateTime = (value: string | null | undefined) => {
     minute: "2-digit",
   }).format(date);
 };
+
 
 const normalizeNumber = (value: unknown) => {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
@@ -96,7 +95,11 @@ export function PelihatDashboardPage() {
 
   const trendData = useMemo(() => data?.chart_data ?? [], [data]);
 
-  const distributionData = useMemo(() => data?.distribution ?? [], [data]);
+  const distributionData = useMemo(() => {
+    const raw = data?.distribution ?? [];
+    return [...raw].sort((a, b) => b.value - a.value).slice(0, 5);
+  }, [data]);
+
 
   // --- Error State ---
   if (error) {
@@ -122,7 +125,7 @@ export function PelihatDashboardPage() {
 
   // --- Main Render ---
   return (
-    <div className="min-h-screen w-full bg-[#FAFAFA] text-slate-800 pb-20">
+    <div className="min-h-screen w-full text-slate-800 pb-20">
       <div className="mx-auto max-w-[1920px] px-6 md:px-10 lg:px-14 pt-10">
         
         {/* 1. Header Section: Spacious & Clean */}
@@ -136,6 +139,8 @@ export function PelihatDashboardPage() {
             </p>
           </div>
         </header>
+
+
 
         {/* 2. Key Metrics Row: Floating Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -264,47 +269,25 @@ export function PelihatDashboardPage() {
                     </ResponsiveContainer>
                     {/* Center Text */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                       <span className="text-3xl font-black text-slate-900">4</span>
+                       <span className="text-3xl font-black text-slate-900">{distributionData.length}</span>
                        <span className="text-[10px] uppercase font-bold text-slate-400">Sektor</span>
                     </div>
                   </div>
                   
-                  <div className="w-full grid grid-cols-2 gap-3">
+                  <div className="w-full grid grid-cols-1 gap-2">
                     {distributionData.map((item, idx) => (
                       <div key={item.name} className="flex items-center justify-between group cursor-pointer p-2 rounded-xl hover:bg-slate-50 transition-colors">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2.5">
                           <div className="h-2.5 w-2.5 rounded-full ring-2 ring-white shadow-sm shrink-0" style={{ backgroundColor: COLORS[idx] }} />
-                          <span className="text-xs font-semibold text-slate-600 group-hover:text-slate-900 transition truncate max-w-[80px]">{item.name}</span>
+                          <span className="text-sm font-bold text-slate-800 group-hover:text-slate-900 transition">{item.name}</span>
                         </div>
-                        <span className="text-xs font-bold text-slate-900">{item.value}</span>
+                        <span className="text-sm font-bold text-slate-900">{item.value}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
 
-              {/* Bar Chart Card */}
-              <div className="rounded-[40px] bg-white p-8 shadow-[0_2px_40px_-12px_rgba(0,0,0,0.06)] border border-slate-100 flex flex-col">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                     <h3 className="text-lg font-bold text-slate-900">Kecepatan Layanan</h3>
-                     <p className="text-xs text-slate-400 font-medium">Rata-rata respon (menit)</p>
-                  </div>
-                  <div className="bg-emerald-50 px-3 py-1 rounded-full">
-                     <span className="text-xs font-bold text-emerald-600">Avg 7.5m</span>
-                  </div>
-                </div>
-                <div className="flex-1 w-full h-[150px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[{name: 'Jemput', val: 12}, {name: 'Konsul', val: 8}, {name: 'Donasi', val: 2}]} barSize={32}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} dy={10} />
-                      <Tooltip cursor={{fill: '#f8fafc'}} content={<CustomTooltip />} />
-                      <Bar dataKey="val" fill="#10b981" radius={[8, 8, 8, 8]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
 
             </div>
           </div>
@@ -313,20 +296,11 @@ export function PelihatDashboardPage() {
           <div className="xl:col-span-4 flex flex-col gap-8">
             
             {/* Dark Activity Feed Card - The "Premium Contrast" Element */}
-            <div className="rounded-[40px] bg-slate-900 p-8 shadow-2xl shadow-slate-900/20 relative overflow-hidden flex flex-col">
-              {/* Background Decoration */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+            <div className="rounded-[40px] bg-white p-8 shadow-2xl shadow-slate-900/20 relative overflow-hidden flex flex-col">
 
               <div className="relative z-10 mb-8 flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-bold text-white">Live Activity</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <p className="text-xs text-slate-400 font-medium">Real-time update</p>
-                  </div>
+                  <h3 className="text-xl font-bold text-slate-900">5 Donasi Terbaru</h3>
                 </div>
               </div>
 
@@ -341,20 +315,20 @@ export function PelihatDashboardPage() {
                  ) : (
                     recentDonations.map((item, idx) => (
                       <div key={idx} className="group flex items-start gap-4 rounded-2xl p-4 transition-all hover:bg-white/5 border border-transparent hover:border-white/5">
-                        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs ring-1 ring-emerald-500/30">
+                        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-600 text-white font-bold text-xs uppercase">
                            {item.donor_name ? item.donor_name.charAt(0) : "A"}
                         </div>
                         <div className="flex-1 min-w-0">
                            <div className="flex justify-between items-baseline mb-1">
-                              <p className="text-sm font-bold text-white truncate">{item.donor_name || "Hamba Allah"}</p>
-                              <span className="text-[10px] font-medium text-slate-500">{formatDateTime(item.created_at).split(' ')[1]}</span>
+                              <p className="text-sm font-bold text-slate-900 truncate">{item.donor_name || "Hamba Allah"}</p>
+                              <span className="text-[10px] font-medium text-slate-500">{formatDateTime(item.created_at).split(',')[0]}</span>
                            </div>
-                           <p className="text-xs text-slate-400 truncate mb-2">Mendonasikan untuk program wakaf</p>
+                           <p className="text-xs text-slate-400 truncate mb-2">{item.program?.title || "Donasi Umum"}</p>
                            <div className="flex items-center justify-between">
-                              <span className="inline-block rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-bold text-slate-300 uppercase tracking-wide">
+                              <span className="inline-block rounded-md px-2 py-0.5 text-[10px] font-bold text-brandGreen-600 uppercase tracking-wide">
                                 {item.status}
                               </span>
-                              <span className="text-sm font-bold text-emerald-400">{formatCurrency(normalizeNumber(item.amount))}</span>
+                              <span className="text-xs rounded-lg font-bold bg-brandGreen-600 text-white p-1">{formatCurrency(normalizeNumber(item.amount))}</span>
                            </div>
                         </div>
                       </div>
@@ -362,17 +336,29 @@ export function PelihatDashboardPage() {
                  )}
               </div>
 
-              <div className="relative z-10 mt-4 pt-4 border-t border-white/10 text-center">
-                 <button className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors tracking-wide uppercase">
+              <div className="relative z-10 mt-4 pt-4 text-center">
+                 <button className="text-xs font-bold text-white bg-brandGreen-500 rounded-lg p-3 hover:bg-brandGreen-600 transition-colors tracking-wide uppercase">
                     Lihat Lebih Lengkap
                  </button>
               </div>
             </div>
 
-            {/* Compact Widgets Grid */}
+            {/* Operational Status Cards */}
             <div className="grid grid-cols-2 gap-4">
-               <WidgetSmall icon={faTruckFast} label="Jemput" value={data?.pickup_pending ?? 0} unit="Antrean" color="bg-indigo-50 text-indigo-600" />
-               <WidgetSmall icon={faComments} label="Konsultasi" value={data?.consultation_new ?? 0} unit="Baru" color="bg-rose-50 text-rose-600" />
+               <WidgetSmall 
+                 icon={faTruckFast} 
+                 label="Jemput Wakaf" 
+                 value={data?.pickup_pending ?? 0} 
+                 unit="Antrean" 
+                 color="indigo"
+               />
+               <WidgetSmall 
+                 icon={faComments} 
+                 label="Konsultasi" 
+                 value={data?.consultation_new ?? 0} 
+                 unit="Baru"
+                 color="rose"
+               />
             </div>
 
           </div>
@@ -419,21 +405,27 @@ const StatCard = ({ title, value, icon, trend, color, subtext }: { title: string
   );
 };
 
-// 2. Small Widget
-const WidgetSmall = ({ icon, label, value, unit, color }: { icon: any, label: string, value: number, unit: string, color: string }) => (
-  <div className="rounded-[32px] bg-white p-5 border border-slate-100 shadow-sm flex flex-col justify-between h-32 hover:border-slate-200 transition-colors">
-    <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm mb-2 ${color}`}>
-       <FontAwesomeIcon icon={icon} />
+const WidgetSmall = ({ icon, label, value, unit, color }: { icon: any, label: string, value: number, unit: string, color: 'indigo' | 'rose' }) => {
+  const bg = { indigo: 'bg-indigo-600', rose: 'bg-rose-600' };
+  const iconStyle = { indigo: 'text-indigo-600 bg-white/90', rose: 'text-rose-600 bg-white/90' };
+
+  return (
+    <div className={`relative overflow-hidden rounded-[32px] ${bg[color]} p-5 shadow-lg`}>
+      <div className="mb-4">
+        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-sm shadow-sm ${iconStyle[color]}`}>
+           <FontAwesomeIcon icon={icon} />
+        </div>
+      </div>
+      <div>
+         <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1.5">{label}</p>
+         <div className="flex items-baseline gap-1.5">
+           <span className="text-3xl font-black text-white leading-none">{value}</span>
+           <span className="text-sm font-bold text-white/60">{unit}</span>
+         </div>
+      </div>
     </div>
-    <div>
-       <span className="text-[10px] uppercase font-black text-slate-400 block mb-1">{label}</span>
-       <div className="flex items-baseline gap-1">
-          <span className="text-xl font-black text-slate-900">{value}</span>
-          <span className="text-xs font-bold text-slate-500">{unit}</span>
-       </div>
-    </div>
-  </div>
-);
+  );
+};
 
 // 3. Custom Chart Tooltip
 const CustomTooltip = ({ active, payload, label }: any) => {

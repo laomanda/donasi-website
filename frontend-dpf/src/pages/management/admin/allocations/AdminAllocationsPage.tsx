@@ -1,3 +1,6 @@
+
+
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,7 +11,7 @@ import {
   faCoins,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../../lib/http";
-import { toast } from "react-hot-toast";
+import { useToast } from "../../../../components/ui/ToastProvider";
 
 type Allocation = {
   id: number;
@@ -32,6 +35,7 @@ const formatDate = (value: string | null | undefined) => {
 };
 
 export function AdminAllocationsPage() {
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [allocations, setAllocations] = useState<Allocation[]>([]);
   const [q, setQ] = useState("");
@@ -121,7 +125,6 @@ export function AdminAllocationsPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -131,7 +134,7 @@ export function AdminAllocationsPage() {
                 <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Mitra</th>
                 <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Program / Deskripsi</th>
                 <th className="px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Nominal</th>
-                <th className="px-6 py-4 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Aksi</th>
+                <th className="px-6 py-4 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Bukti</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -153,7 +156,10 @@ export function AdminAllocationsPage() {
                 </tr>
               ) : (
                 allocations.map((alloc) => (
-                  <tr key={alloc.id} className="transition hover:bg-slate-50 border-l-4 border-l-transparent hover:border-l-emerald-500">
+                  <tr 
+                    key={alloc.id} 
+                    className="transition hover:bg-slate-50 border-l-4 border-transparent hover:border-l-emerald-500"
+                  >
                     <td className="px-6 py-5 text-sm font-semibold text-slate-500 tabular-nums">
                       {formatDate(alloc.created_at)}
                     </td>
@@ -189,7 +195,7 @@ export function AdminAllocationsPage() {
                               <FontAwesomeIcon icon={faExternalLinkAlt} className="text-xs" />
                             </a>
                           ) : (
-                            <span className="text-xs text-slate-400 italic">No Action</span>
+                            <span className="text-xs text-slate-400 italic">No Proof</span>
                           )}
                        </div>
                     </td>
@@ -200,6 +206,8 @@ export function AdminAllocationsPage() {
           </table>
         </div>
       </div>
+
     </div>
   );
 }
+

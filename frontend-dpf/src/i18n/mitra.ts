@@ -81,6 +81,8 @@ export const mitraDict: Dict = {
     // Charts
     "chart.trend_title": { id: "Tren Donasi", en: "Donation Trends" },
     "chart.trend_subtitle": { id: "Statistik 6 bulan terakhir", en: "Statistics for the last 6 months" },
+    "chart.trend_subtitle_monthly": { id: "Statistik 6 bulan terakhir", en: "Statistics for the last 6 months" },
+    "chart.trend_subtitle_weekly": { id: "Statistik 4 minggu terakhir", en: "Statistics for the last 4 weeks" },
     "chart.distribution_title": { id: "Alokasi Dana", en: "Fund Allocation" },
     "chart.distribution_subtitle": { id: "Distribusi berdasarkan kategori", en: "Distribution by category" },
     "chart.monthly": { id: "Bulanan", en: "Monthly" },

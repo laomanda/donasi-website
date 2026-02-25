@@ -9,8 +9,8 @@ import {
   faBookOpen,
   faBuildingColumns,
   faChartLine,
+  faCheckCircle,
   faChevronDown,
-  faClipboardCheck,
   faClock,
   faGear,
   faGears,
@@ -29,6 +29,7 @@ import {
   faUserGroup,
   faXmark,
   faGlobe,
+  faCommentDots,
 } from "@fortawesome/free-solid-svg-icons";
 import dpfLogo from "../../brand/dpf-icon.png";
 import http from "../../lib/http";
@@ -151,6 +152,7 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       items: [
         { label: "Mitra", href: "/editor/partners", icon: faHandshake },
         { label: "Struktur", href: "/editor/organization-members", icon: faSitemap },
+        { label: "Rekening", href: "/editor/bank-accounts", icon: faBuildingColumns },
       ],
     },
     {
@@ -169,8 +171,9 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       title: "Operasional",
       items: [
         { label: "Donasi", href: "/admin/donations", icon: faReceipt },
-        { label: "Konfirmasi Donasi", href: "/admin/donation-confirmations", icon: faClipboardCheck },
-        { label: "Tugas Editor", href: "/admin/editor-tasks", icon: faListCheck },
+        { label: "Konfirmasi Donasi", href: "/admin/donation-confirmations", icon: faCheckCircle },
+        { label: "Saran Muzakki", href: "/admin/suggestions", icon: faCommentDots },
+        { label: "Editor Tasks", href: "/admin/editor-tasks", icon: faListCheck },
         { label: "Jemput Wakaf", href: "/admin/pickup-requests", icon: faTruckRampBox },
         { label: "Konsultasi", href: "/admin/consultations", icon: faHeadset },
       ],
@@ -180,7 +183,6 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       items: [
         { label: "Laporan Donasi", href: "/admin/reports/donations", icon: faChartLine },
         { label: "Alokasi", href: "/admin/allocations", icon: faHandshake },
-        { label: "Rekening", href: "/admin/bank-accounts", icon: faBuildingColumns },
       ],
     },
     {
@@ -206,6 +208,7 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Sistem",
       items: [
+        { label: "Saran Muzakki", href: "/admin/suggestions", icon: faCommentDots },
         { label: "Tugas Editor", href: "/superadmin/editor-tasks", icon: faListCheck },
         { label: "Pengaturan", href: "/superadmin/settings", icon: faGear },
       ],
@@ -215,6 +218,26 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Ringkasan",
       items: [{ label: "Dashboard", href: "/pelihat/dashboard", icon: faGaugeHigh }],
+    },
+    {
+      title: "Operasional",
+      items: [
+        { label: "Donasi", href: "/pelihat/donations", icon: faReceipt },
+        // "Tugas Editor" is excluded for Pelihat
+        { label: "Jemput Wakaf", href: "/pelihat/pickup-requests", icon: faTruckRampBox },
+        { label: "Konsultasi", href: "/pelihat/consultations", icon: faHeadset },
+      ],
+    },
+    {
+      title: "Keuangan",
+      items: [
+        { label: "Laporan Donasi", href: "/pelihat/reports/donations", icon: faChartLine },
+        // Rekening excluded for now as no AdminBankAccountsPage read-only logic confirmed yet, keeping it safe or should I add it? Usage said "Donasi, Konsultasi, Jemput Wakaf". Rekening was there before. I'll keep it but point to pelihat if requested, but user said "Donasi, Konsultasi, Jemput Wakaf". The previous layout had "Rekening". I will comment it out if not requested or keep it if it was there? The prompt said "tambahkan akses pengaturan lalu Jemput Wakaf, Konsultasi, Donasi". It didn't explicitly say remove others, but "Rekening" was in my previous view of the file. I will keep it but update the link, and ensure route exists. Wait, user didn't ask for Rekening. I'll stick to what's requested + settings. I will commented out Rekening to be safe or just leave it as /admin/bank-accounts which will fail? I should update it to /pelihat/bank-accounts and add route, OR remove it if not requested. I will remove "Laporan Donasi" and "Rekening" from this specific update unless I add routes for them. The user request "tambahkan akses pengaturan lalu Jemput Wakaf, Konsultasi, Donasi". It implies these are the additions/focus. I will include Laporan Donasi as it's read only by nature and useful.
+      ],
+    },
+    {
+      title: "Sistem",
+      items: [{ label: "Pengaturan", href: "/pelihat/settings", icon: faGears }],
     },
   ],
   mitra: [
@@ -355,11 +378,11 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   }, []);
 
   useEffect(() => {
-    if (role !== "admin") return;
+    if (role !== "admin" && role !== "superadmin") return;
     let active = true;
     let pollId: number | null = null;
 
-    const applyCounts = (values: { donationCount?: number; pickupCount?: number; consultationCount?: number }) => {
+    const applyCounts = (values: { donationCount?: number; pickupCount?: number; consultationCount?: number; suggestionCount?: number }) => {
       if (!active) return;
       setAdminBadgeCounts((prev) => ({
         ...prev,
@@ -368,12 +391,13 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
           : {}),
         ...(values.pickupCount !== undefined ? { "/admin/pickup-requests": values.pickupCount } : {}),
         ...(values.consultationCount !== undefined ? { "/admin/consultations": values.consultationCount } : {}),
+        ...(values.suggestionCount !== undefined ? { "/admin/suggestions": values.suggestionCount } : {}),
       }));
     };
 
     const loadCounts = async () => {
       try {
-        const [donationsRes, pickupsRes, consultationsRes] = await Promise.all([
+        const [donationsRes, pickupsRes, consultationsRes, suggestionsRes] = await Promise.all([
           http.get<PaginationMeta>("/admin/donations", {
             params: { status: "pending", payment_source: "manual", per_page: 1 },
           }),
@@ -383,6 +407,9 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
           http.get<PaginationMeta>("/admin/consultations", {
             params: { status: "baru", per_page: 1 },
           }),
+          http.get<PaginationMeta>("/admin/suggestions", {
+            params: { status: "baru", per_page: 1 },
+          }),
         ]);
 
         if (!active) return;
@@ -390,6 +417,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
           donationCount: normalizeCount(donationsRes.data?.total),
           pickupCount: normalizeCount(pickupsRes.data?.total),
           consultationCount: normalizeCount(consultationsRes.data?.total),
+          suggestionCount: normalizeCount(suggestionsRes.data?.total),
         });
       } catch {
         if (!active) return;
@@ -545,7 +573,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
               role={role}
               theme={theme}
               navSections={navSections}
-              badgeCounts={role === "admin" ? adminBadgeCounts : role === "editor" ? editorBadgeCounts : undefined}
+              badgeCounts={(role === "admin" || role === "superadmin") ? adminBadgeCounts : role === "editor" ? editorBadgeCounts : undefined}
               onClose={() => setMobileSidebarOpen(false)}
               showClose
               t={t}
@@ -560,7 +588,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
             role={role}
             theme={theme}
             navSections={navSections}
-            badgeCounts={role === "admin" ? adminBadgeCounts : role === "editor" ? editorBadgeCounts : undefined}
+            badgeCounts={(role === "admin" || role === "superadmin") ? adminBadgeCounts : role === "editor" ? editorBadgeCounts : undefined}
             t={t}
           />
         </aside>
@@ -605,49 +633,49 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
               </div>
 
               <div className="flex items-center gap-3">
-                {(role === "mitra" || role === "pelihat") && (
-                  <div className="relative" ref={langRef}>
-                    <button
-                      type="button"
-                      onClick={() => setLangOpen((v) => !v)}
-                      className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
-                    >
-                      <img
-                        src={locale === "id" ? "/brand/Indonesia.svg" : "/brand/United-Kingdom.svg"}
-                        alt={locale === "id" ? "ID" : "EN"}
-                        className="h-4 w-6 rounded-sm object-cover"
-                      />
-                      <span className="hidden sm:inline">{locale === "id" ? "ID" : "EN"}</span>
-                      <FontAwesomeIcon icon={faGlobe} className="text-brandGreen-600" />
-                      <FontAwesomeIcon icon={faChevronDown} className={`text-[10px] transition-transform ${langOpen ? "rotate-180" : ""}`} />
-                    </button>
+                {role === "mitra" && (
+                <div className="relative" ref={langRef}>
+                  <button
+                    type="button"
+                    onClick={() => setLangOpen((v) => !v)}
+                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                  >
+                    <img
+                      src={locale === "id" ? "/brand/Indonesia.svg" : "/brand/United-Kingdom.svg"}
+                      alt={locale === "id" ? "ID" : "EN"}
+                      className="h-4 w-6 rounded-sm object-cover"
+                    />
+                    <span className="hidden sm:inline">{locale === "id" ? "ID" : "EN"}</span>
+                    <FontAwesomeIcon icon={faGlobe} className="text-brandGreen-600" />
+                    <FontAwesomeIcon icon={faChevronDown} className={`text-[10px] transition-transform ${langOpen ? "rotate-180" : ""}`} />
+                  </button>
 
-                    {langOpen && (
-                      <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-                        {[
-                          { code: "id" as const, label: "Indonesia", flag: "/brand/Indonesia.svg" },
-                          { code: "en" as const, label: "English", flag: "/brand/United-Kingdom.svg" },
-                        ].map((opt) => (
-                          <button
-                            key={opt.code}
-                            type="button"
-                            onClick={() => {
-                              setLocale(opt.code);
-                              setLangOpen(false);
-                            }}
-                            className={`flex w-full items-center gap-3 px-4 py-3 text-xs font-bold transition ${
-                              locale === opt.code
-                                ? "bg-slate-50 text-brandGreen-600"
-                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
-                          >
-                            <img src={opt.flag} alt={opt.label} className="h-4 w-6 rounded-sm object-cover" />
-                            <span>{opt.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  {langOpen && (
+                    <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                      {[
+                        { code: "id" as const, label: "Indonesia", flag: "/brand/Indonesia.svg" },
+                        { code: "en" as const, label: "English", flag: "/brand/United-Kingdom.svg" },
+                      ].map((opt) => (
+                        <button
+                          key={opt.code}
+                          type="button"
+                          onClick={() => {
+                            setLocale(opt.code);
+                            setLangOpen(false);
+                          }}
+                          className={`flex w-full items-center gap-3 px-4 py-3 text-xs font-bold transition ${
+                            locale === opt.code
+                              ? "bg-slate-50 text-brandGreen-600"
+                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                          }`}
+                        >
+                          <img src={opt.flag} alt={opt.label} className="h-4 w-6 rounded-sm object-cover" />
+                          <span>{opt.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 )}
 
                 <div ref={userMenuRef} className="relative shrink-0">

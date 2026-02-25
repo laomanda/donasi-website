@@ -3,7 +3,7 @@
 return [
     'donation_report_title' => 'LAPORAN DONASI',
     'allocation_report_title' => 'LAPORAN ALOKASI DANA',
-    'receipt_title' => 'KUITANSI',
+    'receipt_title' => 'KUINTANSI',
     'document_id' => 'ID Dokumen',
     'period' => 'Periode',
     'printing_time' => 'Pencetakan',

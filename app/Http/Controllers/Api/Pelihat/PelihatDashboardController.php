@@ -97,6 +97,7 @@ class PelihatDashboardController extends Controller
         $pickupPending   = PickupRequest::whereIn('status', ['baru', 'dijadwalkan'])->count();
         $consultationNew = ZiswafConsultation::where('status', 'baru')->count();
 
+
         return [
             'stats' => [
                 'total_revenue'   => (float) $curTotal,

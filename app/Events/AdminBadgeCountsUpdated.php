@@ -14,12 +14,14 @@ class AdminBadgeCountsUpdated implements ShouldBroadcastNow
     public int $userId;
     public int $pickupCount;
     public int $consultationCount;
+    public int $suggestionCount;
 
-    public function __construct(int $userId, int $pickupCount, int $consultationCount)
+    public function __construct(int $userId, int $pickupCount, int $consultationCount, int $suggestionCount = 0)
     {
         $this->userId = $userId;
         $this->pickupCount = $pickupCount;
         $this->consultationCount = $consultationCount;
+        $this->suggestionCount = $suggestionCount;
     }
 
     public function broadcastOn(): array
@@ -37,6 +39,7 @@ class AdminBadgeCountsUpdated implements ShouldBroadcastNow
         return [
             'pickup_count' => $this->pickupCount,
             'consultation_count' => $this->consultationCount,
+            'suggestion_count' => $this->suggestionCount,
         ];
     }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -74,6 +74,7 @@ const getStatusLabel = (status: PickupStatus) => {
 
 export function AdminPickupRequestsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
 
   const [items, setItems] = useState<PickupRequest[]>([]);
@@ -182,7 +183,8 @@ export function AdminPickupRequestsPage() {
     }
   };
 
-  const openDetail = (id: number) => navigate(`/admin/pickup-requests/${id}`);
+  const basePath = location.pathname.split('/').slice(0, 2).join('/');
+  const openDetail = (id: number) => navigate(`${basePath}/pickup-requests/${id}`);
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 pb-10">

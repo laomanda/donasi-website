@@ -27,10 +27,10 @@ import { KonfirmasiDonasiPage } from '../pages/KonfirmasiDonasiPage'
 import { EditorShell, AdminShell, SuperAdminShell, MitraShell, PelihatShell } from '../layouts/dashboard/RoleShells'
 import { MitraRegisterPage } from '../pages/auth/MitraRegisterPage'
 import { MitraDashboardPage } from '../pages/management/mitra/MitraDashboardPage'
+import { PelihatDashboardPage } from '../pages/management/pelihat/PelihatDashboardPage'
 import { MitraAllocationsPage } from "../pages/management/mitra/MitraAllocationsPage";
 import { MitraAllocationDetailPage } from "../pages/management/mitra/MitraAllocationDetailPage";
 import { MitraDonationsPage } from '../pages/management/mitra/MitraDonationsPage'
-import { PelihatDashboardPage } from '../pages/management/pelihat/PelihatDashboardPage'
 import { PreviewPage } from '../pages/PreviewPage'
 import { EditorDashboardPage } from '../pages/management/editor/EditorDashboardPage'
 import { EditorArticlesPage } from '../pages/management/editor/EditorArticlesPage'
@@ -75,6 +75,8 @@ import { SuperAdminUserEditPage } from '../pages/management/superadmin/SuperAdmi
 import { SuperAdminDashboardPage } from '../pages/management/superadmin/SuperAdminDashboardPage'
 import { SuperAdminEditorTasksPage } from '../pages/management/superadmin/SuperAdminEditorTasksPage'
 import { SuperAdminEditorTaskCreatePage } from '../pages/management/superadmin/SuperAdminEditorTaskCreatePage'
+import { AdminSuggestionsPage } from '../pages/management/admin/AdminSuggestionsPage'
+import { AdminSuggestionShowPage } from '../pages/management/admin/AdminSuggestionShowPage'
 
 export const router = createBrowserRouter([
   {
@@ -123,6 +125,9 @@ export const router = createBrowserRouter([
           { path: 'organization-members/:id/edit', element: <EditorOrganizationMemberEditPage /> },
           { path: 'tasks', element: <EditorTasksPage /> },
           { path: 'search', element: <SearchPage role="editor" /> },
+          { path: 'bank-accounts', element: <AdminBankAccountsPage /> },
+          { path: 'bank-accounts/create', element: <AdminBankAccountCreatePage /> },
+          { path: 'bank-accounts/:id/edit', element: <AdminBankAccountEditPage /> },
           { path: 'settings', element: <SettingsPage role="editor" /> },
         ],
       },
@@ -145,11 +150,11 @@ export const router = createBrowserRouter([
           { path: 'donations/:id', element: <AdminDonationShowPage /> },
           { path: 'consultations', element: <AdminConsultationsPage /> },
           { path: 'consultations/:id', element: <AdminConsultationShowPage /> },
+          { path: 'suggestions', element: <AdminSuggestionsPage /> },
+          { path: 'suggestions/:id', element: <AdminSuggestionShowPage /> },
           { path: 'pickup-requests', element: <AdminPickupRequestsPage /> },
           { path: 'pickup-requests/:id', element: <AdminPickupRequestShowPage /> },
-          { path: 'bank-accounts', element: <AdminBankAccountsPage /> },
-          { path: 'bank-accounts/create', element: <AdminBankAccountCreatePage /> },
-          { path: 'bank-accounts/:id/edit', element: <AdminBankAccountEditPage /> },
+          { path: 'pickup-requests/:id', element: <AdminPickupRequestShowPage /> },
           { path: 'allocations', element: <AdminAllocationsPage /> },
           { path: 'allocations/create', element: <AdminAllocationCreatePage /> },
           { path: 'editor-tasks', element: <AdminEditorTasksPage /> },
@@ -174,6 +179,8 @@ export const router = createBrowserRouter([
           { path: 'users/create', element: <SuperAdminUserCreatePage /> },
           { path: 'users/:id/edit', element: <SuperAdminUserEditPage /> },
           { path: 'reports/donations', element: <DonationReportPage /> },
+          { path: 'suggestions', element: <AdminSuggestionsPage /> },
+          { path: 'suggestions/:id', element: <AdminSuggestionShowPage /> },
           { path: 'editor-tasks', element: <SuperAdminEditorTasksPage /> },
           { path: 'editor-tasks/create', element: <SuperAdminEditorTaskCreatePage /> },
           {
@@ -201,6 +208,14 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', element: <PelihatDashboardPage /> },
+          { path: 'donations', element: <AdminDonationsPage /> },
+          { path: 'donations/:id', element: <AdminDonationShowPage /> },
+          { path: 'pickup-requests', element: <AdminPickupRequestsPage /> },
+          { path: 'pickup-requests/:id', element: <AdminPickupRequestShowPage /> },
+          { path: 'consultations', element: <AdminConsultationsPage /> },
+          { path: 'consultations/:id', element: <AdminConsultationShowPage /> },
+          { path: 'reports/donations', element: <DonationReportPage /> },
+          { path: 'settings', element: <SettingsPage role="pelihat" /> },
         ],
       },
       { path: 'error/400', element: <Error400 /> },

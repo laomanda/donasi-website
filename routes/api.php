@@ -11,9 +11,9 @@ use App\Http\Controllers\Api\Admin\PickupRequestController as AdminPickupRequest
 use App\Http\Controllers\Api\Admin\ProgramController as AdminProgramController;
 use App\Http\Controllers\Api\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Api\Admin\ZiswafConsultationController as AdminZiswafConsultationController;
-use App\Http\Controllers\Api\Admin\ServiceRequestController as AdminServiceRequestController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\Admin\AllocationController as AdminAllocationController;
+use App\Http\Controllers\Api\Admin\SuggestionController as AdminSuggestionController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordController;
 use App\Http\Controllers\Api\Editor\ArticleController as EditorArticleController;
@@ -31,9 +31,9 @@ use App\Http\Controllers\Api\Frontend\DonationConfirmationController as Frontend
 use App\Http\Controllers\Api\Frontend\HomeController;
 use App\Http\Controllers\Api\Frontend\OrganizationController as FrontendOrganizationController;
 use App\Http\Controllers\Api\Frontend\PickupRequestController as FrontendPickupRequestController;
-use App\Http\Controllers\Api\Frontend\ServiceRequestController as FrontendServiceRequestController;
 use App\Http\Controllers\Api\Frontend\ProgramController as FrontendProgramController;
 use App\Http\Controllers\Api\Frontend\SettingController as FrontendSettingController;
+use App\Http\Controllers\Api\Frontend\SuggestionController as FrontendSuggestionController;
 use App\Http\Controllers\Api\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Api\Editor\BannerController as EditorBannerController;
 use App\Http\Controllers\Api\PrayerTimesController;
@@ -64,7 +64,6 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
-    Route::post('service-requests', [FrontendServiceRequestController::class, 'store']);
 
     /*
     |--------------------------------------------------------------------------
@@ -94,6 +93,7 @@ Route::prefix('v1')->group(function () {
         Route::get('home', HomeController::class);
         Route::get('banners', [FrontendBannerController::class, 'index']);
         Route::get('settings', [FrontendSettingController::class, 'index']);
+        Route::post('suggestions', [FrontendSuggestionController::class, 'store']);
 
         Route::get('programs', [FrontendProgramController::class, 'index']);
         Route::get('programs/{slug}', [FrontendProgramController::class, 'show']);
@@ -146,6 +146,8 @@ Route::prefix('v1')->group(function () {
                 Route::delete('editor-tasks/{editor_task}/attachments/{attachment}', [AdminEditorTaskController::class, 'destroyAttachment']);
                 
                 Route::apiResource('pickup-requests', AdminPickupRequestController::class)->except(['index', 'show']);
+                Route::apiResource('suggestions', AdminSuggestionController::class)->only(['index', 'show', 'destroy']);
+                Route::patch('suggestions/{suggestion}/status', [AdminSuggestionController::class, 'updateStatus']);
                 Route::patch('pickup-requests/{pickup_request}/status', [AdminPickupRequestController::class, 'updateStatus']);
                 
                 Route::apiResource('consultations', AdminZiswafConsultationController::class)
@@ -153,19 +155,16 @@ Route::prefix('v1')->group(function () {
                     ->except(['index', 'show']);
                 Route::patch('consultations/{ziswaf_consultation}/status', [AdminZiswafConsultationController::class, 'updateStatus']);
 
-                Route::apiResource('service-requests', AdminServiceRequestController::class)->except(['index', 'show']);
-                Route::patch('service-requests/{service_request}/status', [AdminServiceRequestController::class, 'updateStatus']);
 
                 Route::apiResource('partners', AdminPartnerController::class)->except(['index', 'show']);
                 Route::apiResource('organization-members', AdminOrganizationController::class)->except(['index', 'show']);
-                Route::apiResource('bank-accounts', AdminBankAccountController::class)->except(['index', 'show', 'show']);
                 
                 Route::put('settings', [AdminSettingController::class, 'update']);
                 Route::apiResource('banners', AdminBannerController::class)->except(['index', 'show']);
 
                 // Allocations (Mitra Wallet)
                 Route::get('users/{user}/allocatable-programs', [AdminAllocationController::class, 'getAllocatablePrograms']);
-                Route::apiResource('allocations', AdminAllocationController::class)->only(['store', 'destroy']);
+                Route::apiResource('allocations', AdminAllocationController::class)->only(['store']);
                 
                 // Users (for dropdowns etc)
                 Route::get('users', [AdminUserController::class, 'index']);
@@ -175,7 +174,6 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('banners', AdminBannerController::class)->only(['index']);
             Route::apiResource('partners', AdminPartnerController::class)->only(['index']);
             Route::apiResource('organization-members', AdminOrganizationController::class)->only(['index', 'show']);
-            Route::apiResource('bank-accounts', AdminBankAccountController::class)->only(['index']);
 
             Route::get('donations', [AdminDonationController::class, 'index']);
             Route::get('donations/{donation}', [AdminDonationController::class, 'show']);
@@ -189,7 +187,6 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('consultations', AdminZiswafConsultationController::class)
                 ->parameters(['consultations' => 'ziswaf_consultation'])
                 ->only(['index', 'show']);
-            Route::apiResource('service-requests', AdminServiceRequestController::class)->only(['index', 'show']);
 
             Route::get('settings', [AdminSettingController::class, 'index']);
             Route::get('allocations', [AdminAllocationController::class, 'index']);
@@ -231,7 +228,7 @@ Route::prefix('v1')->group(function () {
     | EDITOR (Role: editor, admin, superadmin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role:editor|admin|superadmin'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role:editor|superadmin'])
         ->prefix('editor')
         ->name('editor.')
         ->group(function () {
@@ -247,6 +244,7 @@ Route::prefix('v1')->group(function () {
             Route::get('tasks', [EditorEditorTaskController::class, 'index']);
             Route::get('tasks/{editor_task}', [EditorEditorTaskController::class, 'show']);
             Route::patch('tasks/{editor_task}', [EditorEditorTaskController::class, 'update']);
+            Route::apiResource('bank-accounts', AdminBankAccountController::class);
             Route::apiResource('tags', \App\Http\Controllers\Api\Admin\TagController::class);
         });
 

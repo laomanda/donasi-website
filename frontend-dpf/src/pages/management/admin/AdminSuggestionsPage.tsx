@@ -1,12 +1,12 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
   faArrowRight,
   faFilter,
-  faHeadset,
   faMagnifyingGlass,
+  faCommentDots,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import { getAuthUser } from "../../../lib/auth";
@@ -15,18 +15,15 @@ import { runWithConcurrency } from "../../../lib/bulk";
 import { useBulkSelection } from "../../../components/ui/useBulkSelection";
 import { BulkActionsBar } from "../../../components/ui/BulkActionsBar";
 
-type ConsultationStatus = "baru" | "dibalas" | "ditutup" | string;
-
-type Consultation = {
+type Suggestion = {
   id: number;
   name: string;
-  phone?: string | null;
-  email?: string | null;
-  topic: string;
+  phone: string;
+  category: string;
   message: string;
-  status?: ConsultationStatus | null;
-  admin_notes?: string | null;
-  created_at?: string | null;
+  is_anonymous: boolean;
+  status: "baru" | "dibalas";
+  created_at: string;
 };
 
 type PaginationPayload<T> = {
@@ -50,35 +47,37 @@ const formatDateTime = (value?: string | null) => {
   }).format(date);
 };
 
-const getStatusTone = (status: ConsultationStatus) => {
-  const s = String(status ?? "").toLowerCase();
-  if (s === "baru") return "bg-amber-500 text-white shadow-md shadow-amber-500/20";
-  if (s === "dibalas") return "bg-emerald-600 text-white shadow-md shadow-emerald-600/20";
-  if (s === "ditutup") return "bg-slate-600 text-white shadow-md shadow-slate-600/20";
+const getCategoryLabel = (cat: string) => {
+  const map: Record<string, string> = {
+    suggestion: "Saran",
+    bug: "Laporan Bug",
+    appreciation: "Apresiasi",
+    other: "Lainnya",
+  };
+  return map[cat] || cat;
+};
+
+const getCategoryTone = (cat: string) => {
+  if (cat === "bug") return "bg-red-500 text-white shadow-md shadow-red-500/20";
+  if (cat === "appreciation") return "bg-emerald-600 text-white shadow-md shadow-emerald-600/20";
+  if (cat === "suggestion") return "bg-amber-500 text-white shadow-md shadow-amber-500/20";
   return "bg-slate-600 text-white shadow-md shadow-slate-600/20";
 };
 
-const getStatusLabel = (status: ConsultationStatus) => {
-  const s = String(status ?? "").toLowerCase();
-  if (s === "baru") return "Baru";
-  if (s === "dibalas") return "Dibalas";
-  if (s === "ditutup") return "Ditutup";
-  return String(status || "-");
-};
-
-export function AdminConsultationsPage() {
+export function AdminSuggestionsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
 
-  const [items, setItems] = useState<Consultation[]>([]);
+  const [items, setItems] = useState<Suggestion[]>([]);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
 
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState<ConsultationStatus>("");
+  const [category, setCategory] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,24 +89,26 @@ export function AdminConsultationsPage() {
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((item) => item.id), [items]);
 
-  const hasFilters = Boolean(q.trim() || status);
+  const hasFilters = Boolean(q.trim() || category || statusFilter);
 
-  const fetchConsultations = async (
+  const fetchSuggestions = async (
     nextPage: number,
-    overrides?: Partial<{ q: string; status: ConsultationStatus; perPage: number }>
+    overrides?: Partial<{ q: string; category: string; status: string; perPage: number }>
   ) => {
     const qValue = (overrides?.q ?? q).trim();
-    const statusValue = overrides?.status ?? status;
+    const catValue = overrides?.category ?? category;
+    const statusValue = overrides?.status ?? statusFilter;
     const perPageValue = overrides?.perPage ?? perPage;
 
     setLoading(true);
     setError(null);
     try {
-      const res = await http.get<PaginationPayload<Consultation>>("/admin/consultations", {
+      const res = await http.get<PaginationPayload<Suggestion>>("/admin/suggestions", {
         params: {
           page: nextPage,
           per_page: perPageValue,
           q: qValue || undefined,
+          category: catValue || undefined,
           status: statusValue || undefined,
         },
       });
@@ -117,20 +118,18 @@ export function AdminConsultationsPage() {
       setLastPage(res.data.last_page ?? 1);
       setTotal(res.data.total ?? 0);
     } catch {
-      setError("Gagal memuat data konsultasi.");
+      setError("Gagal memuat data saran.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    void fetchConsultations(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    void fetchSuggestions(1);
   }, [perPage]);
 
   useEffect(() => {
     selection.keepOnly(pageIds);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageIds.join(",")]);
 
   const pageLabel = useMemo(() => {
@@ -140,49 +139,47 @@ export function AdminConsultationsPage() {
     return `Menampilkan ${start}-${end} dari ${total}.`;
   }, [page, perPage, total]);
 
-  // Real-time filtering effect
   useEffect(() => {
     const timer = setTimeout(() => {
-      void fetchConsultations(1);
+      void fetchSuggestions(1);
     }, 500);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, status]);
+  }, [q, category, statusFilter]);
 
   const onReset = () => {
     setQ("");
-    setStatus("");
-    // Effect will trigger fetch
+    setCategory("");
+    setStatusFilter("");
   };
+
+  const basePath = location.pathname.split('/').slice(0, 2).join('/');
+  const openDetail = (id: number) => navigate(`${basePath}/suggestions/${id}`);
 
   const onDeleteSelected = async () => {
     if (selection.count === 0) return;
+    if (!window.confirm(`Hapus ${selection.count} saran terpilih?`)) return;
     setBulkDeleting(true);
     try {
       const result = await runWithConcurrency(selection.selectedIds, 4, async (id) => {
-        await http.delete(`/admin/consultations/${id}`);
+        await http.delete(`/admin/suggestions/${id}`);
       });
 
       if (result.failed.length) {
         toast.error(`Berhasil menghapus ${result.succeeded.length}, gagal ${result.failed.length}.`, { title: "Sebagian gagal" });
         selection.setSelected(new Set(result.failed.map((f) => f.id)));
       } else {
-        toast.success(`Berhasil menghapus ${result.succeeded.length} konsultasi.`, { title: "Berhasil" });
+        toast.success(`Berhasil menghapus ${result.succeeded.length} saran.`, { title: "Berhasil" });
         selection.clear();
       }
 
-      await fetchConsultations(1);
+      await fetchSuggestions(1);
     } finally {
       setBulkDeleting(false);
     }
   };
 
-  const basePath = location.pathname.split('/').slice(0, 2).join('/');
-  const openDetail = (id: number) => navigate(`${basePath}/consultations/${id}`);
-
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      {/* Hero Header */}
       <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
         <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
         <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
@@ -193,20 +190,20 @@ export function AdminConsultationsPage() {
             <div className="space-y-4">
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
-                  <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
-                  Layanan
+                  <FontAwesomeIcon icon={faCommentDots} />
+                  Feedback
                 </span>
                 <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
-                  Konsultasi Wakaf
+                  Saran Muzakki
                 </h1>
                 <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
-                  Kelola pertanyaan masuk, status tindak lanjut, dan berikan respon cepat kepada jamaah.
+                  Dengarkan suara donatur untuk pengembangan layanan DPF yang lebih baik.
                 </p>
               </div>
             </div>
             <div className="flex flex-col gap-3">
               <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-emerald-50 backdrop-blur-sm">
-                Total Konsultasi
+                Total Masukan
                 <span className="font-bold text-white">{new Intl.NumberFormat("id-ID").format(total)}</span>
               </span>
             </div>
@@ -233,7 +230,7 @@ export function AdminConsultationsPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <label className="block">
             <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Pencarian</span>
             <div className="relative mt-2 group">
@@ -243,9 +240,29 @@ export function AdminConsultationsPage() {
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Nama atau topik..."
+                placeholder="Nama, no telp, atau isi pesan..."
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
               />
+            </div>
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Kategori</span>
+            <div className="relative mt-2">
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+              >
+                <option value="">Semua kategori</option>
+                <option value="suggestion">Saran</option>
+                <option value="bug">Laporan Bug</option>
+                <option value="appreciation">Apresiasi</option>
+                <option value="other">Lainnya</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                <FontAwesomeIcon icon={faFilter} className="text-xs" />
+              </div>
             </div>
           </label>
 
@@ -253,14 +270,13 @@ export function AdminConsultationsPage() {
             <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Status</span>
             <div className="relative mt-2">
               <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
               >
-                <option value="">Semua status</option>
+                <option value="">Semua Status</option>
                 <option value="baru">Baru</option>
                 <option value="dibalas">Dibalas</option>
-                <option value="ditutup">Ditutup</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
                 <FontAwesomeIcon icon={faFilter} className="text-xs" />
@@ -299,7 +315,7 @@ export function AdminConsultationsPage() {
 
       <BulkActionsBar
         count={selection.count}
-        itemLabel="konsultasi"
+        itemLabel="saran"
         onClear={selection.clear}
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
@@ -308,114 +324,107 @@ export function AdminConsultationsPage() {
       />
 
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
-        <div className="hidden overflow-x-auto md:block">
+        <div className="hidden overflow-x-auto lg:block">
           <table className="min-w-full table-fixed">
             <thead className="bg-slate-50">
               <tr>
-                <th className="w-[6%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[5%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   <input
                     type="checkbox"
                     checked={pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id))}
                     onChange={() => selection.toggleAll(pageIds)}
-                    aria-label="Pilih semua konsultasi di halaman"
                     className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
                 </th>
-                <th className="w-[24%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Pemohon
+                <th className="w-[20%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Donatur
                 </th>
-                <th className="w-[42%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Topik
+                <th className="w-[12%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Kategori
                 </th>
-                <th className="w-[14%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Status
                 </th>
-                <th className="w-[14%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[35%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Pesan
+                </th>
+                <th className="w-[18%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Waktu
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
-                Array.from({ length: 7 }).map((_, idx) => (
+                Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={idx} className="animate-pulse">
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-4 rounded bg-slate-100" />
-                    </td>
+                    <td className="px-6 py-5"><div className="h-4 w-4 rounded bg-slate-100" /></td>
                     <td className="px-6 py-5">
                       <div className="h-4 w-32 rounded bg-slate-100" />
                       <div className="mt-2 h-3 w-24 rounded bg-slate-100" />
                     </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-56 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-6 w-24 rounded-full bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-28 rounded bg-slate-100" />
-                    </td>
+                    <td className="px-6 py-5"><div className="h-6 w-24 rounded-full bg-slate-100" /></td>
+                    <td className="px-6 py-5"><div className="h-6 w-16 rounded-full bg-slate-100" /></td>
+                    <td className="px-6 py-5"><div className="h-4 w-full rounded bg-slate-100" /></td>
+                    <td className="px-6 py-5"><div className="h-4 w-24 rounded bg-slate-100" /></td>
                   </tr>
                 ))
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
-                    Belum ada konsultasi.
+                  <td colSpan={6} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
+                    Belum ada saran masuk.
                   </td>
                 </tr>
               ) : (
-
-                items.map((item) => {
-                  const statusValue = String(item.status ?? "").trim().toLowerCase();
-                  let barColor = "border-l-slate-200";
-                  if (statusValue === "dibalas") barColor = "border-l-emerald-500";
-                  else if (statusValue === "baru") barColor = "border-l-amber-500";
-                  else if (statusValue === "ditutup") barColor = "border-l-slate-500";
-
-                  return (
-                    <tr
-                      key={item.id}
-                      className={`cursor-pointer transition hover:bg-slate-50 border-l-4 ${barColor}`}
-                      onClick={() => openDetail(item.id)}
-                    >
-                      <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={selection.isSelected(item.id)}
-                          onChange={() => selection.toggle(item.id)}
-                          aria-label={`Pilih konsultasi ${item.name}`}
-                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                        />
-                      </td>
-                      <td className="px-6 py-5">
-                        <p className="line-clamp-1 text-sm font-bold text-slate-900">{item.name}</p>
-                        <p className="mt-1 text-xs font-semibold text-slate-500">
-                          {item.phone ? item.phone : item.email ? item.email : "-"}
-                        </p>
-                      </td>
-                      <td className="px-6 py-5">
-                        <p className="line-clamp-1 text-sm font-semibold text-slate-900">{item.topic}</p>
-                        <p className="mt-1 line-clamp-1 text-xs text-slate-500">{item.message}</p>
-                      </td>
-                      <td className="px-6 py-5">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(String(item.status ?? ""))}`}>
-                          {getStatusLabel(String(item.status ?? ""))}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-600">
-                        {formatDateTime(item.created_at)}
-                      </td>
-                    </tr>
-                  );
-                })
+                items.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="group cursor-pointer transition hover:bg-slate-50"
+                    onClick={() => openDetail(item.id)}
+                  >
+                    <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selection.isSelected(item.id)}
+                        onChange={() => selection.toggle(item.id)}
+                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      />
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-slate-900">{item.name}</p>
+                        {!!item.is_anonymous && (
+                          <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">Anonim</span>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs font-semibold text-slate-500">{item.phone}</p>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className={`inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-bold ${getCategoryTone(item.category)}`}>
+                        {getCategoryLabel(item.category)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold ${item.status === 'baru' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`}>
+                        {item.status === 'baru' ? 'Baru' : 'Dibalas'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <p className="text-sm font-medium leading-relaxed text-slate-700">{item.message}</p>
+                    </td>
+                    <td className="px-6 py-5 whitespace-nowrap text-sm font-semibold text-slate-600">
+                      {formatDateTime(item.created_at)}
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
 
-        <div className="divide-y divide-slate-100 md:hidden">
+        {/* Mobile List View */}
+        <div className="divide-y divide-slate-100 lg:hidden">
           {loading ? (
-            Array.from({ length: 6 }).map((_, idx) => (
+            Array.from({ length: 3 }).map((_, idx) => (
               <div key={idx} className="p-5 animate-pulse">
                 <div className="h-4 w-2/3 rounded bg-slate-100" />
                 <div className="mt-2 h-3 w-1/2 rounded bg-slate-100" />
@@ -423,62 +432,60 @@ export function AdminConsultationsPage() {
               </div>
             ))
           ) : items.length === 0 ? (
-            <div className="p-6 text-center text-sm font-semibold text-slate-500">Belum ada konsultasi.</div>
+            <div className="p-6 text-center text-sm font-semibold text-slate-500">Belum ada saran masuk.</div>
           ) : (
-
-            items.map((item) => {
-              const statusValue = String(item.status ?? "").trim().toLowerCase();
-              let barColor = "border-l-slate-200";
-              if (statusValue === "dibalas") barColor = "border-l-emerald-500";
-              else if (statusValue === "baru") barColor = "border-l-amber-500";
-              else if (statusValue === "ditutup") barColor = "border-l-slate-500";
-
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => openDetail(item.id)}
-                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor}`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="line-clamp-1 text-sm font-bold text-slate-900">{item.name}</p>
-                      <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">{item.topic}</p>
+            items.map((item) => (
+              <div
+                key={item.id}
+                className="cursor-pointer p-5 space-y-3 transition hover:bg-slate-50"
+                onClick={() => openDetail(item.id)}
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                      {item.name}
+                      {!!item.is_anonymous && (
+                        <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">Anonim</span>
+                      )}
                     </div>
-                    <span className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(String(item.status ?? ""))}`}>
-                      {getStatusLabel(String(item.status ?? ""))}
+                    <p className="text-xs font-semibold text-slate-500">{item.phone}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className={`inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-[10px] font-bold ${getCategoryTone(item.category)}`}>
+                      {getCategoryLabel(item.category)}
+                    </span>
+                    <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-bold ${item.status === 'baru' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`}>
+                      {item.status === 'baru' ? 'Baru' : 'Dibalas'}
                     </span>
                   </div>
-                  <p className="mt-3 text-xs font-semibold text-slate-500">{formatDateTime(item.created_at)}</p>
-                </button>
-              );
-            })
+                </div>
+                <p className="text-sm text-slate-600">{item.message}</p>
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-xs font-semibold text-slate-400">{formatDateTime(item.created_at)}</span>
+                </div>
+              </div>
+            ))
           )}
         </div>
       </div>
 
       <div className="flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-primary-100 bg-primary-50 text-primary-700">
-            <FontAwesomeIcon icon={faHeadset} />
-          </span>
-          {pageLabel}
-        </div>
+        <div className="text-sm font-semibold text-slate-600">{pageLabel}</div>
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => void fetchConsultations(Math.max(1, page - 1))}
+            onClick={() => void fetchSuggestions(Math.max(1, page - 1))}
             disabled={page <= 1 || loading}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
           >
             <FontAwesomeIcon icon={faArrowLeft} />
             Sebelumnya
           </button>
           <button
             type="button"
-            onClick={() => void fetchConsultations(Math.min(lastPage, page + 1))}
+            onClick={() => void fetchSuggestions(Math.min(lastPage, page + 1))}
             disabled={page >= lastPage || loading}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
           >
             Berikutnya
             <FontAwesomeIcon icon={faArrowRight} />
@@ -489,5 +496,4 @@ export function AdminConsultationsPage() {
   );
 }
 
-export default AdminConsultationsPage;
-
+export default AdminSuggestionsPage;

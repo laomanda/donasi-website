@@ -161,7 +161,7 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
     setErrors([]);
 
     http
-      .get<BankAccount[]>("/admin/bank-accounts")
+      .get<BankAccount[]>("/editor/bank-accounts")
       .then((res) => {
         if (!active) return;
         const list = Array.isArray(res.data) ? res.data : [];
@@ -258,14 +258,14 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
       const config = { headers: { "Content-Type": "multipart/form-data" } };
 
       if (mode === "create") {
-        await http.post("/admin/bank-accounts", payload, config);
+        await http.post("/editor/bank-accounts", payload, config);
         toast.success("Rekening berhasil dibuat.", { title: "Berhasil" });
       } else {
         payload.append("_method", "PUT");
-        await http.post(`/admin/bank-accounts/${accountId}`, payload, config);
+        await http.post(`/editor/bank-accounts/${accountId}`, payload, config);
         toast.success("Perubahan rekening disimpan.", { title: "Berhasil" });
       }
-      navigate("/admin/bank-accounts", { replace: true });
+      navigate("/editor/bank-accounts", { replace: true });
     } catch (err: any) {
       setErrors(normalizeErrors(err));
     } finally {
@@ -305,9 +305,9 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
     setDeleting(true);
     setErrors([]);
     try {
-      await http.delete(`/admin/bank-accounts/${accountId}`);
+      await http.delete(`/editor/bank-accounts/${accountId}`);
       toast.success("Rekening berhasil dihapus.", { title: "Berhasil" });
-      navigate("/admin/bank-accounts", { replace: true });
+      navigate("/editor/bank-accounts", { replace: true });
     } catch (err: any) {
       setErrors(normalizeErrors(err));
     } finally {
@@ -346,7 +346,7 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
-                onClick={() => navigate("/admin/bank-accounts")}
+                onClick={() => navigate("/editor/bank-accounts")}
                 className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-white/20 backdrop-blur-sm ring-1 ring-white/20"
                 disabled={saving || deleting}
               >
