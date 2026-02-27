@@ -38,7 +38,7 @@ import { readShowClock, SETTINGS_EVENT } from "../../lib/settings";
 import { useLang } from "../../lib/i18n";
 import { mitraDict, translate } from "../../i18n/mitra";
 
-export type DashboardRole = "superadmin" | "admin" | "editor" | "pelihat" | "mitra";
+export type DashboardRole = "superadmin" | "admin" | "editor" | "mitra";
 
 type RoleTheme = {
   appName: string;
@@ -77,7 +77,6 @@ const ROLE_LABEL: Record<DashboardRole, string> = {
   superadmin: "SuperAdmin",
   admin: "Admin",
   editor: "Editor",
-  pelihat: "Pelihat",
   mitra: "Mitra",
 };
 
@@ -101,15 +100,6 @@ const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
     pillText: "text-slate-100",
   },
   editor: {
-    appName: "Manajemen DPF",
-    accentRing: "focus-visible:ring-brandGreen-400",
-    navActiveBg: "bg-slate-900",
-    navActiveText: "text-white",
-    navActiveIcon: "text-brandGreen-400",
-    pillBg: "bg-slate-900",
-    pillText: "text-slate-100",
-  },
-  pelihat: {
     appName: "Manajemen DPF",
     accentRing: "focus-visible:ring-brandGreen-400",
     navActiveBg: "bg-slate-900",
@@ -214,32 +204,6 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       ],
     },
   ],
-  pelihat: [
-    {
-      title: "Ringkasan",
-      items: [{ label: "Dashboard", href: "/pelihat/dashboard", icon: faGaugeHigh }],
-    },
-    {
-      title: "Operasional",
-      items: [
-        { label: "Donasi", href: "/pelihat/donations", icon: faReceipt },
-        // "Tugas Editor" is excluded for Pelihat
-        { label: "Jemput Wakaf", href: "/pelihat/pickup-requests", icon: faTruckRampBox },
-        { label: "Konsultasi", href: "/pelihat/consultations", icon: faHeadset },
-      ],
-    },
-    {
-      title: "Keuangan",
-      items: [
-        { label: "Laporan Donasi", href: "/pelihat/reports/donations", icon: faChartLine },
-        // Rekening excluded for now as no AdminBankAccountsPage read-only logic confirmed yet, keeping it safe or should I add it? Usage said "Donasi, Konsultasi, Jemput Wakaf". Rekening was there before. I'll keep it but point to pelihat if requested, but user said "Donasi, Konsultasi, Jemput Wakaf". The previous layout had "Rekening". I will comment it out if not requested or keep it if it was there? The prompt said "tambahkan akses pengaturan lalu Jemput Wakaf, Konsultasi, Donasi". It didn't explicitly say remove others, but "Rekening" was in my previous view of the file. I will keep it but update the link, and ensure route exists. Wait, user didn't ask for Rekening. I'll stick to what's requested + settings. I will commented out Rekening to be safe or just leave it as /admin/bank-accounts which will fail? I should update it to /pelihat/bank-accounts and add route, OR remove it if not requested. I will remove "Laporan Donasi" and "Rekening" from this specific update unless I add routes for them. The user request "tambahkan akses pengaturan lalu Jemput Wakaf, Konsultasi, Donasi". It implies these are the additions/focus. I will include Laporan Donasi as it's read only by nature and useful.
-      ],
-    },
-    {
-      title: "Sistem",
-      items: [{ label: "Pengaturan", href: "/pelihat/settings", icon: faGears }],
-    },
-  ],
   mitra: [
     {
       title: "Ringkasan",
@@ -282,7 +246,6 @@ const resolveUserRoles = (user: StoredUser | null): DashboardRole[] => {
   if (normalized.has("superadmin")) roles.push("superadmin");
   if (normalized.has("admin")) roles.push("admin");
   if (normalized.has("editor")) roles.push("editor");
-  if (normalized.has("pelihat")) roles.push("pelihat");
   if (normalized.has("mitra")) roles.push("mitra");
   return roles;
 };
@@ -625,7 +588,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
                 {showClock ? (
                   <WorkClock 
                     now={now} 
-                    showStatus={role !== "mitra" && role !== "pelihat"} 
+                    showStatus={role !== "mitra"} 
                     locale={locale}
                     className="hidden min-w-0 lg:flex" 
                   />

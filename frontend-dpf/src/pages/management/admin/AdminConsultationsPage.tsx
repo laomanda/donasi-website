@@ -85,8 +85,7 @@ export function AdminConsultationsPage() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const authUser = useMemo(() => getAuthUser(), []);
-  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
-
+  
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((item) => item.id), [items]);
 
@@ -304,7 +303,7 @@ export function AdminConsultationsPage() {
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
-        hideDelete={isViewer}
+        
       />
 
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">

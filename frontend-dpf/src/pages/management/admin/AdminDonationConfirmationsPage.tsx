@@ -92,8 +92,7 @@ export function AdminDonationConfirmationsPage() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const authUser = useMemo(() => getAuthUser(), []);
-  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
-
+  
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((d) => d.id), [items]);
   const skipAutoFetchRef = useRef(false);
@@ -327,7 +326,7 @@ export function AdminDonationConfirmationsPage() {
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
-        hideDelete={isViewer}
+        
       />
 
       <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">

@@ -128,7 +128,7 @@ Route::prefix('v1')->group(function () {
     | ADMIN (Role: admin atau superadmin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role:admin|superadmin|pelihat'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role:admin|superadmin'])
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
@@ -194,18 +194,6 @@ Route::prefix('v1')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | PELIHAT (Role: pelihat, admin, superadmin)
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware(['auth:sanctum', 'is_active', 'role:pelihat|admin|superadmin'])
-        ->prefix('pelihat')
-        ->name('pelihat.')
-        ->group(function () {
-            Route::get('dashboard', PelihatDashboardController::class)->name('dashboard');
-        });
-
-    /*
-    |--------------------------------------------------------------------------
     | MITRA (Role: mitra)
     |--------------------------------------------------------------------------
     |
@@ -237,6 +225,7 @@ Route::prefix('v1')->group(function () {
             Route::post('uploads/image', [EditorUploadController::class, 'storeImage']);
 
             Route::apiResource('programs', EditorProgramController::class);
+            Route::get('articles/categories', [EditorArticleController::class, 'categories']);
             Route::apiResource('articles', EditorArticleController::class);
             Route::apiResource('banners', EditorBannerController::class)->except('show');
             Route::apiResource('partners', EditorPartnerController::class)->except('show');

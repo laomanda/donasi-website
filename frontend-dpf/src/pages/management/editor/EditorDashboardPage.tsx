@@ -235,11 +235,11 @@ export function EditorDashboardPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 md:flex-nowrap">
             <button
               type="button"
               onClick={() => navigate("/editor/articles/create")}
-              className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800 sm:w-auto"
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-white text-slate-900">
                 <FontAwesomeIcon icon={faBookOpen} size="xs" />
@@ -250,7 +250,7 @@ export function EditorDashboardPage() {
             <button
               type="button"
               onClick={() => navigate("/editor/programs/create")}
-              className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 sm:w-auto"
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-white text-emerald-700">
                 <FontAwesomeIcon icon={faHeart} size="xs" />
@@ -270,7 +270,7 @@ export function EditorDashboardPage() {
         )}
 
         {/* STATS ROW (Modern Cards) */}
-        <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             loading={loading}
             title="Artikel Draf"
@@ -338,7 +338,7 @@ export function EditorDashboardPage() {
 
           <div className="space-y-6 lg:col-span-2 lg:sticky lg:top-24 lg:self-start lg:h-fit">
             <Panel title="Ringkasan Editor" subtitle="Sekilas kondisi konten yang perlu perhatian">
-              <div className="flex flex-wrap justify-center gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                 <SummaryItem
                   className="w-full sm:w-[calc(50%-0.375rem)]"
                   loading={loading}
@@ -470,7 +470,7 @@ function SummaryItem({
   className?: string;
 }) {
   return (
-    <div className={["flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm", className].filter(Boolean).join(" ")}>
+    <div className={["flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm", className].filter(Boolean).join(" ")}>
       <div className={`flex h-9 w-9 items-center justify-center rounded-xl shadow-sm ${tone}`}>
         <FontAwesomeIcon icon={icon} className="text-sm" />
       </div>
@@ -519,12 +519,14 @@ function TaskItemRow({
     : statusOptions.filter((option) => option.value !== "cancelled" && isForwardStatus(status, option.value));
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_220px] sm:items-start">
-        <div className="min-w-0 space-y-3">
-          <div className="flex flex-wrap items-center justify-start gap-2">
-            <p className="text-base font-semibold text-slate-900">{item.title ?? "Tugas tanpa judul"}</p>
-            <span className={["inline-flex text-white items-center rounded-full px-3 py-1 text-[11px] font-bold ring-1", statusTone].join(" ")}>
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="break-words text-base font-semibold leading-snug text-slate-900 sm:text-lg">
+              {item.title ?? "Tugas tanpa judul"}
+            </p>
+            <span className={["inline-flex shrink-0 items-center rounded-full px-3 py-1 text-[10px] font-bold text-white ring-1", statusTone].join(" ")}>
               {statusLabel}
             </span>
           </div>
@@ -536,41 +538,42 @@ function TaskItemRow({
               Alasan dibatalkan: {item.cancel_reason}
             </div>
           ) : null}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className={[metaBase, priorityTone].join(" ")}>
-              Prioritas: {priorityLabel}
+              {priorityLabel}
             </span>
             <span className={[metaBase, getMetaTone("due")].join(" ")}>
-              Tenggat: {dueLabel}
+              {dueLabel}
             </span>
             {creatorName ? (
-              <span className={[metaBase, getMetaTone("from")].join(" ")}>Dari: {creatorName}</span>
+              <span className={[metaBase, getMetaTone("from")].join(" ")}>{creatorName}</span>
             ) : null}
             {attachments.length > 0 ? (
               <span className={[metaBase, getMetaTone("attachments")].join(" ")}>
-                Lampiran: {attachments.length}
+                <FontAwesomeIcon icon={faPaperclip} className="mr-1.5 opacity-60" />
+                {attachments.length}
               </span>
             ) : null}
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:flex-col sm:items-stretch">
+        <div className="flex shrink-0 flex-row gap-2 sm:w-48 sm:flex-col sm:items-stretch">
           <button
             type="button"
             onClick={() => setShowDetail((value) => !value)}
-            className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2 text-[11px] font-bold text-slate-700 shadow-sm transition hover:bg-brandGreen-500 hover:text-white"
+            className="inline-flex grow items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2 text-[11px] font-bold text-slate-700 shadow-sm transition hover:bg-brandGreen-500 hover:text-white sm:grow-0"
           >
-            {showDetail ? "Tutup Detail" : "Lihat Detail"}
+            {showDetail ? "Tutup" : "Detail"}
           </button>
-          <div className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Status</p>
+          <div className="w-full min-w-[120px] rounded-2xl border border-slate-200 bg-slate-50 px-3 py-1.5 sm:py-2">
+            <p className="hidden text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 sm:block">Status</p>
             <select
               value={status}
               onChange={(event) => onStatusChange(event.target.value)}
               disabled={busy || isCancelled}
               aria-label="Status tugas"
               className={[
-                "mt-2 w-full rounded-xl border bg-white px-3 py-2 text-xs font-bold shadow-sm transition focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-100",
+                "w-full rounded-xl border bg-white px-2 py-1.5 text-xs font-bold shadow-sm transition focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-100 sm:mt-2 sm:px-3 sm:py-2",
                 selectTone,
               ].join(" ")}
             >

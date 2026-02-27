@@ -93,6 +93,18 @@ class ArticleController extends Controller
         return response()->json($article->refresh());
     }
 
+    public function categories()
+    {
+        $categories = Article::query()
+            ->select('category')
+            ->distinct()
+            ->whereNotNull('category')
+            ->orderBy('category')
+            ->pluck('category');
+
+        return response()->json($categories);
+    }
+
     private function validatePayload(Request $request, ?int $articleId = null): array
     {
         return $request->validate([

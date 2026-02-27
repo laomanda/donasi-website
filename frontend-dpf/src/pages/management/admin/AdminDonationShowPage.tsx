@@ -147,8 +147,7 @@ export function AdminDonationShowPage() {
   const [exporting, setExporting] = useState(false);
 
   const authUser = useMemo(() => getAuthUser(), []);
-  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
-
+  
   const canLoad = Number.isFinite(donationId) && donationId > 0;
   const isMidtrans = String(data?.payment_source ?? "").toLowerCase() === "midtrans";
   const persistedStatus = String(data?.status ?? status).trim().toLowerCase();
@@ -472,7 +471,7 @@ export function AdminDonationShowPage() {
                       value={status}
                       onChange={(e) => setStatus(e.target.value)}
                       className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
-                      disabled={!canSave || isStatusLocked || isViewer}
+                      disabled={!canSave || isStatusLocked }
                     >
                       {statusOptions.map((option) => (
                         <option key={option.value} value={option.value} disabled={option.disabled}>
@@ -489,7 +488,7 @@ export function AdminDonationShowPage() {
                       value={paidAtLocal}
                       onChange={(e) => setPaidAtLocal(e.target.value)}
                       className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
-                      disabled={!canSave || isViewer}
+                      disabled={!canSave }
                     />
                   </label>
 
@@ -500,7 +499,7 @@ export function AdminDonationShowPage() {
                       onChange={(e) => setNotes(e.target.value)}
                       rows={3}
                       className="mt-1.5 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition"
-                      disabled={!canSave || isViewer}
+                      disabled={!canSave }
                       placeholder="Contoh: Transfer valid via BCA..."
                     />
                   </label>
@@ -513,7 +512,7 @@ export function AdminDonationShowPage() {
                   ) : (
                     <button
                       onClick={() => void onSaveStatus()}
-                      disabled={!canSave || isViewer}
+                      disabled={!canSave }
                       className="w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                     >
                       Simpan Perubahan
@@ -544,7 +543,7 @@ export function AdminDonationShowPage() {
               </div>
 
               {/* Delete Zone */}
-              {isPendingStatus && !isViewer && (
+              {isPendingStatus  && (
                 <div className="rounded-[24px] border border-rose-100 bg-white p-6 shadow-sm">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="h-10 w-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">

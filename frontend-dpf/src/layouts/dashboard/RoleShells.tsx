@@ -27,7 +27,6 @@ const resolveUserRoles = (): DashboardRole[] => {
   if (normalized.has("superadmin")) roles.push("superadmin");
   if (normalized.has("admin")) roles.push("admin");
   if (normalized.has("editor")) roles.push("editor");
-  if (normalized.has("pelihat")) roles.push("pelihat");
   if (normalized.has("mitra")) roles.push("mitra");
   return roles;
 };
@@ -68,10 +67,6 @@ export function AdminShell() {
 
 export function SuperAdminShell() {
   return <RequireDashboardRole role="superadmin" />;
-}
-
-export function PelihatShell() {
-  return <RequireDashboardRole role="pelihat" />;
 }
 
 export function MitraShell() {

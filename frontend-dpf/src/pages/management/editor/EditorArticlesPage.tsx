@@ -70,9 +70,9 @@ export function EditorArticlesPage() {
 
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<ArticleStatus>("");
-  const [category, setCategory] = useState("");
+   const [category, setCategory] = useState("");
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [debouncedQ, setDebouncedQ] = useState("");
-  const [debouncedCategory, setDebouncedCategory] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,6 +115,19 @@ export function EditorArticlesPage() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await http.get<string[]>("/editor/articles/categories");
+      setAvailableCategories(res.data ?? []);
+    } catch {
+      console.error("Gagal memuat kategori.");
+    }
+  };
+
+  useEffect(() => {
+    void fetchCategories();
+  }, []);
+
   useEffect(() => {
     const handle = window.setTimeout(() => {
       setDebouncedQ(q.trim());
@@ -122,22 +135,16 @@ export function EditorArticlesPage() {
     return () => window.clearTimeout(handle);
   }, [q]);
 
-  useEffect(() => {
-    const handle = window.setTimeout(() => {
-      setDebouncedCategory(category.trim());
-    }, 400);
-    return () => window.clearTimeout(handle);
-  }, [category]);
 
   useEffect(() => {
     void fetchArticles(1, {
       q: debouncedQ,
       status,
-      category: debouncedCategory,
+      category: category,
       perPage,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQ, debouncedCategory, status, perPage]);
+  }, [debouncedQ, category, status, perPage]);
 
   useEffect(() => {
     selection.keepOnly(pageIds);
@@ -156,7 +163,6 @@ export function EditorArticlesPage() {
     setStatus("");
     setCategory("");
     setDebouncedQ("");
-    setDebouncedCategory("");
     void fetchArticles(1, { q: "", status: "", category: "" });
   };
 
@@ -244,12 +250,18 @@ export function EditorArticlesPage() {
 
             <label className="block">
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Kategori</span>
-              <input
+              <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="Mis. edukasi"
                 className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-              />
+              >
+                <option value="">Semua kategori</option>
+                {availableCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </label>
           </div>
 

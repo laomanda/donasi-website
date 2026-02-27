@@ -140,8 +140,7 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
   const [cancelReason, setCancelReason] = useState("");
 
   const authUser = useMemo(() => getAuthUser(), []);
-  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
-
+  
   const pageRef = useRef(page);
   const perPageRef = useRef(perPage);
   const appliedFiltersRef = useRef({
@@ -359,7 +358,7 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              {!isViewer && (
+              {true && (
                 <button
                   type="button"
                   onClick={() => navigate(`${routeBase}/editor-tasks/create`)}
@@ -602,7 +601,7 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
                     )}
                   </div>
 
-                  {!isViewer && (
+                  {true && (
                     <div className="flex items-center gap-2 border-t md:border-t-0 border-slate-100 pt-4 md:pt-0 w-full md:w-auto justify-end">
                       <button
                         type="button"

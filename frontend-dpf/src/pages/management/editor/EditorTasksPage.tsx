@@ -296,8 +296,8 @@ export function EditorTasksPage() {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
-                        <FontAwesomeIcon icon={faListCheck} />
+                    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 sm:py-3">
+                        <FontAwesomeIcon icon={faListCheck} className="text-brandGreen-600" />
                         <span>Total: {total}</span>
                     </div>
                 </div>
@@ -351,7 +351,7 @@ export function EditorTasksPage() {
                         </label>
                     </div>
 
-                    <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
+                    <label className="inline-flex w-full items-center justify-between gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm sm:w-auto sm:justify-start">
                         <span>Per halaman</span>
                         <select
                             value={perPage}
@@ -406,7 +406,7 @@ export function EditorTasksPage() {
                         type="button"
                         onClick={() => void fetchTasks(Math.max(1, page - 1))}
                         disabled={page <= 1 || loading}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 sm:flex-none"
                     >
                         Sebelumnya
                     </button>
@@ -414,7 +414,7 @@ export function EditorTasksPage() {
                         type="button"
                         onClick={() => void fetchTasks(Math.min(lastPage, page + 1))}
                         disabled={page >= lastPage || loading}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 sm:flex-none"
                     >
                         Berikutnya
                     </button>
@@ -451,14 +451,16 @@ function TaskCard({
         : statusOptions.filter((option) => option.value !== "cancelled" && isForwardStatus(status, option.value));
 
     return (
-        <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div className="min-w-0 space-y-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <p className="text-base font-semibold text-slate-900">{item.title ?? "Tugas tanpa judul"}</p>
+        <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0 flex-1 space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <p className="break-words text-base font-semibold leading-snug text-slate-900 sm:text-lg">
+                            {item.title ?? "Tugas tanpa judul"}
+                        </p>
                         <span
                             className={[
-                                "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ring-1",
+                                "inline-flex shrink-0 items-center rounded-full px-3 py-1 text-[10px] font-bold text-white ring-1",
                                 statusTone,
                             ].join(" ")}
                         >
@@ -473,43 +475,44 @@ function TaskCard({
                             Alasan dibatalkan: {item.cancel_reason}
                         </div>
                     ) : null}
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
                         <span className={[metaBase, priorityTone].join(" ")}>
-                            Prioritas: {priorityLabel}
+                            {priorityLabel}
                         </span>
                         <span className={[metaBase, getMetaTone("due")].join(" ")}>
-                            Tenggat: {dueLabel}
+                            {dueLabel}
                         </span>
                         {creatorName ? (
                             <span className={[metaBase, getMetaTone("from")].join(" ")}>
-                                Dari: {creatorName}
+                                {creatorName}
                             </span>
                         ) : null}
                         {attachments.length > 0 ? (
                             <span className={[metaBase, getMetaTone("attachments")].join(" ")}>
-                                Lampiran: {attachments.length}
+                                <FontAwesomeIcon icon={faPaperclip} className="mr-1.5 opacity-60" />
+                                {attachments.length}
                             </span>
                         ) : null}
                     </div>
                 </div>
 
-                <div className="flex w-full flex-col gap-3 lg:w-[240px]">
+                <div className="flex shrink-0 flex-row gap-2 sm:w-48 sm:flex-col sm:items-stretch">
                     <button
                         type="button"
                         onClick={() => setShowDetail((value) => !value)}
-                        className="inline-flex w-full items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-[11px] font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                        className="inline-flex grow items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2 text-[11px] font-bold text-slate-700 shadow-sm transition hover:bg-brandGreen-500 hover:text-white sm:grow-0"
                     >
-                        {showDetail ? "Tutup Detail" : "Lihat Detail"}
+                        {showDetail ? "Tutup" : "Detail"}
                     </button>
-                    <div className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Status</p>
+                    <div className="w-full min-w-[120px] rounded-2xl border border-slate-200 bg-slate-50 px-3 py-1.5 sm:py-2">
+                        <p className="hidden text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 sm:block">Status</p>
                         <select
                             value={status}
                             onChange={(event) => onStatusChange(event.target.value)}
                             disabled={busy || isCancelled}
                             aria-label="Status tugas"
                             className={[
-                                "mt-2 w-full rounded-2xl border bg-white px-3 py-2 text-xs font-bold shadow-sm transition focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-100",
+                                "w-full rounded-xl border bg-white px-2 py-1.5 text-xs font-bold shadow-sm transition focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-100 sm:mt-2 sm:px-3 sm:py-2",
                                 selectTone,
                             ].join(" ")}
                         >

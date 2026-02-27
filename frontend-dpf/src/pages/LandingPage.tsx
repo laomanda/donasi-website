@@ -218,7 +218,7 @@ function LandingPage() {
   );
 
   return (
-    <LandingLayout whatsappPhone="6281311768254" footerWaveBgClassName="bg-white">
+    <LandingLayout whatsappPhone="6281311768254" footerWaveBgClassName="bg-slate-50">
       <BannerSection banners={banners} />
       <HeroSection error={error} t={t} />
       <PromiseStrip t={t} />
@@ -234,7 +234,7 @@ function ProposalSection() {
   const { locale } = useLang();
   
   return (
-    <section className="bg-white pb-24">
+    <section className="bg-slate-50 pb-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-[#2F7D4E] to-[#E87C1E] px-6 py-10 shadow-2xl sm:px-12 sm:py-16">
           {/* Background decoration */}
@@ -397,15 +397,10 @@ function HeroSection({ error, t }: { error: string | null; t: (k: string, f?: st
   return (
     <section
       id="home"
-      className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-brandGreen-50"
+      className="relative overflow-hidden bg-slate-50"
     >
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-16 top-10 h-72 w-72 rounded-full bg-primary-200/40 blur-[120px]" />
-        <div className="absolute bottom-10 right-0 h-72 w-72 rounded-full bg-brandGreen-200/35 blur-[120px]" />
-        <div className="absolute inset-x-10 top-1/3 h-32 rounded-full bg-white/50 blur-3xl" />
-      </div>
 
-      <div className="relative mx-auto flex max-w-7xl flex-col gap-8 px-4 py-12 sm:gap-10 sm:px-6 lg:grid lg:grid-cols-[1.1fr,0.9fr] lg:items-center lg:gap-10 lg:px-8 lg:py-20">
+      <div className="relative mx-auto flex max-w-7xl flex-col gap-8 px-4 py-12 sm:gap-10 sm:px-6 lg:grid lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8 lg:py-20">
         <div className="space-y-6">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary-700 shadow-sm">
             {t("landing.hero.badge")}
@@ -438,15 +433,12 @@ function HeroSection({ error, t }: { error: string | null; t: (k: string, f?: st
         </div>
 
         <div className="relative">
-          <div className="relative overflow-visible backdrop-blur lg:overflow-hidden">
-            <div className="absolute -left-6 top-6 h-20 w-20 rounded-full bg-primary-200/60 blur-3xl" />
-            <div className="absolute -right-10 bottom-6 h-24 w-24 rounded-full bg-brandGreen-200/60 blur-3xl" />
-
-            <div className="relative w-full min-h-[220px] aspect-[4/3] sm:min-h-[320px] sm:aspect-[16/9] lg:min-h-[380px] lg:aspect-auto">
+          <div className="relative overflow-visible">
+            <div className="relative w-full min-h-[220px] aspect-[4/3] sm:min-h-[320px] sm:aspect-[16/9] lg:min-h-[520px] lg:aspect-auto">
               <img
                 src={heroImage}
                 alt={t("landing.hero.imageAlt")}
-                className="h-auto w-full max-w-full object-contain lg:h-full lg:object-cover"
+                className="h-auto w-full max-w-full object-contain transition-transform duration-1000 lg:h-full lg:scale-125 lg:object-cover"
                 onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
               />
             </div>
@@ -468,26 +460,26 @@ function PromiseStrip({ t }: { t: (k: string, f?: string) => string }) {
         title: t("landing.promise.jemput.title"),
         text: t("landing.promise.jemput.text"),
         icon: faTruck,
-        href: "/layanan",
+        href: "/jemput-wakaf",
       },
       {
         title: t("landing.promise.konfirmasi.title"),
         text: t("landing.promise.konfirmasi.text"),
         icon: faReceipt,
-        href: "/layanan",
+        href: "/konfirmasi-donasi",
       },
       {
         title: t("landing.promise.konsultasi.title"),
         text: t("landing.promise.konsultasi.text"),
         icon: faUserGroup,
-        href: "/layanan",
+        href: "/konsultasi",
       },
     ],
     [t]
   );
 
   return (
-    <section className="relative bg-white">
+    <section className="relative bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center space-y-2 pb-8">
           <h2 className="text-3xl sm:text-4xl font-heading font-semibold text-slate-900">
@@ -500,29 +492,29 @@ function PromiseStrip({ t }: { t: (k: string, f?: string) => string }) {
 
         <div className="grid gap-5 sm:grid-cols-3">
           {promiseItems.map((item) => (
-            <div
+            <Link
+              to={item.href}
               key={item.title}
-              className="flex h-full flex-col gap-4 rounded-[28px] border border-slate-100 bg-gradient-to-b from-slate-50 to-white px-5 py-6 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.35)]"
+              className="group flex h-full flex-col gap-4 rounded-[28px] border border-slate-100 bg-gradient-to-b from-slate-50 to-white px-5 py-6 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.35)] transition-all duration-300 hover:-translate-y-1 hover:border-brandGreen-200 hover:shadow-[0_20px_60px_-25px_rgba(22,101,52,0.25)]"
             >
               <div className="flex items-center justify-between">
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-600 shadow-sm">
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-600 shadow-sm transition-colors group-hover:bg-brandGreen-600 group-hover:text-white">
                   <FontAwesomeIcon icon={item.icon} className="text-xl" />
                 </span>
               </div>
 
               <div className="space-y-2">
-                <p className="text-xl font-heading font-semibold text-slate-900 leading-snug">{item.title}</p>
+                <p className="text-xl font-heading font-semibold text-slate-900 leading-snug group-hover:text-brandGreen-700 transition-colors">{item.title}</p>
                 <p className="text-sm text-slate-600 leading-relaxed">{item.text}</p>
               </div>
 
-              <Link
-                to={item.href}
-                className="mt-auto inline-flex w-fit items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brandGreen-500 to-brandGreen-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+              <div
+                className="mt-auto inline-flex w-fit items-center justify-center gap-2 rounded-full bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 border border-slate-200 shadow-sm transition-all group-hover:bg-gradient-to-r group-hover:from-brandGreen-500 group-hover:to-brandGreen-600 group-hover:text-white group-hover:border-transparent"
               >
                 {t("landing.promise.more")}
-                <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
-              </Link>
-            </div>
+                <FontAwesomeIcon icon={faArrowRight} className="text-xs transition-transform group-hover:translate-x-1" />
+              </div>
+            </Link>
           ))}
         </div>
       </div>
@@ -686,12 +678,21 @@ function ArticlesSection({ articles, loading, t, locale }: { articles: Article[]
   const hasArticles = limited.length > 0;
 
   return (
-    <section id="articles" className="bg-white">
+    <section id="articles" className="bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="mt-2 text-3xl font-heading font-semibold text-slate-900">
-            {t("landing.articles.title")}
-          </h2>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-heading font-semibold text-slate-900 sm:text-4xl">
+              {t("landing.articles.title")}
+            </h2>
+          </div>
+          <Link
+            to="/literasi"
+            className="inline-flex items-center gap-2 rounded-full border border-brandGreen-500 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:text-white hover:bg-brandGreen-500 hover:border-slate-200"
+          >
+            {t("landing.articles.all")}
+            <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
+          </Link>
         </div>
 
         <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -817,7 +818,7 @@ function PartnerSection({ partners, t, locale }: { partners: Partner[]; t: (k: s
   const marqueePartnersReverse = buildMarqueeList(secondBatch.length ? secondBatch : firstBatch);
 
   return (
-    <section className="bg-white py-24 overflow-hidden border-t border-slate-50">
+    <section className="bg-slate-50 py-24 overflow-hidden border-t border-slate-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <p className="text-xs font-accent font-bold uppercase tracking-[0.2em] text-brandGreen-600/80">
@@ -835,8 +836,8 @@ function PartnerSection({ partners, t, locale }: { partners: Partner[]; t: (k: s
 
       {hasPartners ? (
         <div className="relative">
-          <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-24 bg-gradient-to-r from-white via-white/90 to-transparent" />
-          <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-24 bg-gradient-to-l from-white via-white/90 to-transparent" />
+          <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-24 bg-gradient-to-r from-slate-50 via-slate-50/90 to-transparent" />
+          <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-24 bg-gradient-to-l from-slate-50 via-slate-50/90 to-transparent" />
 
           <div className="flex flex-col gap-6 overflow-hidden py-6">
             <div className="animate-marquee flex w-max items-center gap-8 hover:[animation-play-state:paused]">

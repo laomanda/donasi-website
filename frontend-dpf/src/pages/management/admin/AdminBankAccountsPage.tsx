@@ -45,8 +45,7 @@ export function AdminBankAccountsPage() {
   const selection = useBulkSelection<number>();
 
   const authUser = useMemo(() => getAuthUser(), []);
-  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
-
+  
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<"" | "active" | "inactive">("");
 
@@ -153,7 +152,7 @@ export function AdminBankAccountsPage() {
               </div>
             </div>
 
-            {!isViewer && (
+            {true && (
               <button
                 type="button"
                 onClick={() => navigate("/editor/bank-accounts/create")}
@@ -215,7 +214,7 @@ export function AdminBankAccountsPage() {
         onSelectAllPage={() => selection.toggleAll(filteredIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
-        hideDelete={isViewer}
+        
       />
 
       <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
@@ -283,8 +282,8 @@ export function AdminBankAccountsPage() {
                   return (
                     <tr
                       key={acc.id}
-                      className={`${isViewer ? "" : "cursor-pointer"} transition hover:bg-slate-50 border-l-4 ${barColor}`}
-                      onClick={() => !isViewer && navigate(`/editor/bank-accounts/${acc.id}/edit`)}
+                      className={`cursor-pointer transition hover:bg-slate-50 border-l-4 ${barColor}`}
+                      onClick={() => navigate(`/editor/bank-accounts/${acc.id}/edit`)}
                     >
                       <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                         <input
@@ -366,8 +365,8 @@ export function AdminBankAccountsPage() {
                 <button
                   key={acc.id}
                   type="button"
-                  onClick={() => !isViewer && navigate(`/editor/bank-accounts/${acc.id}/edit`)}
-                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor} ${isViewer ? "cursor-default" : ""}`}
+                  onClick={() => navigate(`/editor/bank-accounts/${acc.id}/edit`)}
+                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor} `}
                 >
                   <div className="flex items-start gap-3">
                     <span onClick={(e) => e.stopPropagation()}>

@@ -249,7 +249,7 @@ const COPY = {
         callCenter: "DPF Official",
         emailLabel: "Email",
         donationAccount: "Rekening Donasi",
-        searchPlaceholder: "Cari program, layanan, atau topik...",
+        searchPlaceholder: "Cari program / layanan",
         searchButton: "Cari",
         searchNotFound: "Data yang anda cari tidak ditemukan.",
         language: "Bahasa",
@@ -265,7 +265,7 @@ const COPY = {
         callCenter: "DPF Official",
         emailLabel: "Email",
         donationAccount: "Donation Account",
-        searchPlaceholder: "Search programs, services, or topics...",
+        searchPlaceholder: "Search programs / services",
         searchButton: "Search",
         searchNotFound: "No matching data found.",
         language: "Language",
@@ -305,17 +305,17 @@ export function LandingNavbar() {
         ? "inline-flex h-10 w-10 items-center justify-center rounded-full text-white bg-white/15 ring-1 ring-white/20 hover:bg-white/25 transition"
         : "inline-flex h-10 w-10 items-center justify-center rounded-full text-white bg-brandGreen-600 hover:bg-brandGreen-700 transition";
     const searchFormClass = topbarDark
-        ? "flex h-10 w-[360px] items-center gap-2 rounded-md bg-white/10 px-3 ring-1 ring-white/20 shadow-[0_12px_30px_-18px_rgba(0,0,0,0.4)] backdrop-blur"
-        : "flex h-10 w-[360px] items-center gap-2 rounded-md bg-white/95 px-3 shadow-[0_12px_30px_-18px_rgba(15,23,42,0.35)]";
+        ? "flex h-10 w-[280px] xl:w-[320px] items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4"
+        : "flex h-10 w-[280px] xl:w-[320px] items-center gap-2 rounded-full border border-slate-200/60 bg-white/70 px-4";
     const searchInputClass = topbarDark
-        ? "w-full bg-transparent text-sm font-semibold text-white placeholder:text-white/60 focus:outline-none border-b-2 border-white/40 pb-1"
-        : "w-full bg-transparent text-sm font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none border-b-2 border-primary-500/70 pb-1";
+        ? "w-full bg-transparent text-sm font-semibold text-white placeholder:text-white/60 focus:outline-none pl-1"
+        : "w-full bg-transparent text-sm font-semibold text-slate-800 placeholder:text-slate-500 focus:outline-none pl-1";
     const searchSubmitClass = topbarDark
-        ? "inline-flex h-8 w-8 items-center justify-center rounded-md bg-white/20 text-white hover:bg-white/30"
-        : "inline-flex h-8 w-8 items-center justify-center rounded-md bg-brandGreen-600 text-white shadow-[0_6px_16px_-12px_rgba(22,101,52,0.45)] hover:bg-brandGreen-700";
+        ? "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors"
+        : "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brandGreen-600/10 text-brandGreen-700 hover:bg-brandGreen-600/20 transition-colors";
     const searchCloseClass = topbarDark
-        ? "inline-flex h-8 w-8 items-center justify-center rounded-md text-white/70 hover:text-white transition"
-        : "inline-flex h-8 w-8 items-center justify-center rounded-md text-rose-500 hover:text-rose-600 transition";
+        ? "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+        : "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors";
     const navShellClass = heroMode
         ? "border-b border-white/10 shadow-none"
         : `${scrolled ? "border-b border-slate-100" : "border-b border-transparent"} shadow-[0_12px_30px_-22px_rgba(15,23,42,0.3)]`;
@@ -494,20 +494,20 @@ export function LandingNavbar() {
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <div className="relative hidden lg:flex items-center z-50">
-                                    {!searchOpen ? (
-                                        <button
-                                            type="button"
-                                            onClick={() => setSearchOpen(true)}
-                                            className={searchToggleClass}
-                                            aria-label={t.searchButton}
-                                        >
-                                            <FontAwesomeIcon icon={faMagnifyingGlass} />
-                                        </button>
-                                    ) : (
+                                <div className="relative hidden lg:flex items-center justify-end z-50 w-10 h-10">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchOpen(true)}
+                                        className={`${searchToggleClass} absolute right-0 transition-all duration-200 ${searchOpen ? "opacity-0 pointer-events-none scale-90" : "opacity-100 scale-100"}`}
+                                        aria-label={t.searchButton}
+                                    >
+                                        <FontAwesomeIcon icon={faMagnifyingGlass} />
+                                    </button>
+                                    
+                                    {searchOpen && (
                                         <form
                                             onSubmit={handleSearch}
-                                            className={searchFormClass}
+                                            className={`${searchFormClass} absolute right-0 top-1/2 -translate-y-1/2 origin-right animate-in fade-in zoom-in-95 duration-200`}
                                         >
                                             <input
                                                 ref={searchInputRef}
@@ -517,28 +517,30 @@ export function LandingNavbar() {
                                                 list="landing-search-keywords"
                                                 className={searchInputClass}
                                             />
-                                            <button
-                                                type="submit"
-                                                className={searchSubmitClass}
-                                                aria-label={t.searchButton}
-                                            >
-                                                <FontAwesomeIcon icon={faMagnifyingGlass} />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setSearchOpen(false);
-                                                    setSearchFeedback(null);
-                                                }}
-                                                className={searchCloseClass}
-                                                aria-label="Tutup"
-                                            >
-                                                <FontAwesomeIcon icon={faXmark} className="text-base" />
-                                            </button>
+                                            <div className="flex items-center gap-1 shrink-0 ml-2">
+                                                <button
+                                                    type="submit"
+                                                    className={searchSubmitClass}
+                                                    aria-label={t.searchButton}
+                                                >
+                                                    <FontAwesomeIcon icon={faMagnifyingGlass} className="text-[10px]" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSearchOpen(false);
+                                                        setSearchFeedback(null);
+                                                    }}
+                                                    className={searchCloseClass}
+                                                    aria-label="Tutup"
+                                                >
+                                                    <FontAwesomeIcon icon={faXmark} className="text-[12px]" />
+                                                </button>
+                                            </div>
                                         </form>
                                     )}
                                     {searchOpen && searchFeedback && (
-                                        <div className="absolute right-0 top-full mt-2 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-700 shadow-sm">
+                                        <div className="absolute right-0 top-full mt-3 rounded-xl border border-amber-200/50 bg-amber-50/90 backdrop-blur-sm px-4 py-2.5 text-xs font-semibold text-amber-800 shadow-lg whitespace-nowrap">
                                             {searchFeedback}
                                         </div>
                                     )}

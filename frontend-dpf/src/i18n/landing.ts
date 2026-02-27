@@ -11,7 +11,7 @@ export const landingDict: Dict = {
     "nav.about": { id: "Tentang Kami", en: "About Us" },
     "nav.login": { id: "Masuk", en: "Login" },
     "nav.donate": { id: "Donasi", en: "Donate" },
-    "nav.search.placeholder": { id: "Cari program, layanan, atau topik...", en: "Search programs, services, or topics..." },
+    "nav.search.placeholder": { id: "Cari program, layanan", en: "Search programs and services" },
     "nav.search.notFound": { id: "Penelusuran tidak ditemukan.", en: "Search not found." },
     "nav.language": { id: "Bahasa", en: "Language" },
     "nav.callCenter": { id: "Pusat Bantuan", en: "Call Center" },
@@ -71,7 +71,7 @@ export const landingDict: Dict = {
     "landing.promise.jemput.text": { id: "Tidak perlu ke mana-mana, kami menjemput amanah WAKAF langsung ke lokasi Anda.", en: "No need to travel; we collect your WAKAF directly at your location." },
     "landing.promise.konfirmasi.title": { id: "Konfirmasi Donasi", en: "Confirm Donation" },
     "landing.promise.konfirmasi.text": { id: "Sudah transfer? Konfirmasi donasi agar bukti setor tercatat dan dana segera disalurkan.", en: "Already transferred? Confirm so your donation is recorded and distributed promptly." },
-    "landing.promise.konsultasi.title": { id: "Konsultasi ZISWAF", en: "ZISWAF Consultation" },
+    "landing.promise.konsultasi.title": { id: "Konsultasi WAKAF", en: "WAQF Consultation" },
     "landing.promise.konsultasi.text": { id: "Diskusikan wakaf, infak, sedekah, dan wakaf bersama konsultan kami agar tepat sasaran.", en: "Discuss wakaf, infaq, sadaqah, and waqf with our consultants for proper allocation." },
     "landing.promise.more": { id: "Selengkapnya", en: "Learn more" },
 
@@ -535,6 +535,11 @@ export const landingDict: Dict = {
     "donate.accounts.badge": { id: "Rekening Resmi", en: "Official Accounts" },
     "donate.accounts.heading": { id: "Salurkan Kebaikan Anda", en: "Channel Your Kindness" },
     "donate.accounts.empty": { id: "Belum ada data rekening.", en: "No account data available." },
+    "donate.accounts.error": {
+        id: "Kami sedang mengalami kendala teknis saat memuat daftar rekening. Mohon segarkan halaman atau coba lagi dalam beberapa saat.",
+        en: "We are experiencing technical issues while loading the account list. Please refresh the page or try again in a few moments.",
+    },
+    "donate.accounts.error.title": { id: "Kendala Sistem", en: "System Issue" },
     "donate.accounts.bankLabel": { id: "Bank", en: "Bank" },
     "donate.accounts.official": { id: "Resmi", en: "Official" },
     "donate.accounts.number": { id: "Nomor rekening", en: "Account number" },
@@ -581,6 +586,7 @@ export const landingDict: Dict = {
     "landing.articles.empty": { id: "Belum ada artikel terbaru.", en: "No recent articles." },
     "landing.articles.anonymous": { id: "Penulis anonim", en: "Anonymous author" },
     "landing.articles.author": { id: "Penulis", en: "Author" },
+    "landing.articles.all": { id: "Semua informasi", en: "All information" },
 
     // Partners section
     "landing.partners.badge": { id: "Jaringan Kebaikan", en: "Network of Goodness" },

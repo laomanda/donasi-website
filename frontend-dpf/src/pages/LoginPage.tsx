@@ -24,7 +24,7 @@ type ApiErrorData = {
   errors?: unknown;
 };
 
-type DashboardRole = "superadmin" | "admin" | "editor" | "pelihat" | "mitra";
+type DashboardRole = "superadmin" | "admin" | "editor" | "mitra";
 
 const extractApiErrorMessage = (err: unknown): string | null => {
   if (!err || typeof err !== "object") return null;
@@ -73,7 +73,6 @@ const resolveDashboardRole = (user: unknown): DashboardRole | null => {
   if (normalized.has("superadmin")) return "superadmin";
   if (normalized.has("admin")) return "admin";
   if (normalized.has("editor")) return "editor";
-  if (normalized.has("pelihat")) return "pelihat";
   if (normalized.has("mitra")) return "mitra";
   return null;
 };

@@ -24,10 +24,9 @@ import { KonsultasiPage } from '../pages/KonsultasiPage'
 import { JemputWakafPage } from '../pages/JemputWakafPage'
 import { KonfirmasiDonasiPage } from '../pages/KonfirmasiDonasiPage'
 
-import { EditorShell, AdminShell, SuperAdminShell, MitraShell, PelihatShell } from '../layouts/dashboard/RoleShells'
+import { EditorShell, AdminShell, SuperAdminShell, MitraShell } from '../layouts/dashboard/RoleShells'
 import { MitraRegisterPage } from '../pages/auth/MitraRegisterPage'
 import { MitraDashboardPage } from '../pages/management/mitra/MitraDashboardPage'
-import { PelihatDashboardPage } from '../pages/management/pelihat/PelihatDashboardPage'
 import { MitraAllocationsPage } from "../pages/management/mitra/MitraAllocationsPage";
 import { MitraAllocationDetailPage } from "../pages/management/mitra/MitraAllocationDetailPage";
 import { MitraDonationsPage } from '../pages/management/mitra/MitraDonationsPage'
@@ -200,22 +199,6 @@ export const router = createBrowserRouter([
           { path: 'allocations/:id', element: <MitraAllocationDetailPage /> },
           { path: 'donations', element: <MitraDonationsPage /> },
           { path: 'settings', element: <SettingsPage role="mitra" /> },
-        ],
-      },
-      {
-        path: 'pelihat',
-        element: <PelihatShell />,
-        children: [
-          { index: true, element: <Navigate to="dashboard" replace /> },
-          { path: 'dashboard', element: <PelihatDashboardPage /> },
-          { path: 'donations', element: <AdminDonationsPage /> },
-          { path: 'donations/:id', element: <AdminDonationShowPage /> },
-          { path: 'pickup-requests', element: <AdminPickupRequestsPage /> },
-          { path: 'pickup-requests/:id', element: <AdminPickupRequestShowPage /> },
-          { path: 'consultations', element: <AdminConsultationsPage /> },
-          { path: 'consultations/:id', element: <AdminConsultationShowPage /> },
-          { path: 'reports/donations', element: <DonationReportPage /> },
-          { path: 'settings', element: <SettingsPage role="pelihat" /> },
         ],
       },
       { path: 'error/400', element: <Error400 /> },

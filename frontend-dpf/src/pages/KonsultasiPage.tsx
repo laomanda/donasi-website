@@ -14,6 +14,7 @@ import {
   faUserGraduate,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
+import { PageHero } from "../components/PageHero";
 
 import http from "../lib/http";
 import PhoneInput from "../components/ui/PhoneInput";
@@ -101,66 +102,63 @@ export function KonsultasiPage() {
   };
 
   return (
-    <LandingLayout>
+    <LandingLayout footerWaveBgClassName="bg-slate-50">
       {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-brandGreen-50">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-10 top-16 h-72 w-72 rounded-full bg-primary-200/30 blur-[110px]" />
-          <div className="absolute bottom-10 right-0 h-80 w-80 rounded-full bg-brandGreen-200/35 blur-[120px]" />
-          <div className="absolute inset-x-10 top-1/3 h-24 rounded-full bg-white/60 blur-3xl" />
-        </div>
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
-          <div className="space-y-6">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary-700 shadow-sm">
-              {t("konsultasi.hero.badge")}
-            </span>
-            <h1 className="font-heading text-4xl font-semibold leading-tight text-slate-900 sm:text-5xl">
-              {t("konsultasi.hero.title.leading")} <span className="text-primary-500">{t("konsultasi.hero.title.highlight")}</span> {t("konsultasi.hero.title.trailing")}
-            </h1>
-            <p className="max-w-2xl text-lg leading-relaxed text-slate-700">
-              {t("konsultasi.hero.subtitle")}
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <a
-                href="#form-konsultasi"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-700"
-              >
-                <FontAwesomeIcon icon={faHeadset} />
-                {t("konsultasi.hero.cta.form")}
-              </a>
-              <a
-                href="#alur-konsultasi"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-50"
-              >
-                <FontAwesomeIcon icon={faArrowRight} />
-                {t("konsultasi.hero.cta.flow")}
-              </a>
-            </div>
-          </div>
-          <div className="relative">
-            <div className="rounded-[32px] border border-white/60 bg-white/80 p-6 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.4)] backdrop-blur">
-              <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-brandGreen-600 to-primary-600 px-4 py-3 text-white shadow-lg">
-                <FontAwesomeIcon icon={faShieldHalved} className="text-lg" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em]">{t("konsultasi.hero.trust.badge")}</p>
-                  <p className="text-base font-bold leading-tight">{t("konsultasi.hero.trust.title")}</p>
-                </div>
-              </div>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <InfoPill icon={faClock} label={t("konsultasi.hero.pills.1")} />
-                <InfoPill icon={faCheckCircle} label={t("konsultasi.hero.pills.2")} />
-                <InfoPill icon={faHandshakeSimple} label={t("konsultasi.hero.pills.3")} />
-                <InfoPill icon={faClipboardCheck} label={t("konsultasi.hero.pills.4")} />
+      <PageHero
+        fullHeight={true}
+        badge={t("konsultasi.hero.badge")}
+        title={
+          <>
+            {t("konsultasi.hero.title.leading")}{" "}
+            <span className="text-primary-500">{t("konsultasi.hero.title.highlight")}</span>{" "}
+            {t("konsultasi.hero.title.trailing")}
+          </>
+        }
+        subtitle={t("konsultasi.hero.subtitle")}
+        breadcrumb={[
+          { label: t("landing.navbar.services", "Layanan"), href: "/layanan" },
+          { label: t("landing.navbar.consultation", "Konsultasi") }
+        ]}
+        rightElement={
+          <div className="rounded-[32px] border border-white/60 bg-white/80 p-6 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.4)] backdrop-blur">
+            <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-brandGreen-600 to-primary-600 px-4 py-3 text-white shadow-lg">
+              <FontAwesomeIcon icon={faShieldHalved} className="text-lg" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em]">{t("konsultasi.hero.trust.badge")}</p>
+                <p className="text-base font-bold leading-tight">{t("konsultasi.hero.trust.title")}</p>
               </div>
             </div>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <InfoPill icon={faClock} label={t("konsultasi.hero.pills.1")} />
+              <InfoPill icon={faCheckCircle} label={t("konsultasi.hero.pills.2")} />
+              <InfoPill icon={faHandshakeSimple} label={t("konsultasi.hero.pills.3")} />
+              <InfoPill icon={faClipboardCheck} label={t("konsultasi.hero.pills.4")} />
+            </div>
           </div>
+        }
+      >
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <a
+            href="#form-konsultasi"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-700"
+          >
+            <FontAwesomeIcon icon={faHeadset} />
+            {t("konsultasi.hero.cta.form")}
+          </a>
+          <a
+            href="#alur-konsultasi"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-50"
+          >
+            <FontAwesomeIcon icon={faArrowRight} />
+            {t("konsultasi.hero.cta.flow")}
+          </a>
         </div>
-      </section>
+      </PageHero>
 
 
 
       {/* BENEFITS */}
-      <section className="bg-white">
+      <section className="bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="text-center space-y-3">
             <p className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-primary-700 shadow-sm">
@@ -221,7 +219,7 @@ export function KonsultasiPage() {
       </section>
 
       {/* FORM */}
-      <section id="form-konsultasi" className="bg-white">
+      <section id="form-konsultasi" className="bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[0.9fr,1.1fr]">
             <div className="rounded-[24px] border border-slate-100 bg-gradient-to-br from-brandGreen-600 to-primary-600 p-8 text-white shadow-[0_28px_80px_-50px_rgba(16,185,129,0.6)]">

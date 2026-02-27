@@ -78,12 +78,11 @@ export function AdminConsultationShowPage() {
   const [deleting, setDeleting] = useState(false);
 
   const authUser = useMemo(() => getAuthUser(), []);
-  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
-
+  
   const canLoad = Number.isFinite(consultationId) && consultationId > 0;
   const persistedStatus = String(data?.status ?? status).trim().toLowerCase();
   const isLockedStatus = persistedStatus === "dibalas" || persistedStatus === "ditutup";
-  const canSave = canLoad && !loading && !saving && !deleting && !isLockedStatus && !isViewer;
+  const canSave = canLoad && !loading && !saving && !deleting && !isLockedStatus ;
 
   useEffect(() => {
     if (!canLoad) {
@@ -321,7 +320,7 @@ export function AdminConsultationShowPage() {
             </div>
           </div>
 
-          {!isViewer && (
+          {true && (
             <div className="rounded-[28px] border border-red-200 bg-white p-6 shadow-sm">
             <div className="flex items-start gap-4">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-600 text-white shadow-lg shadow-red-600/20">

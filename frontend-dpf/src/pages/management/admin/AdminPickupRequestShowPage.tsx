@@ -102,11 +102,10 @@ export function AdminPickupRequestShowPage() {
   const limitToComplete = persistedStatus === "dijadwalkan";
 
   const authUser = useMemo(() => getAuthUser(), []);
-  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
-
+  
   const canLoad = Number.isFinite(pickupId) && pickupId > 0;
   const isEditableStatus = persistedStatus === "baru";
-  const canSave = canLoad && !loading && !saving && !deleting && !isLockedStatus && !isViewer;
+  const canSave = canLoad && !loading && !saving && !deleting && !isLockedStatus ;
   const canEditDetails = canSave && isEditableStatus;
   const statusOptions = useMemo(
     () => {
@@ -389,7 +388,7 @@ export function AdminPickupRequestShowPage() {
             </div>
           </div>
 
-          {isEditableStatus && !isViewer ? (
+          {isEditableStatus  ? (
             <div className="rounded-[28px] border border-red-200 bg-white p-6 shadow-sm">
               <div className="flex items-start gap-4">
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-600 text-white shadow-lg shadow-red-600/20">

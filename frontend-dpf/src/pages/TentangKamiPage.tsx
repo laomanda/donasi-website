@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRight,
   faCheckCircle,
-  faCircleNodes,
   faHandHoldingHeart,
   faHandshakeSimple,
   faHeartPulse,
@@ -14,7 +13,9 @@ import {
   faStar,
   faTimeline,
 } from "@fortawesome/free-solid-svg-icons";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
+import { PageHero } from "../components/PageHero";
 
 import http from "../lib/http";
 import { resolveStorageBaseUrl } from "../lib/urls";
@@ -213,65 +214,58 @@ function TentangKamiPage() {
   const legalItems = useMemo(() => legalItemKeys.map((key) => t(key)), [locale]);
 
   return (
-    <LandingLayout footerWaveBgClassName="bg-white">
+    <LandingLayout footerWaveBgClassName="bg-slate-50">
       {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-brandGreen-50">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-10 top-16 h-72 w-72 rounded-full bg-primary-200/30 blur-[110px]" />
-          <div className="absolute bottom-10 right-0 h-80 w-80 rounded-full bg-brandGreen-200/35 blur-[120px]" />
-          <div className="absolute inset-x-10 top-1/3 h-24 rounded-full bg-white/60 blur-3xl" />
-        </div>
+      <PageHero
+        badge={t("about.hero.badge")}
+        title={
+          <>
+            {t("about.hero.title.leading")}{" "}
+            <span className="text-primary-600">{t("about.hero.title.highlight")}</span>{" "}
+            {t("about.hero.title.trailing")}
+          </>
+        }
+        subtitle={t("about.hero.subtitle")}
+        breadcrumb={[
+          { label: t("landing.navbar.about", "Tentang Kami") }
+        ]}
+        rightElement={
+          <div className="rounded-[32px] border border-white/60 bg-white/40 p-6 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.3)] backdrop-blur-md">
+            <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-brandGreen-600 to-primary-600 px-4 py-3 text-white shadow-lg">
+              <FontAwesomeIcon icon={faHandHoldingHeart} className="text-lg" />
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/80">{t("about.hero.mandate.badge")}</p>
+                <p className="text-base font-bold leading-tight">{t("about.hero.mandate.title")}</p>
+              </div>
+            </div>
 
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
-          <div className="space-y-6">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary-700 shadow-sm">
-              {t("about.hero.badge")}
-            </span>
-            <h1 className="font-heading text-4xl font-semibold leading-tight text-slate-900 sm:text-5xl">
-              {t("about.hero.title.leading")} <span className="text-primary-500">{t("about.hero.title.highlight")}</span> {t("about.hero.title.trailing")}
-            </h1>
-            <p className="max-w-2xl text-lg leading-relaxed text-slate-700">
-              {t("about.hero.subtitle")}
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="mt-5 space-y-4">
+              <StatLine label={t("about.hero.stats.1.label")} value={t("about.hero.stats.1.value")} />
+              <StatLine label={t("about.hero.stats.2.label")} value={t("about.hero.stats.2.value")} />
+              <StatLine label={t("about.hero.stats.3.label")} value={t("about.hero.stats.3.value")} />
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a
                 href="#legalitas"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-700"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-700"
               >
                 <FontAwesomeIcon icon={faShieldHalved} />
                 {t("about.hero.cta.legal")}
               </a>
               <a
                 href="#visi-misi"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-200 bg-white px-6 py-3 text-sm font-semibold text-primary-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-primary-50"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-primary-100 bg-white/80 px-6 py-3 text-sm font-bold text-primary-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white"
               >
                 <FontAwesomeIcon icon={faArrowRight} />
                 {t("about.hero.cta.vision")}
               </a>
             </div>
           </div>
+        }
+      />
 
-          <div className="relative">
-            <div className="rounded-[32px] border border-white/60 bg-white/80 p-6 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.4)] backdrop-blur">
-              <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-brandGreen-600 to-primary-600 px-4 py-3 text-white shadow-lg">
-                <FontAwesomeIcon icon={faHandHoldingHeart} className="text-lg" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em]">{t("about.hero.mandate.badge")}</p>
-                  <p className="text-base font-bold leading-tight">{t("about.hero.mandate.title")}</p>
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-4">
-                <StatLine label={t("about.hero.stats.1.label")} value={t("about.hero.stats.1.value")} />
-                <StatLine label={t("about.hero.stats.2.label")} value={t("about.hero.stats.2.value")} />
-                <StatLine label={t("about.hero.stats.3.label")} value={t("about.hero.stats.3.value")} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-white">
+      <section className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="rounded-[28px] border border-slate-100 bg-gradient-to-br from-white to-slate-50 p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.4)]">
             <div className="flex items-start gap-4 border-b border-slate-100 pb-6">
@@ -292,10 +286,6 @@ function TentangKamiPage() {
 
       {/* SEJARAH */}
       <section className="relative overflow-hidden bg-slate-50">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-10 top-10 h-64 w-64 rounded-full bg-primary-100/40 blur-[100px]" />
-          <div className="absolute bottom-0 right-10 h-64 w-64 rounded-full bg-brandGreen-100/35 blur-[110px]" />
-        </div>
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-700">
@@ -333,7 +323,7 @@ function TentangKamiPage() {
       </section>
 
       {/* VISI MISI */}
-      <section id="visi-misi" className="bg-white">
+      <section id="visi-misi" className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
             <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-brandGreen-600 to-emerald-500 p-10 text-white shadow-[0_28px_80px_-50px_rgba(16,185,129,0.65)]">
@@ -451,7 +441,7 @@ function TentangKamiPage() {
       </section>
 
       {/* LEGALITAS */}
-      <section id="legalitas" className="bg-white pt-16 pb-20">
+      <section id="legalitas" className="bg-slate-50 pt-16 pb-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-[28px] border border-slate-100 bg-gradient-to-br from-white to-slate-50 p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)]">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
@@ -473,17 +463,12 @@ function TentangKamiPage() {
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
               <a
-                href="/donate"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition hover:-translate-y-0.5 hover:bg-primary-700"
+                href="https://wa.me/6281311768254"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-brandGreen-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brandGreen-500/25 transition hover:-translate-y-0.5 hover:bg-brandGreen-700"
               >
-                <FontAwesomeIcon icon={faHandHoldingHeart} />
-                {t("about.legal.cta.donate")}
-              </a>
-              <a
-                href="mailto:contact@dpf.or.id"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-brandGreen-200 hover:text-brandGreen-700"
-              >
-                <FontAwesomeIcon icon={faCircleNodes} />
+                <FontAwesomeIcon icon={faWhatsapp} />
                 {t("about.legal.cta.collab")}
               </a>
             </div>

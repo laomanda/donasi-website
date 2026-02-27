@@ -9,6 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useSearchParams } from "react-router-dom";
 import { LandingLayout } from "../layouts/LandingLayout";
+
 import http from "../lib/http";
 import { resolveStorageBaseUrl } from "../lib/urls";
 import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
@@ -124,7 +125,7 @@ export function ProgramPage() {
     let active = true;
     setLoading(true);
     http
-      .get<{ data: Program[] }>("/programs")
+      .get<{ data: Program[] }>("/programs", { params: { per_page: 1000 } })
       .then((res) => {
         if (!active) return;
         setPrograms(res.data?.data ?? []);
@@ -222,10 +223,6 @@ export function ProgramPage() {
     <LandingLayout>
       <div ref={pageRef}>
       <section className="relative overflow-hidden bg-slate-50 pb-20 pt-28">
-         <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-0 right-0 h-[500px] w-[500px] rounded-full bg-brandGreen-100/30 blur-[100px]" />
-              <div className="absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-primary-50/50 blur-[80px]" />
-         </div>
 
          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
@@ -244,93 +241,93 @@ export function ProgramPage() {
              <div className="mx-auto mt-10 max-w-4xl">
                 <div className="relative flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-3 shadow-soft md:flex-row md:items-center">
 
-                  {/* Search Input Area */}
-                  <div className="flex flex-1 items-center gap-3 px-3">
-                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-400">
-                        <FontAwesomeIcon icon={faMagnifyingGlass} />
-                     </div>
-                     <input
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder={t("program.list.search.placeholder")}
-                        className="h-12 w-full bg-transparent text-base font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none"
-                     />
-                     {search && (
-                        <button onClick={() => setSearch("")} className="text-slate-400 hover:text-slate-600">
-                           <FontAwesomeIcon icon={faXmark} />
-                        </button>
-                     )}
-                  </div>
-
-                  <div className="h-px w-full bg-slate-100 md:h-12 md:w-px" />
-
-                  {/* Filter Actions */}
-                  <div className="flex items-center gap-3 px-3 md:w-auto md:shrink-0 md:justify-end">
-                     <span className="text-sm font-semibold text-slate-500 whitespace-nowrap hidden sm:inline-block">
-                        {filtered.length} {t("program.list.results")}
-                     </span>
-                     <button
-                        onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-                        className={`flex flex-1 items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all md:flex-none
-                           ${isFilterExpanded
-                             ? "bg-brandGreen-50 border-brandGreen-200 text-brandGreen-700"
-                             : "bg-slate-900 border-transparent text-white shadow-lg hover:bg-slate-800"}`}
-                     >
-                        <FontAwesomeIcon icon={faSliders} />
-                        <span>{t("program.list.filter.toggle")}</span>
-                     </button>
-                  </div>
-               </div>
-
-                {/* --- EXPANDABLE FILTER PANEL --- */}
-                <div className={`overflow-hidden transition-all duration-300 ease-out ${isFilterExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
-                   <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-                       <div className="space-y-6">
-                         {/* Categories */}
-                          {categories.length > 0 && (
-                             <div>
-                               <p className="mb-3 text-xs font-semibold text-slate-500">{t("program.list.filter.categories")}</p>
-                                <div className="flex flex-wrap gap-2">
-                                   <button onClick={() => setActiveCategory(null)} className={`rounded-lg px-4 py-2 text-xs font-bold border transition ${getFilterClass(activeCategory === null)}`}>
-                                      {t("program.list.filter.allCategories")}
-                                   </button>
-                                  {categories.map((cat) => (
-                                     <button
-                                        key={cat}
-                                        onClick={() => setActiveCategory(cat === activeCategory ? null : cat)}
-                                        className={`rounded-lg px-4 py-2 text-xs font-bold border transition ${getFilterClass(activeCategory === cat)}`}
-                                     >
-                                        {cat}
-                                     </button>
-                                  ))}
-                               </div>
-                            </div>
-                         )}
-
-                          {/* Status */}
-                          <div>
-                             <p className="mb-3 text-xs font-semibold text-slate-500">{t("program.list.filter.status")}</p>
-                             <div className="flex flex-wrap gap-2">
-                                <button onClick={() => setActiveStatus(null)} className={`rounded-lg px-4 py-2 text-xs font-bold border transition ${getFilterClass(activeStatus === null)}`}>
-                                   {t("program.list.filter.allStatus")}
-                                </button>
-                               {statusOptions.map((stat) => (
-                                  <button
-                                     key={stat.value}
-                                     onClick={() => setActiveStatus(stat.value === activeStatus ? null : stat.value)}
-                                     className={`rounded-lg px-4 py-2 text-xs font-bold border transition ${getFilterClass(activeStatus === stat.value)}`}
-                                  >
-                                     {stat.label}
-                                  </button>
-                               ))}
-                            </div>
-                         </div>
+                   {/* Search Input Area */}
+                   <div className="flex flex-1 items-center gap-3 px-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-400">
+                         <FontAwesomeIcon icon={faMagnifyingGlass} />
                       </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </section>
+                      <input
+                         value={search}
+                         onChange={(e) => setSearch(e.target.value)}
+                         placeholder={t("program.list.search.placeholder")}
+                         className="h-12 w-full bg-transparent text-base font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none"
+                      />
+                      {search && (
+                         <button onClick={() => setSearch("")} className="text-slate-400 hover:text-slate-600">
+                            <FontAwesomeIcon icon={faXmark} />
+                         </button>
+                      )}
+                   </div>
+
+                   <div className="h-px w-full bg-slate-100 md:h-12 md:w-px" />
+
+                   {/* Filter Actions */}
+                   <div className="flex items-center gap-3 px-3 md:w-auto md:shrink-0 md:justify-end">
+                      <span className="text-sm font-semibold text-slate-500 whitespace-nowrap hidden sm:inline-block">
+                         {filtered.length} {t("program.list.results")}
+                      </span>
+                      <button
+                         onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+                         className={`flex flex-1 items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-bold transition-all md:flex-none
+                            ${isFilterExpanded
+                              ? "bg-brandGreen-50 border-brandGreen-200 text-brandGreen-700"
+                              : "bg-slate-900 border-transparent text-white shadow-lg hover:bg-slate-800"}`}
+                      >
+                         <FontAwesomeIcon icon={faSliders} />
+                         <span>{t("program.list.filter.toggle")}</span>
+                      </button>
+                   </div>
+                </div>
+
+                 {/* --- EXPANDABLE FILTER PANEL --- */}
+                 <div className={`overflow-hidden transition-all duration-300 ease-out ${isFilterExpanded ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                    <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+                        <div className="space-y-6">
+                          {/* Categories */}
+                           {categories.length > 0 && (
+                              <div>
+                                <p className="mb-3 text-xs font-semibold text-slate-500">{t("program.list.filter.categories")}</p>
+                                 <div className="flex flex-wrap gap-2">
+                                    <button onClick={() => setActiveCategory(null)} className={`rounded-lg px-4 py-2 text-xs font-bold border transition ${getFilterClass(activeCategory === null)}`}>
+                                       {t("program.list.filter.allCategories")}
+                                    </button>
+                                   {categories.map((cat) => (
+                                      <button
+                                         key={cat}
+                                         onClick={() => setActiveCategory(cat === activeCategory ? null : cat)}
+                                         className={`rounded-lg px-4 py-2 text-xs font-bold border transition ${getFilterClass(activeCategory === cat)}`}
+                                      >
+                                         {cat}
+                                      </button>
+                                   ))}
+                                </div>
+                             </div>
+                          )}
+
+                           {/* Status */}
+                           <div>
+                              <p className="mb-3 text-xs font-semibold text-slate-500">{t("program.list.filter.status")}</p>
+                              <div className="flex flex-wrap gap-2">
+                                 <button onClick={() => setActiveStatus(null)} className={`rounded-lg px-4 py-2 text-xs font-bold border transition ${getFilterClass(activeStatus === null)}`}>
+                                    {t("program.list.filter.allStatus")}
+                                 </button>
+                                {statusOptions.map((stat) => (
+                                   <button
+                                      key={stat.value}
+                                      onClick={() => setActiveStatus(stat.value === activeStatus ? null : stat.value)}
+                                      className={`rounded-lg px-4 py-2 text-xs font-bold border transition ${getFilterClass(activeStatus === stat.value)}`}
+                                   >
+                                      {stat.label}
+                                   </button>
+                                ))}
+                             </div>
+                          </div>
+                       </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </section>
 
       {/* CONTENT GRID */}
       <section className="bg-slate-50 pb-24">

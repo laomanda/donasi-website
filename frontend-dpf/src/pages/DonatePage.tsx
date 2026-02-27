@@ -12,9 +12,10 @@ import {
     faGlobe,
     faQrcode,
     faTimes,
+    faCircleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import { resolveStorageBaseUrl } from "../lib/urls";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useSearchParams } from "react-router-dom";
 import http from "../lib/http";
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
@@ -22,6 +23,7 @@ import { LandingLayout } from "../layouts/LandingLayout";
 import PhoneInput from "../components/ui/PhoneInput";
 import { getAuthUser } from "../lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
+import { PageHero } from "../components/PageHero";
 
 import DpfIcon from "../brand/dpf-icon.png";
 
@@ -162,6 +164,7 @@ function QuoteSlideshow() {
 
 function DonatePage() {
     const { locale } = useLang();
+    const [searchParams] = useSearchParams();
     const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
     const [accounts, setAccounts] = useState<BankAccount[]>([]);
     const [qrisImage, setQrisImage] = useState<string | null>(null);
@@ -205,7 +208,6 @@ function DonatePage() {
         return () => { active = false; };
     }, []);
 
-    // Pre-fill form for Mitra/Logged-in User
     useEffect(() => {
         const user = getAuthUser() as any;
         if (user) {
@@ -217,6 +219,22 @@ function DonatePage() {
             }));
         }
     }, []);
+
+    // Auto-select program if query param exists
+    useEffect(() => {
+        const queryProgramId = searchParams.get("program_id");
+        if (queryProgramId) {
+            setForm(prev => ({ ...prev, program_id: queryProgramId }));
+
+            // Optional: Scroll to form if coming from detail with program_id
+            const formElement = document.getElementById("donate-form-section");
+            if (formElement) {
+                setTimeout(() => {
+                    formElement.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 500);
+            }
+        }
+    }, [searchParams]);
 
     // Placeholder for getProgress if not imported
     const getProgress = (collected: any, target: any) => {
@@ -459,64 +477,56 @@ function DonatePage() {
     };
 
     return (
-        <LandingLayout footerWaveBgClassName="bg-white">
+        <LandingLayout footerWaveBgClassName="bg-slate-50">
             {/* HERO */}
-            <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-brandGreen-50">
-                <div className="pointer-events-none absolute inset-0">
-                    <div className="absolute -left-10 top-16 h-72 w-72 rounded-full bg-primary-200/30 blur-[110px]" />
-                    <div className="absolute bottom-10 right-0 h-80 w-80 rounded-full bg-brandGreen-200/35 blur-[120px]" />
-                    <div className="absolute inset-x-10 top-1/3 h-24 rounded-full bg-white/60 blur-3xl" />
-                </div>
-                <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-24 sm:px-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-28">
-                    <div className="space-y-6">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-primary-700 shadow-sm">
-                            {t("donate.hero.badge")}
-                        </span>
-                        <h1 className="font-body text-4xl font-semibold leading-tight text-slate-900 sm:text-5xl">
-                            {t("donate.hero.title.leading")} <span className="text-primary-500">{t("donate.hero.title.highlight")}</span>
-                        </h1>
-                        <p className="max-w-2xl text-lg leading-relaxed text-slate-700">
-                            {t("donate.hero.subtitle")}
-                        </p>
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                            <a
-                                href="/program"
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-700"
-                            >
-                                <FontAwesomeIcon icon={faHandHoldingHeart} />
-                                {t("donate.hero.cta.program")}
-                            </a>
-                            <a
-                                href="/konfirmasi-donasi"
-                                className="inline-flex items-center justify-center gap-2 rounded-full border border-brandGreen-200 bg-brandGreen-500 text-white px-6 py-3 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:border-brandGreen-300"
-                            >
-                                <FontAwesomeIcon icon={faPaperPlane} />
-                                {t("donate.hero.cta.confirm")}
-                            </a>
-                        </div>
-                    </div>
-                    <div className="relative">
-                        <div className="rounded-[32px] border border-white/60 bg-white/80 p-6 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.4)] backdrop-blur">
-                            <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-brandGreen-600 to-primary-600 px-4 py-3 text-white shadow-lg">
-                                <FontAwesomeIcon icon={faShieldHalved} className="text-lg" />
-                                <div>
-                                    <p className="text-xs font-semibold">{t("donate.hero.trust.badge")}</p>
-                                    <p className="text-base font-bold leading-tight">{t("donate.hero.trust.title")}</p>
-                                </div>
-                            </div>
-                            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                                <InfoPill icon={faCreditCard} label={t("donate.hero.pills.snap")} />
-                                <InfoPill icon={faWallet} label={t("donate.hero.pills.manual")} />
-                                <InfoPill icon={faCheckCircle} label={t("donate.hero.pills.confirmed")} />
-                                <InfoPill icon={faHandHoldingHeart} label={t("donate.hero.pills.support")} />
+            <PageHero
+                title={
+                    <>
+                        {t("donate.hero.title.leading")}{" "}
+                        <span className="text-primary-500">{t("donate.hero.title.highlight")}</span>
+                    </>
+                }
+                subtitle={t("donate.hero.subtitle")}
+                badge={t("donate.hero.badge")}
+                fullHeight={true}
+                rightElement={
+                    <div className="rounded-[32px] border border-white/60 bg-white/80 p-6 shadow-[0_25px_80px_-50px_rgba(0,0,0,0.4)] backdrop-blur">
+                        <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-brandGreen-600 to-primary-600 px-4 py-3 text-white shadow-lg">
+                            <FontAwesomeIcon icon={faShieldHalved} className="text-lg" />
+                            <div>
+                                <p className="text-xs font-semibold">{t("donate.hero.trust.badge")}</p>
+                                <p className="text-base font-bold leading-tight">{t("donate.hero.trust.title")}</p>
                             </div>
                         </div>
+                        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                            <InfoPill icon={faCreditCard} label={t("donate.hero.pills.snap")} />
+                            <InfoPill icon={faWallet} label={t("donate.hero.pills.manual")} />
+                            <InfoPill icon={faCheckCircle} label={t("donate.hero.pills.confirmed")} />
+                            <InfoPill icon={faHandHoldingHeart} label={t("donate.hero.pills.support")} />
+                        </div>
                     </div>
+                }
+            >
+                <div className="flex flex-col gap-3 sm:flex-row">
+                    <a
+                        href="/program"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-700"
+                    >
+                        <FontAwesomeIcon icon={faHandHoldingHeart} />
+                        {t("donate.hero.cta.program")}
+                    </a>
+                    <a
+                        href="/konfirmasi-donasi"
+                        className="inline-flex items-center justify-center gap-2 rounded-full border border-brandGreen-200 bg-brandGreen-500 text-white px-6 py-3 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:border-brandGreen-300"
+                    >
+                        <FontAwesomeIcon icon={faPaperPlane} />
+                        {t("donate.hero.cta.confirm")}
+                    </a>
                 </div>
-            </section>
+            </PageHero>
 
             {/* DONASI ONLINE */}
-            <section className="bg-white">
+            <section id="donate-form-section" className="bg-slate-50">
                 <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
                     <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
                         <div className="space-y-6">
@@ -812,8 +822,18 @@ function DonatePage() {
                     </div>
 
                     {errorKey && (
-                        <div className="mt-6 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-                            {t(errorKey)}
+                        <div className="mt-8 overflow-hidden rounded-[24px] border border-red-100 bg-red-50/50 p-4 backdrop-blur-sm mb-8">
+                            <div className="flex items-start gap-4">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600 shadow-sm ring-4 ring-red-50/50">
+                                    <FontAwesomeIcon icon={faCircleExclamation} />
+                                </div>
+                                <div className="space-y-1">
+                                    <h4 className="text-sm font-bold text-red-900">{t("donate.accounts.error.title")}</h4>
+                                    <p className="text-sm leading-relaxed text-red-700/80">
+                                        {t(errorKey)}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -893,16 +913,16 @@ function DonatePage() {
                         <div className="flex flex-col gap-3 sm:flex-row">
                             <a
                                 href="/program"
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5"
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-6 py-3 text-sm font-semibold text-brandGreen-600 transition hover:bg-slate-200"
                             >
-                                <FontAwesomeIcon icon={faHandHoldingHeart} />
+                                <FontAwesomeIcon icon={faHandHoldingHeart} className="text-brandGreen-500 hover:text-brandGreen-600" />
                                 {t("donate.cta.program")}
                             </a>
                             <a
                                 href="/konfirmasi-donasi"
-                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/60 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-white/20"
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-6 py-3 text-sm font-semibold text-primary-600 hover:bg-slate-200"
                             >
-                                <FontAwesomeIcon icon={faPaperPlane} />
+                                <FontAwesomeIcon icon={faPaperPlane} className="text-primary-500 hover:text-primary-600" />
                                 {t("donate.cta.confirmManual")}
                             </a>
                         </div>

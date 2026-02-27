@@ -133,8 +133,7 @@ export function AdminDonationsPage() {
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
 
   const authUser = useMemo(() => getAuthUser(), []);
-  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
-
+  
   const hasFilters = Boolean(
     q.trim() || status || paymentSource || programId.trim() || dateFrom.trim() || dateTo.trim()
   );
@@ -289,7 +288,7 @@ export function AdminDonationsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {!isViewer && (
+            {true && (
               <button
                 type="button"
                 onClick={() => navigate("/admin/donations/manual")}
@@ -471,7 +470,7 @@ export function AdminDonationsPage() {
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
-        hideDelete={isViewer}
+        
       />
 
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
@@ -579,7 +578,7 @@ export function AdminDonationsPage() {
                             </span>
                             
                             {/* WhatsApp Button - Always active, updates timestamp on resend */}
-                            {statusValue === 'paid' && !isViewer && (
+                            {statusValue === 'paid'  && (
                                 <div className="flex flex-col items-center gap-1">
                                     <button
                                         onClick={(e) => handleOpenWhatsapp(donation, e)}
@@ -645,7 +644,7 @@ export function AdminDonationsPage() {
                     </div>
                 
                      {/* WhatsApp Button Mobile */}
-                     {statusValue === 'paid' && !isViewer && (
+                     {statusValue === 'paid'  && (
                         <div className="mt-3 flex justify-between items-center">
                              {donation.whatsapp_sent_at && (
                                 <span className="text-[10px] text-slate-400">

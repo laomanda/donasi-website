@@ -82,7 +82,7 @@ export function AdminSuggestionShowPage() {
   const [deleting, setDeleting] = useState(false);
 
   const authUser = useMemo(() => getAuthUser(), []);
-  const isViewer = useMemo(() => authUser?.roles?.some(r => r.name === 'pelihat'), [authUser]);
+  
 
   const [isChangingStatus, setIsChangingStatus] = useState(false);
 
@@ -225,7 +225,7 @@ export function AdminSuggestionShowPage() {
         </div>
 
         <aside className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:h-fit lg:self-start lg:z-10">
-          {!isViewer && (
+          {true && (
             <div className="rounded-[28px] border border-emerald-100 bg-white p-6 shadow-sm">
               <div className="flex items-start gap-4">
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/20">
@@ -266,7 +266,7 @@ export function AdminSuggestionShowPage() {
             </div>
           )}
 
-          {!isViewer && (
+          {true && (
             <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
               <div className="mb-4">
                 <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Pengaturan Status</h3>
@@ -303,7 +303,7 @@ export function AdminSuggestionShowPage() {
             </div>
           )}
 
-          {!isViewer && (
+          {true && (
             <div className="rounded-[28px] border border-rose-100 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-10 w-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">

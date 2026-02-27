@@ -10,6 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
 
+
 import http from "../lib/http";
 import { resolveStorageBaseUrl } from "../lib/urls";
 import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
@@ -73,7 +74,7 @@ export function LiterasiPage() {
     let active = true;
     setLoading(true);
     http
-      .get<{ data: Article[] }>("/articles")
+      .get<{ data: Article[] }>("/articles", { params: { per_page: 1000 } })
       .then((res) => {
         if (!active) return;
         setArticles(res.data?.data ?? []);
@@ -136,11 +137,7 @@ export function LiterasiPage() {
   return (
     <LandingLayout>
       {/* HEADER HERO SECTION */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-primary-50/40 via-white to-white pb-20 pt-28">
-         <div className="absolute inset-0 pointer-events-none">
-             <div className="absolute top-[-100px] left-[20%] h-[400px] w-[400px] rounded-full bg-primary-100/40 blur-[100px]" />
-             <div className="absolute bottom-0 right-[10%] h-[300px] w-[300px] rounded-full bg-brandGreen-100/40 blur-[80px]" />
-         </div>
+      <section className="relative overflow-hidden bg-slate-50 pb-20 pt-28">
 
          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
@@ -303,7 +300,7 @@ function ArticleCard({
           <img
             src={getImageUrl(article.thumbnail_path)}
             alt={article.title}
-            className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+            className="h-full w-full object-cover"
             onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
           />
         </div>
@@ -316,7 +313,7 @@ function ArticleCard({
           </span>
         ) : null}
 
-        <h3 className="mt-4 line-clamp-2 min-h-[56px] font-heading text-lg font-semibold leading-snug text-slate-900 transition group-hover:text-primary-600">
+        <h3 className="mt-4 line-clamp-2 min-h-[56px] font-heading text-lg font-semibold leading-snug text-slate-900">
           <Link to={`/articles/${article.slug}`}>{article.title}</Link>
         </h3>
 
