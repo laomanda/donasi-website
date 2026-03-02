@@ -38,7 +38,7 @@ class EditorTaskController extends Controller
             $query->where('priority', $priority);
         }
 
-        $tasks = $query->orderByDesc('created_at')
+        $tasks = $query->orderByDesc('updated_at')
             ->paginate($request->integer('per_page', 10));
 
         return response()->json($tasks);

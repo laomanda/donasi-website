@@ -123,6 +123,18 @@ class ProgramController extends Controller
         return response()->json($program);
     }
 
+    public function categories()
+    {
+        $categories = Program::query()
+            ->select('category', 'category_en')
+            ->distinct()
+            ->whereNotNull('category')
+            ->orderBy('category')
+            ->get();
+
+        return response()->json($categories);
+    }
+
     private function validatePayload(Request $request, ?int $programId = null, bool $isUpdate = false): array
     {
         $required = $isUpdate ? 'sometimes' : 'required';

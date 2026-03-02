@@ -224,6 +224,7 @@ Route::prefix('v1')->group(function () {
 
             Route::post('uploads/image', [EditorUploadController::class, 'storeImage']);
 
+            Route::get('programs/categories', [EditorProgramController::class, 'categories']);
             Route::apiResource('programs', EditorProgramController::class);
             Route::get('articles/categories', [EditorArticleController::class, 'categories']);
             Route::apiResource('articles', EditorArticleController::class);

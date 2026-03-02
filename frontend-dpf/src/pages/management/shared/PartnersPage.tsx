@@ -215,7 +215,7 @@ export function PartnersPage() {
 
       <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
             <label className="block">
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Cari</span>
               <div className="relative mt-2">
@@ -243,20 +243,35 @@ export function PartnersPage() {
                 <option value="inactive">Nonaktif</option>
               </select>
             </label>
+
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Per Halaman</span>
+              <select
+                value={perPage}
+                onChange={(e) => setPerPage(Number(e.target.value))}
+                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={30}>30</option>
+              </select>
+            </label>
           </div>
 
-          {hasFilters && (
-            <button
-              type="button"
-              onClick={() => {
-                setQ("");
-                setStatus("");
-              }}
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-            >
-              Atur ulang
-            </button>
-          )}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQ("");
+                  setStatus("");
+                }}
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              >
+                Atur ulang
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -496,38 +511,46 @@ export function PartnersPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs font-semibold text-slate-500">Halaman {currentPage} dari {lastPage}</p>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm">
-            <span>Per halaman</span>
-            <select
-              value={perPage}
-              onChange={(event) => setPerPage(Number(event.target.value))}
-              className="rounded-xl border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-700 focus:outline-none"
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={30}>30</option>
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage <= 1}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Sebelumnya
-          </button>
-          <button
-            type="button"
-            onClick={() => setPage((prev) => Math.min(lastPage, prev + 1))}
-            disabled={currentPage >= lastPage}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Berikutnya
-          </button>
-        </div>
+      <Pagination
+        currentPage={currentPage}
+        lastPage={lastPage}
+        onPageChange={setPage}
+      />
+    </div>
+  );
+}
+
+function Pagination({
+  currentPage,
+  lastPage,
+  onPageChange,
+  className = "",
+}: {
+  currentPage: number;
+  lastPage: number;
+  onPageChange: (page: number | ((prev: number) => number)) => void;
+  className?: string;
+}) {
+  return (
+    <div className={[`flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between`, className].join(" ")}>
+      <p className="text-xs font-semibold text-slate-500">Halaman {currentPage} dari {lastPage}</p>
+      <div className="flex w-full items-center gap-2 sm:w-auto">
+        <button
+          type="button"
+          onClick={() => onPageChange((prev) => Math.max(1, prev - 1))}
+          disabled={currentPage <= 1}
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[100px] sm:flex-none"
+        >
+          Sebelumnya
+        </button>
+        <button
+          type="button"
+          onClick={() => onPageChange((prev) => Math.min(lastPage, prev + 1))}
+          disabled={currentPage >= lastPage}
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[100px] sm:flex-none"
+        >
+          Berikutnya
+        </button>
       </div>
     </div>
   );

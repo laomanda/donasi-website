@@ -269,6 +269,15 @@ export function EditorTasksPage() {
 
         try {
             await http.patch(`/editor/tasks/${taskId}`, { status: nextStatus });
+            toast.success(`Berhasil memperbarui status menjadi: ${formatTaskStatus(nextStatus)}`, { title: "Update tugas" });
+            
+            // Refresh logic: if status changed, it might need to disappear or move
+            void fetchTasks(pageRef.current, {
+                status: statusRef.current,
+                priority: priorityRef.current,
+                q: searchRef.current,
+                perPage: perPageRef.current,
+            }, { silent: true });
         } catch {
             setItems((state) =>
                 state.map((item) => (item.id === taskId ? { ...item, status: current.status } : item))

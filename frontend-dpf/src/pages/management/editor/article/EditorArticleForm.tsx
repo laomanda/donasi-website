@@ -9,9 +9,9 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import http from "../../../lib/http";
-import { useToast } from "../../../components/ui/ToastProvider";
-import { translateCategoryToEn, CATEGORY_OPTIONS } from "../../../lib/categoryTranslations";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import { translateCategoryToEn, CATEGORY_OPTIONS } from "../../../../lib/categoryTranslations";
 
 type EditorArticle = {
   id: number;
@@ -492,7 +492,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:items-center">
             <button
               type="button"
               onClick={() => navigate("/editor/articles")}
@@ -527,7 +527,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
             <button
               type="button"
               onClick={() => void onSubmit()}
-              className="inline-flex items-center justify-center rounded-2xl bg-brandGreen-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:opacity-70"
+              className="col-span-2 inline-flex items-center justify-center rounded-2xl bg-brandGreen-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:opacity-70 md:col-span-1"
               disabled={!canSubmit}
             >
               {saving ? "Menyimpan..." : "Simpan"}

@@ -419,6 +419,13 @@ function DonatePage() {
                         }
 
                         // 2. Jika belum paid, anggap gagal/dibatalkan user
+                        try {
+                            await http.post(`/donations/${res.data?.donation?.id}/cancel`);
+                            console.log("Donation cancelled via API");
+                        } catch (e) {
+                            console.error("Failed to cancel donation via API", e);
+                        }
+                        
                         setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
                     },
                 });

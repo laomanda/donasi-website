@@ -2,12 +2,11 @@
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBuildingColumns, faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../lib/http";
-import { getAuthUser } from "../../../lib/auth";
-import { useToast } from "../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../lib/bulk";
-import { useBulkSelection } from "../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../components/ui/BulkActionsBar";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import { runWithConcurrency } from "../../../../lib/bulk";
+import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
+import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
 
 type BankAccount = {
   id: number;
@@ -31,10 +30,10 @@ const formatDate = (value: string | null | undefined) => {
 
 const getStatusTone = (isActive: boolean) =>
   isActive
-    ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-600"
+    ? "bg-brandGreen-600 text-white shadow-sm ring-1 ring-brandGreen-600"
     : "bg-slate-500 text-white shadow-sm ring-1 ring-slate-500";
 
-export function AdminBankAccountsPage() {
+export function EditorBanksPage() {
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -44,10 +43,9 @@ export function AdminBankAccountsPage() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const selection = useBulkSelection<number>();
 
-  const authUser = useMemo(() => getAuthUser(), []);
-  
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<"" | "active" | "inactive">("");
+  const [bankType, setBankType] = useState<"" | "domestic" | "international">("");
 
   const fetchAccounts = async () => {
     setLoading(true);
@@ -84,9 +82,13 @@ export function AdminBankAccountsPage() {
           : status === "active"
             ? acc.is_visible_public === true
             : acc.is_visible_public === false;
-      return matchQuery && matchStatus;
+      const matchType =
+        bankType === ""
+          ? true
+          : (acc.type || "domestic") === bankType;
+      return matchQuery && matchStatus && matchType;
     });
-  }, [items, q, status]);
+  }, [items, q, status, bankType]);
 
   const filteredIds = useMemo(() => filtered.map((acc) => acc.id), [filtered]);
 
@@ -122,56 +124,44 @@ export function AdminBankAccountsPage() {
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
-        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
-        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
-        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
-
-        <div className="relative z-10 p-8 md:p-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-4">
-              <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
-                  <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
-                  Keuangan
-                </span>
-                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
-                  Rekening Resmi
-                </h1>
-                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
-                  Kelola rekening yang tampil di halaman donasi publik.
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-emerald-50">
-                <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/20 px-3 py-1.5 ring-1 ring-white/10">
-                  Total: <span className="font-bold text-white">{items.length}</span>
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/20 px-3 py-1.5 ring-1 ring-white/10">
-                  Tampil: <span className="font-bold text-white">{activeCount}</span>
-                </span>
-              </div>
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="min-w-0">
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
+              <span className="h-2 w-2 rounded-full bg-brandGreen-500" />
+              Keuangan
+            </span>
+            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Rekening Resmi</h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-600">
+              Kelola rekening yang tampil di halaman donasi publik.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-bold text-slate-500">
+              <span className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 ring-1 ring-slate-200">
+                Total: <span className="text-slate-900">{items.length}</span>
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 ring-1 ring-slate-200">
+                Tampil: <span className="text-slate-900">{activeCount}</span>
+              </span>
             </div>
-
-            {true && (
-              <button
-                type="button"
-                onClick={() => navigate("/editor/bank-accounts/create")}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white text-emerald-700 px-6 py-4 text-sm font-bold shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-50 hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <FontAwesomeIcon icon={faPlus} />
-                Tambah Rekening
-              </button>
-            )}
           </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/editor/bank-accounts/create")}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700"
+          >
+            <FontAwesomeIcon icon={faPlus} />
+            Tambah Rekening
+          </button>
         </div>
       </div>
 
       <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="grid flex-1 gap-4 sm:grid-cols-2">
+          <div className="grid flex-1 gap-4 sm:grid-cols-3">
             <label className="block">
               <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Pencarian</span>
-              <div className="mt-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition">
+              <div className="mt-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus-within:bg-white focus-within:ring-2 focus-within:ring-brandGreen-500/20 focus-within:border-brandGreen-500 transition">
                 <FontAwesomeIcon icon={faMagnifyingGlass} className="text-slate-400" />
                 <input
                   value={q}
@@ -188,11 +178,29 @@ export function AdminBankAccountsPage() {
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as any)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-brandGreen-500 focus:bg-white focus:ring-4 focus:ring-brandGreen-500/10"
                 >
                   <option value="">Semua Status</option>
                   <option value="active">Tampil</option>
                   <option value="inactive">Disembunyikan</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                  <FontAwesomeIcon icon={faBuildingColumns} className="text-xs" />
+                </div>
+              </div>
+            </label>
+
+            <label className="block">
+              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Wilayah</span>
+              <div className="relative mt-2">
+                <select
+                  value={bankType}
+                  onChange={(e) => setBankType(e.target.value as any)}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-brandGreen-500 focus:bg-white focus:ring-4 focus:ring-brandGreen-500/10"
+                >
+                  <option value="">Semua Wilayah</option>
+                  <option value="domestic">Dalam Negeri</option>
+                  <option value="international">Luar Negeri</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
                   <FontAwesomeIcon icon={faBuildingColumns} className="text-xs" />
@@ -228,7 +236,7 @@ export function AdminBankAccountsPage() {
                     checked={filteredIds.length > 0 && filteredIds.every((id) => selection.isSelected(id))}
                     onChange={() => selection.toggleAll(filteredIds)}
                     aria-label="Pilih semua rekening"
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500"
                   />
                 </th>
                 <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Urutan</th>
@@ -277,7 +285,7 @@ export function AdminBankAccountsPage() {
                 filtered.map((acc) => {
                   const updated = acc.updated_at ?? acc.created_at;
                   // Status bar color logic
-                  const barColor = acc.is_visible_public ? "border-l-emerald-500" : "border-l-slate-300";
+                  const barColor = acc.is_visible_public ? "border-l-brandGreen-500" : "border-l-slate-300";
 
                   return (
                     <tr
@@ -291,7 +299,7 @@ export function AdminBankAccountsPage() {
                           checked={selection.isSelected(acc.id)}
                           onChange={() => selection.toggle(acc.id)}
                           aria-label={`Pilih rekening ${acc.bank_name}`}
-                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
+                          className="h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500 accent-brandGreen-600"
                         />
                       </td>
                       <td className="px-6 py-5">
@@ -301,9 +309,6 @@ export function AdminBankAccountsPage() {
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm ring-1 ring-emerald-100">
-                            <FontAwesomeIcon icon={faBuildingColumns} />
-                          </div>
                           <span className="line-clamp-1 text-sm font-bold text-slate-900">{acc.bank_name}</span>
                         </div>
                       </td>
@@ -314,16 +319,16 @@ export function AdminBankAccountsPage() {
                       <td className="px-6 py-5">
                         <div className="flex flex-col items-start gap-1.5">
                             <span
-                            className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                            className={`whitespace-nowrap inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
                                 acc.type === "international"
-                                ? "bg-blue-50 text-blue-700 ring-1 ring-blue-600/20"
-                                : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                                ? "bg-blue-600 text-white ring-1 ring-blue-600/20"
+                                : "bg-brandGreen-500 text-white ring-1 ring-brandGreen-600/20"
                             }`}
                             >
                             {acc.type === "international" ? "Luar Negeri" : "Dalam Negeri"}
                             </span>
                             {acc.category && (
-                                <span className="text-xs font-semibold text-slate-600">
+                                <span className="text-xs font-semibold bg-primary-600 text-white px-2 py-1 rounded-lg ring-1 ring-primary-600/20">
                                 {acc.category}
                                 </span>
                             )}
@@ -359,7 +364,7 @@ export function AdminBankAccountsPage() {
           ) : (
             filtered.map((acc) => {
               const updated = acc.updated_at ?? acc.created_at;
-              const barColor = acc.is_visible_public ? "border-l-emerald-500" : "border-l-slate-300";
+              const barColor = acc.is_visible_public ? "border-l-brandGreen-500" : "border-l-slate-300";
 
               return (
                 <button
@@ -375,13 +380,29 @@ export function AdminBankAccountsPage() {
                         checked={selection.isSelected(acc.id)}
                         onChange={() => selection.toggle(acc.id)}
                         aria-label={`Pilih rekening ${acc.bank_name}`}
-                        className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        className="mt-1 h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500"
                       />
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="text-base font-bold text-slate-900">{acc.bank_name}</p>
                       <p className="mt-1 text-sm text-slate-600">{acc.account_number}</p>
                       <p className="mt-1 text-xs text-slate-500">Atas nama: {acc.account_name}</p>
+                      <div className="mt-2 flex items-center gap-2">
+                          <span
+                            className={`whitespace-nowrap inline-flex items-center rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                                acc.type === "international"
+                                ? "bg-blue-50 text-blue-700 ring-1 ring-blue-600/20"
+                                : "bg-brandGreen-50 text-brandGreen-700 ring-1 ring-brandGreen-600/20"
+                            }`}
+                           >
+                            {acc.type === "international" ? "Luar Negeri" : "Dalam Negeri"}
+                          </span>
+                          {acc.category && (
+                              <span className="text-xs font-semibold text-slate-600 line-clamp-1">
+                                {acc.category}
+                              </span>
+                          )}
+                      </div>
                     </div>
                   </div>
                   <div className="mt-4 flex items-center justify-between gap-2 pl-7">
@@ -403,7 +424,7 @@ export function AdminBankAccountsPage() {
   );
 }
 
-export default AdminBankAccountsPage;
+export default EditorBanksPage;
 
 
 

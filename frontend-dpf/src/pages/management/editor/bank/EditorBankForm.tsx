@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faBuildingColumns, faTrash, faImage, faUpload, faTimes } from "@fortawesome/free-solid-svg-icons";
 
-import http from "../../../lib/http";
-import { useToast } from "../../../components/ui/ToastProvider";
-import { resolveStorageBaseUrl } from "../../../lib/urls";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import { resolveStorageBaseUrl } from "../../../../lib/urls";
 
 type BankAccount = {
   id: number;
@@ -80,7 +80,7 @@ const getNextAvailableOrder = (accounts: BankAccount[], excludeId?: number) => {
 
 type Mode = "create" | "edit";
 
-export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountId?: number }) {
+export function EditorBankForm({ mode, accountId }: { mode: Mode; accountId?: number }) {
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -321,48 +321,38 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
-        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
-        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
-        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="min-w-0">
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
+              <span className="h-2 w-2 rounded-full bg-brandGreen-500" />
+              Rekening
+            </span>
+            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">{title}</h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-600">
+              Kelola rekening resmi untuk ditampilkan di halaman donasi.
+            </p>
+          </div>
 
-        <div className="relative z-10 p-8 md:p-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-4">
-              <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
-                  <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
-                  Rekening
-                </span>
-                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
-                  {title}
-                </h1>
-                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
-                  Kelola rekening resmi untuk ditampilkan di halaman donasi.
-                </p>
-              </div>
-            </div>
+          <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:items-center">
+            <button
+              type="button"
+              onClick={() => navigate("/editor/bank-accounts")}
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              disabled={saving || deleting}
+            >
+              <FontAwesomeIcon icon={faArrowLeft} />
+              Kembali
+            </button>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/editor/bank-accounts")}
-                className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-white/20 backdrop-blur-sm ring-1 ring-white/20"
-                disabled={saving || deleting}
-              >
-                <FontAwesomeIcon icon={faArrowLeft} />
-                Kembali
-              </button>
-
-              <button
-                type="button"
-                onClick={() => void onSubmit()}
-                className="inline-flex items-center justify-center rounded-2xl bg-white text-emerald-700 px-8 py-3 text-sm font-bold shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-50 hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
-                disabled={!canSubmit}
-              >
-                {saving ? "Menyimpan..." : "Simpan Perubahan"}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => void onSubmit()}
+              className="inline-flex items-center justify-center rounded-2xl bg-brandGreen-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={!canSubmit}
+            >
+              {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            </button>
           </div>
         </div>
       </div>
@@ -382,7 +372,7 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
             <div className="grid grid-cols-1 gap-4">
               {/* Method Toggle */}
               <div className="flex p-1 bg-slate-100 rounded-xl mb-4">
@@ -392,7 +382,7 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
                           setInputMethod('manual');
                           if (mode === 'create') setForm(s => ({...s, category: ''}));
                       }}
-                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${inputMethod === 'manual' ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'}`}
+                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${inputMethod === 'manual' ? 'bg-white text-brandGreen-700 shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'}`}
                   >
                       Input Manual
                   </button>
@@ -402,7 +392,7 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
                           setInputMethod('qris');
                           if (mode === 'create') setForm(s => ({...s, category: 'QRIS'}));
                       }}
-                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${inputMethod === 'qris' ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'}`}
+                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${inputMethod === 'qris' ? 'bg-white text-brandGreen-700 shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'}`}
                   >
                       Scan QRIS
                   </button>
@@ -411,62 +401,77 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
               <div className="grid sm:grid-cols-2 gap-4">
                 {/* Location / Type Selection */}
                 <div className="block sm:col-span-2">
-                   <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                   <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                     Lokasi Wakif <span className="text-red-500">*</span>
                    </span>
-                   <div className="flex flex-wrap items-center gap-4">
-                      <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition ${form.type === 'domestic' ? 'bg-emerald-50 border-emerald-200 ring-1 ring-emerald-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+                   <div className="grid grid-cols-2 gap-3">
+                      <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition ${form.type === 'domestic' ? 'bg-brandGreen-50 border-brandGreen-200 ring-1 ring-brandGreen-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
                         <input 
                            type="radio" 
                            name="location_type"
                            value="domestic"
                            checked={form.type === 'domestic'}
                            onChange={() => setForm(s => ({...s, type: 'domestic'}))}
-                           className="h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0"
+                           className="h-4 w-4 border-slate-300 text-brandGreen-600 focus:ring-brandGreen-600 focus:ring-offset-0"
                         />
-                        <span className={`text-sm font-bold ${form.type === 'domestic' ? 'text-emerald-900' : 'text-slate-600'}`}>Wakif Dalam Negeri</span>
+                        <span className={`text-[13px] sm:text-sm font-bold ${form.type === 'domestic' ? 'text-brandGreen-900' : 'text-slate-600'}`}>Dalam Negeri</span>
                       </label>
-                      <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition ${form.type === 'international' ? 'bg-emerald-50 border-emerald-200 ring-1 ring-emerald-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+                      <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition ${form.type === 'international' ? 'bg-brandGreen-50 border-brandGreen-200 ring-1 ring-brandGreen-500/20' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
                         <input 
                            type="radio" 
                            name="location_type"
                            value="international"
                            checked={form.type === 'international'}
                            onChange={() => setForm(s => ({...s, type: 'international'}))}
-                           className="h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-600 focus:ring-offset-0"
+                           className="h-4 w-4 border-slate-300 text-brandGreen-600 focus:ring-brandGreen-600 focus:ring-offset-0"
                         />
-                        <span className={`text-sm font-bold ${form.type === 'international' ? 'text-emerald-900' : 'text-slate-600'}`}>Wakif Luar Negeri</span>
+                        <span className={`text-[13px] sm:text-sm font-bold ${form.type === 'international' ? 'text-brandGreen-900' : 'text-slate-600'}`}>Luar Negeri</span>
                       </label>
                    </div>
                 </div>
 
-                {/* Category Input (Free Text) */}
+                {/* Category Input (Free Text with Datalist) */}
                 <label className="block sm:col-span-2 relative">
-                  <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                     Kategori / Grup <span className="text-red-500">*</span>
                   </span>
                   <input
                       value={form.category}
                       onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))}
                       placeholder="Contoh: Wakaf"
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                      list="category-suggestions"
+                      className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                       disabled={loading || saving || deleting}
                   />
+                  <datalist id="category-suggestions">
+                    {Array.from(new Set(
+                        peers
+                            .filter(p => {
+                                const pIsInternational = p.type === 'international';
+                                const formIsInternational = form.type === 'international';
+                                return pIsInternational === formIsInternational;
+                            })
+                            .map(p => p.category)
+                            .filter(Boolean)
+                    )).map(cat => (
+                        <option key={cat!} value={cat!} />
+                    ))}
+                  </datalist>
                   <p className="mt-2 text-xs text-slate-500">
-                    Grup rekening ini (bebas isi sendiri sesuai kebutuhan).
+                    Pilih kategori yang sudah ada atau ketik kategori baru.
                   </p>
                 </label>
               </div>
 
               <label className="block">
-                <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   {inputMethod === 'qris' ? 'Provider / Nama QRIS' : 'Nama Bank'} <span className="text-red-500">*</span>
                 </span>
                 <input
                   value={form.bank_name}
                   onChange={(e) => setForm((s) => ({ ...s, bank_name: e.target.value }))}
                   placeholder={inputMethod === 'qris' ? "Contoh: Gopay, OVO, LinkAja" : "Contoh: Bank Syariah Indonesia"}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
                 <p className="mt-2 text-xs text-slate-500">
@@ -478,37 +483,33 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
 
               {inputMethod === 'manual' && (
                 <>
-                <label className="block">
-                    <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                     Nomor rekening <span className="text-red-500">*</span>
                     </span>
                     <input
                     value={form.account_number}
                     onChange={(e) => setForm((s) => ({ ...s, account_number: e.target.value }))}
                     placeholder="Contoh: 7123456789"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                     disabled={loading || saving || deleting}
                     />
-                </label>
 
-                <label className="block">
-                    <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                     Atas nama <span className="text-red-500">*</span>
                     </span>
                     <input
                     value={form.account_name}
                     onChange={(e) => setForm((s) => ({ ...s, account_name: e.target.value }))}
                     placeholder="Contoh: Yayasan DPF"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                    className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                     disabled={loading || saving || deleting}
                     />
-                </label>
                 </>
               )}
 
               {/* Image Upload */}
               <label className="block">
-                <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Logo / Ikon Bank / QRIS
                 </span>
                 <div className="flex items-start gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
@@ -568,7 +569,7 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
               {/* QRIS Image Upload - Only for QRIS mode */}
               {inputMethod === 'qris' && (
               <label className="block">
-                <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Gambar QRIS <span className="text-red-500">*</span>
                 </span>
                 <div className="flex items-start gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
@@ -675,12 +676,12 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
         </div>
 
         <div className="space-y-6 lg:col-span-4 lg:sticky lg:top-28 h-fit">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-xs font-bold tracking-wide text-slate-400">Properti</p>
+          <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Properti</p>
 
             <div className="mt-5 space-y-4">
               <label className="block">
-                <span className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Urutan tampil <span className="text-red-500">*</span>
                 </span>
                 <input
@@ -694,10 +695,10 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
                    }}
                    placeholder="0"
                    className={[
-                     "w-full rounded-xl border px-4 py-3 text-sm font-bold text-slate-900 outline-none transition focus:ring-4",
+                     "mt-2 w-full rounded-2xl border px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:ring-2",
                      orderError
-                       ? "border-rose-300 bg-rose-50 focus:border-rose-500 focus:ring-rose-500/10"
-                       : "border-slate-200 bg-slate-50 focus:border-emerald-500 focus:bg-white focus:ring-emerald-500/10",
+                       ? "border-rose-300 bg-rose-50 focus:border-rose-400 focus:ring-rose-400/10"
+                       : "border-slate-300 bg-white shadow-sm focus:border-slate-400 focus:ring-brandGreen-400",
                    ].join(" ")}
                    disabled={loading || saving || deleting}
                 />
@@ -731,15 +732,15 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
                 onClick={() => setForm((s) => ({ ...s, is_visible_public: !s.is_visible_public }))}
                 disabled={loading || saving || deleting}
                 className={[
-                  "flex w-full items-center justify-between rounded-xl border px-4 py-4 text-sm font-bold shadow-sm transition",
+                  "flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-sm font-bold shadow-sm transition",
                   form.is_visible_public
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-500/20"
+                    ? "border-brandGreen-500 bg-brandGreen-50 text-brandGreen-700 ring-1 ring-brandGreen-500/20"
                     : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
                 ].join(" ")}
               >
                 <span>Tampilkan di landing</span>
                 <span
-                  className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-lg ${form.is_visible_public ? "bg-emerald-200 text-emerald-800" : "bg-slate-100 text-slate-500"
+                  className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-lg ${form.is_visible_public ? "bg-brandGreen-200 text-brandGreen-800" : "bg-slate-100 text-slate-500"
                     }`}
                 >
                   {form.is_visible_public ? "Aktif" : "Nonaktif"}
@@ -767,5 +768,5 @@ export function AdminBankAccountForm({ mode, accountId }: { mode: Mode; accountI
   );
 }
 
-export default AdminBankAccountForm;
+export default EditorBankForm;
 

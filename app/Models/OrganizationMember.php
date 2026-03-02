@@ -13,17 +13,11 @@ class OrganizationMember extends Model
 
     protected $fillable = [
         'name',
-        'name_en',
-        'slug',
         'position_title',
         'position_title_en',
         'group',
         'group_en',
         'photo_path',
-        'short_bio',
-        'short_bio_en',
-        'long_bio',
-        'long_bio_en',
         'email',
         'phone',
         'show_contact',

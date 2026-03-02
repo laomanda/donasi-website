@@ -1,4 +1,4 @@
-ï»¿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -9,11 +9,11 @@ import {
   faPenToSquare,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../lib/http";
-import { useToast } from "../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../lib/bulk";
-import { useBulkSelection } from "../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../components/ui/BulkActionsBar";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import { runWithConcurrency } from "../../../../lib/bulk";
+import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
+import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
 
 type ProgramStatus = "draft" | "active" | "completed" | "archived" | string;
 
@@ -87,11 +87,20 @@ export function EditorProgramsPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [availableCategories, setAvailableCategories] = useState<{ category: string; category_en: string | null }[]>([]);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((p) => p.id), [items]);
 
   const hasFilters = Boolean(q.trim() || status || category.trim());
+
+  useEffect(() => {
+    http.get<{ category: string; category_en: string | null }[]>("/editor/programs/categories").then((res) => {
+      setAvailableCategories(res.data ?? []);
+    }).catch(() => {
+      // Fail silently for categories
+    });
+  }, []);
 
   const fetchPrograms = async (
     nextPage: number,
@@ -255,12 +264,18 @@ export function EditorProgramsPage() {
 
             <label className="block">
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Kategori</span>
-              <input
+              <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="Mis. pendidikan"
                 className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-              />
+              >
+                <option value="">Semua kategori</option>
+                {availableCategories.map((cat) => (
+                  <option key={cat.category} value={cat.category}>
+                    {cat.category}
+                  </option>
+                ))}
+              </select>
             </label>
           </div>
 
@@ -388,7 +403,7 @@ export function EditorProgramsPage() {
                             <span className="mx-2 text-slate-300">-</span>
                             Terkumpul: <span className="font-bold text-slate-700">{formatCurrency(program.collected_amount)}</span>
                             <span className="mx-2 text-slate-300">-</span>
-                            Batas hari: <span className="font-bold text-slate-700">{program.deadline_days ?? "â€“"}</span>
+                            Batas hari: <span className="font-bold text-slate-700">{program.deadline_days ?? "–"}</span>
                           </span>
                         </div>
                       </button>
@@ -472,7 +487,7 @@ export function EditorProgramsPage() {
                   <span className="mx-2 text-slate-300">-</span>
                   Terkumpul: <span className="font-bold text-slate-700">{formatCurrency(program.collected_amount)}</span>
                   <span className="mx-2 text-slate-300">-</span>
-                  Batas hari: <span className="font-bold text-slate-700">{program.deadline_days ?? "â€“"}</span>
+                  Batas hari: <span className="font-bold text-slate-700">{program.deadline_days ?? "–"}</span>
                 </p>
 
                 <div className="mt-4 flex items-center justify-between gap-3">

@@ -208,6 +208,14 @@ export function EditorDashboardPage() {
 
     try {
       await http.patch(`/editor/tasks/${taskId}`, { status: nextStatus });
+      toast.success(`Berhasil memperbarui status menjadi: ${formatTaskStatus(nextStatus)}`, { title: "Update tugas" });
+      
+      // Refresh dashboard data to sync stats and task list
+      http.get<EditorDashboardPayload>("/editor/dashboard")
+        .then((res) => {
+          setData(res.data);
+          setTaskItems(res.data.tasks?.items ?? []);
+        });
     } catch {
       setTaskItems((items) =>
         items.map((item) => (item.id === taskId ? { ...item, status: current.status } : item))
@@ -269,7 +277,7 @@ export function EditorDashboardPage() {
           </div>
         )}
 
-        {/* STATS ROW (Modern Cards) */}
+        {/* ROW 1 – Statistik Artikel & Program */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             loading={loading}
@@ -301,8 +309,47 @@ export function EditorDashboardPage() {
           />
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-5">
-          <div className="space-y-6 lg:col-span-3">
+        {/* ROW 2 – Ringkasan tambahan */}
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <StatCard
+            loading={loading}
+            title="Artikel Review"
+            value={formatCount(stats.articlesReview)}
+            icon={faClock}
+            theme="violet"
+          />
+          <StatCard
+            loading={loading}
+            title="Total Artikel"
+            value={formatCount(stats.articlesTotal)}
+            icon={faBookOpen}
+            theme="slate"
+          />
+          <StatCard
+            loading={loading}
+            title="Program Unggulan"
+            value={formatCount(stats.programsHighlight)}
+            icon={faHeart}
+            theme="rose"
+          />
+          <StatCard
+            loading={loading}
+            title="Mitra Aktif"
+            value={formatCount(stats.partnersActive)}
+            icon={faUserGroup}
+            theme="emerald"
+          />
+          <StatCard
+            loading={loading}
+            title="Anggota Organisasi"
+            value={formatCount(stats.organizationMembers)}
+            icon={faSitemap}
+            theme="amber"
+          />
+        </section>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-6">
             <Panel title="Tugas dari Admin" subtitle="Tugas yang dikirim admin atau superadmin">
               <div className="space-y-3">
                 {loading ? (
@@ -321,7 +368,9 @@ export function EditorDashboardPage() {
                 )}
               </div>
             </Panel>
+          </div>
 
+          <div className="space-y-6 lg:sticky lg:top-24 lg:self-start lg:h-fit">
             {/* Activity Log */}
             <Panel title="Aktivitas Terbaru" subtitle="Rekam jejak perubahan konten">
                 <div className="relative ml-3 space-y-6 border-l-2 border-slate-200 pb-2">
@@ -334,54 +383,6 @@ export function EditorDashboardPage() {
                    )}
                 </div>
             </Panel>
-          </div>
-
-          <div className="space-y-6 lg:col-span-2 lg:sticky lg:top-24 lg:self-start lg:h-fit">
-            <Panel title="Ringkasan Editor" subtitle="Sekilas kondisi konten yang perlu perhatian">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                <SummaryItem
-                  className="w-full sm:w-[calc(50%-0.375rem)]"
-                  loading={loading}
-                  label="Artikel"
-                  value={stats.articlesReview}
-                  icon={faClock}
-                  tone="bg-sky-600 text-white"
-                />
-                <SummaryItem
-                  className="w-full sm:w-[calc(50%-0.375rem)]"
-                  loading={loading}
-                  label="Total Artikel"
-                  value={stats.articlesTotal}
-                  icon={faBookOpen}
-                  tone="bg-slate-900 text-white"
-                />
-                <SummaryItem
-                  className="w-full sm:w-[calc(50%-0.375rem)]"
-                  loading={loading}
-                  label="Program"
-                  value={stats.programsHighlight}
-                  icon={faHeart}
-                  tone="bg-rose-600 text-white"
-                />
-                <SummaryItem
-                  className="w-full sm:w-[calc(50%-0.375rem)]"
-                  loading={loading}
-                  label="Mitra Aktif"
-                  value={stats.partnersActive}
-                  icon={faUserGroup}
-                  tone="bg-emerald-600 text-white"
-                />
-                <SummaryItem
-                  className="w-full sm:w-[calc(50%-0.375rem)]"
-                  loading={loading}
-                  label="Organisasi"
-                  value={stats.organizationMembers}
-                  icon={faSitemap}
-                  tone="bg-amber-500 text-slate-900"
-                />
-              </div>
-            </Panel>
-
           </div>
         </div>
     </div>
@@ -454,37 +455,6 @@ function StatCard({
   );
 }
 
-function SummaryItem({
-  loading,
-  label,
-  value,
-  icon,
-  tone,
-  className,
-}: {
-  loading: boolean;
-  label: string;
-  value: number;
-  icon: any;
-  tone: string;
-  className?: string;
-}) {
-  return (
-    <div className={["flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm", className].filter(Boolean).join(" ")}>
-      <div className={`flex h-9 w-9 items-center justify-center rounded-xl shadow-sm ${tone}`}>
-        <FontAwesomeIcon icon={icon} className="text-sm" />
-      </div>
-      <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">{label}</p>
-        {loading ? (
-          <div className="mt-1 h-5 w-16 animate-pulse rounded bg-slate-200" />
-        ) : (
-          <p className="text-lg font-bold text-slate-900">{formatCount(value)}</p>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function TaskItemRow({
   item,

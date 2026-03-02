@@ -32,22 +32,22 @@ import { MitraAllocationDetailPage } from "../pages/management/mitra/MitraAlloca
 import { MitraDonationsPage } from '../pages/management/mitra/MitraDonationsPage'
 import { PreviewPage } from '../pages/PreviewPage'
 import { EditorDashboardPage } from '../pages/management/editor/EditorDashboardPage'
-import { EditorArticlesPage } from '../pages/management/editor/EditorArticlesPage'
-import { EditorArticleCreatePage } from '../pages/management/editor/EditorArticleCreatePage'
-import { EditorArticleEditPage } from '../pages/management/editor/EditorArticleEditPage'
-import { EditorProgramsPage } from '../pages/management/editor/EditorProgramsPage'
-import { EditorProgramCreatePage } from '../pages/management/editor/EditorProgramCreatePage'
-import { EditorProgramEditPage } from '../pages/management/editor/EditorProgramEditPage'
+import { EditorArticlesPage } from '../pages/management/editor/article/EditorArticlesPage'
+import { EditorArticleCreatePage } from '../pages/management/editor/article/EditorArticleCreatePage'
+import { EditorArticleEditPage } from '../pages/management/editor/article/EditorArticleEditPage'
+import { EditorProgramsPage } from '../pages/management/editor/program/EditorProgramsPage'
+import { EditorProgramCreatePage } from '../pages/management/editor/program/EditorProgramCreatePage'
+import { EditorProgramEditPage } from '../pages/management/editor/program/EditorProgramEditPage'
 import { BannersPage } from '../pages/management/shared/BannersPage'
 import { BannerFormPage } from '../pages/management/shared/BannerFormPage'
 import { PartnersPage } from '../pages/management/shared/PartnersPage'
 import { TagsPage } from '../pages/management/shared/TagsPage'
 import { TagFormPage } from '../pages/management/shared/TagFormPage'
 import { PartnerFormPage } from '../pages/management/shared/PartnerFormPage'
-import { EditorOrganizationMembersPage } from '../pages/management/editor/EditorOrganizationMembersPage'
-import { EditorOrganizationMemberCreatePage } from '../pages/management/editor/EditorOrganizationMemberCreatePage'
-import { EditorOrganizationMemberShowPage } from '../pages/management/editor/EditorOrganizationMemberShowPage'
-import { EditorOrganizationMemberEditPage } from '../pages/management/editor/EditorOrganizationMemberEditPage'
+import { EditorOrganizationMembersPage } from '../pages/management/editor/organization/EditorOrganizationMembersPage'
+import { EditorOrganizationMemberCreatePage } from '../pages/management/editor/organization/EditorOrganizationMemberCreatePage'
+
+import { EditorOrganizationMemberEditPage } from '../pages/management/editor/organization/EditorOrganizationMemberEditPage'
 import { SettingsPage } from '../pages/management/SettingsPage'
 import { EditorTasksPage } from '../pages/management/editor/EditorTasksPage'
 import { SearchPage } from '../pages/management/shared/SearchPage'
@@ -63,9 +63,9 @@ import { AdminPickupRequestsPage } from '../pages/management/admin/AdminPickupRe
 import { AdminPickupRequestShowPage } from '../pages/management/admin/AdminPickupRequestShowPage'
 import { AdminAllocationsPage } from '../pages/management/admin/allocations/AdminAllocationsPage'
 import { AdminAllocationCreatePage } from '../pages/management/admin/allocations/AdminAllocationCreatePage'
-import { AdminBankAccountsPage } from '../pages/management/admin/AdminBankAccountsPage'
-import { AdminBankAccountCreatePage } from '../pages/management/admin/AdminBankAccountCreatePage'
-import { AdminBankAccountEditPage } from '../pages/management/admin/AdminBankAccountEditPage'
+import { EditorBanksPage } from '../pages/management/editor/bank/EditorBanksPage'
+import { EditorBankCreatePage } from '../pages/management/editor/bank/EditorBankCreatePage'
+import { EditorBankEditPage } from '../pages/management/editor/bank/EditorBankEditPage'
 import { AdminEditorTasksPage } from '../pages/management/admin/AdminEditorTasksPage'
 import { AdminEditorTaskCreatePage } from '../pages/management/admin/AdminEditorTaskCreatePage'
 import { SuperAdminUsersPage } from '../pages/management/superadmin/SuperAdminUsersPage'
@@ -120,13 +120,13 @@ export const router = createBrowserRouter([
           { path: 'banners/:id/edit', element: <BannerFormPage mode="edit" /> },
           { path: 'organization-members', element: <EditorOrganizationMembersPage /> },
           { path: 'organization-members/create', element: <EditorOrganizationMemberCreatePage /> },
-          { path: 'organization-members/:id', element: <EditorOrganizationMemberShowPage /> },
+
           { path: 'organization-members/:id/edit', element: <EditorOrganizationMemberEditPage /> },
           { path: 'tasks', element: <EditorTasksPage /> },
           { path: 'search', element: <SearchPage role="editor" /> },
-          { path: 'bank-accounts', element: <AdminBankAccountsPage /> },
-          { path: 'bank-accounts/create', element: <AdminBankAccountCreatePage /> },
-          { path: 'bank-accounts/:id/edit', element: <AdminBankAccountEditPage /> },
+          { path: 'bank-accounts', element: <EditorBanksPage /> },
+          { path: 'bank-accounts/create', element: <EditorBankCreatePage /> },
+          { path: 'bank-accounts/:id/edit', element: <EditorBankEditPage /> },
           { path: 'settings', element: <SettingsPage role="editor" /> },
         ],
       },

@@ -38,25 +38,18 @@ type TimelineItem = {
 type OrganizationMember = {
   id: number;
   name: string;
-  name_en?: string | null;
   position_title: string;
-  position_title_en?: string | null;
   group: string | null;
   group_en?: string | null;
   photo_path?: string | null;
-  short_bio?: string | null;
-  short_bio_en?: string | null;
   show_contact?: boolean;
   email?: string | null;
   phone?: string | null;
+  order: number;
 };
 
-const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" | "en" = "id") => {
-  const idText = (idVal ?? "").trim();
-  const enText = (enVal ?? "").trim();
-  if (locale === "en") return enText || idText;
-  return idText || enText;
-};
+
+
 
 const missionItemKeys = [
   "about.mission.item1",
@@ -172,25 +165,41 @@ function TentangKamiPage() {
   }, []);
 
   const groupedMembers = useMemo(() => {
-    const buckets: Record<string, (OrganizationMember & { name: string; position_title: string; short_bio?: string | null })[]> = {};
+    const buckets: Record<string, (OrganizationMember & { name: string; position_title: string })[]> = {};
+    
     members.forEach((member) => {
       const key = String(member.group ?? "lainnya").toLowerCase();
       if (!buckets[key]) buckets[key] = [];
       buckets[key].push({
         ...member,
-        name: pickLocale(member.name, member.name_en, locale),
-        position_title: pickLocale(member.position_title, member.position_title_en, locale),
-        short_bio: pickLocale(member.short_bio, member.short_bio_en, locale),
+        name: member.name,
+        position_title: member.position_title,
       });
     });
 
-    groupOrder.forEach((key) => {
-      if (buckets[key]) {
-        buckets[key] = buckets[key].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-      }
+    // Sort items within each bucket by member ID (Terlama -> Terbaru)
+    Object.keys(buckets).forEach((key) => {
+      buckets[key] = buckets[key].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
     });
 
-    return buckets;
+    // Sort group keys based on the minimum order of members in that group
+    const sortedGroupKeys = Object.keys(buckets).sort((a, b) => {
+      const minA = Math.min(...buckets[a].map(m => Number(m.order ?? 0)));
+      const minB = Math.min(...buckets[b].map(m => Number(m.order ?? 0)));
+      
+      if (minA !== minB) return minA - minB;
+      
+      // Fallback to predefined order for stability
+      const idxA = groupOrder.indexOf(a);
+      const idxB = groupOrder.indexOf(b);
+      const effectiveIdxA = idxA === -1 ? 999 : idxA;
+      const effectiveIdxB = idxB === -1 ? 999 : idxB;
+      
+      if (effectiveIdxA !== effectiveIdxB) return effectiveIdxA - effectiveIdxB;
+      return a.localeCompare(b);
+    });
+
+    return { buckets, sortedGroupKeys };
   }, [members, locale]);
 
   const timelineCards = useMemo(
@@ -399,38 +408,58 @@ function TentangKamiPage() {
             </div>
           ) : (
             <div className="mt-8 space-y-10">
-              {groupOrder
-                .filter((key) => groupedMembers[key]?.length)
-                .map((key) => (
-                  <div key={key} className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-primary-700 shadow-sm">
-                        <FontAwesomeIcon icon={faRibbon} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">{t("about.team.group.label")}</p>
-                        <h3 className="text-lg font-heading font-semibold text-slate-900">{t(groupLabelKeys[key] ?? "about.team.group.default", key)}</h3>
-                      </div>
+              {groupedMembers.sortedGroupKeys.map((key) => (
+                <div key={key} className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-primary-700 shadow-sm">
+                      <FontAwesomeIcon icon={faRibbon} />
                     </div>
-                    {groupedMembers[key].length < 4 ? (
-                      <div className="flex flex-wrap justify-center gap-6">
-                        {groupedMembers[key].map((person) => (
-                          <div key={person.id} className="w-full sm:w-[280px] lg:w-[260px]">
-                            <MemberCard member={person} groupLabel={t(groupLabelKeys[key] ?? "about.team.group.default", key)} />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                        {groupedMembers[key].map((person) => (
-                          <MemberCard key={person.id} member={person} groupLabel={t(groupLabelKeys[key] ?? "about.team.group.default", key)} />
-                        ))}
-                      </div>
-                    )}
+                    <div>
+                      <h3 className="text-lg font-heading font-semibold text-slate-900">
+                        {(() => {
+                          if (groupLabelKeys[key]) return t(groupLabelKeys[key]);
+                          const first = groupedMembers.buckets[key][0];
+                          const label = (locale === "en" && first.group_en) ? first.group_en : (first.group || key);
+                          return label.charAt(0).toUpperCase() + label.slice(1);
+                        })()}
+                      </h3>
+                    </div>
                   </div>
-                ))}
+                  {groupedMembers.buckets[key].length < 4 ? (
+                    <div className="flex flex-wrap justify-center gap-6">
+                      {groupedMembers.buckets[key].map((person) => {
+                        const groupLabel = groupLabelKeys[key] 
+                          ? t(groupLabelKeys[key]) 
+                          : (() => {
+                              const label = (locale === "en" && person.group_en) ? person.group_en : (person.group || key);
+                              return label.charAt(0).toUpperCase() + label.slice(1);
+                            })();
+                        return (
+                          <div key={person.id} className="w-full sm:w-[280px] lg:w-[260px]">
+                            <MemberCard member={person} groupLabel={groupLabel} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                      {groupedMembers.buckets[key].map((person) => {
+                        const groupLabel = groupLabelKeys[key] 
+                          ? t(groupLabelKeys[key]) 
+                          : (() => {
+                              const label = (locale === "en" && person.group_en) ? person.group_en : (person.group || key);
+                              return label.charAt(0).toUpperCase() + label.slice(1);
+                            })();
+                        return (
+                          <MemberCard key={person.id} member={person} groupLabel={groupLabel} />
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
 
-              {!Object.keys(groupedMembers).some((k) => groupedMembers[k]?.length) && (
+              {groupedMembers.sortedGroupKeys.length === 0 && (
                 <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-600">
                   {t("about.team.empty")}
                 </div>
@@ -509,9 +538,6 @@ function MemberCard({ member, groupLabel }: { member: OrganizationMember; groupL
         <p className="text-base font-heading font-semibold text-slate-900 leading-tight">{member.name}</p>
         <p className="text-sm font-semibold text-amber-600 italic">{groupLabel}</p>
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{member.position_title}</p>
-        {member.short_bio && (
-          <p className="text-xs leading-relaxed text-slate-600 line-clamp-3">{member.short_bio}</p>
-        )}
       </div>
     </div>
   );

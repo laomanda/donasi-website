@@ -44,7 +44,7 @@ class EditorTaskController extends Controller
             $query->where('assigned_to', $assignedTo);
         }
 
-        $tasks = $query->orderByDesc('created_at')
+        $tasks = $query->orderByDesc('updated_at')
             ->paginate($request->integer('per_page', 15));
 
         return EditorTaskResource::collection($tasks);

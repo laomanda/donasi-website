@@ -178,7 +178,7 @@ class DashboardController extends BaseDashboardController
                         ->orWhere('assigned_to', $userId);
                 });
             })
-            ->orderByDesc('created_at')
+            ->orderByDesc('updated_at')
             ->limit(5)
             ->get();
 

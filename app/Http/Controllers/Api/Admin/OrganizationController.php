@@ -34,7 +34,6 @@ class OrganizationController extends Controller
     public function store(Request $request)
     {
         $data = $this->validatePayload($request);
-        $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
 
         $member = OrganizationMember::create($data);
 
@@ -49,10 +48,6 @@ class OrganizationController extends Controller
     public function update(Request $request, OrganizationMember $organizationMember)
     {
         $data = $this->validatePayload($request, $organizationMember->id);
-
-        if (blank($data['slug'] ?? null)) {
-            $data['slug'] = Str::slug($data['name']);
-        }
 
         $organizationMember->update($data);
 
@@ -70,17 +65,11 @@ class OrganizationController extends Controller
     {
         return $request->validate([
             'name'           => ['required', 'string', 'max:255'],
-            'name_en'        => ['nullable', 'string', 'max:255'],
-            'slug'           => ['nullable', 'string', 'max:255', 'unique:organization_members,slug,' . $memberId],
             'position_title' => ['required', 'string', 'max:255'],
             'position_title_en' => ['nullable', 'string', 'max:255'],
             'group'          => ['required', 'string', 'max:100'],
             'group_en'       => ['nullable', 'string', 'max:100'],
             'photo_path'     => ['nullable', 'string', 'max:255'],
-            'short_bio'      => ['nullable', 'string'],
-            'short_bio_en'   => ['nullable', 'string'],
-            'long_bio'       => ['nullable', 'string'],
-            'long_bio_en'    => ['nullable', 'string'],
             'email'          => ['nullable', 'email'],
             'phone'          => ['nullable', 'string', 'max:30'],
             'show_contact'   => ['required', 'boolean'],

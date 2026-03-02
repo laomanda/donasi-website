@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -206,20 +206,20 @@ const resolveStorageUrl = (path: string | null | undefined) => {
 };
 
 const badgeTone = (tone: "neutral" | "green" | "amber" | "red" | "sky") => {
-  if (tone === "green") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
-  if (tone === "sky") return "bg-sky-50 text-sky-700 ring-sky-100";
-  if (tone === "amber") return "bg-amber-50 text-amber-700 ring-amber-100";
-  if (tone === "red") return "bg-red-100 text-red-700 ring-red-200";
-  return "bg-slate-100 text-slate-700 ring-slate-200";
+  if (tone === "green") return "bg-brandGreen-600 text-white ring-brandGreen-600/20";
+  if (tone === "sky") return "bg-sky-600 text-white ring-sky-600/20";
+  if (tone === "amber") return "bg-amber-600 text-white ring-amber-600/20";
+  if (tone === "red") return "bg-red-600 text-white ring-red-600/20";
+  return "bg-slate-600 text-white ring-slate-600/20";
 };
 
 const sectionBadgeTone = (tone: Tone) => {
-  if (tone === "primary") return "bg-primary-50 text-primary-700 ring-primary-100";
-  if (tone === "green") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
-  if (tone === "sky") return "bg-sky-50 text-sky-700 ring-sky-100";
-  if (tone === "amber") return "bg-amber-50 text-amber-700 ring-amber-100";
-  if (tone === "red") return "bg-red-50 text-red-700 ring-red-100";
-  return "bg-slate-100 text-slate-700 ring-slate-200";
+  if (tone === "primary") return "bg-primary-600 text-white ring-primary-600/20";
+  if (tone === "green") return "bg-brandGreen-600 text-white ring-brandGreen-600/20";
+  if (tone === "sky") return "bg-sky-600 text-white ring-sky-600/20";
+  if (tone === "amber") return "bg-amber-600 text-white ring-amber-600/20";
+  if (tone === "red") return "bg-red-600 text-white ring-red-600/20";
+  return "bg-slate-600 text-white ring-slate-600/20";
 };
 
 const donationStatusLabel = (status: DonationStatus) => {
@@ -431,7 +431,7 @@ function SectionCard({
           </h2>
           <p className="mt-2 text-sm text-slate-600">{description}</p>
         </div>
-        <span className={["inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1", sectionBadgeTone(tone)].join(" ")}>
+        <span className={["inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold ring-1", sectionBadgeTone(tone)].join(" ")}>
           {count} hasil
         </span>
       </div>
@@ -483,7 +483,7 @@ const headerCopy: Record<SearchRole, { title: string; description: string; tagTo
   admin: {
     title: "Pencarian Admin",
     description:
-      "Temukan donasi, konfirmasi donasi, tugas editor, jemput wakaf, konsultasi, dan rekening. Gunakan kolom pencarian di bilah atas untuk mengganti kata kunci.",
+      "Temukan donasi, konfirmasi donasi, tugas editor, jemput wakaf, dan konsultasi. Gunakan kolom pencarian di bilah atas untuk mengganti kata kunci.",
     tagTone: "primary",
   },
   superadmin: {
@@ -797,7 +797,6 @@ export function SearchPage({ role }: { role: SearchRole }) {
       void loadEditorTasks();
       void loadPickupRequests();
       void loadConsultations();
-      void loadBankAccounts();
     }
 
     if (role === "editor") {
@@ -1062,43 +1061,6 @@ export function SearchPage({ role }: { role: SearchRole }) {
                       metaLeft={meta}
                       metaRight={<span className="text-[11px] font-semibold text-slate-500">Dibuat: {formatDateTime(item.created_at)}</span>}
                       onClick={() => navigate(`/admin/consultations/${item.id}`)}
-                    />
-                  );
-                })}
-              </SectionCard>
-
-              <SectionCard
-                category="Keuangan"
-                title="Rekening"
-                description="Rekening resmi yang tampil di halaman donasi."
-                count={bankAccountsState.total}
-                icon={faBuildingColumns}
-                tone="primary"
-              >
-                {renderSectionContent(bankAccountsState, "Tidak ada rekening yang cocok.", (item) => {
-                  const visibility = bankAccountVisibilityLabel(Boolean(item.is_visible_public));
-                  const meta = [
-                    <span key="status" className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ring-1 ${badgeTone(visibility.tone)}`}>
-                      {visibility.label}
-                    </span>,
-                    <span key="order" className="inline-flex items-center rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-slate-200">
-                      Urutan: #{item.order ?? 0}
-                    </span>,
-                  ];
-                  return (
-                    <ResultRow
-                      key={item.id}
-                      title={item.bank_name}
-                      subtitle={`${item.account_number} - ${item.account_name}`}
-                      icon={faBuildingColumns}
-                      tone="primary"
-                      metaLeft={meta}
-                      metaRight={
-                        <span className="text-[11px] font-semibold text-slate-500">
-                          Diperbarui: {formatDate(item.updated_at ?? item.created_at)}
-                        </span>
-                      }
-                      onClick={() => navigate(`/admin/bank-accounts/${item.id}/edit`)}
                     />
                   );
                 })}

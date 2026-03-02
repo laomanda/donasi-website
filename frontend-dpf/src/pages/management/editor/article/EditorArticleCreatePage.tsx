@@ -1,4 +1,4 @@
-﻿import { EditorArticleForm } from "./EditorArticleForm";
+import { EditorArticleForm } from "./EditorArticleForm";
 
 export function EditorArticleCreatePage() {
   return <EditorArticleForm mode="create" />;

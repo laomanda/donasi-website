@@ -6,9 +6,9 @@ import {
     faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import http from "../../../lib/http";
-import { useToast } from "../../../components/ui/ToastProvider";
-import { translateCategoryToEn, CATEGORY_OPTIONS } from "../../../lib/categoryTranslations";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import { translateCategoryToEn, CATEGORY_OPTIONS } from "../../../../lib/categoryTranslations";
 
 type EditorProgram = {
     id: number;
@@ -171,6 +171,7 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [collectedAmount, setCollectedAmount] = useState<number | string | null>(null);
+    const [availableCategories, setAvailableCategories] = useState<{ category: string; category_en: string | null }[]>([]);
 
     const isGalleryUploading = galleryUploading.some(Boolean);
     const isEditIdValid = typeof programId === "number" && Number.isFinite(programId) && programId > 0;
@@ -185,6 +186,14 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
 
     const savedThumbnailUrl = useMemo(() => resolveStorageUrl(form.thumbnail_path), [form.thumbnail_path]);
     const savedBannerUrl = useMemo(() => resolveStorageUrl(form.banner_path), [form.banner_path]);
+
+    useEffect(() => {
+        http.get<{ category: string; category_en: string | null }[]>("/editor/programs/categories").then((res) => {
+            setAvailableCategories(res.data ?? []);
+        }).catch(() => {
+            // Fail silently
+        });
+    }, []);
 
     useEffect(() => {
         return () => {
@@ -438,7 +447,7 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:items-center">
                         <button
                             type="button"
                             onClick={() => navigate("/editor/programs")}
@@ -785,10 +794,17 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                                         const value = e.target.value;
                                         setForm((s) => {
                                             const next = { ...s, category: value };
-                                            const en = translateCategoryToEn(value);
-                                            // Only auto-fill if translation exists (meaning it's a known category)
-                                            if (en) {
-                                                next.category_en = en;
+                                            
+                                            // 1. Cek dulu dari database (dynamic categories)
+                                            const fromDb = availableCategories.find(c => c && typeof c === 'object' && c.category === value);
+                                            if (fromDb && fromDb.category_en) {
+                                                next.category_en = fromDb.category_en;
+                                            } else {
+                                                // 2. Fallback ke terjemahan statis (hardcoded map)
+                                                const en = translateCategoryToEn(value);
+                                                if (en) {
+                                                    next.category_en = en;
+                                                }
                                             }
                                             return next;
                                         });
@@ -798,9 +814,17 @@ export function EditorProgramForm({ mode, programId }: { mode: Mode; programId?:
                                     disabled={loading || saving || deleting}
                                 />
                                 <datalist id="category-suggestions">
-                                    {CATEGORY_OPTIONS.sort().map((opt) => (
-                                        <option key={opt} value={opt} />
-                                    ))}
+                                    {availableCategories.length > 0
+                                        ? availableCategories
+                                              .map((c: any) => (typeof c === "string" ? { category: c, category_en: null } : c))
+                                              .filter((c) => c && c.category)
+                                              .sort((a, b) => String(a.category).localeCompare(String(b.category)))
+                                              .map((cat) => (
+                                                  <option key={cat.category} value={cat.category} />
+                                              ))
+                                        : CATEGORY_OPTIONS.sort().map((opt) => (
+                                              <option key={opt} value={opt} />
+                                          ))}
                                 </datalist>
                             </label>
 
