@@ -21,7 +21,13 @@ class MitraAllocationController extends Controller
             ->where('user_id', $user->id);
 
         if ($request->has('q') && $request->q) {
-            $query->where('description', 'like', '%' . $request->q . '%');
+            $q = $request->q;
+            $query->where(function ($query) use ($q) {
+                $query->where('description', 'like', '%' . $q . '%')
+                    ->orWhereHas('program', function ($query) use ($q) {
+                        $query->where('title', 'like', '%' . $q . '%');
+                    });
+            });
         }
         
         if ($request->has('date_from') && $request->date_from) {
@@ -49,7 +55,13 @@ class MitraAllocationController extends Controller
             ->where('user_id', $user->id);
 
         if ($request->has('q') && $request->q) {
-            $query->where('description', 'like', '%' . $request->q . '%');
+            $q = $request->q;
+            $query->where(function ($query) use ($q) {
+                $query->where('description', 'like', '%' . $q . '%')
+                    ->orWhereHas('program', function ($query) use ($q) {
+                        $query->where('title', 'like', '%' . $q . '%');
+                    });
+            });
         }
         
         if ($request->has('date_from') && $request->date_from) {
@@ -70,21 +82,5 @@ class MitraAllocationController extends Controller
         ]);
 
         return $pdf->download('laporan-alokasi-dana.pdf');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
-    {
-        $user = Auth::user();
-        $allocation = Allocation::with('program')
-            ->where('user_id', $user->id)
-            ->findOrFail($id);
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $allocation
-        ]);
     }
 }

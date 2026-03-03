@@ -55,29 +55,29 @@ class MitraDashboardController extends Controller
             $currentMonth->addMonth();
         }
 
-        // 2b. Grafik Tren Harian (7 Hari Terakhir)
-        // User request: rekap 7 hari saja
-        $sevenDaysAgo = now()->subDays(6)->startOfDay();
-        $dailyStats = Donation::where('user_id', $user->id)
+        // 2b. Grafik Tren Mingguan (4 Minggu Terakhir)
+        // Group by week for the last 4 weeks
+        $fourWeeksAgo = now()->subWeeks(3)->startOfWeek(); // Start of the week 4 weeks ago
+        $weeklyStats = Donation::where('user_id', $user->id)
             ->where('status', 'paid')
-            ->where('created_at', '>=', $sevenDaysAgo)
-            ->selectRaw('DATE(created_at) as date_key, SUM(amount) as total_amount')
-            ->groupBy('date_key')
-            ->orderBy('date_key', 'asc')
+            ->where('created_at', '>=', $fourWeeksAgo)
+            ->selectRaw('YEARWEEK(created_at, 1) as week_key, SUM(amount) as total_amount')
+            ->groupBy('week_key')
+            ->orderBy('week_key', 'asc')
             ->get()
-            ->keyBy('date_key');
+            ->keyBy('week_key');
 
-        $weeklyDonations = []; // Variable name kept as 'weekly' to match frontend interface
-        $currentDay = $sevenDaysAgo->copy();
-        for ($i = 0; $i < 7; $i++) {
-            $key = $currentDay->format('Y-m-d');
-            $dayLabel = $currentDay->translatedFormat('D, d M'); // Sen, 17 Feb
+        $weeklyDonations = [];
+        $currentWeek = $fourWeeksAgo->copy();
+        for ($i = 0; $i < 4; $i++) {
+            $key = $currentWeek->format('oW'); // Year + Week number (ISO-8601)
+            $weekLabel = "W" . ($i + 1); // W1, W2, W3, W4 or "Mgg " . ($i+1)
             
             $weeklyDonations[] = [
-                'label' => $dayLabel,
-                'amount' => (int) ($dailyStats[$key]->total_amount ?? 0),
+                'label' => $weekLabel . " (" . $currentWeek->translatedFormat('d M') . ")",
+                'amount' => (int) ($weeklyStats[$key]->total_amount ?? 0),
             ];
-            $currentDay->addDay();
+            $currentWeek->addWeek();
         }
 
         // 3. Grafik Distribusi Alokasi (Berdasarkan Program)

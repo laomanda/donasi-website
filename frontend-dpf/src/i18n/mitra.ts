@@ -114,8 +114,8 @@ export const mitraDict: Dict = {
 
     "mitra.download_report": { id: "Download Laporan PDF", en: "Download PDF Report" },
     "mitra.filter_search": { id: "Filter & Pencarian", en: "Filter & Search" },
-    "mitra.reset_filter": { id: "Reset Filter", en: "Reset Filter" },
-    "mitra.search_placeholder": { id: "Cari alokasi...", en: "Search allocations..." },
+    "mitra.search_label": { id: "Cari Program atau Alokasi", en: "Search Program or Allocation" },
+    "mitra.search_placeholder": { id: "Cari Sekarang", en: "Search Now" },
     "mitra.date_from": { id: "Dari Tanggal", en: "Date From" },
     "mitra.date_to": { id: "Sampai", en: "To" },
     "mitra.allocation_unit": { id: "Alokasi Dana", en: "Fund Allocation" },

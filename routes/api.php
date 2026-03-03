@@ -205,7 +205,6 @@ Route::prefix('v1')->group(function () {
             Route::get('dashboard', [MitraDashboardController::class, 'index']);
             Route::get('allocations/export/pdf', [MitraAllocationController::class, 'downloadPdf']);
             Route::get('allocations', [MitraAllocationController::class, 'index']);
-            Route::get('allocations/{allocation}', [MitraAllocationController::class, 'show']);
             Route::get('donations', [\App\Http\Controllers\Api\Mitra\MitraDonationController::class, 'index']);
             Route::get('donations/export/pdf', [\App\Http\Controllers\Api\Mitra\MitraDonationController::class, 'exportPdf']);
             Route::get('donations/{donation}/export', [\App\Http\Controllers\Api\Mitra\MitraDonationController::class, 'export']);

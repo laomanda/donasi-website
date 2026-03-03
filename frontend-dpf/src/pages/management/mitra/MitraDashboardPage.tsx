@@ -125,30 +125,34 @@ export function MitraDashboardPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-6">
         <StatCard
           label={t("stats.total_donations", "Total Donasi")}
           value={formatIDR(data?.total_donations || 0)}
           icon={faHeartPulse}
           color="teal"
+          loading={!data}
         />
         <StatCard
           label={t("stats.total_allocations", "Total Alokasi")}
           value={formatIDR(data?.total_allocations || 0)}
           icon={faHandshake}
           color="violet"
+          loading={!data}
         />
         <StatCard
           label={t("stats.remaining_balance", "Sisa Saldo")}
           value={formatIDR(data?.remaining_balance || 0)}
           icon={faCoins}
           color="rose"
+          loading={!data}
         />
         <StatCard
           label={t("stats.donation_count", "Jumlah Donasi")}
           value={data?.donation_count || 0}
           icon={faFileContract}
           color="sky"
+          loading={!data}
         />
       </div>
 
@@ -209,10 +213,12 @@ export function MitraDashboardPage() {
                   <YAxis 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: "#64748b", fontSize: 12, fontWeight: 600 }}
+                    allowDecimals={false}
+                    tick={{ fill: "#64748b", fontSize: 10, fontWeight: 600 }}
                     tickFormatter={(val: number) => {
+                      if (val === 0) return "0";
                       if (val >= 1000000000) return `Rp${(val / 1000000000).toFixed(1)}M`;
-                      if (val >= 1000000) return `Rp${(val / 1000000).toFixed(0)}Jt`;
+                      if (val >= 1000000) return `Rp${(val / 1000000).toFixed(1)}Jt`;
                       if (val >= 1000) return `Rp${(val / 1000).toFixed(0)}rb`;
                       return `Rp${val}`;
                     }}
@@ -297,17 +303,19 @@ export function MitraDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+        <div className="rounded-[32px] border border-slate-200 bg-white shadow-xl shadow-slate-200/50 overflow-hidden">
+          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-6">
             <div>
-                <h3 className="font-heading text-lg font-bold text-slate-900">{t("table.recent_donations", "Donasi Terbaru")}</h3>
-                <p className="text-xs font-semibold text-slate-500">{t("table.recent_donations_desc", "Data transaksi masuk terakhir")}</p>
+              <h3 className="font-heading text-lg font-bold text-slate-900">{t("table.recent_donations", "Donasi Terbaru")}</h3>
+              <p className="text-xs font-semibold text-slate-500">{t("table.recent_donations_desc", "Data transaksi masuk terakhir")}</p>
             </div>
-            <Link to="/mitra/donations" className="text-sm font-bold text-brandGreen-600 hover:text-brandGreen-700">
-              {t("common.view_all", "Lihat Semua")} <FontAwesomeIcon icon={faChevronRight} className="ml-1 text-[10px]" />
+            <Link to="/mitra/donations" className="group text-sm font-bold text-brandGreen-600 hover:text-brandGreen-700 transition-colors">
+              {t("common.view_all", "Lihat Semua")} <FontAwesomeIcon icon={faChevronRight} className="ml-1 text-[10px] transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
-          <div className="overflow-x-auto">
+          
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50/50">
@@ -318,15 +326,15 @@ export function MitraDashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {(data?.recent_donations || []).map((item) => (
-                  <tr key={item.id} className="group transition hover:bg-slate-50/50">
+                  <tr key={item.id} className="group transition hover:bg-slate-50/80">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-[10px] font-bold text-slate-600 transition group-hover:bg-white group-hover:shadow-sm">
-                            {item.donatur_name.slice(0, 2).toUpperCase()}
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-[11px] font-bold text-slate-600 transition group-hover:bg-white group-hover:shadow-md group-hover:ring-1 group-hover:ring-slate-100">
+                          {item.donatur_name.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-slate-900">{item.donatur_name}</p>
-                            <p className="text-[10px] font-semibold text-slate-400">{formatDateShort(item.created_at, locale)}</p>
+                          <p className="text-sm font-bold text-slate-900 line-clamp-1">{item.donatur_name}</p>
+                          <p className="text-[10px] font-semibold text-slate-400">{formatDateShort(item.created_at, locale)}</p>
                         </div>
                       </div>
                     </td>
@@ -339,19 +347,45 @@ export function MitraDashboardPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {(data?.recent_donations || []).map((item) => (
+              <div key={item.id} className="p-5 active:bg-slate-50 transition-colors">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-[11px] font-bold text-slate-600">
+                      {item.donatur_name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900 line-clamp-1">{item.donatur_name}</p>
+                      <p className="text-[10px] font-semibold text-slate-400">{formatDateShort(item.created_at, locale)}</p>
+                    </div>
+                  </div>
+                  <StatusBadge status={item.status} t={t} />
+                </div>
+                <div className="flex items-center justify-between bg-slate-50/80 rounded-2xl p-4">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Donasi</span>
+                  <span className="font-heading text-lg font-black text-slate-900">{formatIDR(item.amount)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-           <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+        <div className="rounded-[32px] border border-slate-200 bg-white shadow-xl shadow-slate-200/50 overflow-hidden">
+          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-6">
             <div>
-                <h3 className="font-heading text-lg font-bold text-slate-900">{t("table.recent_allocations", "Alokasi Pembiayaan")}</h3>
-                <p className="text-xs font-semibold text-slate-500">{t("table.recent_allocations_desc", "Penyaluran dana terakhir")}</p>
+              <h3 className="font-heading text-lg font-bold text-slate-900">{t("table.recent_allocations", "Alokasi Pembiayaan")}</h3>
+              <p className="text-xs font-semibold text-slate-500">{t("table.recent_allocations_desc", "Penyaluran dana terakhir")}</p>
             </div>
-            <Link to="/mitra/allocations" className="text-sm font-bold text-brandGreen-600 hover:text-brandGreen-700">
-              {t("common.view_all", "Lihat Semua")} <FontAwesomeIcon icon={faChevronRight} className="ml-1 text-[10px]" />
+            <Link to="/mitra/allocations" className="group text-sm font-bold text-brandGreen-600 hover:text-brandGreen-700 transition-colors">
+              {t("common.view_all", "Lihat Semua")} <FontAwesomeIcon icon={faChevronRight} className="ml-1 text-[10px] transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
-          <div className="overflow-x-auto">
+
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50/50">
@@ -362,31 +396,70 @@ export function MitraDashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {(data?.recent_allocations || []).map((item) => (
-                  <tr key={item.id} className="group transition hover:bg-slate-50/50">
+                  <tr key={item.id} className="group transition hover:bg-slate-50/80">
                     <td className="px-6 py-4">
-                        <div className="flex items-center justify-between gap-3">
-                            <div>
-                                <p className="text-sm font-bold text-slate-900 line-clamp-1">{item.title}</p>
-                                <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600">ID: {String(item.id).slice(0, 8)}</span>
-                            </div>
-                            {item.proof_path && (
-                                <a 
-                                  href={StorageUrl(item.proof_path)} 
-                                  target="_blank" 
-                                  rel="noreferrer"
-                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-400 hover:bg-white hover:text-brandGreen-600 hover:shadow-sm transition-all"
-                                >
-                                  <FontAwesomeIcon icon={faExternalLinkAlt} className="text-[10px]" />
-                                </a>
-                            )}
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-brandGreen-700 transition-colors">{item.title}</p>
                         </div>
+                        {item.proof_path && (
+                          <a
+                            href={StorageUrl(item.proof_path)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-white hover:text-brandGreen-600 hover:shadow-md hover:ring-1 hover:ring-brandGreen-100 transition-all"
+                            title="Buka Bukti Penyaluran"
+                          >
+                            <FontAwesomeIcon icon={faExternalLinkAlt} className="text-xs" />
+                          </a>
+                        )}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-red-600">-{formatIDR(item.amount)}</td>
+                    <td className="px-6 py-4 text-sm font-bold text-rose-600">-{formatIDR(item.amount)}</td>
                     <td className="px-6 py-4 text-sm font-semibold text-slate-500">{formatDateShort(item.created_at, locale)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {(data?.recent_allocations || []).map((item) => (
+              <div key={item.id} className="p-5 active:bg-slate-50 transition-colors">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="min-w-0 flex-1 pr-4">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Keperluan</p>
+                    <p className="text-sm font-bold text-slate-900 line-clamp-2 leading-snug">{item.title}</p>
+                  </div>
+                  {item.proof_path && (
+                    <a
+                      href={StorageUrl(item.proof_path)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-600 ring-1 ring-brandGreen-100 shadow-sm"
+                    >
+                      <FontAwesomeIcon icon={faExternalLinkAlt} className="text-sm" />
+                    </a>
+                  )}
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-[11px] font-semibold">
+                    <span className="text-slate-400">ID Transaksi</span>
+                    <span className="text-slate-600">#{String(item.id).slice(0, 8)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] font-semibold">
+                    <span className="text-slate-400">Tanggal</span>
+                    <span className="text-slate-600">{formatDateShort(item.created_at, locale)}</span>
+                  </div>
+                  <div className="flex items-center justify-between bg-rose-50 rounded-2xl p-4 mt-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">Total Nominal</span>
+                    <span className="font-heading text-lg font-black text-rose-600">-{formatIDR(item.amount)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -394,31 +467,31 @@ export function MitraDashboardPage() {
   );
 }
 
-function StatCard({ label, value, icon, color }: { label: string, value: string | number, icon: any, color: string }) {
-  const colorStyles: Record<string, string> = {
-    teal: "bg-teal-500 text-white",
-    violet: "bg-violet-500 text-white",
-    rose: "bg-rose-500 text-white",
-    sky: "bg-sky-500 text-white",
-  };
-
-  const iconStyles: Record<string, string> = {
-    teal: "bg-teal-400/50",
-    violet: "bg-violet-400/50",
-    rose: "bg-rose-400/50",
-    sky: "bg-sky-400/50",
+function StatCard({ label, value, icon, color, loading }: { label: string, value: string | number, icon: any, color: string, loading?: boolean }) {
+  const themes: Record<string, string> = {
+    teal: "from-emerald-600 to-teal-700",
+    violet: "from-violet-600 to-indigo-700",
+    rose: "from-rose-600 to-pink-700",
+    sky: "from-sky-600 to-blue-700",
   };
 
   return (
-    <div className={`rounded-3xl p-6 ${colorStyles[color]}`}>
-      <div className="mb-4">
-        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${iconStyles[color]}`}>
-          <FontAwesomeIcon icon={icon} className="text-xl text-white" />
+    <div className={`relative overflow-hidden rounded-[32px] bg-gradient-to-br ${themes[color]} p-6 shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] md:p-8`}>
+      <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+      <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-black/5 blur-xl" />
+      
+      <div className="relative z-10 space-y-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md ring-1 ring-white/30">
+          <FontAwesomeIcon icon={icon} className="text-xl text-white shadow-sm" />
         </div>
-      </div>
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-white/70">{label}</p>
-        <p className="mt-1 text-2xl font-black text-white">{value}</p>
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-white/70">{label}</p>
+          {loading ? (
+            <div className="mt-2 h-8 w-3/4 animate-pulse rounded-lg bg-white/20" />
+          ) : (
+            <p className="mt-1 text-2xl font-black text-white md:text-3xl">{value}</p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -426,9 +499,9 @@ function StatCard({ label, value, icon, color }: { label: string, value: string 
 
 function StatusBadge({ status, t }: { status: string, t: any }) {
   const styles: Record<string, string> = {
-    paid: "bg-emerald-50 text-emerald-600 ring-emerald-100",
-    pending: "bg-amber-50 text-amber-600 ring-amber-100",
-    failed: "bg-rose-50 text-rose-600 ring-rose-100",
+    paid: "bg-brandGreen-600 text-white ring-brandGreen-600",
+    pending: "bg-amber-500 text-white ring-amber-500",
+    failed: "bg-red-500 text-white ring-red-500",
   };
   
   return (

@@ -28,7 +28,6 @@ import { EditorShell, AdminShell, SuperAdminShell, MitraShell } from '../layouts
 import { MitraRegisterPage } from '../pages/auth/MitraRegisterPage'
 import { MitraDashboardPage } from '../pages/management/mitra/MitraDashboardPage'
 import { MitraAllocationsPage } from "../pages/management/mitra/MitraAllocationsPage";
-import { MitraAllocationDetailPage } from "../pages/management/mitra/MitraAllocationDetailPage";
 import { MitraDonationsPage } from '../pages/management/mitra/MitraDonationsPage'
 import { PreviewPage } from '../pages/PreviewPage'
 import { EditorDashboardPage } from '../pages/management/editor/EditorDashboardPage'
@@ -194,7 +193,6 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', element: <MitraDashboardPage /> },
           { path: 'allocations', element: <MitraAllocationsPage /> },
-          { path: 'allocations/:id', element: <MitraAllocationDetailPage /> },
           { path: 'donations', element: <MitraDonationsPage /> },
           { path: 'settings', element: <SettingsPage role="mitra" /> },
         ],
