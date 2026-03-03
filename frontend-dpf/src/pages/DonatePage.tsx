@@ -393,7 +393,17 @@ function DonatePage() {
                         console.log("Snap onSuccess", result);
                         setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
                         // Polling already running, but one final check won't hurt
-                        await pollPaymentStatus(res.data?.donation?.id);
+                        // Kirim result dari frontend ke backend biar lgsg dianggap lunas (fallback 404 dari API midtrans server)
+                        try {
+                            const statusRes = await http.post(`/donations/${res.data?.donation?.id}/check-status`, {
+                                snap_result: result
+                            });
+                            if (statusRes.data?.status === 'paid') {
+                                setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
+                            }
+                        } catch (e) {
+                            console.error("Failed final sync", e);
+                        }
                     },
                     onPending: async (result: any) => {
                         console.log("Snap onPending", result);
@@ -448,27 +458,31 @@ function DonatePage() {
     const pollPaymentStatus = async (donationId: number | string) => {
         if (!donationId) return;
         
-        const maxRetries = 10;
+        // Cek lebih lama selama rentang 5 menit expiry (misal 5 menit / 3 detik = 100 retries)
+        const maxRetries = 100;
         const delay = 3000; // 3 detik
+        let paymentSuccess = false;
 
         for (let i = 0; i < maxRetries; i++) {
+            if (paymentSuccess) break;
+
             try {
                 console.log(`Checking status attempt ${i + 1}/${maxRetries} for donation ${donationId}`);
                 const statusRes = await http.post(`/donations/${donationId}/check-status`);
                 const status = statusRes.data?.status;
                 
                 if (status === 'paid') {
-                    console.log("Donation marked as PAID!");
+                    console.log("Donation marked as PAID via polling!");
                     setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
                     setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
-                    // Optional: Redirect or show confetti
+                    paymentSuccess = true;
                     break;
                 }
                 
                 if (status === 'failed' || status === 'expired' || status === 'refunded') {
-                    console.log(`Donation marked as ${status}`);
+                    console.log(`Donation marked as ${status} via polling!`);
                     setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
-                    break;
+                    break; // stop polling completely
                 }
 
                 // If pending, continue polling
@@ -477,7 +491,7 @@ function DonatePage() {
             }
             
             // Tunggu sebelum retry berikutnya
-            if (i < maxRetries - 1) {
+            if (i < maxRetries - 1 && !paymentSuccess) {
                 await new Promise(resolve => setTimeout(resolve, delay));
             }
         }

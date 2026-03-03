@@ -117,6 +117,10 @@ class DonationController extends Controller
                 'pending'  => $finishUrl,
                 'error'    => $finishUrl,
             ],
+            'custom_expiry' => [
+                'expiry_duration' => 5,
+                'unit'            => 'minute'
+            ],
         ];
 
         $response = Snap::createTransaction($payload);
@@ -164,9 +168,40 @@ class DonationController extends Controller
         return response()->json(['message' => 'Donasi berhasil dibatalkan.']);
     }
 
-    public function checkStatus(Donation $donation, \App\Services\MidtransService $midtransService)
+    public function checkStatus(Request $request, Donation $donation, \App\Services\MidtransService $midtransService)
     {
         $this->setupMidtrans();
+
+        $snapResult = $request->input('snap_result'); // Payload dari onSuccess Frontend
+
+        // Jika Snap frontend mengirimkan payload bahwa ini settlement/capture
+        if ($snapResult && isset($snapResult['transaction_status'])) {
+            $transactionStatus = $snapResult['transaction_status'];
+            $fraudStatus = $snapResult['fraud_status'] ?? null;
+            
+            $newStatus = $midtransService->mapTransactionStatus($transactionStatus, $fraudStatus);
+            
+            \Illuminate\Support\Facades\Log::info('DonationController::checkStatus using Snap Frontend Payload', [
+                'order_id' => $donation->midtrans_order_id,
+                'snap_transaction_status' => $transactionStatus,
+                'mapped_new_status' => $newStatus,
+            ]);
+
+            // Jika status baru bukan paid, tetap lanjut cek API MIdtrans as validasi
+            if ($newStatus === 'paid' && $donation->status !== 'paid') {
+                $donation->update([
+                    'status' => 'paid',
+                    'paid_at' => now(),
+                    'midtrans_raw_response' => $snapResult,
+                ]);
+                $this->syncProgramAmount($donation->fresh(), 'pending', 'paid');
+                return response()->json([
+                    'message' => 'Status berhasil diperbarui via Frontend Snap Callback.',
+                    'status' => 'paid',
+                    'donation' => $donation->fresh()
+                ]);
+            }
+        }
 
         try {
             // @ts-ignore
@@ -181,7 +216,7 @@ class DonationController extends Controller
                  \Illuminate\Support\Facades\Log::warning('DonationController::checkStatus: Transaction not found (404)', ['order_id' => $donation->midtrans_order_id]);
                  return response()->json([
                      'message' => 'Transaksi belum ditemukan di sistem pembayaran (atau belum dibayar).',
-                     'status' => 'pending', 
+                     'status' => $donation->status, // Return current status instead of hardcoding pending
                      'donation' => $donation
                  ]);
             }

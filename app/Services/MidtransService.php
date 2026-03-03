@@ -64,7 +64,7 @@ class MidtransService
 
         // 5. Expire
         if ($transactionStatus == 'expire') {
-            return 'expired';
+            return 'failed';
         }
 
         // 6. Refund
