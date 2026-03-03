@@ -51,7 +51,6 @@ const resolveUserDashboard = (): string | null => {
     if (normalized.has("admin")) return "/admin/dashboard";
     if (normalized.has("editor")) return "/editor/dashboard";
     if (normalized.has("mitra")) return "/mitra/dashboard";
-    if (normalized.has("pelihat")) return "/pelihat/dashboard";
     return "/editor/dashboard";
 };
 

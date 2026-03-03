@@ -534,12 +534,12 @@ function Pagination({
   return (
     <div className={[`flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white px-5 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between`, className].join(" ")}>
       <p className="text-xs font-semibold text-slate-500">Halaman {currentPage} dari {lastPage}</p>
-      <div className="flex w-full items-center gap-2 sm:w-auto">
+      <div className="grid grid-cols-2 gap-3 w-full sm:flex sm:w-auto sm:items-center sm:gap-2">
         <button
           type="button"
           onClick={() => onPageChange((prev) => Math.max(1, prev - 1))}
           disabled={currentPage <= 1}
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[100px] sm:flex-none"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[100px]"
         >
           Sebelumnya
         </button>
@@ -547,7 +547,7 @@ function Pagination({
           type="button"
           onClick={() => onPageChange((prev) => Math.min(lastPage, prev + 1))}
           disabled={currentPage >= lastPage}
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[100px] sm:flex-none"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[100px]"
         >
           Berikutnya
         </button>

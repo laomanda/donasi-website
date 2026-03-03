@@ -14,6 +14,14 @@ class SuggestionController extends Controller
      */
     public function index(Request $request)
     {
+        if ($request->user()->hasRole('superadmin')) {
+            return response()->json([
+                'data' => [],
+                'total' => 0,
+                'message' => 'Superadmin access to suggestions is restricted.'
+            ]);
+        }
+
         $query = Suggestion::query();
 
         $status = $request->string('status')->trim()->toString();
@@ -45,6 +53,9 @@ class SuggestionController extends Controller
      */
     public function show(Suggestion $suggestion)
     {
+        if (request()->user()->hasRole('superadmin')) {
+            return response()->json(['message' => 'Forbidden'], 200);
+        }
         return response()->json($suggestion);
     }
 
@@ -53,6 +64,9 @@ class SuggestionController extends Controller
      */
     public function destroy(Suggestion $suggestion)
     {
+        if (request()->user()->hasRole('superadmin')) {
+            return response()->json(['message' => 'Forbidden'], 200);
+        }
         $suggestion->delete();
         AdminBadgeNotifier::dispatchCountForAllAdmins();
 
@@ -66,11 +80,14 @@ class SuggestionController extends Controller
      */
     public function updateStatus(Request $request, Suggestion $suggestion)
     {
-        $data = $request->validate([
+        if ($request->user()->hasRole('superadmin')) {
+            return response()->json(['message' => 'Forbidden'], 200);
+        }
+        $request->validate([
             'status' => ['required', 'in:baru,dibalas'],
         ]);
 
-        $suggestion->update($data);
+        $suggestion->update(['status' => $request->status]);
         AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($suggestion->refresh());

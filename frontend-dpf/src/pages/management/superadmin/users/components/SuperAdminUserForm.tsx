@@ -11,9 +11,9 @@ import {
   faUser,
   faUserShield,
 } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../lib/http";
-import { useToast } from "../../../components/ui/ToastProvider";
-import PhoneInput from "../../../components/ui/PhoneInput";
+import http from "../../../../../lib/http";
+import { useToast } from "../../../../../components/ui/ToastProvider";
+import PhoneInput from "../../../../../components/ui/PhoneInput";
 
 type Role = {
   id: number;

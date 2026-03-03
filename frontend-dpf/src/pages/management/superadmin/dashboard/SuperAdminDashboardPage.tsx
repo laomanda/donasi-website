@@ -21,9 +21,9 @@ import {
   Tooltip,
 } from "chart.js";
 import { Bar, Doughnut, Line } from "react-chartjs-2";
-import { useSuperAdminDashboard } from "../../../hooks/useSuperAdminDashboard";
-import { StatCard } from "../../../components/management/StatCard";
-import type { TopProgram } from "../../../types/dashboard";
+import { useSuperAdminDashboard } from "../../../../hooks/useSuperAdminDashboard";
+import { StatCard } from "../../../../components/management/StatCard";
+import type { TopProgram } from "../../../../types/dashboard";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Filler);
 
@@ -53,8 +53,8 @@ const getProgramStatusLabel = (status: string | null | undefined) => {
 };
 
 const badgeTone = (tone: "neutral" | "green" | "amber") => {
-  if (tone === "green") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
-  if (tone === "amber") return "bg-primary-50 text-primary-700 ring-primary-100";
+  if (tone === "green") return "bg-brandGreen-600 text-white ring-brandGreen-100";
+  if (tone === "amber") return "bg-primary-500 text-white ring-primary-100";
   return "bg-slate-100 text-slate-700 ring-slate-200";
 };
 
@@ -192,6 +192,7 @@ export function SuperAdminDashboardPage() {
           pointBorderWidth: 2,
           pointHoverRadius: 6,
           pointHoverBorderWidth: 3,
+          yAxisID: "y",
           fill: true,
         },
         {
@@ -205,6 +206,7 @@ export function SuperAdminDashboardPage() {
           pointRadius: 0,
           pointHoverRadius: 4,
           pointBackgroundColor: "#F59E0B",
+          yAxisID: "y1",
         },
       ],
     };
@@ -247,13 +249,39 @@ export function SuperAdminDashboardPage() {
           grid: { display: false },
         },
         y: {
+          type: "linear" as const,
+          display: true,
+          position: "left" as const,
           ticks: {
             color: "#94a3b8",
             font: { size: 10 },
-            callback: (value: any) => value >= 1000 ? `${value / 1000}k` : value,
+            callback: (value: any) => (value >= 1000 ? `${value / 1000}k` : value),
           },
           grid: { color: "#f1f5f9", borderDash: [4, 4], drawBorder: false },
           beginAtZero: true,
+          title: {
+            display: true,
+            text: "Donasi (IDR)",
+            color: "#64748B",
+            font: { size: 10, weight: 600 }
+          }
+        },
+        y1: {
+          type: "linear" as const,
+          display: true,
+          position: "right" as const,
+          ticks: {
+            color: "#94a3b8",
+            font: { size: 10 },
+          },
+          grid: { display: false }, // Turn off grid for second axis to avoid clashing
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: "Jumlah Program",
+            color: "#F59E0B",
+            font: { size: 10, weight: 600 }
+          }
         },
       },
       interaction: {
@@ -346,10 +374,6 @@ export function SuperAdminDashboardPage() {
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="space-y-4">
               <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
-                  <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
-                  Pusat Kendali
-                </span>
                 <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
                   Dashboard Super Admin
                 </h1>
@@ -497,7 +521,6 @@ export function SuperAdminDashboardPage() {
                           </td>
                           <td className="px-6 py-4">
                             <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ${badgeTone(status.tone)}`}>
-                              <div className={`mr-1.5 h-1.5 w-1.5 rounded-full ${status.tone === 'green' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
                               {status.label}
                             </span>
                           </td>

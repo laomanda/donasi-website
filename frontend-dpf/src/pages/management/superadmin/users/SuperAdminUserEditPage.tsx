@@ -1,6 +1,6 @@
 ﻿import { useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { SuperAdminUserForm } from "./SuperAdminUserForm";
+import { SuperAdminUserForm } from "./components/SuperAdminUserForm";
 
 export function SuperAdminUserEditPage() {
   const params = useParams();

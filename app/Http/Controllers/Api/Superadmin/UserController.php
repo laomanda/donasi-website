@@ -100,6 +100,7 @@ class UserController extends Controller
     {
         return response()->json(
             Role::query()
+                ->where('name', '!=', 'pelihat')
                 ->with(['permissions:id,name'])
                 ->withCount('users')
                 ->orderBy('name')

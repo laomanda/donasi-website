@@ -68,12 +68,12 @@ import { EditorBankCreatePage } from '../pages/management/editor/bank/EditorBank
 import { EditorBankEditPage } from '../pages/management/editor/bank/EditorBankEditPage'
 import { AdminEditorTasksPage } from '../pages/management/admin/task/AdminEditorTasksPage'
 import { AdminEditorTaskCreatePage } from '../pages/management/admin/task/AdminEditorTaskCreatePage'
-import { SuperAdminUsersPage } from '../pages/management/superadmin/SuperAdminUsersPage'
-import { SuperAdminUserCreatePage } from '../pages/management/superadmin/SuperAdminUserCreatePage'
-import { SuperAdminUserEditPage } from '../pages/management/superadmin/SuperAdminUserEditPage'
-import { SuperAdminDashboardPage } from '../pages/management/superadmin/SuperAdminDashboardPage'
-import { SuperAdminEditorTasksPage } from '../pages/management/superadmin/SuperAdminEditorTasksPage'
-import { SuperAdminEditorTaskCreatePage } from '../pages/management/superadmin/SuperAdminEditorTaskCreatePage'
+import { SuperAdminUsersPage } from '../pages/management/superadmin/users/SuperAdminUsersPage'
+import { SuperAdminUserCreatePage } from '../pages/management/superadmin/users/SuperAdminUserCreatePage'
+import { SuperAdminUserEditPage } from '../pages/management/superadmin/users/SuperAdminUserEditPage'
+import { SuperAdminDashboardPage } from '../pages/management/superadmin/dashboard/SuperAdminDashboardPage'
+import { SuperAdminEditorTasksPage } from '../pages/management/superadmin/editor-tasks/SuperAdminEditorTasksPage'
+import { SuperAdminEditorTaskCreatePage } from '../pages/management/superadmin/editor-tasks/SuperAdminEditorTaskCreatePage'
 import { AdminSuggestionsPage } from '../pages/management/admin/suggestion/AdminSuggestionsPage'
 import { AdminSuggestionShowPage } from '../pages/management/admin/suggestion/AdminSuggestionShowPage'
 
@@ -178,8 +178,6 @@ export const router = createBrowserRouter([
           { path: 'users/create', element: <SuperAdminUserCreatePage /> },
           { path: 'users/:id/edit', element: <SuperAdminUserEditPage /> },
           { path: 'reports/donations', element: <DonationReportPage /> },
-          { path: 'suggestions', element: <AdminSuggestionsPage /> },
-          { path: 'suggestions/:id', element: <AdminSuggestionShowPage /> },
           { path: 'editor-tasks', element: <SuperAdminEditorTasksPage /> },
           { path: 'editor-tasks/create', element: <SuperAdminEditorTaskCreatePage /> },
           {

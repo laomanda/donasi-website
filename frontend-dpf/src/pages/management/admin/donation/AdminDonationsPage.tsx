@@ -667,7 +667,7 @@ export function AdminDonationsPage() {
         </div>
 
         {/* Pagination Footer */}
-        <div className="flex flex-col gap-4 border-t border-slate-100 bg-slate-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50 p-5">
           <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{pageLabel}</div>
           <div className="flex gap-2">
             <button

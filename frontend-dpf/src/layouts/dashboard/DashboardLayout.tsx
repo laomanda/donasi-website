@@ -198,7 +198,6 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Sistem",
       items: [
-        { label: "Saran Muzakki", href: "/admin/suggestions", icon: faCommentDots },
         { label: "Tugas Editor", href: "/superadmin/editor-tasks", icon: faListCheck },
         { label: "Pengaturan", href: "/superadmin/settings", icon: faGear },
       ],
@@ -254,11 +253,14 @@ const buildNavSections = (roles: DashboardRole[], t: any): NavSection[] => {
   const sections = new Map<string, NavItem[]>();
   const seen = new Set<string>();
 
+  const isSuperAdmin = roles.includes("superadmin");
+
   roles.forEach((role) => {
     NAV_SECTIONS_BY_ROLE[role].forEach((section) => {
       const bucket = sections.get(t(`nav.section.${section.title}`, section.title)) ?? [];
       section.items.forEach((item) => {
         if (seen.has(item.href)) return;
+        if (isSuperAdmin && item.href.includes("suggestions")) return;
         seen.add(item.href);
         bucket.push({
             ...item,
@@ -360,7 +362,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
 
     const loadCounts = async () => {
       try {
-        const [donationsRes, pickupsRes, consultationsRes, suggestionsRes] = await Promise.all([
+        const promises: Promise<any>[] = [
           http.get<PaginationMeta>("/admin/donations", {
             params: { status: "pending", payment_source: "manual", per_page: 1 },
           }),
@@ -370,17 +372,25 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
           http.get<PaginationMeta>("/admin/consultations", {
             params: { status: "baru", per_page: 1 },
           }),
-          http.get<PaginationMeta>("/admin/suggestions", {
-            params: { status: "baru", per_page: 1 },
-          }),
-        ]);
+        ];
+
+        if (role === "admin") {
+          promises.push(
+            http.get<PaginationMeta>("/admin/suggestions", {
+              params: { status: "baru", per_page: 1 },
+            })
+          );
+        }
+
+        const results = await Promise.all(promises);
+        const [donationsRes, pickupsRes, consultationsRes, suggestionsRes] = results;
 
         if (!active) return;
         applyCounts({
           donationCount: normalizeCount(donationsRes.data?.total),
           pickupCount: normalizeCount(pickupsRes.data?.total),
           consultationCount: normalizeCount(consultationsRes.data?.total),
-          suggestionCount: normalizeCount(suggestionsRes.data?.total),
+          suggestionCount: suggestionsRes ? normalizeCount(suggestionsRes.data?.total) : undefined,
         });
       } catch {
         if (!active) return;

@@ -81,28 +81,36 @@ export function AdminAllocationsPage() {
         <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full" />
 
         <div className="relative z-10 p-8 md:p-12">
-          <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
             <div className="space-y-4">
-              <h1 className="font-heading text-3xl font-black tracking-tight text-white md:text-6xl">
-                Alokasi Mitra
-              </h1>
-              <div className="flex flex-wrap items-center gap-3">
-                <p className="max-w-2xl text-lg font-medium text-white/90">
-                  Monitoring penggunaan dana dompet mitra secara transparan dan akuntabel.
-                </p>
-                <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-bold text-white ring-1 ring-white/20">
-                  Total Alokasi: <span className="text-white">{total}</span>
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-50 ring-1 ring-white/20">
+                  <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
+                  Layanan Kemitraan
                 </span>
+                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
+                  Alokasi Mitra
+                </h1>
+                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
+                  Monitoring penggunaan dana dompet mitra secara transparan.
+                </p>
               </div>
             </div>
 
-            <Link
-              to="/admin/allocations/create"
-              className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-sm font-bold text-emerald-600 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <FontAwesomeIcon icon={faPlus} className="bg-emerald-200/20 p-1 rounded-full" />
-              Buat Alokasi Baru
-            </Link>
+            <div className="flex flex-col gap-4 items-start md:items-end lg:flex-col">
+              <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-emerald-50 backdrop-blur-sm">
+                Total Alokasi
+                <span className="font-bold text-white">{new Intl.NumberFormat("id-ID").format(total)}</span>
+              </span>
+
+              <Link
+                to="/admin/allocations/create"
+                className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-emerald-600 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+              >
+                <FontAwesomeIcon icon={faPlus} className="bg-emerald-100/50 p-1.5 rounded-full text-xs" />
+                Buat Alokasi Baru
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -164,9 +172,6 @@ export function AdminAllocationsPage() {
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm ring-1 ring-emerald-100 transition-colors group-hover:bg-emerald-500 group-hover:text-white">
-                          <FontAwesomeIcon icon={faCoins} className="text-lg" />
-                        </div>
                         <div className="min-w-0">
                           <p className="font-bold text-slate-900 truncate">{alloc.user.name}</p>
                           <p className="text-xs font-semibold text-slate-500 truncate">{alloc.user.email}</p>

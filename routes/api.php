@@ -43,7 +43,6 @@ use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboa
 use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
 use App\Http\Controllers\Api\Mitra\MitraDashboardController;
 use App\Http\Controllers\Api\Mitra\MitraAllocationController;
-use App\Http\Controllers\Api\Pelihat\PelihatDashboardController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -146,9 +145,10 @@ Route::prefix('v1')->group(function () {
                 Route::delete('editor-tasks/{editor_task}/attachments/{attachment}', [AdminEditorTaskController::class, 'destroyAttachment']);
                 
                 Route::apiResource('pickup-requests', AdminPickupRequestController::class)->except(['index', 'show']);
+                Route::patch('pickup-requests/{pickup_request}/status', [AdminPickupRequestController::class, 'updateStatus']);
+                
                 Route::apiResource('suggestions', AdminSuggestionController::class)->only(['index', 'show', 'destroy']);
                 Route::patch('suggestions/{suggestion}/status', [AdminSuggestionController::class, 'updateStatus']);
-                Route::patch('pickup-requests/{pickup_request}/status', [AdminPickupRequestController::class, 'updateStatus']);
                 
                 Route::apiResource('consultations', AdminZiswafConsultationController::class)
                     ->parameters(['consultations' => 'ziswaf_consultation'])

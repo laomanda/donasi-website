@@ -12,11 +12,11 @@ import {
   faRotateRight,
   faUserShield,
 } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../lib/http";
-import { useToast } from "../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../lib/bulk";
-import { useBulkSelection } from "../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../components/ui/BulkActionsBar";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import { runWithConcurrency } from "../../../../lib/bulk";
+import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
+import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
 
 type Role = {
   id: number;
@@ -506,12 +506,12 @@ export function SuperAdminUsersPage() {
 
         <div className="flex flex-col gap-4 border-t border-slate-100 bg-slate-50/50 p-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-semibold text-slate-500 text-center sm:text-left">{pageLabel}</p>
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="grid grid-cols-2 gap-3 w-full sm:flex sm:w-auto sm:items-center sm:gap-2">
             <button
               type="button"
               onClick={() => void fetchUsers(Math.max(1, page - 1))}
               disabled={loading || page <= 1}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-emerald-50 hover:text-emerald-700 hover:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-emerald-50 hover:text-emerald-700 hover:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             >
               <FontAwesomeIcon icon={faArrowLeft} />
               Sebelumnya
@@ -520,7 +520,7 @@ export function SuperAdminUsersPage() {
               type="button"
               onClick={() => void fetchUsers(Math.min(lastPage, page + 1))}
               disabled={loading || page >= lastPage}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-emerald-50 hover:text-emerald-700 hover:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-emerald-50 hover:text-emerald-700 hover:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
             >
               Berikutnya
               <FontAwesomeIcon icon={faArrowRight} />
