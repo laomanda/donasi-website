@@ -8,12 +8,11 @@ import {
   faMagnifyingGlass,
   faCommentDots,
 } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../lib/http";
-import { getAuthUser } from "../../../lib/auth";
-import { useToast } from "../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../lib/bulk";
-import { useBulkSelection } from "../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../components/ui/BulkActionsBar";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import { runWithConcurrency } from "../../../../lib/bulk";
+import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
+import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
 
 type Suggestion = {
   id: number;
@@ -82,9 +81,7 @@ export function AdminSuggestionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
-
-  const authUser = useMemo(() => getAuthUser(), []);
-  
+ 
 
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((item) => item.id), [items]);
@@ -185,7 +182,7 @@ export function AdminSuggestionsPage() {
         <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
         <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
 
-        <div className="relative z-10 p-8 md:p-10">
+        <div className="relative z-10 p-6 sm:p-8 md:p-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="space-y-4">
               <div>
@@ -193,16 +190,16 @@ export function AdminSuggestionsPage() {
                   <FontAwesomeIcon icon={faCommentDots} />
                   Feedback
                 </span>
-                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
+                <h1 className="mt-3 font-heading text-2xl font-bold text-white sm:text-3xl md:text-5xl text-shadow-sm">
                   Saran Muzakki
                 </h1>
-                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
+                <p className="mt-2 max-w-2xl text-sm font-medium text-emerald-100/90 sm:text-lg">
                   Dengarkan suara donatur untuk pengembangan layanan DPF yang lebih baik.
                 </p>
               </div>
             </div>
-            <div className="flex flex-col gap-3">
-              <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-emerald-50 backdrop-blur-sm">
+            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+              <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-xs font-semibold text-emerald-50 backdrop-blur-sm sm:text-sm">
                 Total Masukan
                 <span className="font-bold text-white">{new Intl.NumberFormat("id-ID").format(total)}</span>
               </span>
@@ -230,10 +227,10 @@ export function AdminSuggestionsPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Pencarian</span>
-            <div className="relative mt-2 group">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Pencarian</span>
+            <div className="relative mt-1.5 group">
               <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
                 <FontAwesomeIcon icon={faMagnifyingGlass} />
               </span>
@@ -241,18 +238,18 @@ export function AdminSuggestionsPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Nama, no telp, atau isi pesan..."
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
               />
             </div>
           </label>
-
+ 
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Kategori</span>
-            <div className="relative mt-2">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Kategori</span>
+            <div className="relative mt-1.5">
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
               >
                 <option value="">Semua kategori</option>
                 <option value="suggestion">Saran</option>
@@ -261,49 +258,47 @@ export function AdminSuggestionsPage() {
                 <option value="other">Lainnya</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                <FontAwesomeIcon icon={faFilter} className="text-xs" />
+                <FontAwesomeIcon icon={faFilter} className="text-[10px]" />
               </div>
             </div>
           </label>
-
+ 
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Status</span>
-            <div className="relative mt-2">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Status</span>
+            <div className="relative mt-1.5">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
               >
                 <option value="">Semua Status</option>
                 <option value="baru">Baru</option>
                 <option value="dibalas">Dibalas</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                <FontAwesomeIcon icon={faFilter} className="text-xs" />
+                <FontAwesomeIcon icon={faFilter} className="text-[10px]" />
               </div>
             </div>
           </label>
-
-          <div className="flex items-end">
-            <label className="block w-full">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Per Halaman</span>
-              <div className="relative mt-2">
-                <select
-                  value={perPage}
-                  onChange={(e) => setPerPage(Number(e.target.value))}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                >
-                  <option value={10}>10 Data</option>
-                  <option value={20}>20 Data</option>
-                  <option value={30}>30 Data</option>
-                  <option value={50}>50 Data</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
-                </div>
+ 
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Per Halaman</span>
+            <div className="relative mt-1.5">
+              <select
+                value={perPage}
+                onChange={(e) => setPerPage(Number(e.target.value))}
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+              >
+                <option value={10}>10 Data</option>
+                <option value={20}>20 Data</option>
+                <option value={30}>30 Data</option>
+                <option value={50}>50 Data</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                <FontAwesomeIcon icon={faFilter} className="text-[10px]" />
               </div>
-            </label>
-          </div>
+            </div>
+          </label>
         </div>
       </div>
 
@@ -325,7 +320,7 @@ export function AdminSuggestionsPage() {
 
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
         <div className="hidden overflow-x-auto lg:block">
-          <table className="min-w-full table-fixed">
+          <table className="min-w-full table-fixed overflow-hidden">
             <thead className="bg-slate-50">
               <tr>
                 <th className="w-[5%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
@@ -375,10 +370,12 @@ export function AdminSuggestionsPage() {
                   </td>
                 </tr>
               ) : (
-                items.map((item) => (
+                items.map((item) => {
+                  const borderTone = item.category === "bug" ? "border-red-500" : item.category === "appreciation" ? "border-emerald-500" : item.category === "suggestion" ? "border-amber-500" : "border-slate-500";
+                  return (
                   <tr
                     key={item.id}
-                    className="group cursor-pointer transition hover:bg-slate-50"
+                    className={`group cursor-pointer border-l-[6px] border-transparent transition hover:bg-slate-50 ${borderTone.replace('border-', 'hover:border-')}`}
                     onClick={() => openDetail(item.id)}
                   >
                     <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
@@ -409,13 +406,14 @@ export function AdminSuggestionsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-5">
-                      <p className="text-sm font-medium leading-relaxed text-slate-700">{item.message}</p>
+                      <p className="line-clamp-2 text-sm font-medium leading-relaxed text-slate-700">{item.message}</p>
                     </td>
                     <td className="px-6 py-5 whitespace-nowrap text-sm font-semibold text-slate-600">
                       {formatDateTime(item.created_at)}
                     </td>
                   </tr>
-                ))
+                  );
+              })
               )}
             </tbody>
           </table>
@@ -434,37 +432,43 @@ export function AdminSuggestionsPage() {
           ) : items.length === 0 ? (
             <div className="p-6 text-center text-sm font-semibold text-slate-500">Belum ada saran masuk.</div>
           ) : (
-            items.map((item) => (
+            items.map((item) => {
+              const borderTone = item.category === "bug" ? "border-red-500" : item.category === "appreciation" ? "border-emerald-500" : item.category === "suggestion" ? "border-amber-500" : "border-slate-500";
+              return (
               <div
                 key={item.id}
-                className="cursor-pointer p-5 space-y-3 transition hover:bg-slate-50"
+                className={`cursor-pointer border-l-4 p-4 space-y-3 transition hover:bg-emerald-50/30 ${borderTone}`}
                 onClick={() => openDetail(item.id)}
               >
-                <div className="flex items-start justify-between">
-                  <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                      {item.name}
+                      <span className="truncate">{item.name}</span>
                       {!!item.is_anonymous && (
-                        <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">Anonim</span>
+                        <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Anonim</span>
                       )}
                     </div>
                     <p className="text-xs font-semibold text-slate-500">{item.phone}</p>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className={`inline-flex items-center whitespace-nowrap rounded-full px-3 py-1 text-[10px] font-bold ${getCategoryTone(item.category)}`}>
+                  <div className="flex shrink-0 flex-col items-end gap-1.5">
+                    <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${getCategoryTone(item.category)}`}>
                       {getCategoryLabel(item.category)}
                     </span>
-                    <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-bold ${item.status === 'baru' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`}>
+                    <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${item.status === 'baru' ? 'bg-amber-100 text-amber-700 border border-amber-200 shadow-sm' : 'bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm'}`}>
                       {item.status === 'baru' ? 'Baru' : 'Dibalas'}
                     </span>
                   </div>
                 </div>
-                <p className="text-sm text-slate-600">{item.message}</p>
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-xs font-semibold text-slate-400">{formatDateTime(item.created_at)}</span>
+                <div className="rounded-xl bg-slate-50/50 p-3 ring-1 ring-slate-100">
+                  <p className="line-clamp-2 text-xs font-medium leading-relaxed text-slate-600 italic">"{item.message}"</p>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{formatDateTime(item.created_at)}</span>
+                  <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
                 </div>
               </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

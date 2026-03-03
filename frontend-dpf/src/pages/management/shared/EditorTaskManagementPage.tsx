@@ -92,18 +92,27 @@ const formatStatus = (value: EditorTaskStatus | null | undefined) => {
 
 const getStatusTone = (value: EditorTaskStatus | null | undefined) => {
   const s = String(value ?? "").toLowerCase();
-  if (s === "done") return "bg-emerald-600 text-white shadow-md shadow-emerald-600/20";
-  if (s === "in_progress") return "bg-blue-600 text-white shadow-md shadow-blue-600/20";
-  if (s === "open") return "bg-amber-500 text-white shadow-md shadow-amber-500/20";
-  if (s === "cancelled") return "bg-rose-600 text-white shadow-md shadow-rose-600/20";
-  return "bg-slate-600 text-white shadow-md shadow-slate-600/20";
+  if (s === "done") return "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-500/20";
+  if (s === "in_progress") return "bg-blue-600 text-white shadow-sm ring-1 ring-blue-500/20";
+  if (s === "open") return "bg-amber-500 text-white shadow-sm ring-1 ring-amber-400/20";
+  if (s === "cancelled") return "bg-rose-600 text-white shadow-sm ring-1 ring-rose-500/20";
+  return "bg-slate-600 text-white shadow-sm ring-1 ring-slate-500/20";
+};
+
+const getStatusBorder = (value: EditorTaskStatus | null | undefined) => {
+  const s = String(value ?? "").toLowerCase();
+  if (s === "done") return "border-l-emerald-500";
+  if (s === "in_progress") return "border-l-blue-500";
+  if (s === "open") return "border-l-amber-500";
+  if (s === "cancelled") return "border-l-rose-500";
+  return "border-l-slate-400";
 };
 
 const getPriorityTone = (value: EditorTaskPriority | null | undefined) => {
   const s = String(value ?? "").toLowerCase();
-  if (s === "high") return "bg-rose-600 text-white shadow-md shadow-rose-600/20";
-  if (s === "low") return "bg-slate-500 text-white shadow-md shadow-slate-500/20";
-  return "bg-indigo-600 text-white shadow-md shadow-indigo-600/20";
+  if (s === "high") return "bg-rose-600 text-white shadow-sm ring-1 ring-rose-500/30";
+  if (s === "low") return "bg-slate-500 text-white shadow-sm ring-1 ring-slate-400/30";
+  return "bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-500/30";
 };
 
 const isDeleteLocked = (value: EditorTaskStatus | null | undefined) => {
@@ -139,7 +148,7 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [cancelReason, setCancelReason] = useState("");
 
-  const authUser = useMemo(() => getAuthUser(), []);
+
   
   const pageRef = useRef(page);
   const perPageRef = useRef(perPage);
@@ -336,40 +345,38 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
   return (
     <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 pb-10">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
+      <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl transition-all duration-500">
         <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
-        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
-        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
+        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
 
-        <div className="relative z-10 p-8 md:p-10">
+        <div className="relative z-10 p-6 sm:p-8 md:p-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="space-y-4">
               <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
-                  <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/30 backdrop-blur-sm sm:text-[11px]">
+                  <span className="h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
                   Manajemen Konten
                 </span>
-                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
+                <h1 className="mt-3 font-heading text-2xl font-bold text-white sm:text-3xl md:text-5xl text-shadow-sm">
                   Tugas Editor
                 </h1>
-                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
+                <p className="mt-2 max-w-2xl text-sm font-medium text-white/90 sm:text-lg">
                   Kelola penugasan konten, pantau progres editor, dan pastikan target publikasi tercapai tepat waktu.
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              {true && (
-                <button
-                  type="button"
-                  onClick={() => navigate(`${routeBase}/editor-tasks/create`)}
-                  className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 text-sm font-bold text-emerald-700 shadow-lg transition-all hover:bg-emerald-50 hover:scale-105 active:scale-95"
-                >
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition group-hover:bg-emerald-200">
-                    <FontAwesomeIcon icon={faCirclePlus} className="text-xs" />
-                  </div>
-                  Buat Tugas Baru
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => navigate(`${routeBase}/editor-tasks/create`)}
+                className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-emerald-700 shadow-lg transition-all hover:bg-emerald-50 active:scale-95 sm:w-auto sm:py-4"
+              >
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition group-hover:bg-emerald-200">
+                  <FontAwesomeIcon icon={faCirclePlus} className="text-xs" />
+                </div>
+                Buat Tugas Baru
+              </button>
             </div>
           </div>
         </div>
@@ -396,81 +403,82 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
         </div>
 
         <div className="grid gap-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <label className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Pencarian</span>
-              <div className="relative mt-2 group">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
-                  <FontAwesomeIcon icon={faMagnifyingGlass} />
-                </span>
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Judul tugas..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                />
-              </div>
-            </label>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">Pencarian</span>
+            <div className="relative group">
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
+                <FontAwesomeIcon icon={faMagnifyingGlass} />
+              </span>
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Cari judul..."
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+              />
+            </div>
+          </div>
 
-            <label className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Status</span>
-              <div className="relative mt-2">
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                >
-                  <option value="">Semua Status</option>
-                  <option value="open">Baru</option>
-                  <option value="in_progress">Dikerjakan</option>
-                  <option value="done">Selesai</option>
-                  <option value="cancelled">Dibatalkan</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faLayerGroup} className="text-xs" />
-                </div>
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">Status</span>
+            <div className="relative">
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+              >
+                <option value="">Semua Status</option>
+                <option value="open">Baru</option>
+                <option value="in_progress">Dikerjakan</option>
+                <option value="done">Selesai</option>
+                <option value="cancelled">Dibatalkan</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                <FontAwesomeIcon icon={faLayerGroup} className="text-[10px]" />
               </div>
-            </label>
+            </div>
+          </div>
 
-            <label className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Prioritas</span>
-              <div className="relative mt-2">
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                >
-                  <option value="">Semua Prioritas</option>
-                  <option value="low">Rendah</option>
-                  <option value="normal">Normal</option>
-                  <option value="high">Tinggi</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faFlag} className="text-xs" />
-                </div>
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">Prioritas</span>
+            <div className="relative">
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+              >
+                <option value="">Semua Prioritas</option>
+                <option value="low">Rendah</option>
+                <option value="normal">Normal</option>
+                <option value="high">Tinggi</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                <FontAwesomeIcon icon={faFlag} className="text-[10px]" />
               </div>
-            </label>
+            </div>
+          </div>
+        </div>
 
-            <label className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Editor</span>
-              <div className="relative mt-2">
-                <select
-                  value={assignedTo}
-                  onChange={(e) => setAssignedTo(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                >
-                  <option value="">Semua Editor</option>
-                  {editors.map((editor) => (
-                    <option key={editor.id} value={editor.id}>
-                      {editor.name ?? editor.email ?? `Editor ${editor.id}`}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faUserCircle} className="text-xs" />
-                </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 pt-2">
+          <div className="space-y-2 lg:col-span-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">Editor Terpilih</span>
+            <div className="relative">
+              <select
+                value={assignedTo}
+                onChange={(e) => setAssignedTo(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+              >
+                <option value="">Semua Editor</option>
+                {editors.map((editor) => (
+                  <option key={editor.id} value={editor.id}>
+                    {editor.name ?? editor.email ?? `Editor ${editor.id}`}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                <FontAwesomeIcon icon={faUserCircle} className="text-[10px]" />
               </div>
-            </label>
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-50 pt-6 mt-2">
@@ -487,15 +495,20 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
               </select>
               <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Per Halaman</span>
             </div>
-
-            <div className="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-2 rounded-lg w-full sm:w-auto text-center sm:text-right">
-              {pageLabel}
-            </div>
+            
+            {loading ? (
+              <div className="h-4 w-24 animate-pulse bg-slate-100 rounded" />
+            ) : total > 0 ? (
+               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 px-3 py-2 rounded-lg">
+                Total: {total} Tugas
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
+    </div>
 
-      {error ? (
+    {error ? (
         <div className="rounded-2xl border border-rose-100 bg-rose-50 p-6 flex items-start gap-4 shadow-sm">
           <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 shrink-0">
             <FontAwesomeIcon icon={faBan} />
@@ -532,21 +545,21 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
             const statusValue = String(task.status ?? "").toLowerCase();
             const cancelLocked = statusValue === "cancelled" || statusValue === "done";
             return (
-              <div key={task.id} className="group relative overflow-hidden rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-lg hover:border-emerald-200">
+              <div key={task.id} className={`group relative overflow-hidden rounded-[24px] border-y border-r border-slate-200 bg-white p-5 sm:p-6 shadow-sm transition hover:shadow-lg hover:border-emerald-200 border-l-[6px] ${getStatusBorder(task.status)} transition-all duration-300`}>
                 <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                   <div className="space-y-4 flex-1 min-w-0">
                     <div>
                       <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${getStatusTone(task.status)}`}>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${getStatusTone(task.status)}`}>
                           <div className={`h-1.5 w-1.5 rounded-full ${task.status === 'in_progress' ? 'animate-pulse bg-white' : 'bg-white/70'}`} />
                           {formatStatus(task.status)}
                         </span>
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${getPriorityTone(task.priority)}`}>
-                          <FontAwesomeIcon icon={faFlag} />
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${getPriorityTone(task.priority)}`}>
+                          <FontAwesomeIcon icon={faFlag} className="text-[8px]" />
                           {formatPriority(task.priority)}
                         </span>
                       </div>
-                      <h3 className="line-clamp-1 font-heading text-xl font-bold text-slate-900 transition">
+                      <h3 className="break-all font-heading text-lg sm:text-xl font-bold text-slate-900 transition leading-tight">
                         {task.title ?? "Tugas tanpa judul"}
                       </h3>
                       {task.description && (
@@ -566,32 +579,32 @@ export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps
                       </div>
                     )}
 
-                    <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500 border-t border-slate-100 pt-4 mt-2">
-                      <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-1.5">
+                    <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-[10px] sm:text-xs font-bold text-slate-500 border-t border-slate-100 pt-4 mt-2">
+                      <div className="flex items-center gap-1.5">
                         <FontAwesomeIcon icon={faCalendarDays} className="text-emerald-500" />
-                        <span>Tenggat: {formatDateTime(task.due_at)}</span>
+                        <span>Tenggat: <span className="text-slate-800">{formatDateTime(task.due_at)}</span></span>
                       </div>
-                      <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-1.5">
+                      <div className="flex items-center gap-1.5">
                         <FontAwesomeIcon icon={faUserCircle} className="text-blue-500" />
-                        <span>Editor: <span className="text-slate-700">{task.assignee?.name ?? "Semua Editor"}</span></span>
+                        <span>Editor: <span className="text-slate-800">{task.assignee?.name ?? "Semua Editor"}</span></span>
                       </div>
                       {task.creator?.name && (
-                        <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-1.5">
+                        <div className="flex items-center gap-1.5">
                           <FontAwesomeIcon icon={faUserCircle} className="text-indigo-500" />
-                          <span>Dibuat: <span className="text-slate-700">{task.creator.name}</span></span>
+                          <span>Oleh: <span className="text-slate-800">{task.creator.name}</span></span>
                         </div>
                       )}
                     </div>
 
                     {task.attachments && task.attachments.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
                         {task.attachments.map((attachment) => (
                           <a
                             key={attachment.id}
                             href={attachment.url ?? "#"}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:bg-slate-50 hover:text-emerald-600"
+                            className="inline-flex items-center gap-2 rounded-xl bg-slate-50 border border-slate-200 px-3 py-1.5 text-[10px] font-bold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200"
                           >
                             <FontAwesomeIcon icon={faPaperclip} />
                             {attachment.original_name ?? "Lampiran"}

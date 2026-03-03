@@ -7,12 +7,11 @@ import {
   faFilter,
   faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../lib/http";
-import { getAuthUser } from "../../../lib/auth";
-import { useToast } from "../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../lib/bulk";
-import { useBulkSelection } from "../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../components/ui/BulkActionsBar";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import { runWithConcurrency } from "../../../../lib/bulk";
+import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
+import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
 
 type DonationStatus = "pending" | "paid" | "failed" | "expired" | "cancelled" | string;
 
@@ -90,8 +89,6 @@ export function AdminDonationConfirmationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
-
-  const authUser = useMemo(() => getAuthUser(), []);
   
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((d) => d.id), [items]);
@@ -220,14 +217,14 @@ export function AdminDonationConfirmationsPage() {
                   <span className="h-2 w-2 rounded-full bg-emerald-300" />
                   Donasi manual
                 </span>
-                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl">Konfirmasi Donasi</h1>
-                <p className="mt-2 max-w-2xl text-sm font-medium text-emerald-100/90">
+                <h1 className="mt-3 font-heading text-2xl font-bold text-white sm:text-3xl md:text-5xl">Konfirmasi Donasi</h1>
+                <p className="mt-2 max-w-2xl text-xs font-medium text-emerald-100/90 sm:text-sm">
                   Daftar transfer manual yang perlu diverifikasi agar dana tercatat dengan benar.
                 </p>
               </div>
             </div>
-            <div className="flex flex-col gap-3">
-              <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-emerald-50 backdrop-blur-sm">
+            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+              <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-xs font-semibold text-emerald-50 backdrop-blur-sm sm:text-sm">
                 Total data
                 <span className="font-bold text-white">{formatCount(total)}</span>
               </span>
@@ -249,12 +246,12 @@ export function AdminDonationConfirmationsPage() {
                 <p className="text-sm font-medium text-slate-500">Saring donasi manual yang perlu diverifikasi.</p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
-                <span className="text-slate-400">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm">
+                <span className="hidden text-slate-400 sm:inline">
                   <FontAwesomeIcon icon={faFilter} />
                 </span>
-                <span>Per halaman</span>
+                <span className="whitespace-nowrap">Per hal.</span>
                 <select
                   value={perPage}
                   onChange={(e) => setPerPage(Number(e.target.value))}
@@ -270,9 +267,9 @@ export function AdminDonationConfirmationsPage() {
                 <button
                   type="button"
                   onClick={onResetFilters}
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 sm:rounded-2xl sm:px-5 sm:py-3 sm:text-sm"
                 >
-                  Atur ulang
+                  Reset
                 </button>
               )}
             </div>
@@ -329,7 +326,7 @@ export function AdminDonationConfirmationsPage() {
         
       />
 
-      <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
         <div className="hidden overflow-x-auto md:block">
           <table className="min-w-full table-fixed">
             <thead className="bg-slate-50">
@@ -407,7 +404,7 @@ export function AdminDonationConfirmationsPage() {
                   return (
                     <tr
                       key={donation.id}
-                      className={`cursor-pointer transition hover:bg-emerald-50/40 border-l-4 ${barColor}`}
+                      className={`group cursor-pointer border-l-[6px] border-transparent transition hover:bg-emerald-50/40 ${barColor}`}
                       onClick={() => navigate(`/admin/donations/${donation.id}`)}
                     >
                       <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
@@ -477,27 +474,32 @@ export function AdminDonationConfirmationsPage() {
                   key={donation.id}
                   type="button"
                   onClick={() => navigate(`/admin/donations/${donation.id}`)}
-                  className={`w-full p-5 text-left transition hover:border-emerald-200 hover:bg-emerald-50 border-l-4 ${barColor}`}
+                  className={`relative w-full overflow-hidden p-4 text-left transition hover:bg-emerald-50/50 border-l-[6px] border-transparent ${barColor}`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-900">{code}</p>
-                      <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">{donor}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-slate-900 truncate">{code}</p>
+                      <p className="mt-0.5 line-clamp-1 text-[11px] font-semibold text-slate-500">{donor}</p>
                     </div>
                     <span
                       className={[
-                        "inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-semibold",
+                        "inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
                         getStatusTone(String(donation.status ?? "")),
                       ].join(" ")}
                     >
                       {getStatusLabel(String(donation.status ?? ""))}
                     </span>
                   </div>
-                  <div className="mt-4 flex items-center justify-between gap-3">
-                    <span className="text-xs font-semibold text-slate-500">Nominal</span>
-                    <span className="text-sm font-bold text-slate-900">{formatCurrency(donation.amount)}</span>
+                  <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-50 pt-3">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Nominal</span>
+                      <span className="text-sm font-bold text-slate-900">{formatCurrency(donation.amount)}</span>
+                    </div>
+                    <div className="text-right flex flex-col items-end">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Waktu</span>
+                      <span className="text-[11px] font-semibold text-slate-600">{formatDateTime(when)}</span>
+                    </div>
                   </div>
-                  <div className="mt-2 text-xs font-semibold text-slate-500">Waktu: {formatDateTime(when)}</div>
                 </button>
               );
             })

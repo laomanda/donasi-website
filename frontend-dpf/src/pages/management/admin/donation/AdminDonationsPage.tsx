@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,13 +10,12 @@ import {
   faReceipt,
 } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import http from "../../../lib/http";
-import { getAuthUser } from "../../../lib/auth";
-import { useToast } from "../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../lib/bulk";
-import { useBulkSelection } from "../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../components/ui/BulkActionsBar";
-import WhatsappConfirmationModal from "../../../components/management/admin/WhatsappConfirmationModal";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import { runWithConcurrency } from "../../../../lib/bulk";
+import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
+import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
+import WhatsappConfirmationModal from "../../../../components/management/admin/WhatsappConfirmationModal";
 
 type DonationStatus = "pending" | "paid" | "failed" | "expired" | "cancelled" | string;
 
@@ -132,8 +131,8 @@ export function AdminDonationsPage() {
   const [isWhatsappModalOpen, setIsWhatsappModalOpen] = useState(false);
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
 
-  const authUser = useMemo(() => getAuthUser(), []);
-  
+
+
   const hasFilters = Boolean(
     q.trim() || status || paymentSource || programId.trim() || dateFrom.trim() || dateTo.trim()
   );

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,9 +13,9 @@ import {
   faCreditCard,
   faAlignLeft,
 } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../lib/http";
-import { useToast } from "../../../components/ui/ToastProvider";
-import PhoneInput from "../../../components/ui/PhoneInput";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import PhoneInput from "../../../../components/ui/PhoneInput";
 
 type BankAccount = {
   id: number;

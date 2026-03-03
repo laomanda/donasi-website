@@ -171,14 +171,14 @@ export function EditorTaskCreatePage({ role }: EditorTaskCreatePageProps) {
 
         {/* Mode Switcher */}
         <div className="mb-8 flex flex-col items-center justify-center gap-4">
-          <div className="inline-flex rounded-2xl bg-slate-100 p-1.5 ring-1 ring-slate-200">
+          <div className="flex w-full max-w-md rounded-2xl bg-slate-100 p-1.5 ring-1 ring-slate-200 sm:w-auto sm:inline-flex">
             <button
               type="button"
               onClick={() => {
                 setMode("manual");
                 setAttachments([]);
               }}
-              className={`relative flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold transition-all ${mode === "manual"
+              className={`relative flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-xs font-bold transition-all sm:px-6 sm:text-sm ${mode === "manual"
                 ? "bg-white text-emerald-700 shadow-sm ring-1 ring-black/5"
                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                 }`}
@@ -192,13 +192,13 @@ export function EditorTaskCreatePage({ role }: EditorTaskCreatePageProps) {
                 setMode("file");
                 setAttachments([]);
               }}
-              className={`relative flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold transition-all ${mode === "file"
+              className={`relative flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-xs font-bold transition-all sm:px-6 sm:text-sm ${mode === "file"
                 ? "bg-white text-emerald-700 shadow-sm ring-1 ring-black/5"
                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                 }`}
             >
               <FontAwesomeIcon icon={faFileWord} />
-              Upload File Word
+              Upload File
             </button>
           </div>
           <p className="text-center text-xs font-medium text-slate-500">

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -8,12 +8,11 @@ import {
   faHeadset,
   faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../lib/http";
-import { getAuthUser } from "../../../lib/auth";
-import { useToast } from "../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../lib/bulk";
-import { useBulkSelection } from "../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../components/ui/BulkActionsBar";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import { runWithConcurrency } from "../../../../lib/bulk";
+import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
+import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
 
 type ConsultationStatus = "baru" | "dibalas" | "ditutup" | string;
 
@@ -84,8 +83,8 @@ export function AdminConsultationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  const authUser = useMemo(() => getAuthUser(), []);
-  
+
+
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((item) => item.id), [items]);
 

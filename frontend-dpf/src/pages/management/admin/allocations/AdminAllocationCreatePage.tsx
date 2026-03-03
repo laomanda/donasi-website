@@ -21,7 +21,6 @@ type AllocatableProgram = {
 export function AdminAllocationCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
-  const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [allocatablePrograms, setAllocatablePrograms] = useState<AllocatableProgram[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -45,7 +44,7 @@ export function AdminAllocationCreatePage() {
         console.error(err);
         toast.error("Gagal memuat data mitra.");
       } finally {
-        setLoading(false);
+        // No loading state to clear
       }
     };
     fetchData();
@@ -142,44 +141,34 @@ export function AdminAllocationCreatePage() {
     return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num);
   };
 
-  if (loading) return <div className="p-8 text-center text-slate-500">Memuat data...</div>;
-
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
-        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
-        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
-        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
+      <div className="relative overflow-hidden rounded-[32px] bg-slate-900 shadow-2xl">
+        <div className="absolute inset-0 bg-brandGreen-600" />
+        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full" />
+        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full" />
 
-        <div className="relative z-10 p-8 md:p-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+        <div className="relative z-10 p-8 md:p-12">
+          <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
             <div className="space-y-4">
-              <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
-                  <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
-                  Keuangan
-                </span>
-                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
-                  Buat Alokasi Baru
-                </h1>
-                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
-                  Alokasikan dana untuk Mitra dengan mudah dan transparan.
-                </p>
-              </div>
+              <h1 className="font-heading text-3xl font-black tracking-tight text-white md:text-6xl text-shadow-sm">
+                Buat Alokasi Baru
+              </h1>
+              <p className="max-w-2xl text-lg font-medium text-white">
+                Alokasikan dana untuk Mitra dengan mudah dan transparan.
+              </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={() => navigate("/admin/allocations")}
-                className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-white/20 backdrop-blur-sm ring-1 ring-white/20"
-                disabled={submitting}
-              >
-                <FontAwesomeIcon icon={faArrowLeft} />
-                Kembali
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/admin/allocations")}
+              className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-sm font-bold text-emerald-600 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-black/10"
+              disabled={submitting}
+            >
+              <FontAwesomeIcon icon={faArrowLeft} className="bg-emerald-200/20 p-1 rounded-full transition-transform group-hover:-translate-x-1" />
+              Kembali ke Daftar
+            </button>
           </div>
         </div>
       </div>
@@ -263,14 +252,14 @@ export function AdminAllocationCreatePage() {
 
               <div className="space-y-1">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Keterangan / Tujuan <span className="text-red-500">*</span></label>
-                <textarea
-                  required
-                  rows={4}
-                  placeholder="Contoh: Operasional Program A Tahap 1"
-                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
+                  <textarea
+                    required
+                    rows={4}
+                    placeholder="Contoh: Operasional Program A"
+                    className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
               </div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import EditorTaskManagementPage from "../shared/EditorTaskManagementPage";
+import EditorTaskManagementPage from "../../shared/EditorTaskManagementPage";
 
 export function AdminEditorTasksPage() {
   return <EditorTaskManagementPage role="admin" />;

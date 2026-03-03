@@ -97,11 +97,7 @@ class DonationReportController extends Controller
 
         $search = $request->string('q')->trim()->toString();
         if ($search !== '') {
-            $query->where(function (Builder $builder) use ($search) {
-                $builder->where('donation_code', 'like', "%{$search}%")
-                    ->orWhere('donor_name', 'like', "%{$search}%")
-                    ->orWhere('donor_email', 'like', "%{$search}%");
-            });
+            $query->where('donor_name', 'like', "%{$search}%");
         }
 
         $qualification = $request->string('qualification')->trim()->toString();

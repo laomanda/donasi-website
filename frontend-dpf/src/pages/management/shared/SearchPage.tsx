@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faBookOpen,
-  faBuildingColumns,
   faClipboardCheck,
   faHandshake,
   faHeadset,
@@ -276,11 +275,6 @@ const consultationStatusLabel = (status: ConsultationStatus) => {
   if (value === "dibalas") return { label: "Dibalas", tone: "green" as const };
   if (value === "ditutup") return { label: "Ditutup", tone: "neutral" as const };
   return { label: String(status || "-"), tone: "neutral" as const };
-};
-
-const bankAccountVisibilityLabel = (isVisible: boolean) => {
-  if (isVisible) return { label: "Tampil", tone: "green" as const };
-  return { label: "Disembunyikan", tone: "neutral" as const };
 };
 
 const getUserRoleLabel = (user: User) => {
@@ -742,33 +736,6 @@ export function SearchPage({ role }: { role: SearchRole }) {
       } catch {
         if (!active) return;
         setConsultationsState({ data: [], total: 0, loading: false, error: "Gagal memuat hasil konsultasi." });
-      }
-    };
-
-    const loadBankAccounts = async () => {
-      setBankAccountsState((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        const res = await http.get<BankAccount[]>(`${apiBase}/bank-accounts`);
-        if (!active) return;
-        const list = Array.isArray(res.data) ? res.data : [];
-        const lower = term.toLowerCase();
-        const filtered = list
-          .filter((acc) => {
-            const bank = String(acc.bank_name ?? "").toLowerCase();
-            const number = String(acc.account_number ?? "").toLowerCase();
-            const name = String(acc.account_name ?? "").toLowerCase();
-            return bank.includes(lower) || number.includes(lower) || name.includes(lower);
-          })
-          .sort((a, b) => (Number(a.order ?? 0) || 0) - (Number(b.order ?? 0) || 0));
-        setBankAccountsState({
-          data: filtered.slice(0, limit),
-          total: filtered.length,
-          loading: false,
-          error: null,
-        });
-      } catch {
-        if (!active) return;
-        setBankAccountsState({ data: [], total: 0, loading: false, error: "Gagal memuat hasil rekening." });
       }
     };
 

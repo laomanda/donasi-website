@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,9 +13,8 @@ import {
   faCircleInfo,
 } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import http from "../../../lib/http";
-import { getAuthUser } from "../../../lib/auth";
-import { useToast } from "../../../components/ui/ToastProvider";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
 
 type Suggestion = {
   id: number;
@@ -81,9 +80,6 @@ export function AdminSuggestionShowPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const authUser = useMemo(() => getAuthUser(), []);
-  
-
   const [isChangingStatus, setIsChangingStatus] = useState(false);
 
   useEffect(() => {
@@ -123,18 +119,24 @@ export function AdminSuggestionShowPage() {
         <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
 
-        <div className="relative z-10 p-8 md:p-10">
+        <div className="relative z-10 p-6 sm:p-8 md:p-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate("/admin/suggestions")}
+                  className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/20 sm:hidden"
+                >
+                  <FontAwesomeIcon icon={faArrowLeft} />
+                  Kembali
+                </button>
+              </div>
               <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/30 backdrop-blur-sm">
-                  <span className="h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-                  Detail Saran Muzakki
-                </span>
-                <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
+                <h1 className="mt-3 font-heading text-2xl font-bold text-white sm:text-3xl md:text-5xl text-shadow-sm">
                   {loading ? "Memuat..." : "Saran & Kritik"}
                 </h1>
-                <p className="mt-2 max-w-2xl text-lg font-medium text-white/90">
+                <p className="mt-2 text-sm font-medium text-white/90 sm:text-lg max-w-2xl">
                   Pantau detail saran, hubungi donatur, atau kelola saran yang masuk.
                 </p>
               </div>
@@ -142,7 +144,7 @@ export function AdminSuggestionShowPage() {
             <button
               type="button"
               onClick={() => navigate("/admin/suggestions")}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
+              className="hidden sm:inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 py-3 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
             >
               <FontAwesomeIcon icon={faArrowLeft} />
               Kembali
@@ -157,68 +159,73 @@ export function AdminSuggestionShowPage() {
         </div>
       ) : null}
 
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-500" />
+        </div>
+      ) : item && (
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8 lg:sticky lg:top-24 lg:h-fit lg:self-start lg:z-10">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-[28px] border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                  <h2 className="font-heading text-xl font-semibold text-slate-900">Informasi Donatur</h2>
+                  <h2 className="font-heading text-lg sm:text-xl font-semibold text-slate-900">Informasi Donatur</h2>
                   {item && (
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${item.status === 'baru' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`}>
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${item.status === 'baru' ? 'bg-amber-100 text-amber-700 border border-amber-200 shadow-sm' : 'bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm'}`}>
                       {item.status === 'baru' ? 'Baru' : 'Dibalas'}
                     </span>
                   )}
                 </div>
-                <p className="text-sm font-medium text-slate-600">Data kontak dan detail saran yang diberikan.</p>
+                <p className="text-xs sm:text-sm font-medium text-slate-600">Data kontak dan detail saran yang diberikan.</p>
               </div>
               <span
                 className={[
-                  "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold leading-none shadow-sm border bg-primary-600 text-white",
+                  "inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] sm:text-xs font-bold leading-none shadow-sm border bg-primary-600 text-white uppercase tracking-wider self-start",
                   item ? getCategoryTone(item.category) : "bg-slate-50 text-slate-400 border-slate-100",
                 ].join(" ")}
               >
-                <FontAwesomeIcon icon={faTag} className="text-[10px] text-white" />
+                <FontAwesomeIcon icon={faTag} className="text-[10px]" />
                 {item ? getCategoryLabel(item.category) : "-"}
               </span>
             </div>
-
-            <dl className="mt-6 grid gap-4 sm:grid-cols-2">
+ 
+            <dl className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-4">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   <FontAwesomeIcon icon={faUser} className="text-emerald-500" />
                   Nama
                 </p>
                 <div className="mt-2 flex items-center gap-2">
-                  <dd className="text-sm font-bold text-slate-900">{item?.name ?? "-"}</dd>
+                  <dd className="text-sm font-bold text-slate-900 truncate">{item?.name ?? "-"}</dd>
                   {!!item?.is_anonymous && (
-                    <span className="rounded-lg bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 relative -top-0.5">Anonim</span>
+                    <span className="rounded-lg bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-700 uppercase tracking-wider">Anonim</span>
                   )}
                 </div>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   <FontAwesomeIcon icon={faPhone} className="text-emerald-500" />
                   No. Telepon
                 </p>
                 <dd className="mt-2 text-sm font-bold text-slate-900">{item?.phone ?? "-"}</dd>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:col-span-2">
-                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   <FontAwesomeIcon icon={faCalendarAlt} className="text-emerald-500" />
                   Dikirim Pada
                 </p>
                 <dd className="mt-2 text-sm font-bold text-slate-900">{formatDateTime(item?.created_at)}</dd>
               </div>
             </dl>
-
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4">
-              <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+ 
+            <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 ring-1 ring-slate-100">
+              <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
                 <FontAwesomeIcon icon={faCommentDots} className="text-emerald-500" />
                 Isi Saran / Kritik
               </p>
-              <div className="mt-3 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">
-                {item?.message ?? "-"}
+              <div className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap italic">
+                "{item?.message ?? "-"}"
               </div>
             </div>
           </div>
@@ -350,6 +357,7 @@ export function AdminSuggestionShowPage() {
           )}
         </aside>
       </div>
+      )}
     </div>
   );
 }

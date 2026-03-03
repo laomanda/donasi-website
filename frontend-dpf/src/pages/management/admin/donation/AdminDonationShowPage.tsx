@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -17,9 +17,8 @@ import {
   faBan,
   faExclamationCircle,
 } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../lib/http";
-import { getAuthUser } from "../../../lib/auth";
-import { useToast } from "../../../components/ui/ToastProvider";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
 
 type DonationStatus = "pending" | "paid" | "failed" | "expired" | "cancelled" | string;
 
@@ -146,8 +145,7 @@ export function AdminDonationShowPage() {
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  const authUser = useMemo(() => getAuthUser(), []);
-  
+
   const canLoad = Number.isFinite(donationId) && donationId > 0;
   const isMidtrans = String(data?.payment_source ?? "").toLowerCase() === "midtrans";
   const persistedStatus = String(data?.status ?? status).trim().toLowerCase();
@@ -290,32 +288,31 @@ export function AdminDonationShowPage() {
         <div className="absolute right-0 top-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-white/10 blur-3xl filter" />
         <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-80 w-80 rounded-full bg-white/10 blur-3xl filter" />
 
-        <div className="relative z-10 p-8 md:p-10">
+        <div className="relative z-10 p-6 sm:p-8 md:p-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => navigate("/admin/donations")}
-                  className="group inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur-sm transition hover:bg-white/20"
+                  className="group inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white/90 backdrop-blur-sm transition hover:bg-white/20 sm:px-4 sm:text-sm"
                 >
                   <FontAwesomeIcon icon={faArrowLeft} className="transition group-hover:-translate-x-1" />
                   Kembali
                 </button>
               </div>
-
               <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="font-heading text-3xl font-bold text-white md:text-5xl">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h1 className="font-heading text-2xl font-bold text-white sm:text-3xl md:text-5xl">
                     {loading ? "Memuat..." : String(data?.donation_code ?? `#${donationId}`)}
                   </h1>
                   {!loading && (
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider shadow-sm ring-1 ring-inset ${statusConfig.bg}`}>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm ring-1 ring-inset sm:px-4 sm:py-1.5 sm:text-xs ${statusConfig.bg}`}>
                       <FontAwesomeIcon icon={statusConfig.icon} />
                       {statusConfig.label}
                     </span>
                   )}
                 </div>
-                <p className="mt-2 text-lg text-white/90 font-medium max-w-2xl">
+                <p className="mt-2 text-sm text-white/90 font-medium max-w-2xl sm:text-base md:text-lg">
                   Donasi dari <span className="font-bold text-white">{data?.donor_name || "Hamba Allah"}</span> untuk program <span className={`font-bold text-white underline underline-offset-4 ${statusConfig.decoration}`}>{data?.program?.title || "Umum"}</span>
                 </p>
               </div>
@@ -340,42 +337,42 @@ export function AdminDonationShowPage() {
           <div className="space-y-8 lg:col-span-8">
             {/* Summary Card */}
             <div className={`overflow-hidden rounded-[24px] bg-white shadow-xl shadow-slate-200/50 border-l-8 ${statusConfig.border}`}>
-              <div className="p-8">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2 mb-4">
+              <div className="p-6 sm:p-8">
+                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2 mb-4">
                   <FontAwesomeIcon icon={faMoneyBillWave} />
                   Rincian Pembayaran
                 </h2>
-
-                <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between border-b border-slate-100 pb-8 mb-8">
+ 
+                <div className="flex flex-col gap-6 border-b border-slate-100 pb-8 mb-8">
                   <div>
-                    <p className="text-sm font-semibold text-slate-500 mb-1">Total Donasi</p>
-                    <div className="font-heading text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">
+                    <p className="text-xs font-semibold text-slate-500 mb-1">Total Donasi</p>
+                    <div className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">
                       {formatCurrency(data?.amount)}
                     </div>
                   </div>
-                  <div className="flex gap-4">
-                    <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
-                      <p className="text-xs font-bold text-slate-400 uppercase mb-1">Metode</p>
-                      <p className="font-bold text-slate-800">{data?.payment_method || "Manual Transfer"}</p>
+                  <div className="flex flex-wrap gap-3 sm:gap-4">
+                    <div className="flex-1 min-w-[120px] rounded-2xl bg-slate-50 p-3 sm:p-4 border border-slate-100">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Metode</p>
+                      <p className="text-sm sm:text-base font-bold text-slate-800">{data?.payment_method || "Manual Transfer"}</p>
                     </div>
-                    <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
-                      <p className="text-xs font-bold text-slate-400 uppercase mb-1">Sumber</p>
-                      <p className="font-bold text-slate-800 capitalize">{data?.payment_source || "Manual"}</p>
+                    <div className="flex-1 min-w-[120px] rounded-2xl bg-slate-50 p-3 sm:p-4 border border-slate-100">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Sumber</p>
+                      <p className="text-sm sm:text-base font-bold text-slate-800 capitalize">{data?.payment_source || "Manual"}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div>
                     <p className="text-xs font-bold text-slate-400 mb-1">Dibuat Pada</p>
-                    <div className="flex items-center gap-2 text-slate-700 font-medium text-sm">
+                    <div className="flex items-center gap-2 text-slate-700 font-medium text-sm whitespace-nowrap">
                       <FontAwesomeIcon icon={faCalendarDays} className="text-emerald-500" />
                       {formatDateTime(data?.created_at)}
                     </div>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-400 mb-1">Dibayar Pada</p>
-                    <div className="flex items-center gap-2 text-slate-700 font-medium text-sm">
+                    <div className="flex items-center gap-2 text-slate-700 font-medium text-sm whitespace-nowrap">
                       <FontAwesomeIcon icon={faCheckCircle} className={data?.paid_at ? "text-emerald-500" : "text-slate-300"} />
                       {formatDateTime(data?.paid_at)}
                     </div>
@@ -433,17 +430,19 @@ export function AdminDonationShowPage() {
 
             {/* Proof of Payment */}
             {proofUrl && (
-              <div className="rounded-[24px] border border-slate-200 bg-white p-8 shadow-sm">
+              <div className="rounded-[24px] border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-6">
                   <FontAwesomeIcon icon={faReceipt} className="text-emerald-500" />
                   Bukti Pembayaran Manual
                 </h2>
                 <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-2">
-                  <img
-                    src={proofUrl}
-                    alt="Bukti Transfer"
-                    className="w-full h-auto object-contain max-h-[500px] rounded-xl"
-                  />
+                  <a href={proofUrl} target="_blank" rel="noopener noreferrer" className="block cursor-zoom-in">
+                    <img
+                      src={proofUrl}
+                      alt="Bukti Transfer"
+                      className="w-full h-auto object-contain max-h-[500px] rounded-xl transition hover:opacity-95"
+                    />
+                  </a>
                 </div>
               </div>
             )}

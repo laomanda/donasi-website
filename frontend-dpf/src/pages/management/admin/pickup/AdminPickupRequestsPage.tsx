@@ -8,12 +8,11 @@ import {
   faMagnifyingGlass,
   faTruckRampBox,
 } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../lib/http";
-import { getAuthUser } from "../../../lib/auth";
-import { useToast } from "../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../lib/bulk";
-import { useBulkSelection } from "../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../components/ui/BulkActionsBar";
+import http from "../../../../lib/http";
+import { useToast } from "../../../../components/ui/ToastProvider";
+import { runWithConcurrency } from "../../../../lib/bulk";
+import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
+import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
 
 type PickupStatus = "baru" | "dijadwalkan" | "selesai" | "dibatalkan" | string;
 
@@ -90,8 +89,8 @@ export function AdminPickupRequestsPage() {
   const [error, setError] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  const authUser = useMemo(() => getAuthUser(), []);
-  
+
+
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((item) => item.id), [items]);
   const hasFilters = Boolean(q.trim() || status);

@@ -92,10 +92,10 @@ const formatDateTime = (value: string | null | undefined) => {
 const getStatusTone = (status: DonationStatus) => {
   const s = String(status ?? "").toLowerCase();
   if (s === "paid") return "bg-emerald-600 text-white ring-emerald-700/60";
-  if (s === "pending") return "bg-amber-500 text-slate-900 ring-amber-600/60";
+  if (s === "pending") return "bg-amber-500 text-white ring-amber-600/60";
   if (s === "failed" || s === "cancelled") return "bg-rose-600 text-white ring-rose-700/60";
-  if (s === "expired") return "bg-slate-400 text-slate-900 ring-slate-500/60";
-  return "bg-slate-300 text-slate-900 ring-slate-400/60";
+  if (s === "expired") return "bg-slate-400 text-white ring-slate-500/60";
+  return "bg-slate-300 text-white ring-slate-400/60";
 };
 
 const getStatusLabel = (status: DonationStatus) => {
@@ -121,7 +121,7 @@ function StatCard({
   value,
   subValue,
   icon,
-  gradient,
+  bgColor,
   loading,
   iconBg,
 }: {
@@ -130,7 +130,7 @@ function StatCard({
   value: string;
   subValue: string;
   icon: any;
-  gradient: string;
+  bgColor: string;
   loading: boolean;
   iconBg?: string;
 }) {
@@ -144,7 +144,7 @@ function StatCard({
   const fontSizeClass = getFontSize(value);
 
   return (
-    <div className={`relative overflow-hidden rounded-[32px] ${gradient} p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl`}>
+    <div className={`relative overflow-hidden rounded-[32px] ${bgColor} p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl`}>
       <div className="absolute right-0 top-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
       <div className="absolute bottom-0 left-0 -mb-8 -ml-8 h-24 w-24 rounded-full bg-black/5 blur-xl" />
 
@@ -349,7 +349,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
         </div>
       </div>
 
-      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
+      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {/* Total Donasi Card */}
         <StatCard
           role={role}
@@ -357,7 +357,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
           value={loading ? "-" : formatCount(summary?.total_count)}
           subValue="Semua donasi berhasil"
           icon={faReceipt}
-          gradient="bg-emerald-600"
+          bgColor="bg-emerald-600"
           loading={loading}
           iconBg="bg-white/20"
         />
@@ -369,7 +369,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
           value={loading ? "-" : formatCurrency(summary?.total_amount ?? 0)}
           subValue="Akumulasi dana terkumpul"
           icon={faCoins}
-          gradient="bg-brandBlueTeal-500"
+          bgColor="bg-brandBlueTeal-500"
           loading={loading}
           iconBg="bg-white/20"
         />
@@ -377,35 +377,11 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
         {/* Manual Card */}
         <StatCard
           role={role}
-          title="Manual (Transfer)"
+          title="Total Donasi Manual"
           value={loading ? "-" : formatCurrency(summary?.manual_amount ?? 0)}
           subValue={loading ? "-" : `${formatCount(summary?.manual_count)} transaksi`}
           icon={faHandHoldingDollar}
-          gradient="bg-brandWarmOrange-500"
-          loading={loading}
-          iconBg="bg-white/20"
-        />
-
-        {/* Top Donor Card */}
-        <StatCard
-          role={role}
-          title="Top Donatur"
-          value={loading ? "-" : (summary?.top_donor?.donor_name || "-")}
-          subValue={loading ? "-" : `Total: ${formatCurrency(summary?.top_donor?.total_amount)}`}
-          icon={faCrown}
-          gradient="bg-amber-500"
-          loading={loading}
-          iconBg="bg-white/20"
-        />
-
-        {/* Top Program Card */}
-        <StatCard
-          role={role}
-          title="Program Unggulan"
-          value={loading ? "-" : (summary?.top_program?.program_title || "-")}
-          subValue={loading ? "-" : `Terkumpul: ${formatCurrency(summary?.top_program?.total_amount)}`}
-          icon={faStar}
-          gradient="bg-indigo-500"
+          bgColor="bg-brandWarmOrange-500"
           loading={loading}
           iconBg="bg-white/20"
         />
@@ -417,7 +393,31 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
           value={loading ? "-" : formatCurrency(summary?.midtrans_amount ?? 0)}
           subValue={loading ? "-" : `${formatCount(summary?.midtrans_count)} transaksi`}
           icon={faCreditCard}
-          gradient="bg-brandPurple-500"
+          bgColor="bg-indigo-600"
+          loading={loading}
+          iconBg="bg-white/20"
+        />
+
+        {/* Top Donor Card */}
+        <StatCard
+          role={role}
+          title="Top Donatur"
+          value={loading ? "-" : (summary?.top_donor?.donor_name || "-")}
+          subValue={loading ? "-" : `Total: ${formatCurrency(summary?.top_donor?.total_amount)}`}
+          icon={faCrown}
+          bgColor="bg-primary-600"
+          loading={loading}
+          iconBg="bg-white/20"
+        />
+
+        {/* Top Program Card */}
+        <StatCard
+          role={role}
+          title="Program Unggulan"
+          value={loading ? "-" : (summary?.top_program?.program_title || "-")}
+          subValue={loading ? "-" : `Terkumpul: ${formatCurrency(summary?.top_program?.total_amount)}`}
+          icon={faStar}
+          bgColor="bg-rose-600"
           loading={loading}
           iconBg="bg-white/20"
         />
@@ -447,7 +447,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
             {/* Top Row: Search & Dates */}
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               <label className="lg:col-span-2 block">
-                <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Cari</span>
+                <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Cari Nama Donatur</span>
                 <div className="relative mt-2 group">
                   <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
                     <FontAwesomeIcon icon={faMagnifyingGlass} />
@@ -455,7 +455,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
                   <input
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
-                    placeholder="Cari berdasarkan Kode Donasi, Nama Donatur, atau Email..."
+                    placeholder="Cari berdasarkan Nama Donatur..."
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
                   />
                 </div>
@@ -589,16 +589,16 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
           <table className="min-w-full table-fixed">
             <thead className="bg-slate-50">
               <tr>
-                <th className="w-[14%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[15%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Kode
                 </th>
-                <th className="w-[18%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[17%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Donatur
                 </th>
-                <th className="w-[12%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[13%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Kualifikasi
                 </th>
-                <th className="w-[20%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[15%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Program
                 </th>
                 <th className="w-[8%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
@@ -610,7 +610,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
                 <th className="w-[10%] px-6 py-5 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Nominal
                 </th>
-                <th className="w-[10%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                <th className="w-[14%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                   Waktu
                 </th>
               </tr>
@@ -673,7 +673,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
                       onClick={() => navigate(detailLink)}
                     >
                       <td className="px-6 py-5">
-                        <p className="font-mono text-xs font-bold text-slate-500">{code}</p>
+                        <p className="font-mono text-xs font-bold text-slate-500 whitespace-nowrap">{code}</p>
                       </td>
                       <td className="px-6 py-5">
                         <p className="text-sm font-bold text-slate-900">{donor}</p>
@@ -682,7 +682,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
                         </p>
                       </td>
                       <td className="px-6 py-5">
-                        <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase text-slate-600">
+                        <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase text-slate-600 whitespace-nowrap">
                             {donation.donor_qualification || '-'}
                         </span>
                       </td>
@@ -703,7 +703,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
                       <td className="px-6 py-5 text-right font-mono text-sm font-bold text-slate-900 tracking-tight">
                         {formatCurrency(donation.amount)}
                       </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-500">{formatDateTime(when)}</td>
+                      <td className="px-6 py-5 text-sm font-semibold text-slate-500 whitespace-nowrap">{formatDateTime(when)}</td>
                     </tr>
                   );
                 })
@@ -748,7 +748,7 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-mono text-xs font-bold text-slate-500">{code}</p>
+                      <p className="font-mono text-xs font-bold text-slate-500 whitespace-nowrap">{code}</p>
                       <p className="mt-1 text-sm font-bold text-slate-900">{donor}</p>
                     </div>
                     <span

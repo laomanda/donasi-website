@@ -1,4 +1,4 @@
-import EditorTaskCreatePage from "../shared/EditorTaskCreatePage";
+import EditorTaskCreatePage from "../../shared/EditorTaskCreatePage";
 
 export function AdminEditorTaskCreatePage() {
   return <EditorTaskCreatePage role="admin" />;

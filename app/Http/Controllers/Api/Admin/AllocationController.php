@@ -20,10 +20,8 @@ class AllocationController extends Controller
         if ($request->has('q')) {
             $q = $request->q;
             $query->where(function($sub) use ($q) {
-                $sub->where('description', 'like', "%{$q}%")
-                    ->orWhereHas('user', function($u) use ($q) {
-                        $u->where('name', 'like', "%{$q}%")
-                          ->orWhere('email', 'like', "%{$q}%");
+                $sub->whereHas('user', function($u) use ($q) {
+                        $u->where('name', 'like', "%{$q}%");
                     })
                     ->orWhereHas('program', function($p) use ($q) {
                         $p->where('title', 'like', "%{$q}%");
