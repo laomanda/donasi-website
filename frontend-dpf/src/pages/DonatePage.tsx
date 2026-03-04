@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faCheckCircle,
+    faTimesCircle,
     faCreditCard,
     faHandHoldingHeart,
     faShieldHalved,
@@ -188,8 +189,9 @@ function DonatePage() {
     const [submitting, setSubmitting] = useState(false);
     const [snapIframeUrl, setSnapIframeUrl] = useState<string | null>(null);
     const currentDonationIdRef = useRef<string | number | null>(null);
-    const snapSuccessFiredRef = useRef(false); // track if onSuccess/onPending already handled payment
+    const snapSuccessFiredRef = useRef(false);
     const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
+    const [showFailedOverlay, setShowFailedOverlay] = useState(false);
     const [showDanaConfirm, setShowDanaConfirm] = useState(false);
     const [showPendingBanner, setShowPendingBanner] = useState(false);
     const [checkingPayment, setCheckingPayment] = useState(false);
@@ -246,7 +248,6 @@ function DonatePage() {
     useEffect(() => {
         const orderId = searchParams.get("order_id");
         const transactionStatus = searchParams.get("transaction_status");
-        const statusCode = searchParams.get("status_code");
 
         if (orderId && orderId.startsWith("DPF-")) {
             const formElement = document.getElementById("donate-form-section");
@@ -257,6 +258,7 @@ function DonatePage() {
             }
 
             // Cleanup URL immediately so this doesn't re-run on reload
+            // Clean URL params so this doesn't re-fire on refresh
             const newParams = new URLSearchParams(searchParams.toString());
             newParams.delete("order_id");
             newParams.delete("status_code");
@@ -264,68 +266,52 @@ function DonatePage() {
             newParams.delete("merchant_id");
             window.history.replaceState({}, '', `${window.location.pathname}${newParams.toString() ? '?' + newParams.toString() : ''}`);
 
-            // Midtrans Dana in Sandbox ALWAYS returns transaction_status=pending & status_code=201
-            // even when user has already completed payment. We cannot trust these values for Dana.
-            // Only trust EXPLICIT failure signals.
-            const isExplicitFail = statusCode === "202" 
-                || transactionStatus === "deny" 
-                || transactionStatus === "cancel" 
-                || transactionStatus === "failure" 
-                || transactionStatus === "expire";
+            const isRealSuccess = transactionStatus === "settlement" || transactionStatus === "capture";
 
-            if (!isExplicitFail) {
-                // User was redirected back from Midtrans (not cancelled/denied) = payment done
+            // Clear sessionStorage regardless of outcome
+            sessionStorage.removeItem('dpf_pending_donation_id');
+            sessionStorage.removeItem('dpf_pending_order_id');
+
+            if (isRealSuccess) {
+                // Confirmed settlement → success
                 setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
                 setShowSuccessOverlay(true);
                 setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
-                // Force-update DB to paid
                 http.post(`/donations/check-by-order`, {
                     order_id: orderId,
                     snap_result: { transaction_status: "settlement", fraud_status: "accept" }
                 }).catch(console.error);
             } else {
-                // Explicit cancellation or denial
-                setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
+                // Pending (left page / QR not scanned) OR explicit denial → FAILED
+                // Always use check-by-order with cancel status — most reliable path
+                setShowFailedOverlay(true);
                 http.post(`/donations/check-by-order`, {
                     order_id: orderId,
-                    snap_result: { transaction_status: transactionStatus ?? "cancel" }
+                    snap_result: { transaction_status: "cancel" }
                 }).catch(console.error);
             }
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Fallback: detect returning from Midtrans payment when there are no URL params
-    // DANA/e-wallet: Midtrans Sandbox ALWAYS returns 'pending' via API even after payment.
-    // We pass force_paid=true so the backend marks it paid immediately once the user
-    // returns from the redirect page. In production, the real webhook handles this instead.
+    // Jalur B: user navigated back to /donate WITHOUT Midtrans redirecting them.
+    // = user abandoned payment → cancel using stored order_id.
     useEffect(() => {
         const pendingDonationId = sessionStorage.getItem('dpf_pending_donation_id');
+        const pendingOrderId    = sessionStorage.getItem('dpf_pending_order_id');
         const hasUrlParams = searchParams.get("order_id");
 
         if (pendingDonationId && !hasUrlParams) {
-            pendingDonationIdRef.current = Number(pendingDonationId);
-            // User came back from Midtrans redirect — force-mark as paid (sandbox e-wallet workaround)
-            setTimeout(async () => {
-                try {
-                    const statusRes = await http.post(`/donations/${pendingDonationId}/check-status`, {
-                        force_paid: true
-                    });
-                    const status = statusRes.data?.status;
-
-                    if (status === 'paid') {
-                        sessionStorage.removeItem('dpf_pending_donation_id');
-                        sessionStorage.removeItem('dpf_pending_order_id');
-                        setShowSuccessOverlay(true);
-                        setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
-                        setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
-                    } else {
-                        setShowPendingBanner(true);
-                    }
-                } catch {
-                    setShowPendingBanner(true);
-                }
-            }, 1000);
+            sessionStorage.removeItem('dpf_pending_donation_id');
+            sessionStorage.removeItem('dpf_pending_order_id');
+            if (pendingOrderId) {
+                // Use check-by-order with cancel — most reliable path to set status=failed
+                http.post(`/donations/check-by-order`, {
+                    order_id: pendingOrderId,
+                    snap_result: { transaction_status: "cancel" }
+                }).catch(() => {});
+            }
+            setShowFailedOverlay(true);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -335,10 +321,7 @@ function DonatePage() {
         if (!pendingDonationId) return;
         setCheckingPayment(true);
         try {
-            // Pass force_paid so e-wallet sandbox pending is treated as paid
-            const statusRes = await http.post(`/donations/${pendingDonationId}/check-status`, {
-                force_paid: true
-            });
+            const statusRes = await http.post(`/donations/${pendingDonationId}/check-status`);
             const status = statusRes.data?.status;
             if (status === 'paid') {
                 sessionStorage.removeItem('dpf_pending_donation_id');
@@ -565,22 +548,18 @@ function DonatePage() {
                         console.error("Snap onError", result);
                         setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
                     },
-                    onClose: async () => {
+                    onClose: () => {
                         console.log("Snap closed", { snapSuccessFired: snapSuccessFiredRef.current });
                         if (snapSuccessFiredRef.current) return;
-                        try {
-                            const statusRes = await http.post(`/donations/${res.data?.donation?.id}/check-status`);
-                            if (statusRes.data?.status === 'paid') {
-                                setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
-                                setShowSuccessOverlay(true);
-                                setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
-                                return;
-                            }
-                        } catch (e) { /* ignore */ }
-                        try {
-                            await http.post(`/donations/${res.data?.donation?.id}/cancel`);
-                        } catch (e) { /* ignore */ }
-                        setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
+                        // User closed without completing payment → set status=failed via check-by-order
+                        const ordId = res.data?.donation?.midtrans_order_id;
+                        if (ordId) {
+                            http.post(`/donations/check-by-order`, {
+                                order_id: ordId,
+                                snap_result: { transaction_status: "cancel" }
+                            }).catch(() => {});
+                        }
+                        setShowFailedOverlay(true);
                     },
                 });
             } else {
@@ -682,6 +661,48 @@ function DonatePage() {
                             >
                                 <FontAwesomeIcon icon={faCheckCircle} />
                                 {t("donate.success.overlay.btn", "Oke, Terima Kasih!")}
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* FAILED OVERLAY — shown when user closes/leaves Midtrans without completing payment */}
+            <AnimatePresence>
+                {showFailedOverlay && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.85, opacity: 0, y: 30 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.85, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 280, damping: 22 }}
+                            className="mx-4 w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl"
+                        >
+                            <div className="mb-4 flex items-center justify-center">
+                                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+                                    <FontAwesomeIcon icon={faTimesCircle} className="text-4xl text-red-500" />
+                                </div>
+                            </div>
+                            <h2 className="mb-2 text-2xl font-bold text-slate-900">
+                                ❌ {t("donate.failed.overlay.title", "Transaksi Gagal")}
+                            </h2>
+                            <p className="mb-1 text-base text-slate-600">
+                                {t("donate.failed.overlay.desc", "Pembayaran tidak diselesaikan. Transaksi dibatalkan.")}
+                            </p>
+                            <p className="mb-6 text-sm text-slate-400">
+                                {t("donate.failed.overlay.sub", "Silakan coba lagi jika Anda masih ingin berdonasi.")}
+                            </p>
+                            <button
+                                onClick={() => setShowFailedOverlay(false)}
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-6 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-red-600"
+                            >
+                                <FontAwesomeIcon icon={faTimesCircle} />
+                                {t("donate.failed.overlay.btn", "Tutup")}
                             </button>
                         </motion.div>
                     </motion.div>

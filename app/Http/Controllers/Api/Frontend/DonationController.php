@@ -210,32 +210,37 @@ class DonationController extends Controller
             ]);
         }
 
-        // Jika Snap frontend mengirimkan payload bahwa ini settlement/capture
+        // Jika Snap frontend mengirimkan payload → gunakan langsung, bypass Midtrans API call
         if ($snapResult && isset($snapResult['transaction_status'])) {
             $transactionStatus = $snapResult['transaction_status'];
             $fraudStatus = $snapResult['fraud_status'] ?? null;
-            
+
             $newStatus = $midtransService->mapTransactionStatus($transactionStatus, $fraudStatus);
-            
+
             \Illuminate\Support\Facades\Log::info('DonationController::checkStatus using Snap Frontend Payload', [
-                'order_id' => $donation->midtrans_order_id,
+                'order_id'                => $donation->midtrans_order_id,
                 'snap_transaction_status' => $transactionStatus,
-                'mapped_new_status' => $newStatus,
+                'mapped_new_status'       => $newStatus,
+                'current_status'          => $donation->status,
             ]);
 
-            if ($newStatus === 'paid' && $donation->status !== 'paid') {
+            // Update for ANY status change (paid, failed, cancelled, etc.)
+            if ($newStatus !== $donation->status) {
+                $previousStatus = $donation->status;
                 $donation->update([
-                    'status' => 'paid',
-                    'paid_at' => now(),
+                    'status'               => $newStatus,
+                    'paid_at'             => $newStatus === 'paid' ? now() : $donation->paid_at,
                     'midtrans_raw_response' => $snapResult,
                 ]);
-                $this->syncProgramAmount($donation->fresh(), 'pending', 'paid');
-                return response()->json([
-                    'message' => 'Status berhasil diperbarui via Frontend Snap Callback.',
-                    'status' => 'paid',
-                    'donation' => $donation->fresh()
-                ]);
+                $this->syncProgramAmount($donation->fresh(), $previousStatus, $newStatus);
             }
+
+            // Always return early — don't fall through to Midtrans API
+            return response()->json([
+                'message'  => 'Status berhasil diperbarui via Frontend Snap Callback.',
+                'status'   => $newStatus,
+                'donation' => $donation->fresh(),
+            ]);
         }
 
         try {
@@ -262,19 +267,6 @@ class DonationController extends Controller
         $transactionStatus = $status->transaction_status;
         $fraudStatus       = $status->fraud_status ?? null;
         $paymentType       = $status->payment_type ?? '';
-
-        // Sandbox e-wallet workaround:
-        // DANA, GoPay, OVO, ShopeePay always return 'pending' in sandbox even when the
-        // user completes the payment inside the simulator. Treat as 'settlement' so the
-        // donation is marked paid without requiring a real webhook.
-        $eWalletTypes = ['dana', 'gopay', 'ovo', 'shopeepay', 'qris', 'akulaku', 'kredivo'];
-        if (!$isProduction && $transactionStatus === 'pending' && in_array(strtolower($paymentType), $eWalletTypes)) {
-            \Illuminate\Support\Facades\Log::info('DonationController::checkStatus Sandbox e-wallet pending→paid override', [
-                'order_id'     => $donation->midtrans_order_id,
-                'payment_type' => $paymentType,
-            ]);
-            $transactionStatus = 'settlement';
-        }
 
         $newStatus = $midtransService->mapTransactionStatus($transactionStatus, $fraudStatus);
         $previousStatus = $donation->status;

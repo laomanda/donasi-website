@@ -524,6 +524,7 @@ export const landingDict: Dict = {
     "donate.form.status.ewalletProcessing": { id: "Donasi Berhasil! Pembayaran Anda melalui Dana/GoPay sedang diverifikasi. Terima kasih! ✅", en: "Donation Successful! Your Dana/GoPay payment is being verified. Thank you! ✅" },
     "donate.form.status.pending": { id: "Pembayaran menunggu. Selesaikan pembayaran di Snap.", en: "Payment pending. Please finish in Snap." },
     "donate.form.status.failed": { id: "Pembayaran gagal. Coba lagi.", en: "Payment failed. Please try again." },
+    "donate.form.status.cancelled": { id: "Transaksi dibatalkan. Pembayaran tidak diselesaikan.", en: "Transaction cancelled. Payment was not completed." },
     "donate.form.status.closed": { id: "Transaksi ditutup sebelum selesai.", en: "Transaction closed before completion." },
     "donate.form.status.snapEmbedded": { id: "Snap dibuka dalam tampilan sematan. Jika tidak muncul, periksa ad blocker.", en: "Snap opened in an embedded view. If it doesn't appear, check ad blockers." },
     "donate.form.status.snapUnavailable": { id: "Snap tidak bisa dimuat. Periksa client key atau ad blocker.", en: "Snap could not load. Check the client key or ad blockers." },
