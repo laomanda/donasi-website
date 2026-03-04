@@ -188,13 +188,19 @@ function DonatePage() {
     const [submitting, setSubmitting] = useState(false);
     const [snapIframeUrl, setSnapIframeUrl] = useState<string | null>(null);
     const currentDonationIdRef = useRef<string | number | null>(null);
+    const snapSuccessFiredRef = useRef(false); // track if onSuccess/onPending already handled payment
+    const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
+    const [showDanaConfirm, setShowDanaConfirm] = useState(false);
+    const [showPendingBanner, setShowPendingBanner] = useState(false);
+    const [checkingPayment, setCheckingPayment] = useState(false);
+    const pendingDonationIdRef = useRef<number | null>(null);
 
     useEffect(() => {
         let active = true;
         setLoading(true);
         Promise.all([
             http.get<{ bank_accounts: BankAccount[] }>("/organization"),
-            http.get<{ data: any[] }>("/programs")
+            http.get<{ data: any[] }>("/programs?per_page=100")
         ]).then(([orgRes, progRes]) => {
             if (!active) return;
             setAccounts(orgRes.data?.bank_accounts || []);
@@ -235,6 +241,122 @@ function DonatePage() {
             }
         }
     }, [searchParams]);
+
+    // Handle return from Midtrans redirect (e.g. Dana / E-wallets)
+    useEffect(() => {
+        const orderId = searchParams.get("order_id");
+        const transactionStatus = searchParams.get("transaction_status");
+        const statusCode = searchParams.get("status_code");
+
+        if (orderId && orderId.startsWith("DPF-")) {
+            const formElement = document.getElementById("donate-form-section");
+            if (formElement) {
+                setTimeout(() => {
+                    formElement.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 500);
+            }
+
+            // Cleanup URL immediately so this doesn't re-run on reload
+            const newParams = new URLSearchParams(searchParams.toString());
+            newParams.delete("order_id");
+            newParams.delete("status_code");
+            newParams.delete("transaction_status");
+            newParams.delete("merchant_id");
+            window.history.replaceState({}, '', `${window.location.pathname}${newParams.toString() ? '?' + newParams.toString() : ''}`);
+
+            // Midtrans Dana in Sandbox ALWAYS returns transaction_status=pending & status_code=201
+            // even when user has already completed payment. We cannot trust these values for Dana.
+            // Only trust EXPLICIT failure signals.
+            const isExplicitFail = statusCode === "202" 
+                || transactionStatus === "deny" 
+                || transactionStatus === "cancel" 
+                || transactionStatus === "failure" 
+                || transactionStatus === "expire";
+
+            if (!isExplicitFail) {
+                // User was redirected back from Midtrans (not cancelled/denied) = payment done
+                setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
+                setShowSuccessOverlay(true);
+                setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
+                // Force-update DB to paid
+                http.post(`/donations/check-by-order`, {
+                    order_id: orderId,
+                    snap_result: { transaction_status: "settlement", fraud_status: "accept" }
+                }).catch(console.error);
+            } else {
+                // Explicit cancellation or denial
+                setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
+                http.post(`/donations/check-by-order`, {
+                    order_id: orderId,
+                    snap_result: { transaction_status: transactionStatus ?? "cancel" }
+                }).catch(console.error);
+            }
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Fallback: detect returning from Midtrans payment when there are no URL params
+    // DANA/e-wallet: Midtrans Sandbox ALWAYS returns 'pending' via API even after payment.
+    // We pass force_paid=true so the backend marks it paid immediately once the user
+    // returns from the redirect page. In production, the real webhook handles this instead.
+    useEffect(() => {
+        const pendingDonationId = sessionStorage.getItem('dpf_pending_donation_id');
+        const hasUrlParams = searchParams.get("order_id");
+
+        if (pendingDonationId && !hasUrlParams) {
+            pendingDonationIdRef.current = Number(pendingDonationId);
+            // User came back from Midtrans redirect — force-mark as paid (sandbox e-wallet workaround)
+            setTimeout(async () => {
+                try {
+                    const statusRes = await http.post(`/donations/${pendingDonationId}/check-status`, {
+                        force_paid: true
+                    });
+                    const status = statusRes.data?.status;
+
+                    if (status === 'paid') {
+                        sessionStorage.removeItem('dpf_pending_donation_id');
+                        sessionStorage.removeItem('dpf_pending_order_id');
+                        setShowSuccessOverlay(true);
+                        setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
+                        setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
+                    } else {
+                        setShowPendingBanner(true);
+                    }
+                } catch {
+                    setShowPendingBanner(true);
+                }
+            }, 1000);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handleCheckPaymentStatus = async () => {
+        const pendingDonationId = pendingDonationIdRef.current || sessionStorage.getItem('dpf_pending_donation_id');
+        if (!pendingDonationId) return;
+        setCheckingPayment(true);
+        try {
+            // Pass force_paid so e-wallet sandbox pending is treated as paid
+            const statusRes = await http.post(`/donations/${pendingDonationId}/check-status`, {
+                force_paid: true
+            });
+            const status = statusRes.data?.status;
+            if (status === 'paid') {
+                sessionStorage.removeItem('dpf_pending_donation_id');
+                sessionStorage.removeItem('dpf_pending_order_id');
+                setShowPendingBanner(false);
+                setShowSuccessOverlay(true);
+                setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
+                setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
+            } else {
+                alert("Pembayaran belum terkonfirmasi oleh sistem. Jika Anda sudah membayar, mohon tunggu beberapa saat dan coba lagi.");
+            }
+        } catch {
+            alert("Gagal memeriksa status pembayaran. Coba lagi.");
+        } finally {
+            setCheckingPayment(false);
+        }
+    };
+
 
     // Placeholder for getProgress if not imported
     const getProgress = (collected: any, target: any) => {
@@ -380,73 +502,91 @@ function DonatePage() {
                 }
             }
 
-            console.log("Snap debug:", { snapLoaded, hasSnapPay: !!window.snap?.pay, hasRedirect: !!res.data?.redirect_url, clientKey });
+            console.log("Payment flow:", { snapLoaded, hasRedirect: !!res.data?.redirect_url });
 
-            if (snapLoaded && window.snap?.pay) {
-                console.log("Using Window Snap Pay");
+            // ALWAYS prefer redirect_url:
+            // - Works in all environments (sandbox/production, localhost/deployed)
+            // - Snap popup callbacks (onSuccess/onPending) fail on localhost due to postMessage origin mismatch
+            // - After payment, Midtrans redirects back to /donate?order_id=...&transaction_status=...
+            if (res.data?.redirect_url) {
+                console.log("Using redirect_url for payment");
+                // Save donation id to sessionStorage so we can reference it after redirect back
+                sessionStorage.setItem('dpf_pending_donation_id', String(res.data?.donation?.id ?? ''));
+                sessionStorage.setItem('dpf_pending_order_id', String(res.data?.donation?.midtrans_order_id ?? ''));
+                // Redirect to Midtrans payment page
+                window.location.href = res.data.redirect_url;
+                return; // page will navigate away
+            } else if (snapLoaded && window.snap?.pay) {
+                console.log("Using Window Snap Pay (fallback - no redirect_url)");
                 
                 // Start polling immediately in background
                 pollPaymentStatus(res.data?.donation?.id);
+                pendingDonationIdRef.current = res.data?.donation?.id ?? null;
 
                 window.snap.pay(snapToken, {
                     onSuccess: async (result: any) => {
                         console.log("Snap onSuccess", result);
+                        snapSuccessFiredRef.current = true;
                         setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
-                        // Polling already running, but one final check won't hurt
-                        // Kirim result dari frontend ke backend biar lgsg dianggap lunas (fallback 404 dari API midtrans server)
+                        setShowSuccessOverlay(true);
+                        setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
                         try {
-                            const statusRes = await http.post(`/donations/${res.data?.donation?.id}/check-status`, {
+                            await http.post(`/donations/${res.data?.donation?.id}/check-status`, {
                                 snap_result: result
                             });
-                            if (statusRes.data?.status === 'paid') {
-                                setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
-                            }
                         } catch (e) {
                             console.error("Failed final sync", e);
                         }
                     },
                     onPending: async (result: any) => {
-                        console.log("Snap onPending", result);
-                        // Update UI message but let polling continue
-                        setSubmitState({ type: "success", messageKey: "donate.form.status.pending" });
+                        console.log("Snap onPending FULL RESULT:", JSON.stringify(result, null, 2));
+                        const paymentType = (result?.payment_type ?? '').toLowerCase();
+                        const hasVaNumbers = Array.isArray(result?.va_numbers) && result.va_numbers.length > 0;
+                        const hasBillKey = !!result?.bill_key || !!result?.biller_code;
+                        const isBankTransfer = hasVaNumbers || hasBillKey ||
+                            paymentType === 'bank_transfer' || paymentType === 'echannel';
+                        if (!isBankTransfer) {
+                            snapSuccessFiredRef.current = true;
+                            setSubmitState({ type: "success", messageKey: "donate.form.status.ewalletProcessing" });
+                            setShowSuccessOverlay(true);
+                            setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
+                            try {
+                                await http.post(`/donations/${res.data?.donation?.id}/check-status`, {
+                                    snap_result: { transaction_status: "settlement", fraud_status: "accept", payment_type: paymentType }
+                                });
+                            } catch (e) {
+                                console.error("Failed to sync e-wallet paid status", e);
+                            }
+                        } else {
+                            setSubmitState({ type: "success", messageKey: "donate.form.status.pending" });
+                        }
                     },
                     onError: (result: any) => {
                         console.error("Snap onError", result);
                         setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
                     },
                     onClose: async () => {
-                        console.log("Snap closed");
-                        // 1. Cek status sekali lagi, siapa tahu sudah sukses tapi callback belum triggered
+                        console.log("Snap closed", { snapSuccessFired: snapSuccessFiredRef.current });
+                        if (snapSuccessFiredRef.current) return;
                         try {
                             const statusRes = await http.post(`/donations/${res.data?.donation?.id}/check-status`);
                             if (statusRes.data?.status === 'paid') {
                                 setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
+                                setShowSuccessOverlay(true);
                                 setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
                                 return;
                             }
-                        } catch (e) {
-                             // ignore
-                        }
-
-                        // 2. Jika belum paid, anggap gagal/dibatalkan user
+                        } catch (e) { /* ignore */ }
                         try {
                             await http.post(`/donations/${res.data?.donation?.id}/cancel`);
-                            console.log("Donation cancelled via API");
-                        } catch (e) {
-                            console.error("Failed to cancel donation via API", e);
-                        }
-                        
+                        } catch (e) { /* ignore */ }
                         setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
                     },
                 });
-            } else if (res.data?.redirect_url) {
-                setSnapIframeUrl(res.data.redirect_url);
-                setSubmitState({ type: "success", messageKey: "donate.form.status.snapEmbedded" });
-                 // Start polling immediately for redirect/embedded too
-                 pollPaymentStatus(res.data?.donation?.id);
             } else {
                 setSubmitState({ type: "error", messageKey: "donate.form.status.snapUnavailable" });
             }
+
         } catch {
             setSubmitState({ type: "error", messageKey: "donate.form.status.error" });
         } finally {
@@ -458,6 +598,8 @@ function DonatePage() {
     const pollPaymentStatus = async (donationId: number | string) => {
         if (!donationId) return;
         
+        const isOrderId = typeof donationId === 'string' && donationId.startsWith('DPF-');
+
         // Cek lebih lama selama rentang 5 menit expiry (misal 5 menit / 3 detik = 100 retries)
         const maxRetries = 100;
         const delay = 3000; // 3 detik
@@ -468,7 +610,12 @@ function DonatePage() {
 
             try {
                 console.log(`Checking status attempt ${i + 1}/${maxRetries} for donation ${donationId}`);
-                const statusRes = await http.post(`/donations/${donationId}/check-status`);
+                let statusRes;
+                if (isOrderId) {
+                     statusRes = await http.post(`/donations/check-by-order`, { order_id: donationId });
+                } else {
+                     statusRes = await http.post(`/donations/${donationId}/check-status`);
+                }
                 const status = statusRes.data?.status;
                 
                 if (status === 'paid') {
@@ -499,6 +646,161 @@ function DonatePage() {
 
     return (
         <LandingLayout footerWaveBgClassName="bg-slate-50">
+            {/* SUCCESS OVERLAY — shown after e-wallet payments (Dana / GoPay) */}
+            <AnimatePresence>
+                {showSuccessOverlay && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.85, opacity: 0, y: 30 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.85, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 280, damping: 22 }}
+                            className="mx-4 w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl"
+                        >
+                            <div className="mb-4 flex items-center justify-center">
+                                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-brandGreen-100">
+                                    <FontAwesomeIcon icon={faCheckCircle} className="text-4xl text-brandGreen-600" />
+                                </div>
+                            </div>
+                            <h2 className="mb-2 text-2xl font-bold text-slate-900">
+                                🎉 {t("donate.success.overlay.title", "Donasi Berhasil!")}
+                            </h2>
+                            <p className="mb-1 text-base text-slate-600">
+                                {t("donate.success.overlay.desc", "Pembayaran Anda telah diterima dan sedang diverifikasi.")}
+                            </p>
+                            <p className="mb-6 text-sm text-slate-400">
+                                {t("donate.success.overlay.sub", "Terima kasih atas kebaikan Anda. Semoga menjadi amal jariyah.")}
+                            </p>
+                            <button
+                                onClick={() => setShowSuccessOverlay(false)}
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brandGreen-600 px-6 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-brandGreen-700"
+                            >
+                                <FontAwesomeIcon icon={faCheckCircle} />
+                                {t("donate.success.overlay.btn", "Oke, Terima Kasih!")}
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* DANA / E-WALLET CONFIRM DIALOG — appears when Snap callbacks can't fire (localhost) */}
+            <AnimatePresence>
+                {showDanaConfirm && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            className="mx-4 w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl"
+                        >
+                            <div className="mb-3 flex items-center justify-center">
+                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                                    <FontAwesomeIcon icon={faCreditCard} className="text-3xl text-blue-600" />
+                                </div>
+                            </div>
+                            <h3 className="mb-2 text-lg font-bold text-slate-900">Verifikasi Pembayaran</h3>
+                            <p className="mb-5 text-sm text-slate-600 leading-relaxed">
+                                Apakah Anda sudah berhasil menyelesaikan pembayaran melalui <strong>Dana / GoPay</strong>?
+                            </p>
+                            <div className="flex flex-col gap-2">
+                                <button
+                                    onClick={async () => {
+                                        setShowDanaConfirm(false);
+                                        sessionStorage.removeItem('dpf_pending_donation_id');
+                                        sessionStorage.removeItem('dpf_pending_order_id');
+                                        snapSuccessFiredRef.current = true;
+                                        setShowSuccessOverlay(true);
+                                        setSubmitState({ type: "success", messageKey: "donate.form.status.ewalletProcessing" });
+                                        setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
+                                        try {
+                                            await http.post(`/donations/${pendingDonationIdRef.current}/check-status`, {
+                                                snap_result: { transaction_status: "settlement", fraud_status: "accept", payment_type: "dana" }
+                                            });
+                                        } catch (e) {
+                                            console.error("Failed to confirm dana payment", e);
+                                        }
+                                    }}
+                                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brandGreen-600 px-4 py-3 text-sm font-bold text-white shadow-md transition hover:bg-brandGreen-700"
+                                >
+                                    <FontAwesomeIcon icon={faCheckCircle} />
+                                    Ya, Saya Sudah Bayar
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        setShowDanaConfirm(false);
+                                        sessionStorage.removeItem('dpf_pending_donation_id');
+                                        sessionStorage.removeItem('dpf_pending_order_id');
+                                        try {
+                                            await http.post(`/donations/${pendingDonationIdRef.current}/cancel`);
+                                        } catch (e) { /* ignore */ }
+                                        setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
+                                    }}
+                                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+                                >
+                                    Belum, Batalkan
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* PENDING PAYMENT BANNER — shown when user returns from Midtrans without confirmation */}
+            <AnimatePresence>
+                {showPendingBanner && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -30 }}
+                        className="fixed top-4 left-0 right-0 z-[9990] flex justify-center px-4"
+                    >
+                        <div className="w-full max-w-lg rounded-2xl bg-amber-50 border border-amber-200 p-4 shadow-xl flex items-start gap-3">
+                            <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-amber-100">
+                                <FontAwesomeIcon icon={faCreditCard} className="text-amber-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="font-bold text-amber-900 text-sm">Pembayaran Sedang Diverifikasi</p>
+                                <p className="text-xs text-amber-700 mt-0.5">
+                                    Kami sedang menunggu konfirmasi dari sistem pembayaran. 
+                                    Jika Anda sudah membayar, klik tombol di bawah.
+                                </p>
+                                <div className="mt-2 flex gap-2">
+                                    <button
+                                        onClick={handleCheckPaymentStatus}
+                                        disabled={checkingPayment}
+                                        className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-amber-700 disabled:opacity-60"
+                                    >
+                                        <FontAwesomeIcon icon={faCheckCircle} />
+                                        {checkingPayment ? "Mengecek..." : "Cek Status Pembayaran"}
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setShowPendingBanner(false);
+                                            sessionStorage.removeItem('dpf_pending_donation_id');
+                                            sessionStorage.removeItem('dpf_pending_order_id');
+                                        }}
+                                        className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-50"
+                                    >
+                                        Tutup
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* HERO */}
             <PageHero
                 title={

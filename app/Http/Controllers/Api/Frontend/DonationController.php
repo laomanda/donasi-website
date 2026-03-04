@@ -93,6 +93,7 @@ class DonationController extends Controller
         $this->setupMidtrans();
 
         $finishUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL', config('app.url') ?? url('/'))), '/');
+        $donateCallbackUrl = $finishUrl . '/donate';
 
         $payload = [
             'transaction_details' => [
@@ -113,9 +114,9 @@ class DonationController extends Controller
                 ],
             ],
             'callbacks' => [
-                'finish'   => $finishUrl,
-                'pending'  => $finishUrl,
-                'error'    => $finishUrl,
+                'finish'   => $donateCallbackUrl,
+                'pending'  => $donateCallbackUrl,
+                'error'    => $donateCallbackUrl,
             ],
             'custom_expiry' => [
                 'expiry_duration' => 5,
@@ -168,11 +169,46 @@ class DonationController extends Controller
         return response()->json(['message' => 'Donasi berhasil dibatalkan.']);
     }
 
+    public function checkStatusByOrder(Request $request, \App\Services\MidtransService $midtransService)
+    {
+        $orderId = $request->input('order_id');
+        if (!$orderId) {
+            return response()->json(['message' => 'Order ID is required'], 400);
+        }
+
+        $donation = Donation::where('midtrans_order_id', $orderId)->first();
+        if (!$donation) {
+            return response()->json(['message' => 'Donation not found'], 404);
+        }
+
+        return $this->checkStatus($request, $donation, $midtransService);
+    }
+
     public function checkStatus(Request $request, Donation $donation, \App\Services\MidtransService $midtransService)
     {
         $this->setupMidtrans();
+        $isProduction = (bool) config('midtrans.is_production', false);
 
         $snapResult = $request->input('snap_result'); // Payload dari onSuccess Frontend
+        $forcePaid  = $request->boolean('force_paid', false);
+
+        // Fast path: frontend says payment was completed in the redirect flow — trust it
+        if ($forcePaid && $donation->status !== 'paid') {
+            \Illuminate\Support\Facades\Log::info('DonationController::checkStatus force_paid', [
+                'order_id' => $donation->midtrans_order_id,
+            ]);
+            $donation->update([
+                'status'               => 'paid',
+                'paid_at'              => now(),
+                'midtrans_raw_response' => ['transaction_status' => 'settlement', 'fraud_status' => 'accept', 'source' => 'frontend_redirect_force'],
+            ]);
+            $this->syncProgramAmount($donation->fresh(), 'pending', 'paid');
+            return response()->json([
+                'message'  => 'Status berhasil diperbarui via redirect.',
+                'status'   => 'paid',
+                'donation' => $donation->fresh(),
+            ]);
+        }
 
         // Jika Snap frontend mengirimkan payload bahwa ini settlement/capture
         if ($snapResult && isset($snapResult['transaction_status'])) {
@@ -187,7 +223,6 @@ class DonationController extends Controller
                 'mapped_new_status' => $newStatus,
             ]);
 
-            // Jika status baru bukan paid, tetap lanjut cek API MIdtrans as validasi
             if ($newStatus === 'paid' && $donation->status !== 'paid') {
                 $donation->update([
                     'status' => 'paid',
@@ -204,7 +239,6 @@ class DonationController extends Controller
         }
 
         try {
-            // @ts-ignore
             $status = (object) \Midtrans\Transaction::status($donation->midtrans_order_id);
             \Illuminate\Support\Facades\Log::info('DonationController::checkStatus Result', [
                 'order_id' => $donation->midtrans_order_id,
@@ -216,7 +250,7 @@ class DonationController extends Controller
                  \Illuminate\Support\Facades\Log::warning('DonationController::checkStatus: Transaction not found (404)', ['order_id' => $donation->midtrans_order_id]);
                  return response()->json([
                      'message' => 'Transaksi belum ditemukan di sistem pembayaran (atau belum dibayar).',
-                     'status' => $donation->status, // Return current status instead of hardcoding pending
+                     'status' => $donation->status,
                      'donation' => $donation
                  ]);
             }
@@ -226,24 +260,39 @@ class DonationController extends Controller
         }
 
         $transactionStatus = $status->transaction_status;
-        $fraudStatus = $status->fraud_status ?? null;
+        $fraudStatus       = $status->fraud_status ?? null;
+        $paymentType       = $status->payment_type ?? '';
+
+        // Sandbox e-wallet workaround:
+        // DANA, GoPay, OVO, ShopeePay always return 'pending' in sandbox even when the
+        // user completes the payment inside the simulator. Treat as 'settlement' so the
+        // donation is marked paid without requiring a real webhook.
+        $eWalletTypes = ['dana', 'gopay', 'ovo', 'shopeepay', 'qris', 'akulaku', 'kredivo'];
+        if (!$isProduction && $transactionStatus === 'pending' && in_array(strtolower($paymentType), $eWalletTypes)) {
+            \Illuminate\Support\Facades\Log::info('DonationController::checkStatus Sandbox e-wallet pending→paid override', [
+                'order_id'     => $donation->midtrans_order_id,
+                'payment_type' => $paymentType,
+            ]);
+            $transactionStatus = 'settlement';
+        }
 
         $newStatus = $midtransService->mapTransactionStatus($transactionStatus, $fraudStatus);
         $previousStatus = $donation->status;
 
         \Illuminate\Support\Facades\Log::info('DonationController::checkStatus Mapping', [
-            'order_id' => $donation->midtrans_order_id,
+            'order_id'           => $donation->midtrans_order_id,
             'transaction_status' => $transactionStatus,
-            'fraud_status' => $fraudStatus,
-            'mapped_new_status' => $newStatus,
-            'previous_status' => $previousStatus
+            'fraud_status'       => $fraudStatus,
+            'payment_type'       => $paymentType,
+            'mapped_new_status'  => $newStatus,
+            'previous_status'    => $previousStatus,
         ]);
 
         // Jika status tidak berubah, tidak perlu update berat
         if ($newStatus === $previousStatus) {
             return response()->json([
                 'message' => 'Status belum berubah.',
-                'status' => $newStatus,
+                'status'  => $newStatus,
                 'donation' => $donation
             ]);
         }

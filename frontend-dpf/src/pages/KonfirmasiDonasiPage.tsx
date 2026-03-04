@@ -101,7 +101,7 @@ export function KonfirmasiDonasiPage() {
   useEffect(() => {
     let active = true;
     setOptionsLoading(true);
-    Promise.all([http.get<OrganizationResponse>("/organization"), http.get<{ data: Program[] }>("/programs")])
+    Promise.all([http.get<OrganizationResponse>("/organization"), http.get<{ data: Program[] }>("/programs?per_page=100")])
       .then(([orgRes, progRes]) => {
         if (!active) return;
         setAccounts(orgRes.data?.bank_accounts ?? []);

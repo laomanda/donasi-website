@@ -166,7 +166,7 @@ export function JemputWakafPage() {
   const [estimationUnit, setEstimationUnit] = useState("Kg");
 
   useEffect(() => {
-    http.get<{ data: { id: number; title: string; title_en?: string | null }[] }>("/programs")
+    http.get<{ data: { id: number; title: string; title_en?: string | null }[] }>("/programs?per_page=100")
       .then((res) => setPrograms(res.data.data || []))
       .catch(() => setPrograms([]));
   }, []);

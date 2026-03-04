@@ -363,7 +363,7 @@ export function LandingNavbar() {
         publicSettings["landing.contact_phone_link"]?.trim() || "https://wa.me/6281311768254";
     const emailText = publicSettings["landing.contact_email"]?.trim() || "info@dpf.or.id";
     const emailLink =
-        publicSettings["landing.contact_email_link"]?.trim() || `mailto:${emailText}`;
+        publicSettings["landing.contact_email_link"]?.trim() || `https://mail.google.com/mail/?view=cm&fs=1&to=${emailText}`;
 
     // Scroll handler: Wave hilang saat discroll agar bersih
     useEffect(() => {

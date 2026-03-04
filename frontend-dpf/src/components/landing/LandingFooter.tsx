@@ -71,7 +71,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
   const phoneLink = publicSettings['landing.contact_phone_link']?.trim() || 'https://wa.me/6281311768254'
   const emailText = publicSettings['landing.contact_email']?.trim() || 'layanan@dpf.or.id'
   const emailLink =
-    publicSettings['landing.contact_email_link']?.trim() || `mailto:${emailText}`
+    publicSettings['landing.contact_email_link']?.trim() || `https://mail.google.com/mail/?view=cm&fs=1&to=${emailText}`
   const jakartaMapEmbed =
     publicSettings['landing.contact_map_jakarta_embed']?.trim() ||
     'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63458.32104835289!2d106.80576511303089!3d-6.2446057999999915!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3804815921d%3A0x6b5d698d11d225a9!2sDPF%20(Djalaludin%20Pane%20Foundation)!5e0!3m2!1sid!2sid!4v1768288510620!5m2!1sid!2sid'

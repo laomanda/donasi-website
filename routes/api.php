@@ -106,6 +106,7 @@ Route::prefix('v1')->group(function () {
         Route::get('donations/summary', [FrontendDonationController::class, 'summary']);
         Route::post('donations', [FrontendDonationController::class, 'store']);
         Route::post('donations/{donation}/check-status', [FrontendDonationController::class, 'checkStatus']);
+        Route::post('donations/check-by-order', [FrontendDonationController::class, 'checkStatusByOrder']);
         Route::post('donations/{donation}/cancel', [FrontendDonationController::class, 'cancel']);
         Route::post('donations/confirm', [FrontendDonationConfirmationController::class, 'store']);
         Route::post('pickups', [FrontendPickupRequestController::class, 'store']);

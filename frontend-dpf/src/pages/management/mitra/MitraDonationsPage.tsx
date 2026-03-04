@@ -265,14 +265,14 @@ export function MitraDonationsPage() {
               ) : (
                 donations.map((don) => (
                   <tr key={don.id} className="group transition-all hover:bg-slate-50/80">
-                    <td className="px-8 py-7">
+                    <td className="px-8 py-7 whitespace-nowrap">
                       <p className="font-bold text-slate-900 tabular-nums uppercase">{don.donation_code}</p>
                       <p className="mt-1 text-[11px] text-slate-400 font-bold uppercase tracking-widest">
                           {new Date(don.created_at).toLocaleDateString(locale === "en" ? "en-US" : "id-ID", { day: 'numeric', month: 'long', year: 'numeric' })}
                       </p>
                     </td>
                     <td className="px-8 py-7">
-                      <p className="font-bold text-slate-900 line-clamp-1">
+                      <p className="font-bold text-slate-900 leading-relaxed">
                         {locale === "en" && don.program?.title_en 
                           ? don.program.title_en 
                           : (don.program?.title ?? t("mitra.general_donation"))}
@@ -343,7 +343,7 @@ export function MitraDonationsPage() {
 
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{t("mitra.program")}</p>
-                    <p className="text-sm font-bold text-slate-800 leading-snug line-clamp-2">
+                    <p className="text-sm font-bold text-slate-800 leading-snug">
                         {locale === "en" && don.program?.title_en 
                           ? don.program.title_en 
                           : (don.program?.title ?? t("mitra.general_donation"))}
