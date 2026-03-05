@@ -279,11 +279,12 @@ function DonatePage() {
                 setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
                 http.post(`/donations/check-by-order`, {
                     order_id: orderId,
-                    snap_result: { transaction_status: "settlement", fraud_status: "accept" }
+                    snap_result: { transaction_status: "settlement", fraud_status: "accept" },
+                    force_paid: true
                 }).catch(console.error);
             } else {
-                // Pending (left page / QR not scanned) OR explicit denial → FAILED
-                // Always use check-by-order with cancel status — most reliable path
+                // Jika tidak success secara explicit dari callback parameter,
+                // berarti user membatalkan (kembali ke merchant sebelum bayar).
                 setShowFailedOverlay(true);
                 http.post(`/donations/check-by-order`, {
                     order_id: orderId,
@@ -294,27 +295,11 @@ function DonatePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Jalur B: user navigated back to /donate WITHOUT Midtrans redirecting them.
-    // = user abandoned payment → cancel using stored order_id.
-    useEffect(() => {
-        const pendingDonationId = sessionStorage.getItem('dpf_pending_donation_id');
-        const pendingOrderId    = sessionStorage.getItem('dpf_pending_order_id');
-        const hasUrlParams = searchParams.get("order_id");
-
-        if (pendingDonationId && !hasUrlParams) {
-            sessionStorage.removeItem('dpf_pending_donation_id');
-            sessionStorage.removeItem('dpf_pending_order_id');
-            if (pendingOrderId) {
-                // Use check-by-order with cancel — most reliable path to set status=failed
-                http.post(`/donations/check-by-order`, {
-                    order_id: pendingOrderId,
-                    snap_result: { transaction_status: "cancel" }
-                }).catch(() => {});
-            }
-            setShowFailedOverlay(true);
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    // Jalur B (dihapus): Sebelumnya ada useEffect di sini yang mengecek jika sessionStorage 
+    // ada tapi URL tidak ada parameter order_id, maka dianggap gagal. 
+    // Logika ini ternyata menyela proses redirect DANA ke Midtrans, menyebabkan false failure. 
+    // Oleh karena itu dihapus, dan kita mengandalkan Jalur A (redirect kembali dari Midtrans)
+    // dan callback onClose dari Snap iframe/popup.
 
     const handleCheckPaymentStatus = async () => {
         const pendingDonationId = pendingDonationIdRef.current || sessionStorage.getItem('dpf_pending_donation_id');

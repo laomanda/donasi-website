@@ -93,7 +93,9 @@ class DonationController extends Controller
         $this->setupMidtrans();
 
         $finishUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL', config('app.url') ?? url('/'))), '/');
-        $donateCallbackUrl = $finishUrl . '/donate';
+        // Midtrans kadang tidak melampirkan parameter secara otomatis jika callbacks dire-define. 
+        // Jadi kita tambahkan manual agar front-end selalu menerima parameter yang dibutuhkan.
+        $baseUrl = $finishUrl . '/donate?order_id=' . urlencode($donation->midtrans_order_id);
 
         $payload = [
             'transaction_details' => [
@@ -114,9 +116,9 @@ class DonationController extends Controller
                 ],
             ],
             'callbacks' => [
-                'finish'   => $donateCallbackUrl,
-                'pending'  => $donateCallbackUrl,
-                'error'    => $donateCallbackUrl,
+                'finish'   => $baseUrl . '&transaction_status=settlement',
+                'pending'  => $baseUrl . '&transaction_status=pending',
+                'error'    => $baseUrl . '&transaction_status=deny',
             ],
             'custom_expiry' => [
                 'expiry_duration' => 5,
