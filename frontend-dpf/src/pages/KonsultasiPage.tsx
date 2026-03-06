@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRight,
   faCalendarCheck,
@@ -9,17 +7,15 @@ import {
   faEnvelopeOpenText,
   faHandshakeSimple,
   faHeadset,
-  faPaperPlane,
   faShieldHalved,
   faUserGraduate,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
 import { PageHero } from "../components/PageHero";
-
-import http from "../lib/http";
-import PhoneInput from "../components/ui/PhoneInput";
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { KonsultasiForm } from "../components/services/consult/KonsultasiForm";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const BENEFITS = [
   { titleKey: "konsultasi.benefits.1.title", descKey: "konsultasi.benefits.1.desc", icon: faUserGraduate },
@@ -45,61 +41,6 @@ const FAQS = [
 export function KonsultasiPage() {
   const { locale } = useLang();
   const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
-  const [form, setForm] = useState({ name: "", phone: "", email: "", topic: "", message: "" });
-  const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  const [statusKey, setStatusKey] = useState<"success" | "error" | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleChange = (key: keyof typeof form, value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => ({ ...prev, [key]: "" }));
-    setStatusKey(null);
-  };
-
-  const validate = () => {
-    const alphaSpace = /^[A-Za-z\s]+$/;
-    const next: { [k: string]: string } = {};
-
-    if (!form.name.trim()) next.name = "konsultasi.form.error.name.required";
-    else if (!alphaSpace.test(form.name.trim())) next.name = "konsultasi.form.error.name.alpha";
-
-    if (!form.phone.trim()) next.phone = "konsultasi.form.error.phone.required";
-    else if (form.phone.trim().length < 8) next.phone = "konsultasi.form.error.phone.numeric";
-
-    if (form.email && !/^\S+@\S+\.\S+$/.test(form.email.trim())) next.email = "konsultasi.form.error.email.invalid";
-
-    if (!form.topic.trim()) next.topic = "konsultasi.form.error.topic.required";
-    if (!form.message.trim()) next.message = "konsultasi.form.error.message.required";
-
-    return { ok: Object.keys(next).length === 0, errors: next };
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const v = validate();
-    if (!v.ok) {
-      setErrors(v.errors);
-      setStatusKey("error");
-      return;
-    }
-    setSubmitting(true);
-    setStatusKey(null);
-    try {
-      await http.post("/consultations", {
-        name: form.name,
-        phone: form.phone,
-        email: form.email || undefined,
-        topic: form.topic,
-        message: form.message,
-      });
-      setStatusKey("success");
-      setForm({ name: "", phone: "", email: "", topic: "", message: "" });
-    } catch {
-      setStatusKey("error");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <LandingLayout footerWaveBgClassName="bg-slate-50">
@@ -154,8 +95,6 @@ export function KonsultasiPage() {
           </a>
         </div>
       </PageHero>
-
-
 
       {/* BENEFITS */}
       <section className="bg-slate-50">
@@ -221,71 +160,7 @@ export function KonsultasiPage() {
       {/* FORM */}
       <section id="form-konsultasi" className="bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-[0.9fr,1.1fr]">
-            <div className="rounded-[24px] border border-slate-100 bg-gradient-to-br from-brandGreen-600 to-primary-600 p-8 text-white shadow-[0_28px_80px_-50px_rgba(16,185,129,0.6)]">
-              <p className="text-sm font-bold uppercase tracking-[0.24em] text-emerald-50">{t("konsultasi.form.badge")}</p>
-              <h3 className="mt-3 text-3xl font-heading font-semibold leading-tight">{t("konsultasi.form.heading")}</h3>
-              <ul className="mt-6 space-y-3 text-sm leading-relaxed text-emerald-50">
-                <li className="flex gap-3">
-                  <FontAwesomeIcon icon={faClock} />
-                  {t("konsultasi.form.points.1")}
-                </li>
-                <li className="flex gap-3">
-                  <FontAwesomeIcon icon={faCalendarCheck} />
-                  {t("konsultasi.form.points.2")}
-                </li>
-                <li className="flex gap-3">
-                  <FontAwesomeIcon icon={faCheckCircle} />
-                  {t("konsultasi.form.points.3")}
-                </li>
-              </ul>
-            </div>
-            <form onSubmit={handleSubmit} className="rounded-[24px] border border-slate-100 bg-white p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)] space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <InputField label={t("konsultasi.form.fields.name")} value={form.name} onChange={(v) => handleChange("name", v)} required error={errors.name ? t(errors.name) : ""} />
-                <label className="space-y-1 text-sm font-medium text-slate-700">
-                  <span>{t("konsultasi.form.fields.phone")}</span>
-                  <PhoneInput
-                    value={form.phone}
-                    onChange={(v) => handleChange("phone", v || "")}
-                    disabled={submitting}
-                  />
-                  {errors.phone && <span className="text-xs font-semibold text-red-600">{t(errors.phone)}</span>}
-                </label>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <InputField label={t("konsultasi.form.fields.email")} value={form.email} onChange={(v) => handleChange("email", v)} error={errors.email ? t(errors.email) : ""} type="email" />
-                <InputField label={t("konsultasi.form.fields.topic")} value={form.topic} onChange={(v) => handleChange("topic", v)} required error={errors.topic ? t(errors.topic) : ""} />
-              </div>
-              <TextareaField
-                label={t("konsultasi.form.fields.message")}
-                value={form.message}
-                onChange={(v) => handleChange("message", v)}
-                required
-                error={errors.message ? t(errors.message) : ""}
-                placeholder={t("konsultasi.form.fields.message.placeholder")}
-              />
-              {statusKey && (
-                <div
-                  className={`rounded-xl px-4 py-3 text-sm font-semibold ${
-                    statusKey === "success"
-                      ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
-                      : "border border-red-100 bg-red-50 text-red-700"
-                  }`}
-                >
-                  {statusKey === "success" ? t("konsultasi.form.submit.success") : t("konsultasi.form.submit.error")}
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <FontAwesomeIcon icon={faPaperPlane} />
-                {submitting ? t("konsultasi.form.submit.sending") : t("konsultasi.form.submit.label")}
-              </button>
-            </form>
-          </div>
+          <KonsultasiForm translate={t} locale={locale} />
         </div>
       </section>
 
@@ -333,75 +208,5 @@ function InfoPill({ icon, label }: { icon: any; label: string }) {
   );
 }
 
-function InputField({
-  label,
-  value,
-  onChange,
-  required,
-  error,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  required?: boolean;
-  error?: string;
-  type?: string;
-}) {
-  const base =
-    "w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2";
-  const state = error
-    ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
-    : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
-  return (
-    <label className="block space-y-2 text-sm font-bold text-slate-700">
-      <span>{label}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        className={`${base} ${state}`}
-      />
-      {error && <span className="text-xs font-semibold text-red-600">{error}</span>}
-    </label>
-  );
-}
-
-function TextareaField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  required,
-  error,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  required?: boolean;
-  error?: string;
-}) {
-  const base =
-    "w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2";
-  const state = error
-    ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
-    : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
-  return (
-    <label className="block space-y-2 text-sm font-bold text-slate-700">
-      <span>{label}</span>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        required={required}
-        rows={4}
-        className={`${base} ${state}`}
-      />
-      {error && <span className="text-xs font-semibold text-red-600">{error}</span>}
-    </label>
-  );
-}
-
 export default KonsultasiPage;
+

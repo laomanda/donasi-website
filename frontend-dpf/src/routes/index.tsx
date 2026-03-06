@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter, Navigate, useParams } from 'react-router-dom'
 import App from '../App'
 import { LandingPage } from '../pages/LandingPage'
 import Error400 from '../pages/errors/400'
@@ -18,7 +18,7 @@ import { LiterasiPage } from '../pages/LiterasiPage'
 import { TentangKamiPage } from '../pages/TentangKamiPage'
 import { DonatePage } from '../pages/DonatePage'
 import { LoginPage } from '../pages/LoginPage'
-import { ArticleDetailPage } from '../pages/ArticleDetailPage'
+import { LiterasiDetailPage } from '../pages/LiterasiDetailPage'
 import { ProgramDetailPage } from '../pages/ProgramDetailPage'
 import { KonsultasiPage } from '../pages/KonsultasiPage'
 import { JemputWakafPage } from '../pages/JemputWakafPage'
@@ -86,7 +86,11 @@ export const router = createBrowserRouter([
       { path: 'program', element: <ProgramPage /> },
       { path: 'program/:slug', element: <ProgramDetailPage /> },
       { path: 'literasi', element: <LiterasiPage /> },
-      { path: 'articles/:slug', element: <ArticleDetailPage /> },
+      { path: 'literasi/:slug', element: <LiterasiDetailPage /> },
+      {
+        path: 'articles/:slug',
+        element: <ArticleRedirect />
+      },
       { path: 'tentang-kami', element: <TentangKamiPage /> },
       { path: 'konsultasi', element: <KonsultasiPage /> },
       { path: 'jemput-wakaf', element: <JemputWakafPage /> },
@@ -212,3 +216,8 @@ export const router = createBrowserRouter([
     ],
   },
 ])
+
+function ArticleRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/literasi/${slug}`} replace />;
+}

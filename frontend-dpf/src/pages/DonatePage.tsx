@@ -1,52 +1,32 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faCheckCircle,
-    faTimesCircle,
-    faCreditCard,
-    faHandHoldingHeart,
+import { 
+    faHandHoldingHeart, 
+    faPaperPlane, 
+    faCreditCard, 
+    faWallet, 
+    faCheckCircle, 
     faShieldHalved,
-    faWallet,
-    faPaperPlane,
-    faChevronDown,
-    faMapMarkerAlt,
-    faGlobe,
-    faQrcode,
-    faTimes,
-    faCircleExclamation,
+    faTimesCircle
 } from "@fortawesome/free-solid-svg-icons";
-import { resolveStorageBaseUrl } from "../lib/urls";
-import { useLocation, Link, useSearchParams } from "react-router-dom";
 import http from "../lib/http";
 import { useLang } from "../lib/i18n";
 import { landingDict, translate as translateLanding } from "../i18n/landing";
 import { LandingLayout } from "../layouts/LandingLayout";
-import PhoneInput from "../components/ui/PhoneInput";
 import { getAuthUser } from "../lib/auth";
-import { motion, AnimatePresence } from "framer-motion";
 import { PageHero } from "../components/PageHero";
 
-import DpfIcon from "../brand/dpf-icon.png";
+// Refactored Components
+import { DonationForm } from "@/components/donate/DonationForm";
+import { ProgramShowcase } from "@/components/donate/ProgramShowcase";
+import { BankAccountsSection } from "@/components/donate/BankAccountsSection";
+import { PaymentStatusOverlays } from "@/components/donate/PaymentStatusOverlays";
+import { type BankAccount, InfoPill } from "@/components/donate/DonateUI";
 
-// Helper definitions
-const formatCurrency = (val: string | number, _locale?: string) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(val));
-};
-
-const formatNumber = (val: string | number) => {
-    return new Intl.NumberFormat('id-ID').format(Number(val));
-};
-
-const getImageUrl = (path?: string | null) => {
-    if (!path) return undefined;
-    if (path.startsWith("http")) return path;
-    return `${resolveStorageBaseUrl()}/${path}`; 
-};
-
-const normalizeProgramStatus = (status: string | undefined | null, _locale: string, _t: any) => {
-    if (!status) return "";
-    return status;
-};
+// Helpers
+import { getImageUrl, normalizeProgramStatus } from "@/lib/utils";
 
 const ensureSnapLoaded = (clientKey: string) => {
     return new Promise((resolve) => {
@@ -62,35 +42,13 @@ const ensureSnapLoaded = (clientKey: string) => {
     });
 };
 
-const amountOptions = [50000, 100000, 250000, 500000];
-
-const STEPS = [
-    { titleKey: "donate.steps.1.title", descKey: "donate.steps.1.desc", icon: faCheckCircle },
-    { titleKey: "donate.steps.2.title", descKey: "donate.steps.2.desc", icon: faWallet },
-    { titleKey: "donate.steps.3.title", descKey: "donate.steps.3.desc", icon: faPaperPlane },
-];
-
 declare global {
     interface Window {
         snap: any;
     }
 }
 
-
-type BankAccount = {
-    id: number;
-    bank_name: string;
-    account_number?: string | null;
-    account_name?: string | null;
-    image_path?: string | null;
-    qris_image_path?: string | null;
-    category?: string | null;
-    type?: string | null;
-    is_visible?: boolean;
-    order?: number;
-};
-
-type FormState = {
+interface FormState {
     program_id: string;
     amount: string;
     name: string;
@@ -98,12 +56,12 @@ type FormState = {
     phone: string;
     notes: string;
     is_anonymous: boolean;
-};
+}
 
-type SubmitState = {
+interface SubmitState {
     type: "success" | "error" | null;
     messageKey: string | null;
-};
+}
 
 const quotes = [
     {
@@ -163,18 +121,22 @@ function QuoteSlideshow() {
     );
 }
 
-function DonatePage() {
+const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" | "en" = "id") => {
+    const idText = (idVal ?? "").trim();
+    const enText = (enVal ?? "").trim();
+    if (locale === "en") return enText || idText;
+    return idText || enText;
+};
+
+const DonatePage = () => {
     const { locale } = useLang();
     const [searchParams] = useSearchParams();
     const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
-    const [accounts, setAccounts] = useState<BankAccount[]>([]);
-    const [qrisImage, setQrisImage] = useState<string | null>(null);
-    const [localizedPrograms, setLocalizedPrograms] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [activeCategory, setActiveCategory] = useState<string | null>("bank_transfer");
-    const [errorKey, setErrorKey] = useState<string | null>(null);
-    const donateFormRef = useRef<HTMLFormElement>(null);
     
+    // Core Data State
+    const [accounts, setAccounts] = useState<BankAccount[]>([]);
+    const [programs, setPrograms] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [form, setForm] = useState<FormState>({
         program_id: "",
         amount: "",
@@ -184,19 +146,27 @@ function DonatePage() {
         notes: "",
         is_anonymous: false,
     });
+    
+    // UI & Submission State
+    const [activeCategory, setActiveCategory] = useState<string | null>("bank_transfer");
     const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
     const [submitState, setSubmitState] = useState<SubmitState>({ type: null, messageKey: null });
     const [submitting, setSubmitting] = useState(false);
-    const [snapIframeUrl, setSnapIframeUrl] = useState<string | null>(null);
-    const currentDonationIdRef = useRef<string | number | null>(null);
-    const snapSuccessFiredRef = useRef(false);
     const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
     const [showFailedOverlay, setShowFailedOverlay] = useState(false);
     const [showDanaConfirm, setShowDanaConfirm] = useState(false);
     const [showPendingBanner, setShowPendingBanner] = useState(false);
     const [checkingPayment, setCheckingPayment] = useState(false);
+    const [errorKey, setErrorKey] = useState<string | null>(null);
+    const [qrisImage, setQrisImage] = useState<string | null>(null);
+    const [wakifLocation, setWakifLocation] = useState<'domestic' | 'international'>('domestic');
+
+    // Refs for persistence
+    const currentDonationIdRef = useRef<string | number | null>(null);
+    const snapSuccessFiredRef = useRef(false);
     const pendingDonationIdRef = useRef<number | null>(null);
 
+    // Initial Load
     useEffect(() => {
         let active = true;
         setLoading(true);
@@ -206,7 +176,7 @@ function DonatePage() {
         ]).then(([orgRes, progRes]) => {
             if (!active) return;
             setAccounts(orgRes.data?.bank_accounts || []);
-            setLocalizedPrograms(progRes.data?.data || []);
+            setPrograms(progRes.data?.data || []);
         }).catch(err => {
             console.error(err);
             setErrorKey("donate.accounts.error");
@@ -216,6 +186,7 @@ function DonatePage() {
         return () => { active = false; };
     }, []);
 
+    // Load User Profile
     useEffect(() => {
         const user = getAuthUser() as any;
         if (user) {
@@ -228,13 +199,11 @@ function DonatePage() {
         }
     }, []);
 
-    // Auto-select program if query param exists
+    // Handle program_id from URL
     useEffect(() => {
         const queryProgramId = searchParams.get("program_id");
         if (queryProgramId) {
             setForm(prev => ({ ...prev, program_id: queryProgramId }));
-
-            // Optional: Scroll to form if coming from detail with program_id
             const formElement = document.getElementById("donate-form-section");
             if (formElement) {
                 setTimeout(() => {
@@ -244,7 +213,7 @@ function DonatePage() {
         }
     }, [searchParams]);
 
-    // Handle return from Midtrans redirect (e.g. Dana / E-wallets)
+    // Handle Return from Midtrans Redirect
     useEffect(() => {
         const orderId = searchParams.get("order_id");
         const transactionStatus = searchParams.get("transaction_status");
@@ -257,8 +226,7 @@ function DonatePage() {
                 }, 500);
             }
 
-            // Cleanup URL immediately so this doesn't re-run on reload
-            // Clean URL params so this doesn't re-fire on refresh
+            // Cleanup URL
             const newParams = new URLSearchParams(searchParams.toString());
             newParams.delete("order_id");
             newParams.delete("status_code");
@@ -267,13 +235,10 @@ function DonatePage() {
             window.history.replaceState({}, '', `${window.location.pathname}${newParams.toString() ? '?' + newParams.toString() : ''}`);
 
             const isRealSuccess = transactionStatus === "settlement" || transactionStatus === "capture";
-
-            // Clear sessionStorage regardless of outcome
             sessionStorage.removeItem('dpf_pending_donation_id');
             sessionStorage.removeItem('dpf_pending_order_id');
 
             if (isRealSuccess) {
-                // Confirmed settlement → success
                 setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
                 setShowSuccessOverlay(true);
                 setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
@@ -283,8 +248,6 @@ function DonatePage() {
                     force_paid: true
                 }).catch(console.error);
             } else {
-                // Jika tidak success secara explicit dari callback parameter,
-                // berarti user membatalkan (kembali ke merchant sebelum bayar).
                 setShowFailedOverlay(true);
                 http.post(`/donations/check-by-order`, {
                     order_id: orderId,
@@ -292,23 +255,16 @@ function DonatePage() {
                 }).catch(console.error);
             }
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [searchParams]);
 
-    // Jalur B (dihapus): Sebelumnya ada useEffect di sini yang mengecek jika sessionStorage 
-    // ada tapi URL tidak ada parameter order_id, maka dianggap gagal. 
-    // Logika ini ternyata menyela proses redirect DANA ke Midtrans, menyebabkan false failure. 
-    // Oleh karena itu dihapus, dan kita mengandalkan Jalur A (redirect kembali dari Midtrans)
-    // dan callback onClose dari Snap iframe/popup.
-
+    // Logic for polling and manual check
     const handleCheckPaymentStatus = async () => {
         const pendingDonationId = pendingDonationIdRef.current || sessionStorage.getItem('dpf_pending_donation_id');
         if (!pendingDonationId) return;
         setCheckingPayment(true);
         try {
             const statusRes = await http.post(`/donations/${pendingDonationId}/check-status`);
-            const status = statusRes.data?.status;
-            if (status === 'paid') {
+            if (statusRes.data?.status === 'paid') {
                 sessionStorage.removeItem('dpf_pending_donation_id');
                 sessionStorage.removeItem('dpf_pending_order_id');
                 setShowPendingBanner(false);
@@ -325,86 +281,39 @@ function DonatePage() {
         }
     };
 
+    const pollPaymentStatus = async (donationId: number | string) => {
+        if (!donationId) return;
+        const isOrderId = typeof donationId === 'string' && donationId.startsWith('DPF-');
+        const maxRetries = 100;
+        const delay = 3000;
 
-    // Placeholder for getProgress if not imported
-    const getProgress = (collected: any, target: any) => {
-        if (!target) return 0;
-        return Math.min(100, Math.round((Number(collected || 0) / Number(target)) * 100));
-    };
-
-    const [wakifLocation, setWakifLocation] = useState<'domestic' | 'international'>('domestic');
-
-    // Handle hash scrolling
-    const location = useLocation();
-    useEffect(() => {
-        if (location.hash) {
-            const id = location.hash.replace("#", "");
-            const element = document.getElementById(id);
-            if (element) {
-                setTimeout(() => {
-                    element.scrollIntoView({ behavior: "smooth", block: "start" });
-                }, 100);
-            }
+        for (let i = 0; i < maxRetries; i++) {
+            try {
+                let statusRes;
+                if (isOrderId) {
+                     statusRes = await http.post(`/donations/check-by-order`, { order_id: donationId });
+                } else {
+                     statusRes = await http.post(`/donations/${donationId}/check-status`);
+                }
+                const status = statusRes.data?.status;
+                if (status === 'paid') {
+                    setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
+                    setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
+                    break;
+                }
+                if (['failed', 'expired', 'refunded'].includes(status)) {
+                    setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
+                    break;
+                }
+            } catch (e) { console.error("Polling error", e); }
+            await new Promise(resolve => setTimeout(resolve, delay));
         }
-    }, [location.hash, loading]);
-
-    const visibleAccounts = accounts.filter((a) => {
-        if (a.is_visible === false) return false;
-        // Use 'type' for location. Default to 'domestic' if missing.
-        const locationType = a.type === 'international' ? 'international' : 'domestic';
-        return locationType === wakifLocation;
-    });
-
-    // Group accounts
-    const groupedAccounts = useMemo(() => {
-        const groups: Record<string, BankAccount[]> = {};
-        visibleAccounts.forEach(acc => {
-            const cat = acc.category || 'bank_transfer';
-            if (!groups[cat]) groups[cat] = [];
-            groups[cat].push(acc);
-        });
-        return groups;
-    }, [visibleAccounts]);
-
-    const categoryLabels: Record<string, string> = {
-        bank_transfer: "Transfer Bank",
-        domestic: "Transfer Bank",
-        international: "Transfer Internasional",
-        ewallet: "E-Wallet",
-        qris: "QRIS",
-        virtual_account: "Virtual Account",
-        other: "Lainnya"
     };
 
-    const categoryOrder = ['bank_transfer', 'virtual_account', 'ewallet', 'qris', 'other'];
-    const sortedCategories = Object.keys(groupedAccounts).sort((a, b) => {
-        return categoryOrder.indexOf(a) - categoryOrder.indexOf(b);
-    });
-    const selectedProgram = localizedPrograms.find((program) => String(program.id) === form.program_id) ?? null;
-    const isGeneralDonation = !form.program_id; /* "General Donation" here actually means "Empty State / No Program Selected" based on user request */
-    
-    // Logic: If program selected & has image -> use it. If not -> use DpfIcon.
-    const selectedProgramImage = getImageUrl(selectedProgram?.program_images?.[0] ?? selectedProgram?.banner_path ?? selectedProgram?.thumbnail_path) ?? DpfIcon;
-    
-    // Logic: If program -> use title. If general (empty) -> use "Select Program" title.
-    const selectedProgramTitle = selectedProgram?.title ?? t("donate.program.empty.title");
-    const selectedProgramDesc = selectedProgram?.short_description ?? t("donate.program.empty.desc");
-    const selectedProgramStatus = normalizeProgramStatus(selectedProgram?.status, locale, t);
-    const selectedProgramCategory = selectedProgram?.category ?? null; // Hide category if empty
-    const selectedProgramSlug = selectedProgram?.slug ?? "";
-    const selectedProgramTarget = selectedProgram?.target_amount ?? null;
-    const selectedProgramCollected = selectedProgram?.collected_amount ?? null;
-    
-    const displayCollected = selectedProgramCollected;
-    const displayTarget = selectedProgramTarget;
-    const selectedProgramProgress = getProgress(selectedProgramCollected, selectedProgramTarget);
-    const hasProgramProgress = selectedProgramTarget !== null || selectedProgramCollected !== null;
-    const displayProgress = selectedProgramProgress;
-    const detailLink = selectedProgramSlug ? `/program/${selectedProgramSlug}` : "/program";
-
-    const handleChange = (key: keyof typeof form, value: string | boolean) => {
-        setForm((prev) => ({ ...prev, [key]: value as any }));
-        setFormErrors((prev) => ({ ...prev, [key]: "" }));
+    // Form Handlers
+    const handleChange = (key: keyof FormState, value: any) => {
+        setForm(prev => ({ ...prev, [key]: value }));
+        setFormErrors(prev => ({ ...prev, [key]: "" }));
         setSubmitState({ type: null, messageKey: null });
     };
 
@@ -412,12 +321,11 @@ function DonatePage() {
         const next: { [k: string]: string } = {};
         const alphaSpace = /^[A-Za-z\s]+$/;
         const digits = /^[0-9]+$/;
-        // Phone validation handled by library mostly, but we can check basic length
-         if (!form.name.trim()) next.name = "donate.form.error.name.required";
+        if (!form.name.trim()) next.name = "donate.form.error.name.required";
         else if (!alphaSpace.test(form.name.trim())) next.name = "donate.form.error.name.alpha";
-        if (form.phone && !/^\S+@\S+\.\S+$/.test(form.email.trim())) next.email = "donate.form.error.email.invalid";
-        if (!form.phone || !form.phone.trim()) next.phone = "donate.form.error.phone.required"; // Required check
-        else if (form.phone.length < 8) next.phone = "donate.form.error.phone.numeric"; // Basic length check
+        if (form.email && !/^\S+@\S+\.\S+$/.test(form.email.trim())) next.email = "donate.form.error.email.invalid";
+        if (!form.phone?.trim()) next.phone = "donate.form.error.phone.required";
+        else if (form.phone.length < 8) next.phone = "donate.form.error.phone.numeric";
         if (!form.amount.trim()) next.amount = "donate.form.error.amount.required";
         else if (!digits.test(form.amount.trim())) next.amount = "donate.form.error.amount.numeric";
         else if (Number(form.amount) < 1000) next.amount = "donate.form.error.amount.min";
@@ -433,9 +341,8 @@ function DonatePage() {
             return;
         }
         setSubmitting(true);
-        setSubmitState({ type: null, messageKey: null });
         try {
-            const payload: any = {
+            const res = await http.post("/donations", {
                 program_id: form.program_id || undefined,
                 donor_name: form.name,
                 donor_email: form.email || undefined,
@@ -444,370 +351,115 @@ function DonatePage() {
                 is_anonymous: form.is_anonymous,
                 notes: form.notes || undefined,
                 user_id: getAuthUser()?.id || undefined,
-            };
-            const res = await http.post("/donations", payload);
-            
-            // Store donation ID for cancellation fallback
-            if (res.data?.donation?.id) {
-                currentDonationIdRef.current = res.data.donation.id;
-            }
+            });
 
-            const snapToken = res.data?.snap_token as string | undefined;
-            const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY as string | undefined;
+            if (res.data?.donation?.id) currentDonationIdRef.current = res.data.donation.id;
 
+            const snapToken = res.data?.snap_token;
             if (!snapToken) {
                 setSubmitState({ type: "error", messageKey: "donate.form.status.noToken" });
                 return;
             }
 
-            let snapLoaded = false;
-            if (clientKey) {
-                try {
-                    await ensureSnapLoaded(clientKey);
-                    snapLoaded = !!window.snap?.pay;
-                } catch {
-                    snapLoaded = false;
-                }
-            }
-
-            console.log("Payment flow:", { snapLoaded, hasRedirect: !!res.data?.redirect_url });
-
-            // ALWAYS prefer redirect_url:
-            // - Works in all environments (sandbox/production, localhost/deployed)
-            // - Snap popup callbacks (onSuccess/onPending) fail on localhost due to postMessage origin mismatch
-            // - After payment, Midtrans redirects back to /donate?order_id=...&transaction_status=...
             if (res.data?.redirect_url) {
-                console.log("Using redirect_url for payment");
-                // Save donation id to sessionStorage so we can reference it after redirect back
-                sessionStorage.setItem('dpf_pending_donation_id', String(res.data?.donation?.id ?? ''));
-                sessionStorage.setItem('dpf_pending_order_id', String(res.data?.donation?.midtrans_order_id ?? ''));
-                // Redirect to Midtrans payment page
+                sessionStorage.setItem('dpf_pending_donation_id', String(res.data?.donation?.id));
+                sessionStorage.setItem('dpf_pending_order_id', String(res.data?.donation?.midtrans_order_id));
                 window.location.href = res.data.redirect_url;
-                return; // page will navigate away
-            } else if (snapLoaded && window.snap?.pay) {
-                console.log("Using Window Snap Pay (fallback - no redirect_url)");
-                
-                // Start polling immediately in background
+            } else {
+                const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
+                await ensureSnapLoaded(clientKey);
                 pollPaymentStatus(res.data?.donation?.id);
-                pendingDonationIdRef.current = res.data?.donation?.id ?? null;
+                pendingDonationIdRef.current = res.data?.donation?.id;
 
                 window.snap.pay(snapToken, {
                     onSuccess: async (result: any) => {
-                        console.log("Snap onSuccess", result);
                         snapSuccessFiredRef.current = true;
                         setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
                         setShowSuccessOverlay(true);
                         setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
-                        try {
-                            await http.post(`/donations/${res.data?.donation?.id}/check-status`, {
-                                snap_result: result
-                            });
-                        } catch (e) {
-                            console.error("Failed final sync", e);
-                        }
+                        http.post(`/donations/${res.data?.donation?.id}/check-status`, { snap_result: result }).catch(() => {});
                     },
                     onPending: async (result: any) => {
-                        console.log("Snap onPending FULL RESULT:", JSON.stringify(result, null, 2));
-                        const paymentType = (result?.payment_type ?? '').toLowerCase();
-                        const hasVaNumbers = Array.isArray(result?.va_numbers) && result.va_numbers.length > 0;
-                        const hasBillKey = !!result?.bill_key || !!result?.biller_code;
-                        const isBankTransfer = hasVaNumbers || hasBillKey ||
-                            paymentType === 'bank_transfer' || paymentType === 'echannel';
+                        const isBankTransfer = (result?.payment_type === 'bank_transfer' || result?.payment_type === 'echannel');
                         if (!isBankTransfer) {
                             snapSuccessFiredRef.current = true;
                             setSubmitState({ type: "success", messageKey: "donate.form.status.ewalletProcessing" });
                             setShowSuccessOverlay(true);
                             setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
-                            try {
-                                await http.post(`/donations/${res.data?.donation?.id}/check-status`, {
-                                    snap_result: { transaction_status: "settlement", fraud_status: "accept", payment_type: paymentType }
-                                });
-                            } catch (e) {
-                                console.error("Failed to sync e-wallet paid status", e);
-                            }
+                            http.post(`/donations/${res.data?.donation?.id}/check-status`, { 
+                                snap_result: { transaction_status: "settlement", fraud_status: "accept", payment_type: result.payment_type } 
+                            }).catch(() => {});
                         } else {
                             setSubmitState({ type: "success", messageKey: "donate.form.status.pending" });
                         }
                     },
-                    onError: (result: any) => {
-                        console.error("Snap onError", result);
-                        setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
-                    },
                     onClose: () => {
-                        console.log("Snap closed", { snapSuccessFired: snapSuccessFiredRef.current });
                         if (snapSuccessFiredRef.current) return;
-                        // User closed without completing payment → set status=failed via check-by-order
-                        const ordId = res.data?.donation?.midtrans_order_id;
-                        if (ordId) {
-                            http.post(`/donations/check-by-order`, {
-                                order_id: ordId,
-                                snap_result: { transaction_status: "cancel" }
-                            }).catch(() => {});
-                        }
                         setShowFailedOverlay(true);
+                        http.post(`/donations/check-by-order`, {
+                            order_id: res.data?.donation?.midtrans_order_id,
+                            snap_result: { transaction_status: "cancel" }
+                        }).catch(() => {});
                     },
                 });
-            } else {
-                setSubmitState({ type: "error", messageKey: "donate.form.status.snapUnavailable" });
             }
-
-        } catch {
-            setSubmitState({ type: "error", messageKey: "donate.form.status.error" });
-        } finally {
-            setSubmitting(false);
-        }
+        } catch { setSubmitState({ type: "error", messageKey: "donate.form.status.error" });
+        } finally { setSubmitting(false); }
     };
 
-    // Helper untuk polling status pembayaran
-    const pollPaymentStatus = async (donationId: number | string) => {
-        if (!donationId) return;
-        
-        const isOrderId = typeof donationId === 'string' && donationId.startsWith('DPF-');
+    // Localize Programs based on current locale
+    const localizedPrograms = useMemo(() => {
+        return programs.map((p) => ({
+            ...p,
+            title: pickLocale(p.title, p.title_en, locale as any),
+            short_description: pickLocale(p.short_description, p.short_description_en, locale as any),
+            category: pickLocale(p.category, p.category_en, locale as any),
+        }));
+    }, [programs, locale]);
 
-        // Cek lebih lama selama rentang 5 menit expiry (misal 5 menit / 3 detik = 100 retries)
-        const maxRetries = 100;
-        const delay = 3000; // 3 detik
-        let paymentSuccess = false;
+    // Derived States
+    const selectedProgram = localizedPrograms.find((p) => String(p.id) === form.program_id) || null;
+    const selectedProgramImage = getImageUrl(selectedProgram?.program_images?.[0] || selectedProgram?.banner_path || selectedProgram?.thumbnail_path) || "";
+    
+    const visibleAccounts = accounts.filter(a => {
+        if (a.is_visible === false) return false;
+        const loc = a.type === 'international' ? 'international' : 'domestic';
+        return loc === wakifLocation;
+    });
 
-        for (let i = 0; i < maxRetries; i++) {
-            if (paymentSuccess) break;
+    const groupedAccounts = useMemo(() => {
+        const groups: Record<string, BankAccount[]> = {};
+        visibleAccounts.forEach(acc => {
+            const cat = acc.category || 'bank_transfer';
+            if (!groups[cat]) groups[cat] = [];
+            groups[cat].push(acc);
+        });
+        return groups;
+    }, [visibleAccounts]);
 
-            try {
-                console.log(`Checking status attempt ${i + 1}/${maxRetries} for donation ${donationId}`);
-                let statusRes;
-                if (isOrderId) {
-                     statusRes = await http.post(`/donations/check-by-order`, { order_id: donationId });
-                } else {
-                     statusRes = await http.post(`/donations/${donationId}/check-status`);
-                }
-                const status = statusRes.data?.status;
-                
-                if (status === 'paid') {
-                    console.log("Donation marked as PAID via polling!");
-                    setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
-                    setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
-                    paymentSuccess = true;
-                    break;
-                }
-                
-                if (status === 'failed' || status === 'expired' || status === 'refunded') {
-                    console.log(`Donation marked as ${status} via polling!`);
-                    setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
-                    break; // stop polling completely
-                }
+    const sortedCategories = Object.keys(groupedAccounts).sort((a, b) => 
+        ['bank_transfer', 'virtual_account', 'ewallet', 'qris', 'other'].indexOf(a) - 
+        ['bank_transfer', 'virtual_account', 'ewallet', 'qris', 'other'].indexOf(b)
+    );
 
-                // If pending, continue polling
-            } catch (e) {
-                console.error("Failed to check status", e);
-            }
-            
-            // Tunggu sebelum retry berikutnya
-            if (i < maxRetries - 1 && !paymentSuccess) {
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
-        }
+    const STEPS = [
+        { titleKey: "donate.steps.1.title", descKey: "donate.steps.1.desc", icon: faCheckCircle },
+        { titleKey: "donate.steps.2.title", descKey: "donate.steps.2.desc", icon: faWallet },
+        { titleKey: "donate.steps.3.title", descKey: "donate.steps.3.desc", icon: faPaperPlane },
+    ];
+
+    const categoryLabels: Record<string, string> = {
+        bank_transfer: "Transfer Bank",
+        domestic: "Transfer Bank",
+        international: "Transfer Internasional",
+        ewallet: "E-Wallet",
+        qris: "QRIS",
+        virtual_account: "Virtual Account",
+        other: "Lainnya"
     };
 
     return (
         <LandingLayout footerWaveBgClassName="bg-slate-50">
-            {/* SUCCESS OVERLAY — shown after e-wallet payments (Dana / GoPay) */}
-            <AnimatePresence>
-                {showSuccessOverlay && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                    >
-                        <motion.div
-                            initial={{ scale: 0.85, opacity: 0, y: 30 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.85, opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                            className="mx-4 w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl"
-                        >
-                            <div className="mb-4 flex items-center justify-center">
-                                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-brandGreen-100">
-                                    <FontAwesomeIcon icon={faCheckCircle} className="text-4xl text-brandGreen-600" />
-                                </div>
-                            </div>
-                            <h2 className="mb-2 text-2xl font-bold text-slate-900">
-                                🎉 {t("donate.success.overlay.title", "Donasi Berhasil!")}
-                            </h2>
-                            <p className="mb-1 text-base text-slate-600">
-                                {t("donate.success.overlay.desc", "Pembayaran Anda telah diterima dan sedang diverifikasi.")}
-                            </p>
-                            <p className="mb-6 text-sm text-slate-400">
-                                {t("donate.success.overlay.sub", "Terima kasih atas kebaikan Anda. Semoga menjadi amal jariyah.")}
-                            </p>
-                            <button
-                                onClick={() => setShowSuccessOverlay(false)}
-                                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brandGreen-600 px-6 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-brandGreen-700"
-                            >
-                                <FontAwesomeIcon icon={faCheckCircle} />
-                                {t("donate.success.overlay.btn", "Oke, Terima Kasih!")}
-                            </button>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* FAILED OVERLAY — shown when user closes/leaves Midtrans without completing payment */}
-            <AnimatePresence>
-                {showFailedOverlay && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                    >
-                        <motion.div
-                            initial={{ scale: 0.85, opacity: 0, y: 30 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.85, opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                            className="mx-4 w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl"
-                        >
-                            <div className="mb-4 flex items-center justify-center">
-                                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
-                                    <FontAwesomeIcon icon={faTimesCircle} className="text-4xl text-red-500" />
-                                </div>
-                            </div>
-                            <h2 className="mb-2 text-2xl font-bold text-slate-900">
-                                ❌ {t("donate.failed.overlay.title", "Transaksi Gagal")}
-                            </h2>
-                            <p className="mb-1 text-base text-slate-600">
-                                {t("donate.failed.overlay.desc", "Pembayaran tidak diselesaikan. Transaksi dibatalkan.")}
-                            </p>
-                            <p className="mb-6 text-sm text-slate-400">
-                                {t("donate.failed.overlay.sub", "Silakan coba lagi jika Anda masih ingin berdonasi.")}
-                            </p>
-                            <button
-                                onClick={() => setShowFailedOverlay(false)}
-                                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-6 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-red-600"
-                            >
-                                <FontAwesomeIcon icon={faTimesCircle} />
-                                {t("donate.failed.overlay.btn", "Tutup")}
-                            </button>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* DANA / E-WALLET CONFIRM DIALOG — appears when Snap callbacks can't fire (localhost) */}
-            <AnimatePresence>
-                {showDanaConfirm && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                            className="mx-4 w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl"
-                        >
-                            <div className="mb-3 flex items-center justify-center">
-                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-                                    <FontAwesomeIcon icon={faCreditCard} className="text-3xl text-blue-600" />
-                                </div>
-                            </div>
-                            <h3 className="mb-2 text-lg font-bold text-slate-900">Verifikasi Pembayaran</h3>
-                            <p className="mb-5 text-sm text-slate-600 leading-relaxed">
-                                Apakah Anda sudah berhasil menyelesaikan pembayaran melalui <strong>Dana / GoPay</strong>?
-                            </p>
-                            <div className="flex flex-col gap-2">
-                                <button
-                                    onClick={async () => {
-                                        setShowDanaConfirm(false);
-                                        sessionStorage.removeItem('dpf_pending_donation_id');
-                                        sessionStorage.removeItem('dpf_pending_order_id');
-                                        snapSuccessFiredRef.current = true;
-                                        setShowSuccessOverlay(true);
-                                        setSubmitState({ type: "success", messageKey: "donate.form.status.ewalletProcessing" });
-                                        setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
-                                        try {
-                                            await http.post(`/donations/${pendingDonationIdRef.current}/check-status`, {
-                                                snap_result: { transaction_status: "settlement", fraud_status: "accept", payment_type: "dana" }
-                                            });
-                                        } catch (e) {
-                                            console.error("Failed to confirm dana payment", e);
-                                        }
-                                    }}
-                                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brandGreen-600 px-4 py-3 text-sm font-bold text-white shadow-md transition hover:bg-brandGreen-700"
-                                >
-                                    <FontAwesomeIcon icon={faCheckCircle} />
-                                    Ya, Saya Sudah Bayar
-                                </button>
-                                <button
-                                    onClick={async () => {
-                                        setShowDanaConfirm(false);
-                                        sessionStorage.removeItem('dpf_pending_donation_id');
-                                        sessionStorage.removeItem('dpf_pending_order_id');
-                                        try {
-                                            await http.post(`/donations/${pendingDonationIdRef.current}/cancel`);
-                                        } catch (e) { /* ignore */ }
-                                        setSubmitState({ type: "error", messageKey: "donate.form.status.failed" });
-                                    }}
-                                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
-                                >
-                                    Belum, Batalkan
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* PENDING PAYMENT BANNER — shown when user returns from Midtrans without confirmation */}
-            <AnimatePresence>
-                {showPendingBanner && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -30 }}
-                        className="fixed top-4 left-0 right-0 z-[9990] flex justify-center px-4"
-                    >
-                        <div className="w-full max-w-lg rounded-2xl bg-amber-50 border border-amber-200 p-4 shadow-xl flex items-start gap-3">
-                            <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-amber-100">
-                                <FontAwesomeIcon icon={faCreditCard} className="text-amber-600" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-bold text-amber-900 text-sm">Pembayaran Sedang Diverifikasi</p>
-                                <p className="text-xs text-amber-700 mt-0.5">
-                                    Kami sedang menunggu konfirmasi dari sistem pembayaran. 
-                                    Jika Anda sudah membayar, klik tombol di bawah.
-                                </p>
-                                <div className="mt-2 flex gap-2">
-                                    <button
-                                        onClick={handleCheckPaymentStatus}
-                                        disabled={checkingPayment}
-                                        className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-amber-700 disabled:opacity-60"
-                                    >
-                                        <FontAwesomeIcon icon={faCheckCircle} />
-                                        {checkingPayment ? "Mengecek..." : "Cek Status Pembayaran"}
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setShowPendingBanner(false);
-                                            sessionStorage.removeItem('dpf_pending_donation_id');
-                                            sessionStorage.removeItem('dpf_pending_order_id');
-                                        }}
-                                        className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-50"
-                                    >
-                                        Tutup
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* HERO */}
             <PageHero
                 title={
                     <>
@@ -859,198 +511,38 @@ function DonatePage() {
                 <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
                     <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
                         <div className="space-y-6">
-                            <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_-45px_rgba(15,23,42,0.35)]">
-                                <div className="relative">
-                                    <img
-                                        src={selectedProgramImage}
-                                        alt={selectedProgramTitle}
-                                        className="h-56 w-full bg-slate-100 object-contain sm:h-60"
-                                    />
-                                    {!isGeneralDonation && (
-                                        <div className="absolute right-4 top-4 rounded-full bg-primary-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm">
-                                            {selectedProgramStatus}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="space-y-3 p-6">
-                                    <h4 className="text-xl font-body font-semibold text-slate-900">{selectedProgramTitle}</h4>
-                                    <p className="text-sm leading-relaxed text-slate-600">{selectedProgramDesc}</p>
-                                    <div className="space-y-3">
-                                        {selectedProgramCategory && (
-                                            <span className="inline-flex rounded-full border border-brandGreen-500 bg-brandGreen-500 px-3 py-1 text-[11px] font-semibold text-white">
-                                                {selectedProgramCategory}
-                                            </span>
-                                        )}
-                                        <div className="space-y-3">
-                                            {/* Hide Progress Bar if General Donation (Empty State) */}
-                                            {!isGeneralDonation && (
-                                                <div className="h-2 w-full rounded-full bg-slate-100">
-                                                    <div
-                                                        className="h-full rounded-full bg-brandGreen-600"
-                                                        style={{ width: `${hasProgramProgress ? Math.min(displayProgress, 100) : 0}%` }}
-                                                    />
-                                                </div>
-                                            )}
-                                            
-                                            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-                                                {/* Hide Stats if General Donation (Empty State) */}
-                                                {!isGeneralDonation && (
-                                                    <div className="flex flex-wrap items-center gap-4">
-                                                        <span>
-                                                            {t("donate.card.collected")}{" "}
-                                                            <span className="font-semibold text-slate-700">
-                                                                {hasProgramProgress ? formatCurrency(displayCollected, locale) : formatCurrency(0, locale)}
-                                                            </span>
-                                                        </span>
-                                                        <span>
-                                                            {t("donate.card.target")}{" "}
-                                                            <span className="font-semibold text-slate-700">
-                                                                {hasProgramProgress && displayTarget !== null
-                                                                    ? formatCurrency(displayTarget, locale)
-                                                                    : t("donate.card.flexible")}
-                                                            </span>
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                    {/* Change Button Action based on State */}
-                                                    {isGeneralDonation ? (
-                                                        <a
-                                                            href="/program"
-                                                            className="inline-flex items-center justify-center rounded-full border border-transparent bg-brandGreen-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brandGreen-700"
-                                                        >
-                                                            {t("donate.program.empty.cta")}
-                                                        </a>
-                                                    ) : (
-                                                        <Link
-                                                            to={detailLink}
-                                                            className="inline-flex items-center justify-center rounded-full border border-transparent bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:from-brandGreen-700 hover:to-primary-700"
-                                                        >
-                                                            {t("donate.card.detail")}
-                                                        </Link>
-                                                    )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
+                            <ProgramShowcase
+                                isGeneralDonation={!form.program_id}
+                                selectedProgramImage={selectedProgramImage}
+                                selectedProgramTitle={selectedProgram?.title || t("donate.program.empty.title")}
+                                selectedProgramDesc={selectedProgram?.short_description || t("donate.program.empty.desc")}
+                                selectedProgramStatus={normalizeProgramStatus(selectedProgram?.status, locale, t)}
+                                selectedProgramCategory={selectedProgram?.category || null}
+                                hasProgramProgress={!!(selectedProgram?.target_amount || selectedProgram?.collected_amount)}
+                                displayCollected={selectedProgram?.collected_amount}
+                                displayTarget={selectedProgram?.target_amount}
+                                displayProgress={Math.min(100, Math.round((Number(selectedProgram?.collected_amount || 0) / Number(selectedProgram?.target_amount || 1)) * 100))}
+                                detailLink={selectedProgram?.slug ? `/program/${selectedProgram.slug}` : "/program"}
+                                t={t}
+                            />
                         </div>
 
-                        <form ref={donateFormRef} onSubmit={handleSubmit} className="rounded-[24px] border border-slate-100 bg-white p-8 shadow-[0_22px_70px_-45px_rgba(0,0,0,0.35)] space-y-4">
-                            <SelectField
-                                label={t("donate.form.selectLabel")}
-                                value={form.program_id}
-                                onChange={(v) => handleChange("program_id", v)}
-                                options={[
-                                    { value: "", label: t("donate.form.selectPlaceholder", "Pilih Program") },
-                                    ...localizedPrograms.map((p) => {
-                                        const isClosed = ["completed", "selesai", "tersalurkan", "archived", "arsip"].includes(
-                                            String(p.status ?? "").trim().toLowerCase()
-                                        );
-                                        return {
-                                            value: String(p.id),
-                                            label: isClosed ? `${p.title} (Tersalurkan)` : p.title,
-                                            disabled: isClosed,
-                                        };
-                                    }),
-                                ]}
-                            />
-                            <InputField
-                                label={t("donate.form.name")}
-                                value={form.name}
-                                onChange={(v) => handleChange("name", v)}
-                                required
-                                error={formErrors.name ? t(formErrors.name) : ""}
-                            />
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <InputField
-                                    label={t("donate.form.email")}
-                                    value={form.email}
-                                    onChange={(v) => handleChange("email", v)}
-                                    error={formErrors.email ? t(formErrors.email) : ""}
-                                />
-                                <PhoneInput
-                                    label={t("donate.form.phone")}
-                                    value={form.phone}
-                                    onChange={(v) => handleChange("phone", v || "")}
-                                    error={formErrors.phone ? t(formErrors.phone) : ""}
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <p className="text-sm font-medium text-slate-700">{t("donate.form.quickPick")}</p>
-                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                                    {amountOptions.map((amount) => {
-                                        const value = String(amount);
-                                        const isActive = form.amount.trim() === value;
-                                        return (
-                                            <button
-                                                key={value}
-                                                type="button"
-                                                onClick={() => handleChange("amount", value)}
-                                                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${isActive
-                                                    ? "border-brandGreen-600 bg-brandGreen-600 text-white shadow-sm"
-                                                    : "border-slate-200 bg-white text-slate-700 hover:border-brandGreen-200 hover:text-brandGreen-700"
-                                                    }`}
-                                            >
-                                                {formatNumber(amount)}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                            <InputField
-                                label={t("donate.form.amount")}
-                                value={form.amount}
-                                onChange={(v) => handleChange("amount", v)}
-                                required
-                                error={formErrors.amount ? t(formErrors.amount) : ""}
-                            />
-                            <label className="flex items-center gap-3 text-sm font-semibold text-slate-700">
-                                <input
-                                    type="checkbox"
-                                    checked={form.is_anonymous}
-                                    onChange={(e) => handleChange("is_anonymous", e.target.checked)}
-                                    className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-200"
-                                />
-                                {t("donate.form.anonymous")}
-                            </label>
-                            <InputField label={t("donate.form.notes")} value={form.notes} onChange={(v) => handleChange("notes", v)} />
-
-                            {submitState.messageKey && submitState.messageKey !== "donate.form.status.snapEmbedded" && (
-                                <div
-                                    className={`rounded-xl px-4 py-3 text-sm font-semibold ${submitState.type === "success"
-                                        ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
-                                        : "border border-red-100 bg-red-50 text-red-700"
-                                        }`}
-                                >
-                                    {t(submitState.messageKey)}
-                                </div>
-                            )}
-                            <button
-                                type="submit"
-                                disabled={submitting}
-                                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brandGreen-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                <FontAwesomeIcon icon={faCreditCard} />
-                                {submitting ? t("donate.form.status.processing") : t("donate.form.submit")}
-                            </button>
-
-                            <p className="text-xs text-slate-500">
-                                {t("donate.form.helper.manual")}{" "}
-                                <Link to="/konfirmasi-donasi" className="font-semibold text-brandGreen-700 hover:text-brandGreen-800">
-                                    {t("donate.form.helper.manual.link")}
-                                </Link>.
-                            </p>
-                        </form>
+                        <DonationForm
+                            form={form}
+                            formErrors={formErrors}
+                            submitting={submitting}
+                            submitState={submitState}
+                            localizedPrograms={localizedPrograms}
+                            handleChange={handleChange}
+                            handleSubmit={handleSubmit}
+                            t={t}
+                        />
                     </div>
                 </div>
             </section>
 
-            {/* LANGKAH SINGKAT */}
-            <section className="bg-slate-50 py-16 sm:py-20">
+             {/* LANGKAH SINGKAT */}
+             <section className="bg-slate-50 py-16 sm:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="text-center space-y-3 mb-12">
@@ -1072,22 +564,15 @@ function DonatePage() {
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {STEPS.map((step, idx) => (
                                 <div key={step.titleKey} className="relative">
-                                    {/* Card */}
                                     <div className="relative h-full flex flex-col bg-white rounded-xl border border-slate-200 p-5 shadow-sm transition-shadow hover:shadow-md">
-
-                                        {/* Icon Circle */}
                                         <div className="relative mb-4">
                                             <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-xl bg-brandGreen-600 text-white shadow-sm">
                                                 <FontAwesomeIcon icon={step.icon} className="text-xl" />
                                             </div>
-
-                                            {/* Number Badge */}
                                             <div className="absolute -top-1 -right-1 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-white text-xs font-bold border-2 border-white">
                                                 {idx + 1}
                                             </div>
                                         </div>
-
-                                        {/* Content */}
                                         <div className="space-y-2 flex-1">
                                             <p className="text-[10px] font-semibold text-brandGreen-600">
                                                 {t("donate.steps.stepLabel")} {idx + 1}
@@ -1111,124 +596,20 @@ function DonatePage() {
             <QuoteSlideshow />
 
             {/* REKENING */}
-            <section id="rekening-resmi" className="bg-slate-50">
-                <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-
-                    {/* Wakif Location Switcher */}
-                    <div className="mb-8 flex justify-center">
-                        <div className="inline-flex rounded-xl bg-slate-100 p-1">
-                            <button
-                                onClick={() => setWakifLocation('domestic')}
-                                className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-all ${wakifLocation === 'domestic'
-                                    ? 'bg-white text-brandGreen-700 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700'
-                                    }`}
-                            >
-                                <FontAwesomeIcon icon={faMapMarkerAlt} />
-                                Wakif Dalam Negeri
-                            </button>
-                            <button
-                                onClick={() => setWakifLocation('international')}
-                                className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-all ${wakifLocation === 'international'
-                                    ? 'bg-white text-brandGreen-700 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700'
-                                    }`}
-                            >
-                                <FontAwesomeIcon icon={faGlobe} />
-                                Wakif Luar Negeri
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-700">
-                            <FontAwesomeIcon icon={faWallet} />
-                        </div>
-                        <div>
-                            <p className="text-xs font-bold text-brandGreen-700">{t("donate.accounts.badge")}</p>
-                            <h2 className="text-2xl font-body font-semibold text-slate-900">{t("donate.accounts.heading")}</h2>
-                        </div>
-                    </div>
-
-                    {errorKey && (
-                        <div className="mt-8 overflow-hidden rounded-[24px] border border-red-100 bg-red-50/50 p-4 backdrop-blur-sm mb-8">
-                            <div className="flex items-start gap-4">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600 shadow-sm ring-4 ring-red-50/50">
-                                    <FontAwesomeIcon icon={faCircleExclamation} />
-                                </div>
-                                <div className="space-y-1">
-                                    <h4 className="text-sm font-bold text-red-900">{t("donate.accounts.error.title")}</h4>
-                                    <p className="text-sm leading-relaxed text-red-700/80">
-                                        {t(errorKey)}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="space-y-12">
-                        {loading ? (
-                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                {Array.from({ length: 3 }).map((_, idx) => <AccountSkeleton key={`acc-skel-${idx}`} />)}
-                            </div>
-                        ) : visibleAccounts.length === 0 ? (
-                            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
-                                {t("donate.accounts.empty")}
-                            </div>
-                        ) : (
-                            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden divide-y divide-slate-100 shadow-sm">
-                                {sortedCategories.map(cat => (
-                                    <div key={cat} className="bg-white overflow-hidden transition-all duration-300">
-                                        <button
-                                            onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
-                                            className={`flex w-full items-center justify-between px-6 py-5 text-left transition hover:bg-slate-50 ${activeCategory === cat ? 'bg-slate-50' : ''}`}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className={`h-8 w-1.5 rounded-full transition-colors ${activeCategory === cat ? 'bg-brandGreen-500' : 'bg-slate-300'}`} />
-                                                <h3 className={`text-lg font-bold transition-colors ${activeCategory === cat ? 'text-brandGreen-800' : 'text-slate-700'}`}>
-                                                    {categoryLabels[cat] || cat}
-                                                </h3>
-                                            </div>
-                                            <div className={`flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ${activeCategory === cat ? 'bg-brandGreen-100 text-brandGreen-600 rotate-180' : 'bg-slate-100 text-slate-400'}`}>
-                                                <FontAwesomeIcon icon={faChevronDown} />
-                                            </div>
-                                        </button>
-
-                                        <div
-                                            className={`grid transition-[grid-template-rows] duration-300 ease-out ${activeCategory === cat ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
-                                        >
-                                            <div className="overflow-hidden">
-                                                <div className="border-t border-slate-100 bg-white px-6 py-6">
-                                                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                                                        {groupedAccounts[cat].map(acc => (
-                                                            <AccountCard
-                                                                key={acc.id}
-                                                                account={acc}
-                                                                t={t}
-                                                                onShowQris={(url) => setQrisImage(url)}
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="mt-12 rounded-xl border border-slate-200 bg-white p-6 text-center">
-                        <p className="text-sm font-semibold text-slate-600">
-                            {t("donate.accounts.note")}{" "}
-                            <a className="text-brandGreen-700 underline decoration-2 underline-offset-2 hover:text-brandGreen-800" href="/konfirmasi-donasi">
-                                {t("donate.accounts.note.link")}
-                            </a>{" "}
-                            {t("donate.accounts.note.suffix")}
-                        </p>
-                    </div>
-                </div>
-            </section>
+            <BankAccountsSection
+                wakifLocation={wakifLocation}
+                setWakifLocation={setWakifLocation}
+                activeCategory={activeCategory}
+                setActiveCategory={setActiveCategory}
+                loading={loading}
+                errorKey={errorKey}
+                visibleAccounts={visibleAccounts}
+                sortedCategories={sortedCategories}
+                groupedAccounts={groupedAccounts}
+                categoryLabels={categoryLabels}
+                setQrisImage={setQrisImage}
+                t={t}
+            />
 
             {/* CTA */}
             <section className="bg-white pb-20">
@@ -1259,38 +640,19 @@ function DonatePage() {
                 </div>
             </section>
 
-            {snapIframeUrl && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 px-4">
-                    <div className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden">
-                        <div className="flex items-center justify-between bg-slate-50 px-4 py-3 border-b border-slate-100">
-                            <p className="text-sm font-semibold text-slate-800">{t("donate.snap.modalTitle")}</p>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setSnapIframeUrl(null);
-                                    if (currentDonationIdRef.current) {
-                                        console.log("Cancelling fallback donation ID:", currentDonationIdRef.current);
-                                        http.post(`/donations/${currentDonationIdRef.current}/cancel`)
-                                            .catch((err) => console.error("Cancellation failed:", err));
-                                    }
-                                }}
-                                className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-200"
-                            >
-                                {t("donate.snap.cancel")}
-                            </button>
-                        </div>
-                        <div className="w-full bg-slate-100" style={{ height: "520px" }}>
-                            <iframe
-                                src={snapIframeUrl}
-                                title={t("donate.payment.iframeTitle")}
-                                className="h-full w-full border-0"
-                                allow="payment *; geolocation *"
-                            />
-                        </div>
-
-                    </div>
-                </div>
-            )}
+            <PaymentStatusOverlays
+                showSuccessOverlay={showSuccessOverlay}
+                setShowSuccessOverlay={setShowSuccessOverlay}
+                showFailedOverlay={showFailedOverlay}
+                setShowFailedOverlay={setShowFailedOverlay}
+                showDanaConfirm={showDanaConfirm}
+                setShowDanaConfirm={setShowDanaConfirm}
+                showPendingBanner={showPendingBanner}
+                setShowPendingBanner={setShowPendingBanner}
+                checkingPayment={checkingPayment}
+                onCheckPaymentStatus={handleCheckPaymentStatus}
+                t={t}
+            />
 
             {/* QRIS Modal */}
             {qrisImage && (
@@ -1303,7 +665,7 @@ function DonatePage() {
                                 onClick={() => setQrisImage(null)}
                                 className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
                             >
-                                <FontAwesomeIcon icon={faTimes} />
+                                <FontAwesomeIcon icon={faTimesCircle} />
                             </button>
                         </div>
                         <div className="aspect-square w-full rounded-2xl bg-white p-2 border border-slate-100">
@@ -1317,180 +679,7 @@ function DonatePage() {
             )}
         </LandingLayout>
     );
-}
-
-function InfoPill({ icon, label }: { icon: any; label: string }) {
-    return (
-        <div className="flex items-center gap-3 rounded-xl border border-white bg-white/80 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brandGreen-50 text-brandGreen-700">
-                <FontAwesomeIcon icon={icon} />
-            </span>
-            <span>{label}</span>
-        </div>
-    );
-}
-
-function AccountCard({
-    account,
-    t,
-    onShowQris,
-}: {
-    account: BankAccount;
-    t: (key: string, fallback?: string) => string;
-    onShowQris: (url: string) => void;
-}) {
-
-
-    const initials = account.bank_name
-        .split(/\s+/)
-        .filter(Boolean)
-        .map((part) => part[0])
-        .join("")
-        .slice(0, 3)
-        .toUpperCase();
-
-    const imageUrl = getImageUrl(account.image_path);
-
-    return (
-        <div className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_-32px_rgba(15,23,42,0.35)] transition hover:shadow-[0_20px_50px_-20px_rgba(15,23,42,0.45)]">
-            <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-50 border border-slate-100 p-1">
-                        {account.image_path ? (
-                            <img src={imageUrl} alt={account.bank_name} className="h-full w-full object-contain rounded-xl" />
-                        ) : (
-                            <span className="text-xs font-bold tracking-[0.16em] text-primary-700">{initials || "DPF"}</span>
-                        )}
-                    </div>
-
-                    <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t("donate.accounts.bankLabel")}</p>
-                        <p className="text-base font-body font-bold text-slate-900 leading-tight">{account.bank_name}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3 border border-slate-100">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{t("donate.accounts.number")}</p>
-                <div className="mt-1 flex items-center justify-between">
-                    <p className="text-xl font-body font-bold text-slate-900 tracking-[0.05em]">
-                        {account.account_number}
-                    </p>
-                    <button
-                        onClick={() => {
-                            if (account.account_number) navigator.clipboard.writeText(account.account_number);
-                        }}
-                        className="text-xs font-semibold text-brandGreen-600 hover:text-brandGreen-700"
-                        title="Salin"
-                    >
-                        Salin
-                    </button>
-                </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-slate-100 space-y-2 text-sm">
-                <div className="flex justify-between gap-3">
-                    <span className="text-xs font-semibold text-slate-500">{t("donate.accounts.holder")}</span>
-                    <span className="font-bold text-slate-900 text-right">{account.account_name}</span>
-                </div>
-                {account.qris_image_path && (
-                    <button
-                        type="button"
-                        onClick={() => onShowQris(getImageUrl(account.qris_image_path!) as string)}
-                        className="mt-3 w-full rounded-xl border border-brandGreen-200 bg-brandGreen-50 py-2.5 text-center text-sm font-bold text-brandGreen-700 hover:bg-brandGreen-100 transition"
-                    >
-                        <FontAwesomeIcon icon={faQrcode} className="mr-2" />
-                        Lihat / Scan QRIS
-                    </button>
-                )}
-            </div>
-        </div>
-    );
-}
-
-function AccountSkeleton() {
-    return (
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_20px_50px_-32px_rgba(15,23,42,0.35)] animate-pulse space-y-4">
-            <div className="flex items-center gap-3">
-                <div className="h-11 w-11 rounded-2xl bg-slate-100" />
-                <div className="space-y-2">
-                    <div className="h-3 w-20 rounded bg-slate-100" />
-                    <div className="h-4 w-32 rounded bg-slate-100" />
-                </div>
-            </div>
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 space-y-2">
-                <div className="h-3 w-24 rounded bg-slate-100" />
-                <div className="h-5 w-40 rounded bg-slate-100" />
-            </div>
-            <div className="space-y-2">
-                <div className="h-3 w-24 rounded bg-slate-100" />
-                <div className="h-3 w-32 rounded bg-slate-100" />
-            </div>
-        </div>
-    );
-}
-
-function SelectField({
-    label,
-    value,
-    onChange,
-    options,
-}: {
-    label: string;
-    value: string;
-    onChange: (v: string) => void;
-    options: { value: string; label: string; disabled?: boolean }[];
-}) {
-    return (
-        <label className="space-y-1.5 text-sm font-medium text-slate-700">
-            <span className="leading-tight">{label}</span>
-            <select
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:border-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-100"
-            >
-                {options.map((opt) => (
-                    <option key={opt.value} value={opt.value} disabled={opt.disabled}>
-                        {opt.label}
-                    </option>
-                ))}
-            </select>
-        </label>
-    );
-}
-
-function InputField({
-    label,
-    value,
-    onChange,
-    required,
-    error,
-}: {
-    label: string;
-    value: string;
-    onChange: (v: string) => void;
-    required?: boolean;
-    error?: string;
-}) {
-    const base =
-        "w-full rounded-xl border px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:outline-none focus:ring-2";
-    const state = error
-        ? "border-red-300 bg-red-50 focus:border-red-300 focus:ring-red-100"
-        : "border-slate-200 bg-white focus:border-primary-200 focus:ring-primary-100";
-    return (
-        <label className="space-y-1.5 text-sm font-medium text-slate-700">
-            <span className="leading-tight">{label}</span>
-            <input
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                required={required}
-                className={`${base} ${state}`}
-            />
-            {error && <span className="text-xs font-semibold text-red-600">{error}</span>}
-        </label>
-    );
-}
+};
 
 export default DonatePage;
 export { DonatePage };
-
