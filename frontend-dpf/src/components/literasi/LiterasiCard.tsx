@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Literasi } from "./LiterasiShared.ts";
 import { getImageUrl, formatDate } from "./LiterasiShared.ts";
-import imagePlaceholder from "../../brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 
 interface LiterasiCardProps {
   article: Literasi;

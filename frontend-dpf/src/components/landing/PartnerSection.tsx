@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHandshake } from "@fortawesome/free-solid-svg-icons";
 import { type Partner, getImageUrl, pickLocale } from "./LandingUI";
-import imagePlaceholder from "@/brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 
 export function PartnerSection({ 
     partners, 

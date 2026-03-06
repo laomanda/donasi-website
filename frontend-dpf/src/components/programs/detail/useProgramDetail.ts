@@ -12,7 +12,7 @@ import {
   getImageUrl,
   canonicalStatus
 } from "../ProgramShared";
-import imagePlaceholder from "../../../brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 
 export function useProgramDetail(locale: "id" | "en", t: (key: string, fallback?: string) => string) {
   const { slug } = useParams<{ slug: string }>();

@@ -4,7 +4,7 @@ import { faArrowLeft, faImage, faTrash } from "@fortawesome/free-solid-svg-icons
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
-import imagePlaceholder from "../../../brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 
 type Banner = {
   id: number;

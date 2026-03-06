@@ -1,4 +1,4 @@
-import imagePlaceholder from "../../brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 import { resolveStorageBaseUrl } from "../../lib/urls";
 import { programDict } from "./ProgramI18n";
 import { translate } from "../../lib/i18n-utils";

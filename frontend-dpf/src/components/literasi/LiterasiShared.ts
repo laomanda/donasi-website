@@ -1,4 +1,3 @@
-import imagePlaceholder from "../../brand/assets/image-placeholder.jpg";
 import { resolveStorageBaseUrl } from "../../lib/urls";
 
 export type Literasi = {
@@ -13,6 +12,13 @@ export type Literasi = {
   category?: string | null;
   category_en?: string | null;
   author_name?: string | null;
+};
+
+export const getImageUrl = (path?: string | null) => {
+  if (!path) return "";
+  if (path.startsWith("http")) return path;
+  const base = resolveStorageBaseUrl();
+  return `${base}/${path.replace(/^\//, "")}`;
 };
 
 export const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" | "en" = "id") => {
@@ -33,11 +39,4 @@ export const formatDate = (value?: string | null, locale: "id" | "en" = "id", t?
   } catch {
     return value;
   }
-};
-
-export const getImageUrl = (path?: string | null) => {
-  if (!path) return imagePlaceholder;
-  if (path.startsWith("http")) return path;
-  const base = resolveStorageBaseUrl();
-  return `${base}/${path}`;
 };

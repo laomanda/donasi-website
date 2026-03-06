@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight, faHandHoldingHeart } from "@fortawesome/free-solid-svg-icons";
-import imagePlaceholder from "@/brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 import { 
     type Program, 
     getProgress, 

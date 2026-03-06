@@ -3,7 +3,7 @@ import { faPeopleGroup, faRibbon } from "@fortawesome/free-solid-svg-icons";
 import { GROUP_LABEL_KEYS } from "./AboutShared";
 import type { OrganizationMember } from "./AboutShared";
 import { resolveStorageBaseUrl } from "../../lib/urls";
-import imagePlaceholder from "../../brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 
 type AboutTeamProps = {
   t: (key: string, fallback?: string) => string;

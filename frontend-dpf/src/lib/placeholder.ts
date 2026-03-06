@@ -1,0 +1,1 @@
+export const imagePlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f1f5f9'/%3E%3Cpath d='M160 180l30-40 40 50 50-70 40 90H160z' fill='%23cbd5e1'/%3E%3Ccircle cx='280' cy='120' r='20' fill='%23cbd5e1'/%3E%3C/svg%3E";

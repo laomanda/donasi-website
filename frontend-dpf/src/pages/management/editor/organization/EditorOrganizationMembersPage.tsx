@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faFilter, faMagnifyingGlass, faPenToSquare, faPlus } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../../lib/http";
-import imagePlaceholder from "../../../../brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 import { useToast } from "../../../../components/ui/ToastProvider";
 import { runWithConcurrency } from "../../../../lib/bulk";
 import { useBulkSelection } from "../../../../components/ui/useBulkSelection";

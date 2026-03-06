@@ -1,5 +1,5 @@
 import { resolveStorageBaseUrl } from "@/lib/urls";
-import imagePlaceholder from "@/brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 
 /* --- Types --- */
 

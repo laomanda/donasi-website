@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faTag, faUser } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { getImageUrl, formatDate } from "../LiterasiShared.ts";
-import imagePlaceholder from "../../../brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 import type { LiterasiDetail } from "./useLiterasiDetail.ts";
 
 type BadgeTone = "neutral" | "primary" | "green";

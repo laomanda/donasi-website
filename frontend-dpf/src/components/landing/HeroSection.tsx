@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHandHoldingHeart, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import heroImage from "@/brand/assets/Hero.png";
-import imagePlaceholder from "@/brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 
 export function HeroSection({ 
     error, 

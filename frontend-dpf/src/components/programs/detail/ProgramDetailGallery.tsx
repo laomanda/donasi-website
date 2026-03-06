@@ -3,7 +3,7 @@ import {
   faArrowLeft, 
   faArrowRight 
 } from "@fortawesome/free-solid-svg-icons";
-import imagePlaceholder from "../../../brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 
 interface ProgramDetailGalleryProps {
   galleryUrls: string[];

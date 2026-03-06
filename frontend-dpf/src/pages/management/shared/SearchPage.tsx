@@ -16,7 +16,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import http from "../../../lib/http";
-import imagePlaceholder from "../../../brand/assets/image-placeholder.jpg";
+import { imagePlaceholder } from "@/lib/placeholder";
 import { readSearchLimit, SETTINGS_EVENT } from "../../../lib/settings";
 
 type SearchRole = "editor" | "admin" | "superadmin";
