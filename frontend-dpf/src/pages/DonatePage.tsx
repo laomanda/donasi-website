@@ -13,7 +13,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../lib/http";
 import { useLang } from "../lib/i18n";
-import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { donateDict } from "../components/donate/DonateI18n";
+import { translate } from "../lib/i18n-utils";
 import { LandingLayout } from "../layouts/LandingLayout";
 import { getAuthUser } from "../lib/auth";
 import { PageHero } from "../components/PageHero";
@@ -63,34 +64,35 @@ interface SubmitState {
     messageKey: string | null;
 }
 
-const quotes = [
-    {
-        text: "Hai orang-orang yang beriman, nafkahkanlah (di jalan Allah) sebagian dari hasil usahamu yang baik-baik dan sebagian dari apa yang Kami keluarkan dari bumi untuk kamu.",
-        source: "(Qs. Al Baqarah: 267)"
-    },
-    {
-        text: "Kamu sekali-kali tidak sampai pada kebaikan (yang sempurna), sebelum kamu nafkahkan sebagian harta yang kamu cintai.",
-        source: "(Qs. Ali Imran: 92)"
-    },
-    {
-        text: "Jika seorang anak Adam meninggal dunia, maka terputuslah amalannya kecuali tiga perkara yaitu: sedekah jariyah, ilmu yang dimanfaatkan, atau doa anak yang sholeh",
-        source: "(HR. Muslim no. 1631)"
-    },
-    {
-        text: "Sebagian besar ulama berpendapat bahwa yang dimaksud dengan hadits tersebut (sedekah jariyah) adalah Wakaf, karena sedekah jariyah adalah sedekah yang berkelanjutan manfaatnya.",
-        source: ""
-    }
-];
-
 function QuoteSlideshow() {
+    const { locale } = useLang();
     const [index, setIndex] = useState(0);
+
+    const localizedQuotes = useMemo(() => [
+        {
+            text: translate(donateDict, locale, "donate.quotes.1.text"),
+            source: translate(donateDict, locale, "donate.quotes.1.source")
+        },
+        {
+            text: translate(donateDict, locale, "donate.quotes.2.text"),
+            source: translate(donateDict, locale, "donate.quotes.2.source")
+        },
+        {
+            text: translate(donateDict, locale, "donate.quotes.3.text"),
+            source: translate(donateDict, locale, "donate.quotes.3.source")
+        },
+        {
+            text: translate(donateDict, locale, "donate.quotes.4.text"),
+            source: translate(donateDict, locale, "donate.quotes.4.source")
+        }
+    ], [locale]);
 
     useEffect(() => {
         const timer = setInterval(() => {
-            setIndex((prev) => (prev + 1) % quotes.length);
+            setIndex((prev) => (prev + 1) % localizedQuotes.length);
         }, 7000);
         return () => clearInterval(timer);
-    }, []);
+    }, [localizedQuotes.length]);
 
     return (
         <section className="relative overflow-hidden bg-slate-50 py-12 sm:py-16">
@@ -98,7 +100,7 @@ function QuoteSlideshow() {
                 <div className="relative h-48 sm:h-40 flex items-center justify-center">
                     <AnimatePresence mode="wait">
                         <motion.div
-                            key={index}
+                            key={`${index}-${locale}`}
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -15 }}
@@ -106,11 +108,11 @@ function QuoteSlideshow() {
                             className="w-full"
                         >
                             <p className="font-heading text-lg font-medium italic leading-relaxed text-slate-800 sm:text-2xl">
-                                "{quotes[index].text}"
+                                "{localizedQuotes[index].text}"
                             </p>
-                            {quotes[index].source && (
+                            {localizedQuotes[index].source && (
                                 <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-primary-600 sm:text-sm">
-                                    {quotes[index].source}
+                                    {localizedQuotes[index].source}
                                 </p>
                             )}
                         </motion.div>
@@ -131,7 +133,7 @@ const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" |
 const DonatePage = () => {
     const { locale } = useLang();
     const [searchParams] = useSearchParams();
-    const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
+    const t = (key: string, fallback?: string) => translate(donateDict, locale, key, fallback);
     
     // Core Data State
     const [accounts, setAccounts] = useState<BankAccount[]>([]);

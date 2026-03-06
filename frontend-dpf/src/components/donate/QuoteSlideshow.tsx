@@ -1,36 +1,44 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const quotes = [
-    {
-        text: "Hai orang-orang yang beriman, nafkahkanlah (di jalan Allah) sebagian dari hasil usahamu yang baik-baik dan sebagian dari apa yang Kami keluarkan dari bumi untuk kamu.",
-        source: "(Qs. Al Baqarah: 267)"
-    },
-    {
-        text: "Perumpamaan (nafkah yang dikeluarkan oleh) orang-orang yang menafkahkan hartanya di jalan Allah adalah serupa dengan sebutir benih yang menumbuhkan tujuh bulir, pada tiap-puh bulir seratus biji. Allah melipat gandakan (ganjaran) bagi siapa yang Dia kehendaki.",
-        source: "(Qs. Al Baqarah: 261)"
-    },
-    {
-        text: "Sebagian besar ulama berpendapat bahwa yang dimaksud dengan hadits tersebut (sedekah jariyah) adalah Wakaf, karena sedekah jariyah adalah sedekah yang berkelanjutan manfaatnya.",
-        source: ""
-    }
-];
+import { useLang } from "../../lib/i18n";
+import { donateDict } from "./DonateI18n";
+import { translate } from "../../lib/i18n-utils";
 
 export const QuoteSlideshow = () => {
+    const { locale } = useLang();
     const [current, setCurrent] = useState(0);
+
+    const quotes = useMemo(() => [
+        {
+            text: translate(donateDict, locale, "donate.quotes.1.text"),
+            source: translate(donateDict, locale, "donate.quotes.1.source")
+        },
+        {
+            text: translate(donateDict, locale, "donate.quotes.2.text"),
+            source: translate(donateDict, locale, "donate.quotes.2.source")
+        },
+        {
+            text: translate(donateDict, locale, "donate.quotes.3.text"),
+            source: translate(donateDict, locale, "donate.quotes.3.source")
+        },
+        {
+            text: translate(donateDict, locale, "donate.quotes.4.text"),
+            source: translate(donateDict, locale, "donate.quotes.4.source")
+        }
+    ], [locale]);
 
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrent(prev => (prev + 1) % quotes.length);
         }, 8000);
         return () => clearInterval(timer);
-    }, []);
+    }, [quotes.length]);
 
     return (
         <div className="relative h-24 overflow-hidden">
             <AnimatePresence mode="wait">
                 <motion.div
-                    key={current}
+                    key={`${current}-${locale}`}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}

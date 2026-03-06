@@ -13,7 +13,8 @@ import {
 import { LandingLayout } from "../layouts/LandingLayout";
 import { PageHero } from "../components/PageHero";
 import { useLang } from "../lib/i18n";
-import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { serviceDict } from "../components/services/ServiceI18n";
+import { translate } from "../lib/i18n-utils";
 import { KonsultasiForm } from "../components/services/consult/KonsultasiForm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -40,7 +41,7 @@ const FAQS = [
 
 export function KonsultasiPage() {
   const { locale } = useLang();
-  const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
+  const t = (key: string, fallback?: string) => translate(serviceDict, locale, key, fallback);
 
   return (
     <LandingLayout footerWaveBgClassName="bg-slate-50">
@@ -209,4 +210,3 @@ function InfoPill({ icon, label }: { icon: any; label: string }) {
 }
 
 export default KonsultasiPage;
-

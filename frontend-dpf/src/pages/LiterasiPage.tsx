@@ -1,6 +1,7 @@
 import { LandingLayout } from "../layouts/LandingLayout";
 import { useLang } from "../lib/i18n";
-import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { literasiDict } from "../components/literasi/LiterasiI18n";
+import { translate } from "../lib/i18n-utils";
 
 // Literasi Components & Logic
 import { useLiterasi } from "../components/literasi/useLiterasi.ts";
@@ -11,7 +12,7 @@ import { LiterasiEmpty } from "../components/literasi/LiterasiEmpty.tsx";
 
 export function LiterasiPage() {
   const { locale } = useLang();
-  const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
+  const t = (key: string, fallback?: string) => translate(literasiDict, locale, key, fallback);
 
   const {
     loading,

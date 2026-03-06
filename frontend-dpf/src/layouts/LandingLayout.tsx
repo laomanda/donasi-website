@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type PropsWithChildren } from "react";
-import { LandingNavbar } from "../components/landing/LandingNavbar";
+import { LandingNavbar } from "../components/landing/navbar/LandingNavbar";
 import { LandingFooter } from "../components/landing/LandingFooter";
 import { FloatingWhatsApp } from "../components/landing/FloatingWhatsApp";
 import { WaveDivider } from "../components/landing/WaveDivider";

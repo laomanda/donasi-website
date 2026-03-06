@@ -6,7 +6,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { LandingLayout } from "../layouts/LandingLayout";
 import imagePlaceholder from "../brand/assets/image-placeholder.jpg";
 import { useLang } from "../lib/i18n";
-import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { translate } from "../lib/i18n-utils";
+import { literasiDict } from "../components/literasi/LiterasiI18n";
 import { sanitizeHtml } from "../lib/sanitize";
 
 type PreviewArticle = {
@@ -123,7 +124,7 @@ export function PreviewPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { locale } = useLang();
-  const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
+  const t = (key: string, fallback?: string) => translate(literasiDict, locale, key, fallback);
 
   const storageKey = useMemo(() => {
     return String(searchParams.get("key") ?? "dpf_preview_article_new").trim();

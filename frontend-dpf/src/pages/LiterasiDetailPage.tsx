@@ -3,7 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "../layouts/LandingLayout";
 import { useLang } from "../lib/i18n";
-import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { literasiDict } from "../components/literasi/LiterasiI18n";
+import { translate } from "../lib/i18n-utils";
 
 // Detail Components & Logic
 import { useLiterasiDetail } from "../components/literasi/detail/useLiterasiDetail.ts";
@@ -16,7 +17,7 @@ import { LiterasiDetailSkeleton } from "../components/literasi/detail/LiterasiDe
 export function LiterasiDetailPage() {
   const navigate = useNavigate();
   const { locale } = useLang();
-  const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
+  const t = (key: string, fallback?: string) => translate(literasiDict, locale, key, fallback);
 
   const {
     loading,
@@ -45,13 +46,13 @@ export function LiterasiDetailPage() {
               className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary-200 hover:text-primary-700"
             >
               <FontAwesomeIcon icon={faArrowLeft} />
-              {locale === "en" ? "Back" : "Kembali"}
+              {t("literasi.detail.back")}
             </button>
             <Link
               to="/literasi"
               className="text-sm font-semibold text-primary-600 hover:text-primary-700 transition"
             >
-              {locale === "en" ? "View other articles" : "Lihat berita lain"}
+              {t("literasi.detail.viewOther")}
             </Link>
           </div>
 
@@ -59,13 +60,7 @@ export function LiterasiDetailPage() {
             <LiterasiDetailSkeleton />
           ) : errorKey ? (
             <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {errorKey === "not_found"
-                ? locale === "en"
-                  ? "Article not found."
-                  : "Artikel tidak ditemukan."
-                : locale === "en"
-                  ? "Failed to load article. Please try again later."
-                  : "Gagal memuat artikel. Coba lagi nanti."}
+              {errorKey === "not_found" ? t("literasi.detail.notFound") : t("literasi.detail.error")}
             </div>
           ) : localizedArticle ? (
             <div className="space-y-10">

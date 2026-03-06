@@ -1,0 +1,13 @@
+
+> frontend-dpf@0.0.0 build
+> tsc -b && vite build
+
+src/components/landing/navbar/LandingNavbarShared.ts(9,28): error TS2307: Cannot find module '../../i18n/global' or its corresponding type declarations.
+src/components/landing/navbar/useLandingNavbar.ts(3,25): error TS2307: Cannot find module '../../lib/i18n' or its corresponding type declarations.
+src/components/landing/navbar/useLandingNavbar.ts(4,27): error TS2307: Cannot find module '../../lib/i18n-utils' or its corresponding type declarations.
+src/components/landing/navbar/useLandingNavbar.ts(5,28): error TS2307: Cannot find module '../../i18n/global' or its corresponding type declarations.
+src/components/landing/navbar/useLandingNavbar.ts(6,37): error TS2307: Cannot find module '../../lib/publicSettings' or its corresponding type declarations.
+src/components/landing/navbar/useLandingNavbar.ts(7,43): error TS2307: Cannot find module '../../lib/auth' or its corresponding type declarations.
+src/components/landing/navbar/useLandingNavbar.ts(18,29): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/components/landing/navbar/useLandingNavbar.ts(81,16): error TS7006: Parameter 'settings' implicitly has an 'any' type.
+src/components/landing/navbar/useLandingNavbar.ts(129,27): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ id: string; en: string; }'.

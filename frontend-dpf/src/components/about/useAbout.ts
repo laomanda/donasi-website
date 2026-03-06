@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import http from "../../lib/http";
 import { useLang } from "../../lib/i18n";
-import { landingDict, translate as translateLanding } from "../../i18n/landing";
-import { 
-  MISSION_ITEM_KEYS, 
-  VALUE_ITEMS, 
-  TIMELINE, 
-  LEGAL_ITEM_KEYS, 
-  GROUP_ORDER 
+import { aboutDict } from "./AboutI18n";
+import { translate } from "../../lib/i18n-utils";
+import {
+  MISSION_ITEM_KEYS,
+  VALUE_ITEMS,
+  TIMELINE,
+  LEGAL_ITEM_KEYS,
+  GROUP_ORDER,
 } from "./AboutShared";
 import type { OrganizationMember } from "./AboutShared";
 
 export function useAbout() {
   const { locale } = useLang();
-  const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
+  const t = (key: string, fallback?: string) => translate(aboutDict, locale, key, fallback);
   
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(true);

@@ -38,7 +38,7 @@ export function LiterasiGrid({
               onClick={onLoadMore}
               className="inline-flex items-center gap-2 rounded-full bg-primary-700 px-8 py-3 text-sm font-bold text-white shadow-md ring-1 ring-slate-200 transition hover:bg-primary-800 hover:shadow-lg active:scale-95"
             >
-              {t("program.loadMore", "Lihat Lebih Banyak")}
+              {t("literasi.loadMore", "Lihat Lebih Banyak")}
             </button>
           </div>
         )}

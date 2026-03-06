@@ -1,7 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { useLang } from "../../lib/i18n";
-import { landingDict, translate } from "../../i18n/landing";
+import { globalDict } from "../../i18n/global";
+import { translate } from "../../lib/i18n-utils";
 
 type FloatingWhatsAppProps = {
   phoneE164: string; // contoh: "6281234567890"
@@ -13,7 +14,7 @@ export function FloatingWhatsApp({
   message = "Halo DPF, saya ingin bertanya lebih lanjut mengenai program donasi.",
 }: FloatingWhatsAppProps) {
   const { locale } = useLang();
-  const t = (key: string, fallback?: string) => translate(landingDict, locale, key, fallback);
+  const t = (key: string, fallback?: string) => translate(globalDict, locale, key, fallback);
 
   const href = `https://wa.me/${phoneE164}?text=${encodeURIComponent(message)}`;
 

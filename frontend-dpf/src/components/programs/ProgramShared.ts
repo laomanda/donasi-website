@@ -1,6 +1,7 @@
 import imagePlaceholder from "../../brand/assets/image-placeholder.jpg";
 import { resolveStorageBaseUrl } from "../../lib/urls";
-import { landingDict, translate as translateLanding } from "../../i18n/landing";
+import { programDict } from "./ProgramI18n";
+import { translate } from "../../lib/i18n-utils";
 
 export type Program = {
   id: number;
@@ -112,12 +113,12 @@ export const getProgramStatusTone = (status?: string | null, deadlineDays?: numb
 };
 
 export const getStatusLabel = (status?: string | null, t?: (key: string, fallback?: string) => string, deadlineDays?: number | string | null) => {
-  const translateFn = t ?? ((key: string, fallback?: string) => translateLanding(landingDict, "id", key, fallback));
+  const translateFn = t ?? ((key: string, fallback?: string) => translate(programDict, "id", key, fallback));
   const s = canonicalStatus(status, deadlineDays);
-  if (s === "active") return translateFn("landing.programs.status.ongoing");
-  if (s === "completed") return translateFn("landing.programs.status.completed");
-  if (s === "draft") return translateFn("landing.programs.status.upcoming");
-  return translateFn("landing.common.na");
+  if (s === "active") return translateFn("program.status.ongoing");
+  if (s === "completed") return translateFn("program.status.completed");
+  if (s === "draft") return translateFn("program.status.upcoming");
+  return translateFn("program.common.na");
 };
 
 export const getExcerptParagraph = (value?: string | null) => {

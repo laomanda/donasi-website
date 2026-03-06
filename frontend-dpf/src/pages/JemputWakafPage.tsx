@@ -15,12 +15,11 @@ import {
 import { LandingLayout } from "../layouts/LandingLayout";
 import { PageHero } from "../components/PageHero";
 import { useLang } from "../lib/i18n";
-import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { serviceDict } from "../components/services/ServiceI18n";
+import { translate } from "../lib/i18n-utils";
 import { HeroTrustBadge, ServiceBenefits } from "../components/services/shared/ServiceUI";
 import { ServiceSteps } from "../components/services/shared/ServiceSteps";
 import { JemputWakafForm } from "../components/services/pickup/JemputWakafForm";
-
-
 
 const JEMPUT_BENEFITS = [
   { titleKey: "jemput.benefits.1.title", descKey: "jemput.benefits.1.desc", icon: faShieldHalved },
@@ -38,7 +37,7 @@ const JEMPUT_STEPS = [
 
 function JemputWakafPage() {
   const { locale } = useLang();
-  const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
+  const t = (key: string, fallback?: string) => translate(serviceDict, locale, key, fallback);
 
   return (
     <LandingLayout footerWaveBgClassName="bg-slate-50">
@@ -54,7 +53,7 @@ function JemputWakafPage() {
         }
         subtitle={t("jemput.hero.subtitle")}
         breadcrumb={[
-          { label: t("nav.services", "Layanan"), href: "/layanan" },
+          { label: t("layanan.hero.badge", "Layanan"), href: "/layanan" },
           { label: t("jemput.hero.badge", "Jemput Wakaf") },
         ]}
         rightElement={

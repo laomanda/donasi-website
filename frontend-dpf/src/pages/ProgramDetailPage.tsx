@@ -1,6 +1,7 @@
 import { LandingLayout } from "../layouts/LandingLayout";
 import { useLang } from "../lib/i18n";
-import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { translate } from "../lib/i18n-utils";
+import { programDict } from "../components/programs/ProgramI18n";
 import { useProgramDetail } from "../components/programs/detail/useProgramDetail";
 import { ProgramDetailActionHeader } from "../components/programs/detail/ProgramDetailActionHeader";
 import { ProgramDetailGallery } from "../components/programs/detail/ProgramDetailGallery";
@@ -10,7 +11,7 @@ import { ProgramDetailSkeleton } from "../components/programs/detail/ProgramDeta
 
 export function ProgramDetailPage() {
   const { locale } = useLang();
-  const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
+  const t = (key: string, fallback?: string) => translate(programDict, locale, key, fallback);
 
   const {
     localizedProgram,

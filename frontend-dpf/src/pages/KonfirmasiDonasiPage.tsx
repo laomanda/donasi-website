@@ -13,7 +13,8 @@ import {
 import { LandingLayout } from "../layouts/LandingLayout";
 import { PageHero } from "../components/PageHero";
 import { useLang } from "../lib/i18n";
-import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { serviceDict } from "../components/services/ServiceI18n";
+import { translate } from "../lib/i18n-utils";
 import { HeroTrustBadge, ServiceBenefits } from "../components/services/shared/ServiceUI";
 import { ServiceSteps } from "../components/services/shared/ServiceSteps";
 import { KonfirmasiDonasiForm } from "../components/services/confirm/KonfirmasiDonasiForm";
@@ -33,7 +34,7 @@ const KONFIRMASI_STEPS = [
 
 function KonfirmasiDonasiPage() {
   const { locale } = useLang();
-  const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
+  const t = (key: string, fallback?: string) => translate(serviceDict, locale, key, fallback);
 
   return (
     <LandingLayout footerWaveBgClassName="bg-slate-50">
@@ -49,7 +50,7 @@ function KonfirmasiDonasiPage() {
         }
         subtitle={t("konfirmasi.hero.subtitle")}
         breadcrumb={[
-          { label: t("nav.services", "Layanan"), href: "/layanan" },
+          { label: t("layanan.hero.badge", "Layanan"), href: "/layanan" },
           { label: t("konfirmasi.hero.badge", "Konfirmasi Donasi") }
         ]}
         rightElement={

@@ -14,7 +14,8 @@ import {
 import { faFacebookF, faInstagram, faTiktok, faWhatsapp, faYoutube } from '@fortawesome/free-brands-svg-icons'
 import { Link } from 'react-router-dom'
 import { useLang } from '../../lib/i18n'
-import { landingDict, translate } from '../../i18n/landing'
+import { globalDict } from '../../i18n/global'
+import { translate } from '../../lib/i18n-utils'
 import { fetchPublicSettings } from '../../lib/publicSettings'
 import TagService from '../../services/TagService'
 import type { Tag } from '../../services/TagService'
@@ -29,7 +30,7 @@ export function LandingFooter({ programLinks = [] }: LandingFooterProps) {
   const currentYear = new Date().getFullYear()
   const limitedPrograms = programLinks.slice(0, 5)
   const { locale } = useLang()
-  const t = (key: string, fallback?: string) => translate(landingDict, locale, key, fallback)
+  const t = (key: string, fallback?: string) => translate(globalDict, locale, key, fallback)
   const [publicSettings, setPublicSettings] = useState<Record<string, string>>({})
   const [tags, setTags] = useState<Tag[]>([])
 

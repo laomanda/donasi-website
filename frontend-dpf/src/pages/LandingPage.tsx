@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import http from "@/lib/http";
 import { useLang } from "@/lib/i18n";
-import { landingDict, translate } from "@/i18n/landing";
+import { landingDict } from "@/components/landing/LandingI18n";
+import { translate } from "@/lib/i18n-utils";
 import { LandingLayout } from "@/layouts/LandingLayout";
 
 // Refactored Components

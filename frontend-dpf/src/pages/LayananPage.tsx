@@ -16,7 +16,8 @@ import {
 import { LandingLayout } from "../layouts/LandingLayout";
 import { PageHero } from "../components/PageHero";
 import { useLang } from "../lib/i18n";
-import { landingDict, translate as translateLanding } from "../i18n/landing";
+import { serviceDict } from "../components/services/ServiceI18n";
+import { translate } from "../lib/i18n-utils";
 import { StatLine } from "../components/services/shared/ServiceUI";
 import { ServiceSteps } from "../components/services/shared/ServiceSteps";
 import { ServiceFaq } from "../components/services/shared/ServiceFaq";
@@ -41,7 +42,7 @@ const LAYANAN_FAQS = [
 
 function LayananPage() {
   const { locale } = useLang();
-  const t = (key: string, fallback?: string) => translateLanding(landingDict, locale, key, fallback);
+  const t = (key: string, fallback?: string) => translate(serviceDict, locale, key, fallback);
 
   return (
     <LandingLayout>
