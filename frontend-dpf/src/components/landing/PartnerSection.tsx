@@ -132,7 +132,7 @@ export function PartnerSection({
               href="https://wa.me/6281311768254?text=Assalamu%27alaikum%2C%20saya%20tertarik%20untuk%20mendiskusikan%20program%20kemitraan%2FCSR%20dengan%20Djalaludin%20Pane%20Foundation."
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-slate-900 shadow-lg transition-transform hover:bg-slate-200"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-primary-600 shadow-lg transition-transform hover:bg-slate-200"
             >
               <FontAwesomeIcon icon={faHandshake} className="text-primary-600" />
               {locale === "id" ? "Hubungi Kami" : "Contact Us"}

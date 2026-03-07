@@ -162,7 +162,7 @@ const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       items: [
         { label: "Donasi", href: "/admin/donations", icon: faReceipt },
         { label: "Konfirmasi Donasi", href: "/admin/donation-confirmations", icon: faCheckCircle },
-        { label: "Saran Muzakki", href: "/admin/suggestions", icon: faCommentDots },
+        { label: "Saran Wakaf", href: "/admin/suggestions", icon: faCommentDots },
         { label: "Editor Tasks", href: "/admin/editor-tasks", icon: faListCheck },
         { label: "Jemput Wakaf", href: "/admin/pickup-requests", icon: faTruckRampBox },
         { label: "Konsultasi", href: "/admin/consultations", icon: faHeadset },

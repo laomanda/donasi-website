@@ -71,3 +71,18 @@ export const getRedirectPath = (user: unknown): string => {
   const role = resolveDashboardRole(user) ?? "editor";
   return `/${role}/dashboard`;
 };
+
+/**
+ * Memetakan error message dari backend Laravel ke kunci i18n kita.
+ */
+export const translateBackendError = (message: string): string => {
+  const msg = message.toLowerCase();
+  
+  if (msg.includes("required")) return "validation.required";
+  if (msg.includes("email") && msg.includes("taken")) return "validation.unique_email";
+  if (msg.includes("email") && (msg.includes("format") || msg.includes("must be a valid"))) return "validation.email";
+  if (msg.includes("password") && msg.includes("at least 8")) return "validation.password_min";
+  if (msg.includes("confirmation") && msg.includes("match")) return "validation.password_confirmed";
+  
+  return message; // Fallback jika tidak dikenali
+};

@@ -91,7 +91,7 @@ export const serviceDict: Dict = {
 
     // Suggestion
     "layanan.suggestion.badge": { id: "Saran & Kritik", en: "Feedback & Suggestions" },
-    "layanan.suggestion.heading": { id: "Suara Muzakki", en: "Donor's Voice" },
+    "layanan.suggestion.heading": { id: "Suara Wakaf", en: "Waqf Voice" },
     "layanan.suggestion.anonymous": { id: "Kirim sebagai Hamba Allah (Anonim)", en: "Send as Anonymous" },
     "layanan.suggestion.name": { id: "Nama Lengkap", en: "Full Name" },
     "layanan.suggestion.phone": { id: "No. Telepon / WhatsApp", en: "Phone / WhatsApp Number" },

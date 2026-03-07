@@ -22,12 +22,12 @@ export function ProposalSection() {
             <div className="flex-1 text-center lg:text-left text-white space-y-6">
               <div>
                 <span className="inline-block rounded-full bg-white/20 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-sm">
-                  {locale === "id" ? "Proposal Program" : "Program Proposal"}
+                  {locale === "id" ? "Program Wakaf" : "Waqf Program"}
                 </span>
                 <h2 className="mt-4 font-heading text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
                   {locale === "id" 
                     ? "Pelajari Lebih Lanjut Tentang Program Wakaf Kami" 
-                    : "Learn More About Our Wakaf Programs"}
+                    : "Learn More About Our Waqf Programs"}
                 </h2>
                 <p className="mt-4 text-lg text-white/90 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                   {locale === "id"
@@ -44,7 +44,7 @@ export function ProposalSection() {
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-bold text-[#E87C1E] shadow-lg transition-transform hover:-translate-y-1 hover:shadow-xl active:scale-95"
                 >
                   <FontAwesomeIcon icon={faReceipt} className="text-lg" />
-                  {locale === "id" ? "Lihat Proposal" : "View Proposal"}
+                  {locale === "id" ? "Lebih Lengkap" : "View Proposal"}
                 </a>
                 <Link
                   to="/donate"

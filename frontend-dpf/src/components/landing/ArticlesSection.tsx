@@ -46,7 +46,7 @@ export function ArticlesSection({
 
         {!hasArticles && !loading && (
           <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
-            {t("literasi.empty.title")}
+            {t("landing.articles.empty")}
           </div>
         )}
       </div>

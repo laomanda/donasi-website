@@ -21,6 +21,8 @@ export const authDict: Dict = {
     "login.google_connection_error": { id: "Gagal terhubung dengan layanan Google.", en: "Failed to connect with Google services." },
     "login.mitra_interest": { id: "Tertarik menjadi mitra?", en: "Interested in becoming a partner?" },
     "login.register_mitra": { id: "Daftar Sekarang", en: "Register Now" },
+    "login.error_title": { id: "Password Salah", en: "Invalid Password" },
+    "login.error_subtitle": { id: "Email atau kata sandi tidak sesuai.", en: "Invalid email or password." },
 
     // Register Page
     "register.badge": { id: "Registrasi Mitra", en: "Partner Registration" },
@@ -38,8 +40,16 @@ export const authDict: Dict = {
     "register.city_placeholder": { id: "Pilih Kota", en: "Select City" },
     "register.confirm_password": { id: "Konfirmasi Kata Sandi", en: "Confirm Password" },
     "register.submit": { id: "Buat Akun Mitra", en: "Create Partner Account" },
-    "register.success": { id: "Pendaftaran Berhasil!", en: "Registration Successful!" },
+    "register.success_title": { id: "Pendaftaran Berhasil!", en: "Registration Successful!" },
+    "register.success_subtitle": { id: "Akun Anda telah terdaftar. Silakan masuk untuk melanjutkan.", en: "Your account has been registered. Please login to continue." },
     "register.already_have_account": { id: "Sudah memiliki akun? Masuk di sini", en: "Already have an account? Login here" },
+
+    // Validation
+    "validation.required": { id: "Wajib diisi.", en: "This field is required." },
+    "validation.email": { id: "Format email tidak valid.", en: "Invalid email format." },
+    "validation.password_min": { id: "Kata sandi minimal harus 8 karakter.", en: "The password must be at least 8 characters." },
+    "validation.password_confirmed": { id: "Konfirmasi kata sandi tidak cocok.", en: "Password confirmation does not match." },
+    "validation.unique_email": { id: "Email sudah terdaftar.", en: "The email has already been taken." },
 };
 
 export function translate(dict: Dict, locale: Locale, key: string, fallback?: string) {

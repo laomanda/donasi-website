@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthLayout } from "../layouts/AuthLayout";
 import http from "../lib/http";
 import { setAuthToken, setAuthUser } from "../lib/auth";
 import { useGoogleLogin } from "@react-oauth/google";
-import { toast } from "react-hot-toast";
+import { useToast } from "../components/ui/ToastProvider";
 import { useLang } from "../lib/i18n";
 import { authDict, translate } from "../i18n/auth";
 
@@ -15,24 +15,40 @@ import { SocialLogin } from "../components/auth/login/SocialLogin";
 import { LoginFooter } from "../components/auth/login/LoginFooter";
 
 // Utils
-import { extractApiErrorMessage, getRedirectPath } from "../components/auth/shared/AuthUtils";
+import { getRedirectPath } from "../components/auth/shared/AuthUtils";
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const toast = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { locale } = useLang();
   
   const t = (key: string, fallback?: string) => translate(authDict, locale, key, fallback);
 
+  const toastTriggered = useRef(false);
+
+  useEffect(() => {
+    // Check for success key from registration redirect
+    if (location.state?.successKey && !toastTriggered.current) {
+      toastTriggered.current = true;
+      toast.success(t("register.success_subtitle"), { 
+        title: t("register.success_title"),
+        durationMs: 6000 
+      });
+      
+      // Clear state so it doesn't reappear on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate, toast, t]);
+
   const loginWithGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       setSubmitting(true);
-      setError(null);
       try {
         const res = await http.post("/auth/google", {
           access_token: tokenResponse.access_token,
@@ -60,7 +76,6 @@ export function LoginPage() {
     if (submitting) return;
 
     setSubmitting(true);
-    setError(null);
     try {
       const res = await http.post<{ token?: unknown; user?: unknown }>("/auth/login", {
         email: email.trim(),
@@ -89,10 +104,9 @@ export function LoginPage() {
 
       navigate(getRedirectPath(res.data?.user), { replace: true });
     } catch (err: unknown) {
-      setError(
-        extractApiErrorMessage(err) ?? 
-        (locale === "en" ? "Invalid email or password." : "Email atau kata sandi salah.")
-      );
+      toast.error(t("login.error_subtitle"), { 
+        title: t("login.error_title") 
+      });
     } finally {
       setSubmitting(false);
     }
@@ -108,12 +122,6 @@ export function LoginPage() {
             <h1 className="font-heading text-2xl font-semibold text-slate-900">{t("login.title")}</h1>
             <p className="text-sm leading-relaxed text-slate-600">{t("login.subtitle")}</p>
           </div>
-
-          {error && (
-            <div className="mt-6 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-              {error}
-            </div>
-          )}
 
           <div className="mt-6">
             <LoginForm

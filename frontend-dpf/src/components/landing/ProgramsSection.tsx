@@ -26,14 +26,20 @@ export function ProgramsSection({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
             <p className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-xs font-semibold text-brandGreen-700 ring-1 ring-brandGreen-100">
-            {t("program.list.subtitle")}
+              {t("landing.programs.badge")}
+            </p>
+            <h2 className="text-3xl font-heading font-semibold text-slate-900 sm:text-4xl">
+              {t("landing.programs.title")}
+            </h2>
+            <p className="max-w-2xl text-sm leading-relaxed text-slate-600">
+              {t("landing.programs.subtitle")}
             </p>
           </div>
           <Link
             to="/program"
-            className="inline-flex items-center gap-2 rounded-full border border-brandGreen-500 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:text-white hover:bg-brandGreen-500 hover:border-slate-200"
+            className="mb-1 inline-flex items-center gap-2 rounded-full border border-brandGreen-500 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:text-white hover:bg-brandGreen-500 hover:border-slate-200"
           >
-            {t("program.list.results", "Semua")}
+            {t("landing.programs.all")}
             <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
           </Link>
         </div>
@@ -57,7 +63,7 @@ export function ProgramsSection({
 
         {!hasPrograms && !loading && (
           <div className="mt-8 rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 shadow-soft">
-            {t("program.list.empty.title")}
+            {t("landing.programs.empty")}
           </div>
         )}
       </div>
