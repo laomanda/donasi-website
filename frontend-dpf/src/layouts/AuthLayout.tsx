@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type PropsWithChildren } from "react";
 import { useLang } from "../lib/i18n";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGlobe, faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
+import { indonesiaFlag, ukFlag } from "@/assets/brand";
 
 type AuthLayoutProps = PropsWithChildren;
 
@@ -33,7 +34,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
               className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-brandGreen-200"
             >
               <img
-                src={locale === "id" ? "/brand/Indonesia.svg" : "/brand/United-Kingdom.svg"}
+                src={locale === "id" ? indonesiaFlag : ukFlag}
                 alt={locale === "id" ? "Indonesia" : "English"}
                 className="h-4 w-6 rounded-sm object-cover"
               />
@@ -46,8 +47,8 @@ export function AuthLayout({ children }: AuthLayoutProps) {
                 }`}
             >
               {[
-                { code: "id" as const, label: "Indonesia", flag: "/brand/Indonesia.svg" },
-                { code: "en" as const, label: "English", flag: "/brand/United-Kingdom.svg" },
+                { code: "id" as const, label: "Indonesia", flag: indonesiaFlag },
+                { code: "en" as const, label: "English", flag: ukFlag },
               ].map((opt) => (
                 <button
                   key={opt.code}

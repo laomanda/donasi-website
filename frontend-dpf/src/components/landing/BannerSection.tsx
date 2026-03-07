@@ -5,7 +5,7 @@ import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import { useLang } from "@/lib/i18n";
 import { translate } from "@/lib/i18n-utils";
 import { landingDict } from "@/components/landing/LandingI18n";
-import placeholderBanner from "@/brand/placeholder-banner.png";
+import { imagePlaceholder } from "@/lib/placeholder";
 import { type Banner, getImageUrl } from "./LandingUI";
 
 export function BannerSection({ banners }: { banners: Banner[] }) {
@@ -33,7 +33,7 @@ export function BannerSection({ banners }: { banners: Banner[] }) {
   };
 
   const activeBanner = slides[activeIndex] ?? slides[0];
-  const imageUrl = hasBanners && activeBanner?.image_path ? getImageUrl(activeBanner.image_path) : placeholderBanner;
+  const imageUrl = hasBanners && activeBanner?.image_path ? getImageUrl(activeBanner.image_path) : imagePlaceholder;
 
   const slideVariants = {
     enter: { opacity: 0 },
@@ -68,7 +68,7 @@ export function BannerSection({ banners }: { banners: Banner[] }) {
                 <img
                   src={imageUrl}
                   onError={(e) => {
-                     e.currentTarget.src = placeholderBanner;
+                     e.currentTarget.src = imagePlaceholder;
                   }}
                   alt="Banner"
                   loading="lazy"

@@ -5,15 +5,8 @@ import { imagePlaceholder } from "@/lib/placeholder";
 import type { 
   Program, 
 } from "./ProgramShared";
-import { 
-  getProgress, 
-  getStatusLabel, 
-  getProgramStatusTone, 
-  getImageUrl, 
-  canonicalStatus, 
-  formatCurrency, 
-  formatDate 
-} from "./ProgramShared";
+import { getProgress, getStatusLabel, getProgramStatusTone, getImageUrl, canonicalStatus, formatCurrency, formatDate } from "./ProgramShared";
+import { dpfIcon } from "@/assets/brand";
 
 interface ProgramCardProps {
   program: Program;
@@ -30,7 +23,7 @@ export function ProgramCard({ program, locale, t }: ProgramCardProps) {
   const isCompleted = canonicalStatus(program.status, program.deadline_days) === "completed";
   const deadlineText = program.deadline_days !== null && program.deadline_days !== undefined && String(program.deadline_days).trim() !== ""
     ? `${program.deadline_days} ${locale === "en" ? "days" : "hari"}`
-    : t("landing.programs.deadline.unlimited");
+    : t("program.deadline.unlimited");
 
   return (
     <article
@@ -46,7 +39,7 @@ export function ProgramCard({ program, locale, t }: ProgramCardProps) {
         />
         <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-semibold text-white">
           <span className="rounded-full uppercase font-heading bg-primary-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm">
-            {program.category ?? t("landing.programs.defaultCategory")}
+            {program.category ?? t("program.defaultCategory")}
           </span>
         </div>
       </div>
@@ -57,14 +50,14 @@ export function ProgramCard({ program, locale, t }: ProgramCardProps) {
             {statusLabel}
           </span>
           <span className="text-xs font-semibold text-slate-500 bg-brandGreen-100/80 px-2 py-1 rounded-lg">
-            {t("landing.programs.progress")} {progress}%
+            {t("program.progress")} {progress}%
           </span>
         </div>
 
         <h3 className="text-lg font-heading font-semibold text-slate-900 leading-snug">{program.title}</h3>
         <p className="text-sm text-slate-600 line-clamp-3 min-h-[60px]">{program.short_description}</p>
         <div className="flex items-center gap-2">
-          <img src="/brand/dpf-icon.png" alt={brandName} className="h-6 w-6 rounded-md object-contain bg-white" />
+          <img src={dpfIcon} alt={brandName} className="h-6 w-6 rounded-md object-contain bg-white" />
           <span className="text-sm font-semibold text-slate-800">{brandName}</span>
           <FontAwesomeIcon icon={faCheckCircle} className="text-blue-500 text-xs" />
         </div>
@@ -76,11 +69,11 @@ export function ProgramCard({ program, locale, t }: ProgramCardProps) {
           />
         </div>
         <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-          <span>{t("landing.programs.collected")} {formatCurrency(program.collected_amount, locale)}</span>
-          <span>{t("landing.programs.target")} {formatCurrency(program.target_amount, locale)}</span>
+          <span>{t("program.collected")} {formatCurrency(program.collected_amount, locale)}</span>
+          <span>{t("program.target")} {formatCurrency(program.target_amount, locale)}</span>
         </div>
         <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
-          <span>{t("landing.programs.deadline")}</span>
+          <span>{t("program.deadline")}</span>
           <span className="text-slate-800">{deadlineText}</span>
         </div>
         <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400">
@@ -90,7 +83,7 @@ export function ProgramCard({ program, locale, t }: ProgramCardProps) {
 
         <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
           <Link to={detailHref} className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
-            {t("landing.programs.detail")}
+            {t("program.detail")}
           </Link>
           <Link
             to={`/donate?program_id=${program.id}`}
@@ -109,7 +102,7 @@ export function ProgramCard({ program, locale, t }: ProgramCardProps) {
             }}
           >
             <FontAwesomeIcon icon={faHandHoldingHeart} />
-            {t("landing.programs.donate")}
+            {t("program.donate")}
           </Link>
         </div>
       </div>

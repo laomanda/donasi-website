@@ -9,7 +9,7 @@ import {
     faXmark
 } from "@fortawesome/free-solid-svg-icons";
 
-import dpfLogo from "../../../brand/dpf-icon.png";
+import { dpfIcon } from "@/assets/brand";
 import { useLandingNavbar } from "./useLandingNavbar";
 import { NAV_ITEMS, SEARCH_ITEMS } from "./LandingNavbarShared";
 import { TopBar } from "./TopBar";
@@ -154,7 +154,7 @@ export function LandingNavbar() {
                             <Link to="/" className="flex items-center gap-2.5 group">
                                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white border border-slate-200 shadow-sm transition-transform group-hover:scale-105">
                                     <img
-                                        src={dpfLogo}
+                                        src={dpfIcon}
                                         alt="DPF"
                                         className="h-full w-full object-contain p-1.5"
                                     />

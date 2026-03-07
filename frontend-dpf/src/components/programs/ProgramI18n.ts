@@ -24,6 +24,7 @@ export const programDict: Dict = {
     "program.list.empty.reset": { id: "Atur ulang pilihan", en: "Reset filters" },
 
     // common labels
+    "program.badge": { id: "Program Unggulan", en: "Featured Programs" },
     "program.collected": { id: "Terkumpul", en: "Collected" },
     "program.target": { id: "Target", en: "Target" },
     "program.progress": { id: "Progres", en: "Progress" },
@@ -37,5 +38,5 @@ export const programDict: Dict = {
     "program.status.archived": { id: "Arsip", en: "Archived" },
     "program.loadMore": { id: "Lihat Lebih Banyak", en: "Show More" },
     "program.common.na": { id: "-", en: "N/A" },
-    "landing.programs.defaultCategory": { id: "Umum", en: "General" },
+    "program.defaultCategory": { id: "Umum", en: "General" },
 };

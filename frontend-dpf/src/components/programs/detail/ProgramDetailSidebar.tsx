@@ -6,11 +6,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import type { Program } from "../ProgramShared";
-import { 
-  getStatusLabel, 
-  getProgramStatusTone, 
-  formatCurrency 
-} from "../ProgramShared";
+import { getStatusLabel, getProgramStatusTone, formatCurrency } from "../ProgramShared";
+import { dpfIcon } from "@/assets/brand";
 
 interface ProgramDetailSidebarProps {
   program: Program;
@@ -51,7 +48,7 @@ export function ProgramDetailSidebar({
         </div>
 
         <div className="mt-4 flex items-center gap-2 rounded-2xl bg-slate-50 px-3 py-2 ring-1 ring-slate-100">
-          <img src="/brand/dpf-icon.png" alt={brandName} className="h-8 w-8 rounded-md bg-white object-contain" />
+          <img src={dpfIcon} alt={brandName} className="h-8 w-8 rounded-md bg-white object-contain" />
           <span className="text-sm font-semibold text-slate-800 whitespace-nowrap">{brandName}</span>
           <FontAwesomeIcon icon={faCheckCircle} className="text-blue-500 text-sm ml-auto" />
         </div>

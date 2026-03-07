@@ -38,10 +38,24 @@ export const landingDict: Dict = {
     "landing.programs.detail": { id: "Lihat detail", en: "View details" },
     "landing.programs.donate": { id: "Donasi", en: "Donate" },
     "landing.programs.defaultCategory": { id: "Program", en: "Program" },
-    "landing.programs.status.ongoing": { id: "Berjalan", en: "Ongoing" },
-    "landing.programs.status.completed": { id: "Tersalurkan", en: "Distributed" },
-    "landing.programs.status.upcoming": { id: "Segera", en: "Upcoming" },
     "landing.programs.status.archived": { id: "Arsip", en: "Archived" },
+
+    // Standardized Program Keys (Sync with ProgramCard)
+    "program.progress": { id: "Progres", en: "Progress" },
+    "program.collected": { id: "Terkumpul", en: "Collected" },
+    "program.target": { id: "Target", en: "Target" },
+    "program.deadline": { id: "Batas hari", en: "Day limit" },
+    "program.deadline.unlimited": { id: "Tanpa batas hari", en: "No day limit" },
+    "program.detail": { id: "Lihat detail", en: "View details" },
+    "program.donate": { id: "Donasi", en: "Donate" },
+    "program.defaultCategory": { id: "Umum", en: "General" },
+    "program.status.ongoing": { id: "Berjalan", en: "Ongoing" },
+    "program.status.completed": { id: "Tersalurkan", en: "Distributed" },
+    "program.status.upcoming": { id: "Segera", en: "Upcoming" },
+
+    // Standardized Literasi Keys (Sync with LiterasiCard)
+    "literasi.articles.anonymous": { id: "Anonim", en: "Anonymous" },
+    "literasi.articles.author": { id: "Penulis", en: "Author" },
 
     // Articles section (landing)
     "landing.articles.title": { id: "Literasi & Berita", en: "Literacy & News" },

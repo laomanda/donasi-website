@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faReceipt, faHandHoldingHeart } from "@fortawesome/free-solid-svg-icons";
 import { useLang } from "@/lib/i18n";
-import proposalWakafImage from "@/brand/assets/proposal_wakaf.jpeg";
+import { proposalWakaf } from "@/assets/brand";
 
 export function ProposalSection() {
   const { locale } = useLang();
@@ -38,7 +38,7 @@ export function ProposalSection() {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                  <a 
-                  href={proposalWakafImage}
+                  href={proposalWakaf}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-bold text-[#E87C1E] shadow-lg transition-transform hover:-translate-y-1 hover:shadow-xl active:scale-95"
@@ -60,7 +60,7 @@ export function ProposalSection() {
             <div className="relative w-full max-w-sm flex-none lg:w-1/3">
               <div className="relative aspect-[3/4] w-full rotate-3 transform rounded-2xl bg-white p-2 shadow-2xl transition-transform duration-500 hover:rotate-0 hover:scale-105">
                 <img
-                  src={proposalWakafImage}
+                  src={proposalWakaf}
                   alt="Proposal Wakaf Preview"
                   className="h-full w-full rounded-xl object-cover bg-slate-50"
                 />

@@ -19,6 +19,9 @@ export const literasiDict: Dict = {
     "literasi.empty.reset": { id: "Tampilkan Semua", en: "Show All" },
     "literasi.card.readMore": { id: "Baca Selengkapnya", en: "Read More" },
     "literasi.card.author.missing": { id: "Penulis tidak dicantumkan", en: "Author not listed" },
+    "literasi.articles.anonymous": { id: "Anonim", en: "Anonymous" },
+    "literasi.articles.author": { id: "Penulis", en: "Author" },
+    "literasi.articles.category.default": { id: "Literasi", en: "Literacy" },
     "literasi.date.soon": { id: "Baru Tayang", en: "Just published" },
     "literasi.loadMore": { id: "Lihat Lebih Banyak", en: "Show More" },
 

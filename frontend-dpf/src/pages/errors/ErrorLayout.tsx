@@ -8,6 +8,7 @@ import {
   faArrowLeft,
   faHouse,
 } from '@fortawesome/free-solid-svg-icons'
+import { dpfIcon } from "@/assets/brand";
 
 const customScrollbarStyle: CSSProperties = {
   scrollbarWidth: 'thin',
@@ -111,7 +112,7 @@ const ErrorLayout = ({
               </div>
               <div className="h-8 w-auto">
                 <img
-                  src="/brand/dpf-icon.png"
+                  src={dpfIcon}
                   alt="Logo DPF"
                   className="h-full w-full object-contain drop-shadow-sm"
                   onError={(event) => {

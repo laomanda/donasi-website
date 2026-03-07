@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { imagePlaceholder } from "@/lib/placeholder";
-import { type Literasi, getImageUrl, formatDate } from "./LandingUI";
+import { type Literasi } from "./LandingUI";
+import { LiterasiCard } from "../literasi/LiterasiCard";
+import { LiterasiSkeleton } from "../literasi/LiterasiSkeleton";
 
 export function ArticlesSection({ 
     articles, 
@@ -45,7 +46,7 @@ export function ArticlesSection({
 
         {!hasArticles && !loading && (
           <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
-            {t("landing.articles.empty")}
+            {t("literasi.empty.title")}
           </div>
         )}
       </div>
@@ -53,80 +54,4 @@ export function ArticlesSection({
   );
 }
 
-function LiterasiCard({ article, t, locale }: { article: Literasi; t: (k: string, f?: string) => string; locale: "id" | "en" }) {
-  const title = article.title;
-  const excerpt = article.excerpt;
-  const category = article.category;
 
-  const author = (article.author_name ?? "").trim();
-  const authorLabel = author !== "" ? author : t("landing.articles.anonymous");
-  const isAnonymous = author === "";
-  const initials = authorLabel
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part: string) => part.slice(0, 1))
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
-  return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
-      <Link to={`/literasi/${article.slug}`} className="block">
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
-              <img
-                src={getImageUrl(article.thumbnail_path)}
-                alt={title}
-                className="h-full w-full object-cover"
-                onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
-              />
-        </div>
-      </Link>
-
-      <div className="flex flex-1 flex-col p-5">
-        {category ? (
-          <span className="inline-flex w-fit items-center rounded-full bg-primary-50 px-3 py-1 text-[11px] font-semibold text-primary-700 ring-1 ring-primary-100">
-            {category}
-          </span>
-        ) : null}
-
-        <h3 className="mt-4 line-clamp-2 min-h-[56px] font-heading text-lg font-semibold leading-snug text-slate-900">
-          <Link to={`/literasi/${article.slug}`}>{title}</Link>
-        </h3>
-
-        <p className="mt-3 line-clamp-3 min-h-[72px] text-sm leading-relaxed text-slate-600">
-          {excerpt}
-        </p>
-
-        <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brandGreen-50 text-xs font-bold text-brandGreen-700 ring-1 ring-brandGreen-100">
-              {initials || "A"}
-            </span>
-            <div className="leading-tight">
-              <p className="text-xs font-semibold text-slate-700">{authorLabel}</p>
-              <p className="text-[11px] text-slate-500">{isAnonymous ? t("landing.articles.anonymous") : t("landing.articles.author")}</p>
-            </div>
-          </div>
-          <span className="text-xs font-semibold text-slate-500">{formatDate(article.published_at, locale, t)}</span>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function LiterasiSkeleton() {
-  return (
-    <div className="flex h-full flex-col rounded-[18px] border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="aspect-[16/9] w-full rounded-2xl bg-slate-100 animate-pulse" />
-
-      <div className="mt-4 h-5 w-24 rounded-full bg-slate-100 animate-pulse" />
-      <div className="mt-3 h-5 w-3/4 rounded-full bg-slate-100 animate-pulse" />
-      <div className="mt-2 h-4 w-full rounded-full bg-slate-100 animate-pulse" />
-      <div className="mt-2 h-4 w-5/6 rounded-full bg-slate-100 animate-pulse" />
-
-      <div className="mt-auto pt-5">
-        <div className="h-10 w-full rounded-2xl bg-slate-100 animate-pulse" />
-      </div>
-    </div>
-  );
-}

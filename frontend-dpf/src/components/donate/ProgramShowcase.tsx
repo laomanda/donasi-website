@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import dpfIcon from "@/brand/dpf-icon.png";
+import { dpfIcon } from "@/assets/brand";
 
 interface ProgramShowcaseProps {
     isGeneralDonation: boolean;

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faLock, faUser, faBuilding, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import http from "../../lib/http";
-import dpfLogo from "../../brand/dpf-icon.png";
+import { dpfIcon } from "@/assets/brand";
 import { AuthLayout } from "../../layouts/AuthLayout";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import PhoneInput from "../../components/ui/PhoneInput";
@@ -59,7 +59,7 @@ export function MitraRegisterPage() {
                 <div>
                   <Link to="/" className="inline-flex items-center gap-3">
                     <span className="flex h-10 w-10 items-center justify-center rounded-full object-cover">
-                      <img src={dpfLogo} alt="DPF" className="h-7 w-7 object-contain rounded-lg" />
+                      <img src={dpfIcon} alt="DPF" className="h-7 w-7 object-contain rounded-lg" />
                     </span>
                     <div className="leading-tight">
                       <p className="font-heading text-sm font-bold tracking-tight text-white">DPF WAKAF</p>

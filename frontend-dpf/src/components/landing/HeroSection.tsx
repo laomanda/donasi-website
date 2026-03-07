@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHandHoldingHeart, faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import heroImage from "@/brand/assets/Hero.png";
+import { heroImg } from "@/assets/brand";
 import { imagePlaceholder } from "@/lib/placeholder";
 
 export function HeroSection({ 
@@ -51,7 +51,7 @@ export function HeroSection({
           <div className="relative overflow-visible">
             <div className="relative w-full min-h-[220px] aspect-[4/3] sm:min-h-[320px] sm:aspect-[16/9] lg:min-h-[520px] lg:aspect-auto">
               <img
-                src={heroImage}
+                src={heroImg}
                 alt={t("landing.hero.imageAlt")}
                 className="h-auto w-full max-w-full object-contain transition-transform duration-1000 lg:h-full lg:scale-125 lg:object-cover"
                 onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}

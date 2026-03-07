@@ -11,7 +11,7 @@ interface LiterasiCardProps {
 
 export function LiterasiCard({ article, locale, t }: LiterasiCardProps) {
   const author = (article.author_name ?? "").trim();
-  const authorLabel = author !== "" ? author : t("landing.articles.anonymous");
+  const authorLabel = author !== "" ? author : t("literasi.articles.anonymous");
   const isAnonymous = author === "";
   const initials = authorLabel
     .split(/\s+/)
@@ -22,27 +22,33 @@ export function LiterasiCard({ article, locale, t }: LiterasiCardProps) {
     .toUpperCase();
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
-      <Link to={`/articles/${article.slug}`} className="block">
+    <article 
+      className="group relative flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
+      style={{ minHeight: "480px" }}
+    >
+      <Link to={`/literasi/${article.slug}`} className="block">
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
           <img
             src={getImageUrl(article.thumbnail_path)}
             alt={article.title}
             className="h-full w-full object-cover"
-            onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
+            onError={(evt) => {
+              const target = evt.target as HTMLImageElement;
+              if (target.src !== imagePlaceholder) target.src = imagePlaceholder;
+            }}
           />
+          <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-semibold text-white">
+            <span className="rounded-full uppercase font-heading bg-primary-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm">
+              {article.category ?? t("literasi.articles.category.default", "Literasi")}
+            </span>
+          </div>
         </div>
       </Link>
 
       <div className="flex flex-1 flex-col p-5">
-        {article.category ? (
-          <span className="inline-flex w-fit items-center rounded-full bg-primary-50 px-3 py-1 text-[11px] font-semibold text-primary-700 ring-1 ring-primary-100">
-            {article.category}
-          </span>
-        ) : null}
-
+        {/* The old category span is removed as it's replaced by the absolute positioned one */}
         <h3 className="mt-4 line-clamp-2 min-h-[56px] font-heading text-lg font-semibold leading-snug text-slate-900">
-          <Link to={`/articles/${article.slug}`}>{article.title}</Link>
+          <Link to={`/literasi/${article.slug}`}>{article.title}</Link>
         </h3>
 
         <p className="mt-3 line-clamp-3 min-h-[72px] text-sm leading-relaxed text-slate-600">
@@ -57,7 +63,7 @@ export function LiterasiCard({ article, locale, t }: LiterasiCardProps) {
             <div className="leading-tight">
               <p className="text-xs font-semibold text-slate-700">{authorLabel}</p>
               <p className="text-[11px] text-slate-500">
-                {isAnonymous ? t("landing.articles.anonymous") : t("landing.articles.author")}
+                {isAnonymous ? t("literasi.articles.anonymous") : t("literasi.articles.author")}
               </p>
             </div>
           </div>

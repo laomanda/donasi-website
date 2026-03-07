@@ -11,6 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { PrayerBadge } from "../PrayerBadge";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { indonesiaFlag, ukFlag } from "@/assets/brand";
 
 interface MobileMenuProps {
     open: boolean;
@@ -150,7 +151,7 @@ export function MobileMenu({
                                     className={`h-7 w-10 rounded-md ${locale === "id" ? "bg-brandGreen-600 ring-1 ring-brandGreen-700" : "bg-white"}`}
                                 >
                                     <img
-                                        src="/brand/Indonesia.svg"
+                                        src={indonesiaFlag}
                                         alt="Indonesia"
                                         className="h-full w-full rounded-sm object-cover"
                                     />
@@ -162,7 +163,7 @@ export function MobileMenu({
                                     className={`h-7 w-10 rounded-md ${locale === "en" ? "bg-brandGreen-600 ring-1 ring-brandGreen-700" : "bg-white"}`}
                                 >
                                     <img
-                                        src="/brand/United-Kingdom.svg"
+                                        src={ukFlag}
                                         alt="English"
                                         className="h-full w-full rounded-sm object-cover"
                                     />

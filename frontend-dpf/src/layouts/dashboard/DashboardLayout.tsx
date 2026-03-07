@@ -31,7 +31,7 @@ import {
   faGlobe,
   faCommentDots,
 } from "@fortawesome/free-solid-svg-icons";
-import dpfLogo from "../../brand/dpf-icon.png";
+import { dpfIcon, indonesiaFlag, ukFlag } from "@/assets/brand";
 import http from "../../lib/http";
 import { clearAuthToken, clearAuthUser, getAuthUser } from "../../lib/auth";
 import { readShowClock, SETTINGS_EVENT } from "../../lib/settings";
@@ -614,7 +614,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
                     className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
                   >
                     <img
-                      src={locale === "id" ? "/brand/Indonesia.svg" : "/brand/United-Kingdom.svg"}
+                      src={locale === "id" ? indonesiaFlag : ukFlag}
                       alt={locale === "id" ? "ID" : "EN"}
                       className="h-4 w-6 rounded-sm object-cover"
                     />
@@ -626,8 +626,8 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
                   {langOpen && (
                     <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
                       {[
-                        { code: "id" as const, label: "Indonesia", flag: "/brand/Indonesia.svg" },
-                        { code: "en" as const, label: "English", flag: "/brand/United-Kingdom.svg" },
+                        { code: "id" as const, label: "Indonesia", flag: indonesiaFlag },
+                        { code: "en" as const, label: "English", flag: ukFlag },
                       ].map((opt) => (
                         <button
                           key={opt.code}
@@ -780,7 +780,7 @@ function SidebarContent({
       <div className="flex items-center justify-between gap-3 px-6 py-5">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900">
-            <img src={dpfLogo} alt="DPF" className="h-7 w-7 rounded-full border border-slate-400/80 object-contain" />
+            <img src={dpfIcon} alt="DPF" className="h-7 w-7 rounded-full border border-slate-400/80 object-contain" />
           </span>
           <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">DPF</p>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type PropsWithChildren } from "react";
 import { LandingNavbar } from "../components/landing/navbar/LandingNavbar";
-import { LandingFooter } from "../components/landing/LandingFooter";
+import { LandingFooter } from "../components/landing/footer/LandingFooter";
 import { FloatingWhatsApp } from "../components/landing/FloatingWhatsApp";
 import { WaveDivider } from "../components/landing/WaveDivider";
 import http from "../lib/http";

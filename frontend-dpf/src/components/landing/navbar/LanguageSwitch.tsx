@@ -4,6 +4,7 @@ import {
     faCaretDown, 
     faCaretUp 
 } from "@fortawesome/free-solid-svg-icons";
+import { indonesiaFlag, ukFlag } from "@/assets/brand";
 
 interface LanguageSwitchProps {
     langRef: React.RefObject<HTMLDivElement | null>;
@@ -43,7 +44,7 @@ export function LanguageSwitch({
                 className={langButtonClass}
             >
                 <img
-                    src={locale === "id" ? "/brand/Indonesia.svg" : "/brand/United-Kingdom.svg"}
+                    src={locale === "id" ? indonesiaFlag : ukFlag}
                     alt={locale === "id" ? "Indonesia" : "English"}
                     className="h-5 w-7 rounded-sm object-cover"
                 />
@@ -56,8 +57,8 @@ export function LanguageSwitch({
                 onClick={(e) => e.stopPropagation()}
             >
                 {[
-                    { code: "id" as const, label: "Indonesia", flag: "/brand/Indonesia.svg" },
-                    { code: "en" as const, label: "English", flag: "/brand/United-Kingdom.svg" },
+                    { code: "id" as const, label: "Indonesia", flag: indonesiaFlag },
+                    { code: "en" as const, label: "English", flag: ukFlag },
                 ].map((opt) => (
                     <button
                         key={opt.code}

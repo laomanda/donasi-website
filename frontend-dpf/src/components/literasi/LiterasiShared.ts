@@ -1,4 +1,5 @@
 import { resolveStorageBaseUrl } from "../../lib/urls";
+import { imagePlaceholder } from "../../lib/placeholder";
 
 export type Literasi = {
   id: number;
@@ -15,7 +16,7 @@ export type Literasi = {
 };
 
 export const getImageUrl = (path?: string | null) => {
-  if (!path) return "";
+  if (!path) return imagePlaceholder;
   if (path.startsWith("http")) return path;
   const base = resolveStorageBaseUrl();
   return `${base}/${path.replace(/^\//, "")}`;
