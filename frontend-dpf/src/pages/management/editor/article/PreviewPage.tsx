@@ -3,12 +3,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { faArrowLeft, faCircleInfo, faClock, faEye, faTag, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { LandingLayout } from "../layouts/LandingLayout";
+import { LandingLayout } from "../../../../layouts/LandingLayout";
 import { imagePlaceholder } from "@/lib/placeholder";
-import { useLang } from "../lib/i18n";
-import { translate } from "../lib/i18n-utils";
-import { literasiDict } from "../components/literasi/LiterasiI18n";
-import { sanitizeHtml } from "../lib/sanitize";
+import { useLang } from "../../../../lib/i18n";
+import { translate } from "../../../../lib/i18n-utils";
+import { literasiDict } from "../../../../components/literasi/LiterasiI18n";
+import { sanitizeHtml } from "../../../../lib/sanitize";
 
 type PreviewArticle = {
   title?: string | null;

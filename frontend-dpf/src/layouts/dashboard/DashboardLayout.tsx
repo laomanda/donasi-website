@@ -1,302 +1,26 @@
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { PropsWithChildren } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import {
-  faArrowRotateRight,
-  faBars,
-  faBookOpen,
-  faBuildingColumns,
-  faChartLine,
-  faCheckCircle,
-  faChevronDown,
-  faClock,
-  faGear,
-  faGears,
-  faGaugeHigh,
-  faHandshake,
-  faHeadset,
-  faHeart,
-  faImage,
-  faListCheck,
-  faMagnifyingGlass,
-  faReceipt,
-  faRightFromBracket,
-  faSitemap,
-  faTags,
-  faTruckRampBox,
-  faUserGroup,
-  faXmark,
-  faGlobe,
-  faCommentDots,
-} from "@fortawesome/free-solid-svg-icons";
-import { dpfIcon, indonesiaFlag, ukFlag } from "@/assets/brand";
+
 import http from "../../lib/http";
 import { clearAuthToken, clearAuthUser, getAuthUser } from "../../lib/auth";
 import { readShowClock, SETTINGS_EVENT } from "../../lib/settings";
 import { useLang } from "../../lib/i18n";
 import { mitraDict, translate } from "../../i18n/mitra";
 
-export type DashboardRole = "superadmin" | "admin" | "editor" | "mitra";
-
-type RoleTheme = {
-  appName: string;
-  accentRing: string;
-  navActiveBg: string;
-  navActiveText: string;
-  navActiveIcon: string;
-  pillBg: string;
-  pillText: string;
-};
-
-type NavItem = {
-  label: string;
-  href: string;
-  icon: IconProp;
-};
-
-type NavSection = {
-  title: string;
-  items: NavItem[];
-};
-
-type StoredUser = {
-  id?: unknown;
-  name?: unknown;
-  email?: unknown;
-  role_label?: unknown;
-  roles?: { name?: unknown }[] | unknown;
-};
-
-type PaginationMeta = {
-  total?: number;
-};
-
-const ROLE_LABEL: Record<DashboardRole, string> = {
-  superadmin: "SuperAdmin",
-  admin: "Admin",
-  editor: "Editor",
-  mitra: "Mitra",
-};
-
-const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
-  superadmin: {
-    appName: "Manajemen DPF",
-    accentRing: "focus-visible:ring-brandGreen-400",
-    navActiveBg: "bg-slate-900",
-    navActiveText: "text-white",
-    navActiveIcon: "text-brandGreen-400",
-    pillBg: "bg-slate-900",
-    pillText: "text-slate-100",
-  },
-  admin: {
-    appName: "Manajemen DPF",
-    accentRing: "focus-visible:ring-brandGreen-400",
-    navActiveBg: "bg-slate-900",
-    navActiveText: "text-white",
-    navActiveIcon: "text-brandGreen-400",
-    pillBg: "bg-slate-900",
-    pillText: "text-slate-100",
-  },
-  editor: {
-    appName: "Manajemen DPF",
-    accentRing: "focus-visible:ring-brandGreen-400",
-    navActiveBg: "bg-slate-900",
-    navActiveText: "text-white",
-    navActiveIcon: "text-brandGreen-400",
-    pillBg: "bg-slate-900",
-    pillText: "text-slate-100",
-  },
-  mitra: {
-    appName: "Dashboard Mitra",
-    accentRing: "focus-visible:ring-brandGreen-400",
-    navActiveBg: "bg-slate-900",
-    navActiveText: "text-white",
-    navActiveIcon: "text-brandGreen-400",
-    pillBg: "bg-slate-900",
-    pillText: "text-slate-100",
-  },
-};
-
-const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
-  editor: [
-    {
-      title: "Ringkasan",
-      items: [
-        { label: "Dashboard", href: "/editor/dashboard", icon: faGaugeHigh },
-        { label: "Tugas Editor", href: "/editor/tasks", icon: faListCheck },
-      ],
-    },
-    {
-      title: "Konten",
-      items: [
-        { label: "Artikel", href: "/editor/articles", icon: faBookOpen },
-        { label: "Program", href: "/editor/programs", icon: faHeart },
-        { label: "Banner", href: "/editor/banners", icon: faImage },
-        { label: "Tags", href: "/editor/tags", icon: faTags },
-      ],
-    },
-    {
-      title: "Organisasi",
-      items: [
-        { label: "Mitra", href: "/editor/partners", icon: faHandshake },
-        { label: "Struktur", href: "/editor/organization-members", icon: faSitemap },
-        { label: "Rekening", href: "/editor/bank-accounts", icon: faBuildingColumns },
-      ],
-    },
-    {
-      title: "Alat",
-      items: [
-        { label: "Pengaturan", href: "/editor/settings", icon: faGear },
-      ],
-    },
-  ],
-  admin: [
-    {
-      title: "Ringkasan",
-      items: [{ label: "Dashboard", href: "/admin/dashboard", icon: faGaugeHigh }],
-    },
-    {
-      title: "Operasional",
-      items: [
-        { label: "Donasi", href: "/admin/donations", icon: faReceipt },
-        { label: "Konfirmasi Donasi", href: "/admin/donation-confirmations", icon: faCheckCircle },
-        { label: "Saran Wakaf", href: "/admin/suggestions", icon: faCommentDots },
-        { label: "Editor Tasks", href: "/admin/editor-tasks", icon: faListCheck },
-        { label: "Jemput Wakaf", href: "/admin/pickup-requests", icon: faTruckRampBox },
-        { label: "Konsultasi", href: "/admin/consultations", icon: faHeadset },
-      ],
-    },
-    {
-      title: "Keuangan",
-      items: [
-        { label: "Laporan Donasi", href: "/admin/reports/donations", icon: faChartLine },
-        { label: "Alokasi", href: "/admin/allocations", icon: faHandshake },
-      ],
-    },
-    {
-      title: "Sistem",
-      items: [{ label: "Pengaturan", href: "/admin/settings", icon: faGears }],
-    },
-  ],
-  superadmin: [
-    {
-      title: "Ringkasan",
-      items: [{ label: "Dashboard", href: "/superadmin/dashboard", icon: faGaugeHigh }],
-    },
-    {
-      title: "Akses",
-      items: [
-        { label: "Pengguna", href: "/superadmin/users", icon: faUserGroup },
-      ],
-    },
-    {
-      title: "Laporan",
-      items: [{ label: "Laporan Donasi", href: "/superadmin/reports/donations", icon: faChartLine }],
-    },
-    {
-      title: "Sistem",
-      items: [
-        { label: "Tugas Editor", href: "/superadmin/editor-tasks", icon: faListCheck },
-        { label: "Pengaturan", href: "/superadmin/settings", icon: faGear },
-      ],
-    },
-  ],
-  mitra: [
-    {
-      title: "Ringkasan",
-      items: [{ label: "Dashboard", href: "/mitra/dashboard", icon: faGaugeHigh }],
-    },
-    {
-      title: "Transparansi",
-      items: [
-        { label: "Bukti Alokasi", href: "/mitra/allocations", icon: faHandshake },
-        { label: "Riwayat Donasi", href: "/mitra/donations", icon: faReceipt },
-      ],
-    },
-    {
-      title: "Dukungan",
-      items: [{ label: "Pengaturan", href: "/mitra/settings", icon: faGear }],
-    },
-  ],
-};
-
-const normalizeRoleValue = (value: string) => value.toLowerCase().replace(/[^a-z]/g, "");
-
-const resolveUserRoles = (user: StoredUser | null): DashboardRole[] => {
-  if (!user) return [];
-  const candidates: string[] = [];
-
-  if (Array.isArray(user.roles)) {
-    user.roles.forEach((role) => {
-      if (role && typeof role === "object" && typeof role.name === "string") {
-        candidates.push(role.name);
-      }
-    });
-  }
-
-  if (typeof user.role_label === "string") {
-    candidates.push(user.role_label);
-  }
-
-  const normalized = new Set(candidates.map((value) => normalizeRoleValue(value)));
-  const roles: DashboardRole[] = [];
-  if (normalized.has("superadmin")) roles.push("superadmin");
-  if (normalized.has("admin")) roles.push("admin");
-  if (normalized.has("editor")) roles.push("editor");
-  if (normalized.has("mitra")) roles.push("mitra");
-  return roles;
-};
-
-const buildNavSections = (roles: DashboardRole[], t: any): NavSection[] => {
-  const sections = new Map<string, NavItem[]>();
-  const seen = new Set<string>();
-
-  const isSuperAdmin = roles.includes("superadmin");
-
-  roles.forEach((role) => {
-    NAV_SECTIONS_BY_ROLE[role].forEach((section) => {
-      const bucket = sections.get(t(`nav.section.${section.title}`, section.title)) ?? [];
-      section.items.forEach((item) => {
-        if (seen.has(item.href)) return;
-        if (isSuperAdmin && item.href.includes("suggestions")) return;
-        seen.add(item.href);
-        bucket.push({
-            ...item,
-            label: t(`nav.item.${item.label}`, item.label)
-        });
-      });
-      sections.set(t(`nav.section.${section.title}`, section.title), bucket);
-    });
-  });
-
-  return Array.from(sections.entries())
-    .map(([title, items]) => ({ title, items }))
-    .filter((section) => section.items.length);
-};
-
-const formatTimeHHMM = (value: number) => String(value).padStart(2, "0");
-
-const getJakartaTimeParts = (date: Date) => {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Jakarta",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
-  const hour = Number(parts.find((p) => p.type === "hour")?.value ?? "0");
-  const minute = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
-  return {
-    hour: Number.isNaN(hour) ? 0 : hour,
-    minute: Number.isNaN(minute) ? 0 : minute,
-  };
-};
-
-const normalizeCount = (value: unknown) => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  return 0;
-};
+import type {
+  DashboardRole,
+  StoredUser,
+  PaginationMeta,
+} from "../../components/management/dashboard/DashboardUtils";
+import {
+  ROLE_THEME,
+  resolveUserRoles,
+  buildNavSections,
+  normalizeCount,
+} from "../../components/management/dashboard/DashboardUtils";
+import { DashboardSidebar } from "../../components/management/dashboard/DashboardSidebar";
+import { DashboardHeader } from "../../components/management/dashboard/DashboardHeader";
 
 type DashboardLayoutProps = PropsWithChildren<{
   role: DashboardRole;
@@ -307,7 +31,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const location = useLocation();
   const { locale, setLocale } = useLang();
   const t = (key: string, fallback?: string) => translate(mitraDict, locale, key, fallback);
-  
+
   const theme = ROLE_THEME[role];
   const isSearchEnabled = role === "editor" || role === "superadmin" || role === "admin";
   const storedUser = useMemo(() => getAuthUser() as StoredUser | null, []);
@@ -326,8 +50,6 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const [adminBadgeCounts, setAdminBadgeCounts] = useState<Record<string, number>>({});
   const [editorBadgeCounts, setEditorBadgeCounts] = useState<Record<string, number>>({});
 
-  const userMenuRef = useRef<HTMLDivElement | null>(null);
-  const langRef = useRef<HTMLDivElement | null>(null);
   const userName = typeof storedUser?.name === "string" ? storedUser.name : null;
   const userEmail = typeof storedUser?.email === "string" ? storedUser.email : null;
   const userRoleLabel = typeof storedUser?.role_label === "string" ? storedUser.role_label : null;
@@ -347,13 +69,16 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     let active = true;
     let pollId: number | null = null;
 
-    const applyCounts = (values: { donationCount?: number; pickupCount?: number; consultationCount?: number; suggestionCount?: number }) => {
+    const applyCounts = (values: {
+      donationCount?: number;
+      pickupCount?: number;
+      consultationCount?: number;
+      suggestionCount?: number;
+    }) => {
       if (!active) return;
       setAdminBadgeCounts((prev) => ({
         ...prev,
-        ...(values.donationCount !== undefined
-          ? { "/admin/donation-confirmations": values.donationCount }
-          : {}),
+        ...(values.donationCount !== undefined ? { "/admin/donation-confirmations": values.donationCount } : {}),
         ...(values.pickupCount !== undefined ? { "/admin/pickup-requests": values.pickupCount } : {}),
         ...(values.consultationCount !== undefined ? { "/admin/consultations": values.consultationCount } : {}),
         ...(values.suggestionCount !== undefined ? { "/admin/suggestions": values.suggestionCount } : {}),
@@ -399,13 +124,6 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
 
     void loadCounts();
 
-    if (typeof window === "undefined") {
-      return () => {
-        active = false;
-      };
-    }
-
-    // Polling only (Pusher removed)
     const fallbackInterval = 30_000;
     pollId = window.setInterval(loadCounts, fallbackInterval);
 
@@ -447,13 +165,6 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
 
     void loadCounts();
 
-    if (typeof window === "undefined") {
-      return () => {
-        active = false;
-      };
-    }
-
-    // Polling only (Pusher removed)
     const fallbackInterval = 5_000;
     pollId = window.setInterval(loadCounts, fallbackInterval);
 
@@ -472,34 +183,6 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
       window.removeEventListener("storage", onSync);
     };
   }, []);
-
-  useEffect(() => {
-    if (!userMenuOpen) return;
-
-    const onClick = (event: MouseEvent) => {
-      const el = userMenuRef.current;
-      if (!el) return;
-      if (event.target instanceof Node && el.contains(event.target)) return;
-      setUserMenuOpen(false);
-    };
-
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, [userMenuOpen]);
-
-  useEffect(() => {
-    if (!langOpen) return;
-
-    const onClick = (event: MouseEvent) => {
-      const el = langRef.current;
-      if (!el) return;
-      if (event.target instanceof Node && el.contains(event.target)) return;
-      setLangOpen(false);
-    };
-
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, [langOpen]);
 
   const onLogout = async () => {
     try {
@@ -531,364 +214,52 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     setQuery(routeSearchQuery);
   }, [routeSearchQuery]);
 
+  const currentBadgeCounts = (role === "admin" || role === "superadmin") ? adminBadgeCounts : role === "editor" ? editorBadgeCounts : undefined;
+
   return (
     <div className="dashboard-shell min-h-screen font-body text-slate-900 antialiased">
-      {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <button
-            type="button"
-            aria-label={t("nav.close", "Tutup sidebar")}
-            className="absolute inset-0 bg-slate-950/60"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-          <aside className="absolute left-0 top-0 h-full w-[82%] max-w-xs bg-slate-950 shadow-2xl">
-            <SidebarContent
-              role={role}
-              theme={theme}
-              navSections={navSections}
-              badgeCounts={(role === "admin" || role === "superadmin") ? adminBadgeCounts : role === "editor" ? editorBadgeCounts : undefined}
-              onClose={() => setMobileSidebarOpen(false)}
-              showClose
-              t={t}
-            />
-          </aside>
-        </div>
-      )}
-
       <div className="flex min-h-screen">
-        <aside className="hidden w-72 shrink-0 border-r border-slate-900/40 bg-slate-950 lg:sticky lg:top-0 lg:block lg:h-screen">
-          <SidebarContent
-            role={role}
-            theme={theme}
-            navSections={navSections}
-            badgeCounts={(role === "admin" || role === "superadmin") ? adminBadgeCounts : role === "editor" ? editorBadgeCounts : undefined}
-            t={t}
-          />
-        </aside>
+        <DashboardSidebar
+          mobileOpen={mobileSidebarOpen}
+          setMobileOpen={setMobileSidebarOpen}
+          role={role}
+          theme={theme}
+          navSections={navSections}
+          badgeCounts={currentBadgeCounts}
+          t={t}
+        />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:max-w-none lg:px-8">
-              <button
-                type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 lg:hidden"
-                onClick={() => setMobileSidebarOpen(true)}
-                aria-label={t("nav.open", "Buka sidebar")}
-              >
-                <FontAwesomeIcon icon={faBars} />
-              </button>
-
-              <div className="flex min-w-0 flex-1 items-center gap-3">
-                {isSearchEnabled ? (
-                  <form onSubmit={onSearchSubmit} className="min-w-0 flex-1 lg:max-w-md">
-                    <div className="relative">
-                      <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                        <FontAwesomeIcon icon={faMagnifyingGlass} className="text-sm" />
-                      </span>
-                      <input
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder={t("nav.search", "Cari Cepat...")}
-                        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-11 pr-4 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-                      />
-                    </div>
-                  </form>
-                ) : null}
-
-                {showClock ? (
-                  <WorkClock 
-                    now={now} 
-                    showStatus={role !== "mitra"} 
-                    locale={locale}
-                    className="hidden min-w-0 lg:flex" 
-                  />
-                ) : null}
-              </div>
-
-              <div className="flex items-center gap-3">
-                {role === "mitra" && (
-                <div className="relative" ref={langRef}>
-                  <button
-                    type="button"
-                    onClick={() => setLangOpen((v) => !v)}
-                    className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
-                  >
-                    <img
-                      src={locale === "id" ? indonesiaFlag : ukFlag}
-                      alt={locale === "id" ? "ID" : "EN"}
-                      className="h-4 w-6 rounded-sm object-cover"
-                    />
-                    <span className="hidden sm:inline">{locale === "id" ? "ID" : "EN"}</span>
-                    <FontAwesomeIcon icon={faGlobe} className="text-brandGreen-600" />
-                    <FontAwesomeIcon icon={faChevronDown} className={`text-[10px] transition-transform ${langOpen ? "rotate-180" : ""}`} />
-                  </button>
-
-                  {langOpen && (
-                    <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-                      {[
-                        { code: "id" as const, label: "Indonesia", flag: indonesiaFlag },
-                        { code: "en" as const, label: "English", flag: ukFlag },
-                      ].map((opt) => (
-                        <button
-                          key={opt.code}
-                          type="button"
-                          onClick={() => {
-                            setLocale(opt.code);
-                            setLangOpen(false);
-                          }}
-                          className={`flex w-full items-center gap-3 px-4 py-3 text-xs font-bold transition ${
-                            locale === opt.code
-                              ? "bg-slate-50 text-brandGreen-600"
-                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                          }`}
-                        >
-                          <img src={opt.flag} alt={opt.label} className="h-4 w-6 rounded-sm object-cover" />
-                          <span>{opt.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                )}
-
-                <div ref={userMenuRef} className="relative shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setUserMenuOpen((v) => !v)}
-                    className={`inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 ${theme.accentRing}`}
-                  >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white">
-                      {(userName ?? ROLE_LABEL[role]).slice(0, 1).toUpperCase()}
-                    </span>
-                    <span className="hidden max-w-[10rem] truncate sm:block">{userName ?? ROLE_LABEL[role]}</span>
-                    <FontAwesomeIcon icon={faChevronDown} className="text-xs text-slate-400" />
-                  </button>
-
-                  {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
-                      <div className="px-4 py-4">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{t("account.title", "Akun")}</p>
-
-                        <div className="mt-3 flex items-center gap-3">
-                          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-sm font-bold text-white shadow-sm">
-                            {(userName ?? ROLE_LABEL[role]).slice(0, 1).toUpperCase()}
-                          </span>
-
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-bold text-slate-900">{userName ?? ROLE_LABEL[role]}</p>
-                            <p className="mt-0.5 truncate text-xs font-semibold text-slate-500">{userEmail ?? "-"}</p>
-                          </div>
-
-                          <div className="shrink-0">
-                            <div
-                              className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ring-1 ring-slate-800/70 ${theme.pillBg} ${theme.pillText}`}
-                            >
-                              {userRoleLabel ?? ROLE_LABEL[role]}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="divide-y divide-slate-100 border-t border-slate-100">
-                        <button
-                          type="button"
-                          onClick={() => navigate(`/${role}/settings`)}
-                          className="group flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-slate-50"
-                        >
-                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition group-hover:bg-white group-hover:ring-slate-300">
-                            <FontAwesomeIcon icon={faGear} className="text-sm" />
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-semibold text-slate-800 group-hover:text-slate-900">
-                              {t("account.settings", "Pengaturan")}
-                            </span>
-                            <span className="mt-0.5 block truncate text-xs font-semibold text-slate-500">
-                              {t("account.settings_desc", "Pengaturan akun.")}
-                            </span>
-                          </span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => window.location.reload()}
-                          className="group flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-slate-50"
-                        >
-                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition group-hover:bg-white group-hover:ring-slate-300">
-                            <FontAwesomeIcon icon={faArrowRotateRight} className="text-sm" />
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-semibold text-slate-800 group-hover:text-slate-900">
-                              {t("account.refresh", "Muat ulang halaman")}
-                            </span>
-                            <span className="mt-0.5 block truncate text-xs font-semibold text-slate-500">
-                              {t("account.refresh_desc", "Muat ulang data terbaru.")}
-                            </span>
-                          </span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={onLogout}
-                          className="group flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-red-50"
-                        >
-                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-red-50 text-red-600 ring-1 ring-red-100 transition group-hover:bg-red-100 group-hover:ring-red-200">
-                            <FontAwesomeIcon icon={faRightFromBracket} className="text-sm" />
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-sm font-semibold text-red-700 group-hover:text-red-800">{t("account.logout", "Keluar")}</span>
-                            <span className="mt-0.5 block truncate text-xs font-semibold text-red-600">
-                              {t("account.logout_desc", "Keluar dari dashboard.")}
-                            </span>
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </header>
+          <DashboardHeader
+            role={role}
+            theme={theme}
+            onOpenSidebar={() => setMobileSidebarOpen(true)}
+            isSearchEnabled={isSearchEnabled}
+            query={query}
+            setQuery={setQuery}
+            onSearchSubmit={onSearchSubmit}
+            showClock={showClock}
+            now={now}
+            locale={locale}
+            setLocale={setLocale}
+            langOpen={langOpen}
+            setLangOpen={setLangOpen}
+            userName={userName}
+            userEmail={userEmail}
+            userRoleLabel={userRoleLabel}
+            userMenuOpen={userMenuOpen}
+            setUserMenuOpen={setUserMenuOpen}
+            onLogout={onLogout}
+            t={t}
+          />
 
           <main className="flex-1">
-            <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:max-w-none lg:px-8">{children}</div>
+            <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:max-w-none lg:px-8">
+              {children}
+            </div>
           </main>
         </div>
       </div>
-    </div>
-  );
-}
-
-function SidebarContent({
-  role,
-  theme,
-  navSections,
-  badgeCounts,
-  onClose,
-  showClose,
-  t
-}: {
-  role: DashboardRole;
-  theme: RoleTheme;
-  navSections: NavSection[];
-  badgeCounts?: Record<string, number>;
-  onClose?: () => void;
-  showClose?: boolean;
-  t: any;
-}) {
-  return (
-    <div className="flex h-full flex-col bg-slate-950 text-slate-100">
-      <div className="flex items-center justify-between gap-3 px-6 py-5">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900">
-            <img src={dpfIcon} alt="DPF" className="h-7 w-7 rounded-full border border-slate-400/80 object-contain" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">DPF</p>
-            <p className="truncate font-heading text-base font-semibold text-white">{t(`role.${role}`, ROLE_LABEL[role])}</p>
-          </div>
-        </div>
-
-        {showClose ? (
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t("nav.close", "Tutup sidebar")}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-slate-200 transition hover:border-slate-700 hover:bg-slate-800"
-          >
-            <FontAwesomeIcon icon={faXmark} />
-          </button>
-        ) : null}
-      </div>
-
-      <div className="px-6 pb-3">
-        <div
-          className={`inline-flex items-center rounded-full border border-slate-800 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${theme.pillBg} ${theme.pillText}`}
-        >
-          {t(`app.${role}`, theme.appName)}
-        </div>
-      </div>
-
-      <nav className="sidebar-scroll flex-1 overflow-y-auto px-4 pb-6">
-        <div className="space-y-6">
-          {navSections.map((section) => (
-            <div key={section.title} className="space-y-2">
-              <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-500">
-                {section.title}
-              </p>
-              <div className="space-y-1.5">
-                {section.items.map((item) => (
-                  <NavLink
-                    key={item.href}
-                    to={item.href}
-                    className={({ isActive }) =>
-                      [
-                        "group flex items-center gap-3 rounded-xl border-l-2 border-transparent px-4 py-2.5 text-sm font-semibold transition",
-                        isActive
-                          ? `${theme.navActiveBg} ${theme.navActiveText} border-brandGreen-500 shadow-sm`
-                          : "text-slate-300 hover:border-slate-700 hover:bg-slate-900/60 hover:text-white",
-                      ].join(" ")
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <FontAwesomeIcon
-                          icon={item.icon}
-                          className={[
-                            "w-5 text-sm transition",
-                            isActive ? theme.navActiveIcon : "text-slate-500 group-hover:text-slate-200",
-                          ].join(" ")}
-                        />
-                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                        {badgeCounts && badgeCounts[item.href] > 0 ? (
-                          <span className="inline-flex min-w-[24px] items-center justify-center rounded-full bg-primary-600 px-2 py-0.5 text-[10px] font-bold text-white">
-                            {badgeCounts[item.href] > 99 ? "99+" : badgeCounts[item.href]}
-                          </span>
-                        ) : null}
-                      </>
-                    )}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </nav>
-    </div>
-  );
-}
-
-function WorkClock({ now, showStatus, locale, className }: { now: Date; showStatus: boolean; locale: string; className?: string }) {
-  const { hour, minute } = getJakartaTimeParts(now);
-  const minutesTotal = hour * 60 + minute;
-
-  const isWorkHours = minutesTotal >= 9 * 60 && minutesTotal < 18 * 60 + 5;
-  const tone = isWorkHours
-    ? "bg-slate-900 text-brandGreen-400 ring-slate-800"
-    : "bg-slate-900 text-rose-400 ring-slate-800";
-  const message = isWorkHours ? "Semangat Bekerja" : "Eitss Suda Lembur Yuk Balik";
-
-  const dateStr = now.toLocaleDateString(locale === "en" ? "en-US" : "id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "short",
-  });
-
-  return (
-    <div className={["flex items-center gap-3 rounded-xl px-4 py-1.5 text-xs font-bold ring-1 shadow-sm transition", showStatus ? tone : "bg-brandGreen-600 text-white ring-brandGreen-600 shadow-brandGreen-900/20", className].join(" ")}>
-      <FontAwesomeIcon icon={faClock} className={showStatus ? "" : "text-white/80"} />
-      <div className="flex items-center gap-2.5 whitespace-nowrap">
-          <span className="text-xs font-bold tabular-nums tracking-wide text-white">
-            {formatTimeHHMM(hour)}:{formatTimeHHMM(minute)} WIB
-          </span>
-          <span className="h-3 w-px bg-white/20" />
-          <span className="text-[9px] font-bold uppercase tracking-wider text-white/90">{dateStr}</span>
-      </div>
-      {showStatus && (
-          <>
-            <span className="h-4 w-px bg-white/20" />
-            <span className="min-w-0 max-w-[300px] truncate text-xs font-bold italic opacity-90">{message}</span>
-          </>
-      )}
     </div>
   );
 }

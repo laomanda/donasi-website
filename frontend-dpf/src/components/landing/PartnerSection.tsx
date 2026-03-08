@@ -6,11 +6,13 @@ import { imagePlaceholder } from "@/lib/placeholder";
 export function PartnerSection({ 
     partners, 
     t, 
-    locale 
+    locale,
+    loading = false
 }: { 
     partners: Partner[]; 
     t: (k: string, f?: string) => string; 
-    locale: "id" | "en" 
+    locale: "id" | "en";
+    loading?: boolean;
 }) {
   const hasPartners = partners.length > 0;
 
@@ -46,7 +48,28 @@ export function PartnerSection({
         </div>
       </div>
 
-      {hasPartners ? (
+      {loading ? (
+        <div className="relative">
+          <div className="flex flex-col gap-6 overflow-hidden py-6">
+            <div className="flex w-max items-center gap-8 animate-pulse pl-8">
+              {[...Array(8)].map((_, i) => (
+                <div 
+                  key={`skeleton-f-${i}`}
+                  className="h-[110px] w-[220px] flex-none rounded-2xl bg-slate-200/60 shadow-sm"
+                />
+              ))}
+            </div>
+            <div className="flex w-max items-center gap-8 animate-pulse pr-8 self-end">
+              {[...Array(8)].map((_, i) => (
+                <div 
+                  key={`skeleton-r-${i}`}
+                  className="h-[110px] w-[220px] flex-none rounded-2xl bg-slate-200/60 shadow-sm"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : hasPartners ? (
         <div className="relative">
           {/* Gradient Overlays */}
           <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-24 bg-gradient-to-r from-slate-50 via-slate-50/90 to-transparent" />

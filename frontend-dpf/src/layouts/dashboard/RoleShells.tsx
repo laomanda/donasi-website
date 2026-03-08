@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { getAuthToken, getAuthUser } from "../../lib/auth";
 import { DashboardLayout } from "./DashboardLayout";
-import type { DashboardRole } from "./DashboardLayout";
+import type { DashboardRole } from "../../components/management/dashboard/DashboardUtils";
 
 const normalizeRoleValue = (value: string) => value.toLowerCase().replace(/[^a-z]/g, "");
 

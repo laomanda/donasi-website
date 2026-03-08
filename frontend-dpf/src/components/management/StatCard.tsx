@@ -106,9 +106,9 @@ export function StatCard({
 
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{title}</p>
-          <p className={`mt-2 font-bold tracking-tight text-slate-900 ${fontSize} ${loading ? "text-slate-300" : ""}`}>
+          <div className={`mt-2 font-bold tracking-tight text-slate-900 ${fontSize} ${loading ? "text-slate-300" : ""}`}>
             {value}
-          </p>
+          </div>
           {helper ? <p className="mt-1 text-xs font-semibold text-slate-500">{helper}</p> : null}
         </div>
         <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${styles.iconBg} shadow-inner ring-1 ring-white/20`}>

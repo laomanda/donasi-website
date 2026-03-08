@@ -112,7 +112,7 @@ function LandingPage() {
       <PromiseStrip t={t} />
       <ProgramsSection highlights={localizedHighlights} loading={loading} t={t} locale={locale as any} />
       <ArticlesSection articles={localizedArticles} loading={loading} t={t} locale={locale as any} />
-      <PartnerSection partners={localizedPartners} t={t} locale={locale as any} />
+      <PartnerSection partners={localizedPartners} loading={loading} t={t} locale={locale as any} />
       <ProposalSection />
     </LandingLayout>
   );

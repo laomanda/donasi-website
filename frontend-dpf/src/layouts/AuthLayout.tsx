@@ -1,12 +1,15 @@
-import { useState, useEffect, useRef, type PropsWithChildren } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLang } from "../lib/i18n";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGlobe, faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { indonesiaFlag, ukFlag } from "@/assets/brand";
 
-type AuthLayoutProps = PropsWithChildren;
+interface AuthLayoutProps {
+  children: React.ReactNode;
+  noScroll?: boolean;
+}
 
-export function AuthLayout({ children }: AuthLayoutProps) {
+export function AuthLayout({ children, noScroll = false }: AuthLayoutProps) {
   const { locale, setLocale } = useLang();
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement | null>(null);
@@ -23,8 +26,8 @@ export function AuthLayout({ children }: AuthLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 antialiased font-sans">
-      <div className="relative min-h-screen overflow-hidden">
+    <div className={`${noScroll ? "h-screen overflow-hidden" : "min-h-screen"} bg-slate-50 text-slate-900 antialiased font-sans`}>
+      <div className={`relative ${noScroll ? "h-full" : "min-h-screen"} overflow-hidden`}>
         {/* Language Switcher Placeholder/Container */}
         <div className="absolute right-4 top-4 z-50 flex items-center gap-4 sm:right-8 sm:top-8">
           <div className="relative" ref={langRef}>
@@ -75,7 +78,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           <div className="absolute -right-28 bottom-12 h-80 w-80 rounded-full bg-brandGreen-300/20 blur-[130px]" />
         </div>
 
-        <main className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-10 sm:px-6 lg:px-8">
+        <main className={`relative mx-auto flex ${noScroll ? "h-full py-4" : "min-h-screen py-10"} w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8`}>
           {children}
         </main>
       </div>

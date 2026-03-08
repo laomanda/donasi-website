@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AuthLayout } from "../layouts/AuthLayout";
-import http from "../lib/http";
-import { setAuthToken, setAuthUser } from "../lib/auth";
+import { AuthLayout } from "../../layouts/AuthLayout";
+import http from "../../lib/http";
+import { setAuthToken, setAuthUser } from "../../lib/auth";
 import { useGoogleLogin } from "@react-oauth/google";
-import { useToast } from "../components/ui/ToastProvider";
-import { useLang } from "../lib/i18n";
-import { authDict, translate } from "../i18n/auth";
+import { useToast } from "../../components/ui/ToastProvider";
+import { useLang } from "../../lib/i18n";
+import { authDict, translate } from "../../i18n/auth";
 
 // Components
-import { LoginHeader } from "../components/auth/login/LoginHeader";
-import { LoginForm } from "../components/auth/login/LoginForm";
-import { SocialLogin } from "../components/auth/login/SocialLogin";
-import { LoginFooter } from "../components/auth/login/LoginFooter";
+import { LoginHeader } from "../../components/auth/login/LoginHeader";
+import { LoginForm } from "../../components/auth/login/LoginForm";
+import { SocialLogin } from "../../components/auth/login/SocialLogin";
+import { LoginFooter } from "../../components/auth/login/LoginFooter";
 
 // Utils
-import { getRedirectPath } from "../components/auth/shared/AuthUtils";
+import { getRedirectPath } from "../../components/auth/shared/AuthUtils";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -113,11 +113,11 @@ export function LoginPage() {
   };
 
   return (
-    <AuthLayout>
+    <AuthLayout noScroll>
       <div className="mx-auto w-full max-w-md">
         <LoginHeader />
 
-        <div className="rounded-[28px] border border-slate-100 bg-white p-7 shadow-[0_25px_70px_-45px_rgba(0,0,0,0.45)] sm:p-9">
+        <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-[0_25px_70px_-45px_rgba(0,0,0,0.45)] sm:p-8">
           <div className="space-y-2">
             <h1 className="font-heading text-2xl font-semibold text-slate-900">{t("login.title")}</h1>
             <p className="text-sm leading-relaxed text-slate-600">{t("login.subtitle")}</p>
