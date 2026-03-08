@@ -3,10 +3,10 @@ import { Dialog, Transition } from "@headlessui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import http from "../../../lib/http";
-import { useToast } from "../../ui/ToastProvider";
+import http from "@/lib/http";
+import { useToast } from "@/components/ui/ToastProvider";
 
-type WhatsappConfirmationModalProps = {
+type AdminWhatsappConfirmationModalProps = {
   isOpen: boolean;
   onClose: () => void;
   donationId: number | null;
@@ -18,7 +18,7 @@ type WhatsappConfirmationModalProps = {
   onSuccess?: () => void;
 };
 
-export default function WhatsappConfirmationModal({
+export default function AdminWhatsappConfirmationModal({
   isOpen,
   onClose,
   donationId,
@@ -28,7 +28,7 @@ export default function WhatsappConfirmationModal({
   programTitle,
   donationCode,
   onSuccess,
-}: WhatsappConfirmationModalProps) {
+}: AdminWhatsappConfirmationModalProps) {
   const toast = useToast();
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");

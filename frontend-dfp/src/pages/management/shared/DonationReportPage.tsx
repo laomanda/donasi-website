@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import http from "../../../lib/http";
 import { useToast } from "../../../components/ui/ToastProvider";
 
@@ -45,6 +45,7 @@ type DonationReportPageProps = {
 };
 
 export function DonationReportPage({ role: propRole }: DonationReportPageProps) {
+  const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
 
@@ -65,14 +66,6 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
   const [qualification, setQualification] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-
-  const [visibleColumns, setVisibleColumns] = useState<Utils.ReportColumn[]>([
-    "donor",
-    "program",
-    "status",
-    "nominal",
-    "time",
-  ]);
 
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -187,6 +180,11 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
     }
   };
 
+  const onDetail = (id: number) => {
+    const basePath = location.pathname.split("/").slice(0, 2).join("/");
+    navigate(`${basePath}/donations/${id}`);
+  };
+
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 pb-10">
       <DonationReportHeader exporting={exporting} onExport={exportReport} />
@@ -215,8 +213,6 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
         setPerPage={setPerPage}
         onResetFilters={onResetFilters}
         hasFilters={hasFilters}
-        visibleColumns={visibleColumns}
-        setVisibleColumns={setVisibleColumns}
       />
 
       {error && (
@@ -227,8 +223,8 @@ export function DonationReportPage({ role: propRole }: DonationReportPageProps) 
       )}
 
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
-        <DonationReportTable items={items} loading={loading} visibleColumns={visibleColumns} />
-        <DonationReportMobileList items={items} loading={loading} />
+        <DonationReportTable items={items} loading={loading} onDetail={onDetail} />
+        <DonationReportMobileList items={items} loading={loading} onDetail={onDetail} />
       </div>
 
       <DonationReportPagination

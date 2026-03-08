@@ -24,15 +24,13 @@ type EditorUserOption = {
   email?: string | null;
 };
 
-type EditorTaskCreatePageProps = {
-  role: "admin" | "superadmin";
-};
 
-export function EditorTaskCreatePage({ role }: EditorTaskCreatePageProps) {
+
+export function EditorTaskCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
-  const apiBase = role === "superadmin" ? "/superadmin" : "/admin";
-  const routeBase = role === "superadmin" ? "/superadmin" : "/admin";
+  const apiBase = "/admin";
+  const routeBase = "/admin";
 
   const [editors, setEditors] = useState<EditorUserOption[]>([]);
   const [loadingEditors, setLoadingEditors] = useState(true);

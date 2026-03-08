@@ -176,7 +176,6 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Sistem",
       items: [
-        { label: "Tugas Editor", href: "/superadmin/editor-tasks", icon: faListCheck },
         { label: "Pengaturan", href: "/superadmin/settings", icon: faGear },
       ],
     },

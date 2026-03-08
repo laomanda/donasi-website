@@ -1,21 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+  import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowLeft,
-  faArrowRight,
-  faFilter,
-  faMagnifyingGlass,
-  faPlus,
-  faReceipt,
-} from "@fortawesome/free-solid-svg-icons";
-import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import http from "../../../../lib/http";
-import { useToast } from "../../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../../lib/bulk";
-import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
-import WhatsappConfirmationModal from "../../../../components/management/admin/WhatsappConfirmationModal";
+import http from "@/lib/http";
+import { useToast } from "@/components/ui/ToastProvider";
+import { runWithConcurrency } from "@/lib/bulk";
+import { useBulkSelection } from "@/components/ui/useBulkSelection";
+import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
+
+// Modular Components
+import AdminDonationHeader from "@/components/management/admin/donations/AdminDonationHeader";
+import AdminDonationFilters from "@/components/management/admin/donations/AdminDonationFilters";
+import AdminDonationTable from "@/components/management/admin/donations/AdminDonationTable";
+import AdminDonationMobileList from "@/components/management/admin/donations/AdminDonationMobileList";
+import AdminDonationPagination from "@/components/management/admin/donations/AdminDonationPagination";
+import AdminWhatsappConfirmationModal from "@/components/management/admin/AdminWhatsappConfirmationModal";
 
 type DonationStatus = "pending" | "paid" | "failed" | "expired" | "cancelled" | string;
 
@@ -131,8 +128,6 @@ export function AdminDonationsPage() {
   const [isWhatsappModalOpen, setIsWhatsappModalOpen] = useState(false);
   const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
 
-
-
   const hasFilters = Boolean(
     q.trim() || status || paymentSource || programId.trim() || dateFrom.trim() || dateTo.trim()
   );
@@ -201,15 +196,13 @@ export function AdminDonationsPage() {
     }
   };
 
-  // Effect: Real-time filtering with debounce
   useEffect(() => {
     void fetchPrograms();
   }, []);
 
   useEffect(() => {
     selection.keepOnly(pageIds);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageIds.join(",")]);
+  }, [pageIds]);
 
   const pageLabel = useMemo(() => {
     if (!total) return "Tidak ada data.";
@@ -223,7 +216,6 @@ export function AdminDonationsPage() {
       void fetchDonations(1);
     }, 500);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, status, paymentSource, programId, dateFrom, dateTo, perPage]);
 
   const onResetFilters = () => {
@@ -233,7 +225,6 @@ export function AdminDonationsPage() {
     setProgramId("");
     setDateFrom("");
     setDateTo("");
-    // The effect will trigger the fetch
   };
 
   const basePath = location.pathname.split('/').slice(0, 2).join('/');
@@ -270,46 +261,12 @@ export function AdminDonationsPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      {/* Header Section - Solid & Professional */}
-      <div className="relative overflow-hidden rounded-[28px] bg-emerald-600 p-8 shadow-lg md:p-10">
-        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0">
-            <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
-              <span className="h-2 w-2 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.6)]" />
-              Operasional
-            </span>
-            <h1 className="mt-3 font-heading text-3xl font-bold text-white sm:text-4xl text-shadow-sm">
-              Donasi Masuk
-            </h1>
-            <p className="mt-2 max-w-2xl text-emerald-100 font-medium text-lg">
-              Kelola seluruh transaksi donasi, verifikasi pembayaran, dan pantau arus dana masuk secara real-time.
-            </p>
-          </div>
+      <AdminDonationHeader 
+        onInputManual={() => navigate("/admin/donations/manual")}
+      />
 
-          <div className="flex flex-wrap items-center gap-3">
-            {true && (
-              <button
-                type="button"
-                onClick={() => navigate("/admin/donations/manual")}
-                className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-emerald-700 shadow-md transition-all hover:bg-emerald-50 hover:scale-105 active:scale-95"
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition group-hover:bg-emerald-200">
-                  <FontAwesomeIcon icon={faPlus} className="text-xs" />
-                </span>
-                Input Manual
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Abstract Background Decoration */}
-        <div className="absolute -right-12 -top-12 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
-        <div className="absolute -bottom-12 -left-12 h-64 w-64 rounded-full bg-emerald-400/20 blur-3xl" />
-      </div>
-
-      {/* WhatsApp Modal */}
       {selectedDonation && (
-        <WhatsappConfirmationModal 
+        <AdminWhatsappConfirmationModal 
             isOpen={isWhatsappModalOpen}
             onClose={() => setIsWhatsappModalOpen(false)}
             donationId={selectedDonation.id}
@@ -320,140 +277,23 @@ export function AdminDonationsPage() {
             donationCode={selectedDonation.donation_code || "-"}
             onSuccess={() => {
                 setIsWhatsappModalOpen(false);
-                void fetchDonations(page); // Refresh data to update status
+                void fetchDonations(page);
             }}
         />
       )}
 
-      {/* Filters Section */}
-      <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
-          <h3 className="font-heading text-lg font-bold text-slate-800">
-            <FontAwesomeIcon icon={faFilter} className="mr-2 text-emerald-500" />
-            Filter & Pencarian
-          </h3>
-          {hasFilters && (
-            <button
-              type="button"
-              onClick={onResetFilters}
-              className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline"
-            >
-              Reset Filter
-            </button>
-          )}
-        </div>
-
-        <div className="grid gap-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <label className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Pencarian</span>
-              <div className="relative mt-2 group">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
-                  <FontAwesomeIcon icon={faMagnifyingGlass} />
-                </span>
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Kode / Donatur..."
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                />
-              </div>
-            </label>
-
-            <label className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Status</span>
-              <div className="relative mt-2">
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                >
-                  <option value="">Semua Status</option>
-                  <option value="pending">Menunggu</option>
-                  <option value="paid">Lunas</option>
-                  <option value="failed">Gagal</option>
-                  <option value="expired">Kedaluwarsa</option>
-                  <option value="cancelled">Dibatalkan</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
-                </div>
-              </div>
-            </label>
-
-            <label className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Sumber</span>
-              <div className="relative mt-2">
-                <select
-                  value={paymentSource}
-                  onChange={(e) => setPaymentSource(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                >
-                  <option value="">Semua Sumber</option>
-                  <option value="midtrans">Midtrans (Otomatis)</option>
-                  <option value="manual">Manual (Transfer)</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
-                </div>
-              </div>
-            </label>
-
-            <label className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Program</span>
-              <div className="relative mt-2">
-                <select
-                  value={programId}
-                  onChange={(e) => setProgramId(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                  disabled={programLoading}
-                >
-                  <option value="">{programLoading ? "Memuat..." : "Semua Program"}</option>
-                  {programOptions.map((p) => (
-                    <option key={p.id} value={String(p.id)}>{p.title}</option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
-                </div>
-              </div>
-            </label>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 items-end">
-            <label className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Dari Tanggal</span>
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Sampai Tanggal</span>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-              />
-            </label>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {hasFilters && (
-                <button
-                  type="button"
-                  onClick={onResetFilters}
-                  className="flex-1 rounded-xl bg-rose-50 px-6 py-3 text-sm font-bold text-rose-600 shadow-sm ring-1 ring-inset ring-rose-100 transition hover:bg-rose-100"
-                >
-                  Reset Filter
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      <AdminDonationFilters 
+        q={q} setQ={setQ}
+        status={status} setStatus={setStatus}
+        paymentSource={paymentSource} setPaymentSource={setPaymentSource}
+        programId={programId} setProgramId={setProgramId}
+        dateFrom={dateFrom} setDateFrom={setDateFrom}
+        dateTo={dateTo} setDateTo={setDateTo}
+        programOptions={programOptions}
+        programLoading={programLoading}
+        hasFilters={hasFilters}
+        onResetFilters={onResetFilters}
+      />
 
       {error && (
         <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold text-red-700 flex items-center gap-3">
@@ -469,226 +309,43 @@ export function AdminDonationsPage() {
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
-        
       />
 
-      <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
-        <div className="hidden overflow-x-auto md:block">
-          <table className="min-w-full table-fixed">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="w-[6%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  <input
-                    type="checkbox"
-                    checked={pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id))}
-                    onChange={() => selection.toggleAll(pageIds)}
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                  />
-                </th>
-                <th className="w-[18%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Kode</th>
-                <th className="w-[20%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Donatur</th>
-                <th className="w-[26%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Program</th>
-                <th className="w-[11%] px-6 py-5 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Nominal</th>
-                <th className="w-[19%] px-6 py-5 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td colSpan={6} className="px-6 py-6">
-                      <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-slate-100" />
-                        <div className="space-y-2 flex-1">
-                          <div className="h-4 w-1/4 rounded bg-slate-100" />
-                          <div className="h-3 w-1/3 rounded bg-slate-100" />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : items.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
-                      <FontAwesomeIcon icon={faReceipt} className="text-2xl" />
-                    </div>
-                    <h3 className="mt-4 text-lg font-bold text-slate-900">Belum ada donasi</h3>
-                    <p className="text-slate-500">Coba sesuaikan filter pencarian Anda.</p>
-                  </td>
-                </tr>
-              ) : (
-                items.map((donation) => {
-                  const code = String(donation.donation_code ?? "").trim() || `#${donation.id}`;
-                  const donor = String(donation.donor_name ?? "").trim() || "Anonim";
-                  const programTitle = String(donation.program?.title ?? "").trim() || "Tanpa program";
-                  const statusValue = String(donation.status ?? "").trim();
-                  const source = normalizeSourceLabel(donation.payment_source);
-                  const tone = getStatusTone(statusValue);
+      <AdminDonationTable 
+        items={items}
+        loading={loading}
+        selection={selection}
+        pageIds={pageIds}
+        formatCurrency={formatCurrency}
+        formatDateTime={formatDateTime}
+        getStatusTone={getStatusTone}
+        getStatusLabel={getStatusLabel}
+        normalizeSourceLabel={normalizeSourceLabel}
+        handleOpenWhatsapp={handleOpenWhatsapp}
+        openDonation={openDonation}
+      />
 
-                  // Color bar logic
-                  let barColor = "border-l-slate-200";
-                  if (statusValue === "paid") barColor = "border-l-emerald-500";
-                  else if (statusValue === "pending") barColor = "border-l-amber-500";
-                  else if (statusValue === "failed" || statusValue === "cancelled") barColor = "border-l-rose-500";
+      <AdminDonationMobileList 
+        items={items}
+        loading={loading}
+        formatCurrency={formatCurrency}
+        formatDateTime={formatDateTime}
+        getStatusTone={getStatusTone}
+        getStatusLabel={getStatusLabel}
+        normalizeSourceLabel={normalizeSourceLabel}
+        handleOpenWhatsapp={handleOpenWhatsapp}
+        openDonation={openDonation}
+      />
 
-                  return (
-                    <tr
-                      key={donation.id}
-                      className={`group cursor-pointer transition hover:bg-slate-50 border-l-4 ${barColor}`}
-                      onClick={() => openDonation(donation.id)}
-                    >
-                      <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={selection.isSelected(donation.id)}
-                          onChange={() => selection.toggle(donation.id)}
-                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                        />
-                      </td>
-                      <td className="px-6 py-5">
-                        <p className="font-mono text-sm font-bold text-slate-700 group-hover:text-emerald-700 transition">{code}</p>
-                        <div className="mt-1 flex items-center gap-2">
-                          <span className="inline-flex items-center rounded bg-slate-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white shadow-sm whitespace-nowrap">
-                            {source}
-                          </span>
-                          <span className="text-[10px] font-medium text-slate-400">{formatDateTime(donation.created_at)}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <p className="line-clamp-1 text-sm font-bold text-slate-900">{donor}</p>
-                        {donation.donor_phone && (
-                          <div className="flex items-center gap-1 mt-1 text-xs text-slate-400">
-                             <FontAwesomeIcon icon={faWhatsapp} className="text-emerald-500" />
-                             {donation.donor_phone}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-5">
-                        <p className="line-clamp-1 text-sm font-medium text-slate-600">{programTitle}</p>
-                      </td>
-                      <td className="px-6 py-5 text-right">
-                        <p className="text-sm font-bold text-slate-900">{formatCurrency(donation.amount)}</p>
-                      </td>
-                      <td className="px-6 py-5 text-center">
-                        <div className="flex flex-wrap items-center justify-center gap-2">
-                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${tone}`}>
-                            {getStatusLabel(statusValue)}
-                            </span>
-                            
-                            {/* WhatsApp Button - Always active, updates timestamp on resend */}
-                            {statusValue === 'paid'  && (
-                                <div className="flex flex-col items-center gap-1">
-                                    <button
-                                        onClick={(e) => handleOpenWhatsapp(donation, e)}
-                                        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1.5 rounded-lg hover:bg-emerald-100 hover:text-emerald-700 transition ring-1 ring-emerald-200 whitespace-nowrap"
-                                        title="Kirim Bukti via WhatsApp"
-                                    >
-                                        <FontAwesomeIcon icon={faWhatsapp} className="text-base" />
-                                        <span>{donation.whatsapp_sent_at ? "Kirim Ulang" : "Kirim WA"}</span>
-                                    </button>
-                                    {donation.whatsapp_sent_at && (
-                                        <span className="text-[9px] text-slate-400 font-medium">
-                                            {formatDateTime(donation.whatsapp_sent_at)}
-                                        </span>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile View */}
-        <div className="divide-y divide-slate-100 md:hidden">
-          {loading ? (
-            <div className="p-6 text-center text-slate-400">Loading...</div>
-          ) : items.length === 0 ? (
-            <div className="p-6 text-center text-slate-500">Tidak ada data.</div>
-          ) : (
-            items.map(donation => {
-              const statusValue = String(donation.status ?? "").trim();
-              let barColor = "border-l-slate-200";
-              if (statusValue === "paid") barColor = "border-l-emerald-500";
-              else if (statusValue === "pending") barColor = "border-l-amber-500";
-              else if (statusValue === "failed" || statusValue === "cancelled") barColor = "border-l-rose-500";
-
-              return (
-                <div
-                    key={donation.id}
-                    className={`relative w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor}`}
-                >
-                    <div onClick={() => openDonation(donation.id)} className="cursor-pointer">
-                        <div className="flex justify-between items-start mb-3">
-                            <div>
-                            <p className="text-xs font-bold font-mono text-slate-400">{String(donation.donation_code ?? "-")}</p>
-                            <p className="font-bold text-slate-900 text-base">{formatCurrency(donation.amount)}</p>
-                            </div>
-                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(statusValue)}`}>
-                            {getStatusLabel(statusValue)}
-                            </span>
-                        </div>
-                        <p className="text-sm font-semibold text-slate-700 mb-1">{String(donation.donor_name ?? "Anonim")}</p>
-                        <p className="text-xs text-slate-500 line-clamp-1 mb-3">{String(donation.program?.title ?? "Tanpa program")}</p>
-
-                        <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-                            <span className="text-xs font-bold uppercase text-slate-400 tracking-wider text-[10px]">{normalizeSourceLabel(donation.payment_source)}</span>
-                            <span className="text-xs font-medium text-slate-500">{formatDateTime(donation.created_at)}</span>
-                        </div>
-                    </div>
-                
-                     {/* WhatsApp Button Mobile */}
-                     {statusValue === 'paid'  && (
-                        <div className="mt-3 flex justify-between items-center">
-                             {donation.whatsapp_sent_at && (
-                                <span className="text-[10px] text-slate-400">
-                                    <FontAwesomeIcon icon={faWhatsapp} className="mr-1" />
-                                    {formatDateTime(donation.whatsapp_sent_at)}
-                                </span>
-                            )}
-                            <button
-                                onClick={(e) => handleOpenWhatsapp(donation, e)}
-                                className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 transition ring-1 ring-emerald-200 ml-auto"
-                            >
-                                <FontAwesomeIcon icon={faWhatsapp} className="text-sm" />
-                                {donation.whatsapp_sent_at ? "Kirim Ulang" : "Kirim Tanda Terima"}
-                            </button>
-                        </div>
-                    )}
-                </div>
-              )
-            })
-          )}
-        </div>
-
-        {/* Pagination Footer */}
-        <div className="flex flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50 p-5">
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">{pageLabel}</div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => void fetchDonations(Math.max(1, page - 1))}
-              disabled={page <= 1 || loading}
-              className="h-10 w-10 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
-            >
-              <FontAwesomeIcon icon={faArrowLeft} />
-            </button>
-            <button
-              type="button"
-              onClick={() => void fetchDonations(Math.min(lastPage, page + 1))}
-              disabled={page >= lastPage || loading}
-              className="h-10 w-10 rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
-            >
-              <FontAwesomeIcon icon={faArrowRight} />
-            </button>
-          </div>
-        </div>
-      </div>
+      <AdminDonationPagination 
+        page={page}
+        lastPage={lastPage}
+        total={total}
+        perPage={perPage}
+        loading={loading}
+        pageLabel={pageLabel}
+        onPageChange={(p) => void fetchDonations(p)}
+      />
     </div>
   );
 }

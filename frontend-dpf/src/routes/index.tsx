@@ -71,8 +71,6 @@ import { SuperAdminUsersPage } from '../pages/management/superadmin/users/SuperA
 import { SuperAdminUserCreatePage } from '../pages/management/superadmin/users/SuperAdminUserCreatePage'
 import { SuperAdminUserEditPage } from '../pages/management/superadmin/users/SuperAdminUserEditPage'
 import { SuperAdminDashboardPage } from '../pages/management/superadmin/dashboard/SuperAdminDashboardPage'
-import { SuperAdminEditorTasksPage } from '../pages/management/superadmin/editor-tasks/SuperAdminEditorTasksPage'
-import { SuperAdminEditorTaskCreatePage } from '../pages/management/superadmin/editor-tasks/SuperAdminEditorTaskCreatePage'
 import { AdminSuggestionsPage } from '../pages/management/admin/suggestion/AdminSuggestionsPage'
 import { AdminSuggestionShowPage } from '../pages/management/admin/suggestion/AdminSuggestionShowPage'
 
@@ -181,8 +179,6 @@ export const router = createBrowserRouter([
           { path: 'users/create', element: <SuperAdminUserCreatePage /> },
           { path: 'users/:id/edit', element: <SuperAdminUserEditPage /> },
           { path: 'reports/donations', element: <DonationReportPage /> },
-          { path: 'editor-tasks', element: <SuperAdminEditorTasksPage /> },
-          { path: 'editor-tasks/create', element: <SuperAdminEditorTaskCreatePage /> },
           {
             path: 'search',
             element: <SearchPage role="superadmin" />,

@@ -253,8 +253,5 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('users', SuperadminUserController::class);
             Route::get('reports/donations', [DonationReportController::class, 'index']);
             Route::get('reports/donations/export', [DonationReportController::class, 'export']);
-            Route::get('editor-tasks/editors', [AdminEditorTaskController::class, 'editors']);
-            Route::apiResource('editor-tasks', AdminEditorTaskController::class);
-            Route::delete('editor-tasks/{editor_task}/attachments/{attachment}', [AdminEditorTaskController::class, 'destroyAttachment']);
         });
 });

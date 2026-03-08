@@ -57,9 +57,7 @@ type EditorTaskPayload = {
   total?: number;
 };
 
-type EditorTaskManagementPageProps = {
-  role: "admin" | "superadmin";
-};
+
 
 const formatDateTime = (value: string | null | undefined) => {
   if (!value) return "-";
@@ -120,11 +118,11 @@ const isDeleteLocked = (value: EditorTaskStatus | null | undefined) => {
   return s === "in_progress" || s === "done";
 };
 
-export function EditorTaskManagementPage({ role }: EditorTaskManagementPageProps) {
+export function EditorTaskManagementPage() {
   const navigate = useNavigate();
   const toast = useToast();
-  const apiBase = role === "superadmin" ? "/superadmin" : "/admin";
-  const routeBase = role === "superadmin" ? "/superadmin" : "/admin";
+  const apiBase = "/admin";
+  const routeBase = "/admin";
   const storedUser = useMemo(() => getAuthUser(), []);
 
   const [items, setItems] = useState<EditorTaskItem[]>([]);

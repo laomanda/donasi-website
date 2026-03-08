@@ -1,7 +1,7 @@
 import EditorTaskCreatePage from "../../shared/EditorTaskCreatePage";
 
 export function AdminEditorTaskCreatePage() {
-  return <EditorTaskCreatePage role="admin" />;
+  return <EditorTaskCreatePage />;
 }
 
 export default AdminEditorTaskCreatePage;
