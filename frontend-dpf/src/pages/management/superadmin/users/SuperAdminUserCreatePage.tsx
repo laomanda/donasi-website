@@ -1,4 +1,4 @@
-﻿import { SuperAdminUserForm } from "./components/SuperAdminUserForm";
+﻿import { SuperAdminUserForm } from "../../../../components/management/superadmin/users/SuperAdminUserForm";
 
 export function SuperAdminUserCreatePage() {
   return <SuperAdminUserForm mode="create" />;

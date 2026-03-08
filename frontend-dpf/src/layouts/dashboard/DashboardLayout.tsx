@@ -8,22 +8,12 @@ import { readShowClock, SETTINGS_EVENT } from "../../lib/settings";
 import { useLang } from "../../lib/i18n";
 import { mitraDict, translate } from "../../i18n/mitra";
 
-import type {
-  DashboardRole,
-  StoredUser,
-  PaginationMeta,
-} from "../../components/management/dashboard/DashboardUtils";
-import {
-  ROLE_THEME,
-  resolveUserRoles,
-  buildNavSections,
-  normalizeCount,
-} from "../../components/management/dashboard/DashboardUtils";
+import * as Utils from "../../components/management/dashboard/DashboardUtils";
 import { DashboardSidebar } from "../../components/management/dashboard/DashboardSidebar";
 import { DashboardHeader } from "../../components/management/dashboard/DashboardHeader";
 
 type DashboardLayoutProps = PropsWithChildren<{
-  role: DashboardRole;
+  role: Utils.DashboardRole;
 }>;
 
 export function DashboardLayout({ role, children }: DashboardLayoutProps) {
@@ -32,13 +22,13 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const { locale, setLocale } = useLang();
   const t = (key: string, fallback?: string) => translate(mitraDict, locale, key, fallback);
 
-  const theme = ROLE_THEME[role];
+  const theme = Utils.ROLE_THEME[role];
   const isSearchEnabled = role === "editor" || role === "superadmin" || role === "admin";
-  const storedUser = useMemo(() => getAuthUser() as StoredUser | null, []);
-  const userRoles = useMemo(() => resolveUserRoles(storedUser), [storedUser]);
+  const storedUser = useMemo(() => getAuthUser() as Utils.StoredUser | null, []);
+  const userRoles = useMemo(() => Utils.resolveUserRoles(storedUser), [storedUser]);
   const navSections = useMemo(() => {
     const roles = userRoles.length ? userRoles : [role];
-    return buildNavSections(roles, t);
+    return Utils.buildNavSections(roles, t);
   }, [role, userRoles, locale]);
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -88,20 +78,20 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     const loadCounts = async () => {
       try {
         const promises: Promise<any>[] = [
-          http.get<PaginationMeta>("/admin/donations", {
+          http.get<Utils.PaginationMeta>("/admin/donations", {
             params: { status: "pending", payment_source: "manual", per_page: 1 },
           }),
-          http.get<PaginationMeta>("/admin/pickup-requests", {
+          http.get<Utils.PaginationMeta>("/admin/pickup-requests", {
             params: { status: "baru", per_page: 1 },
           }),
-          http.get<PaginationMeta>("/admin/consultations", {
+          http.get<Utils.PaginationMeta>("/admin/consultations", {
             params: { status: "baru", per_page: 1 },
           }),
         ];
 
         if (role === "admin") {
           promises.push(
-            http.get<PaginationMeta>("/admin/suggestions", {
+            http.get<Utils.PaginationMeta>("/admin/suggestions", {
               params: { status: "baru", per_page: 1 },
             })
           );
@@ -112,10 +102,10 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
 
         if (!active) return;
         applyCounts({
-          donationCount: normalizeCount(donationsRes.data?.total),
-          pickupCount: normalizeCount(pickupsRes.data?.total),
-          consultationCount: normalizeCount(consultationsRes.data?.total),
-          suggestionCount: suggestionsRes ? normalizeCount(suggestionsRes.data?.total) : undefined,
+          donationCount: Utils.normalizeCount(donationsRes.data?.total),
+          pickupCount: Utils.normalizeCount(pickupsRes.data?.total),
+          consultationCount: Utils.normalizeCount(consultationsRes.data?.total),
+          suggestionCount: suggestionsRes ? Utils.normalizeCount(suggestionsRes.data?.total) : undefined,
         });
       } catch {
         if (!active) return;
@@ -151,12 +141,12 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
 
     const loadCounts = async () => {
       try {
-        const tasksRes = await http.get<PaginationMeta>("/editor/tasks", {
+        const tasksRes = await http.get<Utils.PaginationMeta>("/editor/tasks", {
           params: { status: "open", per_page: 1 },
         });
 
         if (!active) return;
-        const taskCount = normalizeCount(tasksRes.data?.total);
+        const taskCount = Utils.normalizeCount(tasksRes.data?.total);
         applyCount(taskCount);
       } catch {
         if (!active) return;

@@ -14,7 +14,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import http from "../../lib/http";
 import { getAuthToken, getAuthUser } from "../../lib/auth";
-import type { DashboardRole } from "../../layouts/dashboard/DashboardLayout";
+import type { DashboardRole } from "../../components/management/dashboard/DashboardUtils";
 import { useToast } from "../../components/ui/ToastProvider";
 
 const roleLabel = (role: DashboardRole) => {
