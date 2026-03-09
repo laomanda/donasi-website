@@ -1,4 +1,4 @@
-import { EditorProgramForm } from "./EditorProgramForm";
+import EditorProgramForm from "./EditorProgramForm";
 
 export function EditorProgramCreatePage() {
   return <EditorProgramForm mode="create" />;

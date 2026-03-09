@@ -37,12 +37,15 @@ import { EditorArticleEditPage } from '../pages/management/editor/article/Editor
 import { EditorProgramsPage } from '../pages/management/editor/program/EditorProgramsPage'
 import { EditorProgramCreatePage } from '../pages/management/editor/program/EditorProgramCreatePage'
 import { EditorProgramEditPage } from '../pages/management/editor/program/EditorProgramEditPage'
-import { BannersPage } from '../pages/management/shared/BannersPage'
-import { BannerFormPage } from '../pages/management/shared/BannerFormPage'
-import { PartnersPage } from '../pages/management/shared/PartnersPage'
-import { TagsPage } from '../pages/management/shared/TagsPage'
-import { TagFormPage } from '../pages/management/shared/TagFormPage'
-import { PartnerFormPage } from '../pages/management/shared/PartnerFormPage'
+import EditorBannersPage from '../pages/management/editor/banner/EditorBannersPage'
+import EditorBannerCreatePage from '../pages/management/editor/banner/EditorBannerCreatePage'
+import EditorBannerEditPage from '../pages/management/editor/banner/EditorBannerEditPage'
+import EditorPartnersPage from '../pages/management/editor/partner/EditorPartnersPage'
+import EditorPartnerCreatePage from '../pages/management/editor/partner/EditorPartnerCreatePage'
+import EditorPartnerEditPage from '../pages/management/editor/partner/EditorPartnerEditPage'
+import EditorTagsPage from '../pages/management/editor/tag/EditorTagsPage'
+import EditorTagCreatePage from '../pages/management/editor/tag/EditorTagCreatePage'
+import EditorTagEditPage from '../pages/management/editor/tag/EditorTagEditPage'
 import { EditorOrganizationMembersPage } from '../pages/management/editor/organization/EditorOrganizationMembersPage'
 import { EditorOrganizationMemberCreatePage } from '../pages/management/editor/organization/EditorOrganizationMemberCreatePage'
 
@@ -56,8 +59,8 @@ import { DonationReportPage } from '../pages/management/shared/DonationReportPag
 import { AdminDonationManualCreatePage } from '../pages/management/admin/donation/AdminDonationManualCreatePage'
 import { AdminDonationShowPage } from '../pages/management/admin/donation/AdminDonationShowPage'
 import { AdminDonationConfirmationsPage } from '../pages/management/admin/donation/AdminDonationConfirmationsPage'
-import { AdminConsultationsPage } from '../pages/management/admin/consultation/AdminConsultationsPage'
-import { AdminConsultationShowPage } from '../pages/management/admin/consultation/AdminConsultationShowPage'
+import { AdminConsultationsPage } from '../pages/management/admin/consultations/AdminConsultationsPage'
+import { AdminConsultationShowPage } from '../pages/management/admin/consultations/AdminConsultationShowPage'
 import { AdminPickupRequestsPage } from '../pages/management/admin/pickup/AdminPickupRequestsPage'
 import { AdminPickupRequestShowPage } from '../pages/management/admin/pickup/AdminPickupRequestShowPage'
 import { AdminAllocationsPage } from '../pages/management/admin/allocations/AdminAllocationsPage'
@@ -110,15 +113,15 @@ export const router = createBrowserRouter([
           { path: 'programs', element: <EditorProgramsPage /> },
           { path: 'programs/create', element: <EditorProgramCreatePage /> },
           { path: 'programs/:id/edit', element: <EditorProgramEditPage /> },
-          { path: 'partners', element: <PartnersPage /> },
-          { path: 'partners/create', element: <PartnerFormPage mode="create" /> },
-          { path: 'partners/:id/edit', element: <PartnerFormPage mode="edit" /> },
-          { path: 'banners', element: <BannersPage /> },
-          { path: 'tags', element: <TagsPage /> },
-          { path: 'tags/create', element: <TagFormPage mode="create" /> },
-          { path: 'tags/:id/edit', element: <TagFormPage mode="edit" /> },
-          { path: 'banners/create', element: <BannerFormPage mode="create" /> },
-          { path: 'banners/:id/edit', element: <BannerFormPage mode="edit" /> },
+          { path: 'partners', element: <EditorPartnersPage /> },
+          { path: 'partners/create', element: <EditorPartnerCreatePage /> },
+          { path: 'partners/:id/edit', element: <EditorPartnerEditPage /> },
+          { path: 'banners', element: <EditorBannersPage /> },
+          { path: 'banners/create', element: <EditorBannerCreatePage /> },
+          { path: 'banners/:id/edit', element: <EditorBannerEditPage /> },
+          { path: 'tags', element: <EditorTagsPage /> },
+          { path: 'tags/create', element: <EditorTagCreatePage /> },
+          { path: 'tags/:id/edit', element: <EditorTagEditPage /> },
           { path: 'organization-members', element: <EditorOrganizationMembersPage /> },
           { path: 'organization-members/create', element: <EditorOrganizationMemberCreatePage /> },
 
