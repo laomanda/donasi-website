@@ -4,41 +4,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
   faArrowRight,
-  faFilter,
-  faMagnifyingGlass,
   faTruckRampBox,
 } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../../lib/http";
-import { useToast } from "../../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../../lib/bulk";
-import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
-
-type PickupStatus = "baru" | "dijadwalkan" | "selesai" | "dibatalkan" | string;
-
-type PickupRequest = {
-  id: number;
-  donor_name: string;
-  donor_phone: string;
-  address_full: string;
-  city: string;
-  district: string;
-  wakaf_type: string;
-  estimation?: string | null;
-  preferred_time?: string | null;
-  status?: PickupStatus | null;
-  assigned_officer?: string | null;
-  notes?: string | null;
-  created_at?: string | null;
-};
-
-type PaginationPayload<T> = {
-  data: T[];
-  current_page: number;
-  per_page: number;
-  last_page: number;
-  total: number;
-};
+import type { PaginationPayload, PickupRequest, PickupStatus } from "@/types/pickup";
+import http from "@/lib/http";
+import { useToast } from "@/components/ui/ToastProvider";
+import { runWithConcurrency } from "@/lib/bulk";
+import { useBulkSelection } from "@/components/ui/useBulkSelection";
+import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
+import AdminPickupFilters from "@/components/management/admin/pickups/AdminPickupFilters";
+import AdminPickupList from "@/components/management/admin/pickups/AdminPickupList";
 
 const formatDateTime = (value?: string | null) => {
   if (!value) return "-";
@@ -89,11 +64,8 @@ export function AdminPickupRequestsPage() {
   const [error, setError] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
-
-
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((item) => item.id), [items]);
-  const hasFilters = Boolean(q.trim() || status);
 
   const fetchRequests = async (
     nextPage: number,
@@ -155,7 +127,6 @@ export function AdminPickupRequestsPage() {
   const onReset = () => {
     setQ("");
     setStatus("");
-    // Effect will trigger fetch
   };
 
   const onDeleteSelected = async () => {
@@ -218,83 +189,17 @@ export function AdminPickupRequestsPage() {
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
-          <h3 className="font-heading text-lg font-bold text-slate-800 flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
-              <FontAwesomeIcon icon={faFilter} />
-            </div>
-            Filter & Pencarian
-          </h3>
-          {hasFilters && (
-            <button
-              type="button"
-              onClick={onReset}
-              className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline"
-            >
-              Reset Filter
-            </button>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <label className="block">
-            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Pencarian</span>
-            <div className="relative mt-2 group">
-              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 transition group-focus-within:text-emerald-500">
-                <FontAwesomeIcon icon={faMagnifyingGlass} />
-              </span>
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Nama atau No. WhatsApp..."
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-              />
-            </div>
-          </label>
-
-          <label className="block">
-            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Status</span>
-            <div className="relative mt-2">
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-              >
-                <option value="">Semua status</option>
-                <option value="baru">Baru</option>
-                <option value="dijadwalkan">Dijadwalkan</option>
-                <option value="selesai">Selesai</option>
-                <option value="dibatalkan">Dibatalkan</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                <FontAwesomeIcon icon={faFilter} className="text-xs" />
-              </div>
-            </div>
-          </label>
-
-          <div className="flex items-end">
-            <label className="block w-full">
-              <span className="text-xs font-bold uppercase tracking-wide text-slate-400">Per Halaman</span>
-              <div className="relative mt-2">
-                <select
-                  value={perPage}
-                  onChange={(e) => setPerPage(Number(e.target.value))}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                >
-                  <option value={10}>10 Data</option>
-                  <option value={15}>15 Data</option>
-                  <option value={25}>25 Data</option>
-                  <option value={50}>50 Data</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
-                </div>
-              </div>
-            </label>
-          </div>
-        </div>
-      </div>
+      <AdminPickupFilters
+        q={q}
+        setQ={setQ}
+        status={status}
+        setStatus={setStatus}
+        perPage={perPage}
+        setPerPage={setPerPage}
+        total={total}
+        loading={loading}
+        onReset={onReset}
+      />
 
       {error && (
         <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">
@@ -309,166 +214,18 @@ export function AdminPickupRequestsPage() {
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
-        
       />
 
-      <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
-        <div className="hidden overflow-x-auto md:block">
-          <table className="min-w-full table-fixed">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="w-[6%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  <input
-                    type="checkbox"
-                    checked={pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id))}
-                    onChange={() => selection.toggleAll(pageIds)}
-                    aria-label="Pilih semua permintaan di halaman"
-                    className="h-4 w-4"
-                  />
-                </th>
-                <th className="w-[22%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Donatur
-                </th>
-                <th className="w-[28%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Lokasi
-                </th>
-                <th className="w-[18%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Jenis wakaf
-                </th>
-                <th className="w-[14%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Status
-                </th>
-                <th className="w-[12%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Waktu
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                Array.from({ length: 7 }).map((_, idx) => (
-                  <tr key={idx} className="animate-pulse">
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-4 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-32 rounded bg-slate-100" />
-                      <div className="mt-2 h-3 w-24 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-48 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-32 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-6 w-24 rounded-full bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-28 rounded bg-slate-100" />
-                    </td>
-                  </tr>
-                ))
-              ) : items.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
-                    Belum ada permintaan jemput.
-                  </td>
-                </tr>
-              ) : (
-
-                items.map((item) => {
-                  const statusValue = String(item.status ?? "").trim().toLowerCase();
-                  let barColor = "border-l-slate-200";
-                  if (statusValue === "selesai") barColor = "border-l-emerald-500";
-                  else if (statusValue === "baru") barColor = "border-l-amber-500";
-                  else if (statusValue === "dijadwalkan") barColor = "border-l-blue-500";
-                  else if (statusValue === "dibatalkan") barColor = "border-l-rose-500";
-
-                  return (
-                    <tr
-                      key={item.id}
-                      className={`cursor-pointer transition hover:bg-slate-50 border-l-4 ${barColor}`}
-                      onClick={() => openDetail(item.id)}
-                    >
-                      <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={selection.isSelected(item.id)}
-                          onChange={() => selection.toggle(item.id)}
-                          aria-label={`Pilih permintaan ${item.donor_name}`}
-                          className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                        />
-                      </td>
-                      <td className="px-6 py-5">
-                        <p className="line-clamp-1 text-sm font-bold text-slate-900">{item.donor_name}</p>
-                        <p className="mt-1 text-xs font-semibold text-slate-500">{item.donor_phone}</p>
-                      </td>
-                      <td className="px-6 py-5">
-                        <p className="line-clamp-1 text-sm font-semibold text-slate-900">{item.city}, {item.district}</p>
-                        <p className="mt-1 line-clamp-1 text-xs text-slate-500">{item.address_full}</p>
-                      </td>
-                      <td className="px-6 py-5">
-                        <p className="text-sm font-semibold text-slate-900">{item.wakaf_type}</p>
-                        <p className="mt-1 text-xs text-slate-500">{item.estimation ? item.estimation : "-"}</p>
-                      </td>
-                      <td className="px-6 py-5">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(String(item.status ?? ""))}`}>
-                          {getStatusLabel(String(item.status ?? ""))}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-600">{formatDateTime(item.created_at)}</td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="divide-y divide-slate-100 md:hidden">
-          {loading ? (
-            Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="p-5 animate-pulse">
-                <div className="h-4 w-2/3 rounded bg-slate-100" />
-                <div className="mt-2 h-3 w-1/2 rounded bg-slate-100" />
-                <div className="mt-4 h-6 w-24 rounded-full bg-slate-100" />
-              </div>
-            ))
-          ) : items.length === 0 ? (
-            <div className="p-6 text-center text-sm font-semibold text-slate-500">Belum ada permintaan.</div>
-          ) : (
-
-            items.map((item) => {
-              const statusValue = String(item.status ?? "").trim().toLowerCase();
-              let barColor = "border-l-slate-200";
-              if (statusValue === "selesai") barColor = "border-l-emerald-500";
-              else if (statusValue === "baru") barColor = "border-l-amber-500";
-              else if (statusValue === "dijadwalkan") barColor = "border-l-blue-500";
-              else if (statusValue === "dibatalkan") barColor = "border-l-rose-500";
-
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => openDetail(item.id)}
-                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor}`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="line-clamp-1 text-sm font-bold text-slate-900">{item.donor_name}</p>
-                      <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-500">{item.city}, {item.district}</p>
-                    </div>
-                    <span className={`inline-flex shrink-0 items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(String(item.status ?? ""))}`}>
-                      {getStatusLabel(String(item.status ?? ""))}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-xs font-semibold text-slate-500">{formatDateTime(item.created_at)}</p>
-                </button>
-              );
-            })
-          )}
-        </div>
-      </div>
+      <AdminPickupList
+        items={items}
+        loading={loading}
+        selection={selection}
+        pageIds={pageIds}
+        getStatusTone={getStatusTone}
+        getStatusLabel={getStatusLabel}
+        formatDateTime={formatDateTime}
+        onOpenDetail={openDetail}
+      />
 
       <div className="flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">

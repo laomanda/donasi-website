@@ -1,17 +1,28 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import http from "@/lib/http";
+import { useToast } from "@/components/ui/ToastProvider";
+import { runWithConcurrency } from "@/lib/bulk";
+import { useBulkSelection } from "@/components/ui/useBulkSelection";
+import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
+
+// Import modular components
+import AdminDonationHeader from "@/components/management/admin/donations/AdminDonationHeader";
+import AdminDonationFilters from "@/components/management/admin/donations/AdminDonationFilters";
+import AdminDonationTable from "@/components/management/admin/donations/AdminDonationTable";
+import AdminDonationMobileList from "@/components/management/admin/donations/AdminDonationMobileList";
+import AdminDonationPagination from "@/components/management/admin/donations/AdminDonationPagination";
+import AdminWhatsappConfirmationModal from "@/components/management/admin/AdminWhatsappConfirmationModal";
+
+// Import utilities
 import {
-  faArrowLeft,
-  faArrowRight,
-  faFilter,
-  faMagnifyingGlass,
-} from "@fortawesome/free-solid-svg-icons";
-import http from "../../../../lib/http";
-import { useToast } from "../../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../../lib/bulk";
-import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
+  formatCurrency,
+  formatDateTime,
+  getStatusLabel,
+  getStatusTone,
+  normalizeSourceLabel,
+  formatCount,
+} from "@/utils/management/adminDonationUtils";
 
 type DonationStatus = "pending" | "paid" | "failed" | "expired" | "cancelled" | string;
 
@@ -23,6 +34,11 @@ type Donation = {
   status?: DonationStatus | null;
   paid_at?: string | null;
   created_at?: string | null;
+  program?: { title: string } | null;
+  whatsapp_number?: string | null;
+  payment_source?: string | null;
+  donor_phone?: string | null;
+  whatsapp_sent_at?: string | null;
 };
 
 type PaginationPayload<T> = {
@@ -33,46 +49,15 @@ type PaginationPayload<T> = {
   total: number;
 };
 
-const formatCurrency = (value: number | string | null | undefined) => {
-  const n = Number(value ?? 0);
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(
-    Number.isFinite(n) ? n : 0
-  );
+type ProgramOption = {
+  id: number;
+  title: string;
 };
 
-const formatCount = (value: number) => new Intl.NumberFormat("id-ID").format(value);
-
-const formatDateTime = (value: string | null | undefined) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-};
-
-const getStatusTone = (status: DonationStatus) => {
-  const s = String(status ?? "").toLowerCase();
-  if (s === "paid") return "bg-emerald-600 text-white shadow-md shadow-emerald-600/20";
-  if (s === "pending") return "bg-amber-500 text-white shadow-md shadow-amber-500/20";
-  if (s === "failed" || s === "cancelled") return "bg-rose-600 text-white shadow-md shadow-rose-600/20";
-  if (s === "expired") return "bg-slate-600 text-white shadow-md shadow-slate-600/20";
-  return "bg-slate-600 text-white shadow-md shadow-slate-600/20";
-};
-
-const getStatusLabel = (status: DonationStatus) => {
-  const s = String(status ?? "").toLowerCase();
-  if (s === "paid") return "Lunas";
-  if (s === "pending") return "Menunggu";
-  if (s === "failed") return "Gagal";
-  if (s === "expired") return "Kedaluwarsa";
-  if (s === "cancelled") return "Dibatalkan";
-  return String(status || "-");
-};
+type ProgramsPayload = PaginationPayload<{
+  id: number;
+  title: string;
+}>;
 
 export function AdminDonationConfirmationsPage() {
   const navigate = useNavigate();
@@ -84,31 +69,66 @@ export function AdminDonationConfirmationsPage() {
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
 
+  // States for filters
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState<DonationStatus>("pending");
+  const [status, setStatus] = useState("pending");
+  const [paymentSource, setPaymentSource] = useState("manual");
+  const [programId, setProgramId] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   
+  const [programOptions, setProgramOptions] = useState<ProgramOption[]>([]);
+  const [programLoading, setProgramLoading] = useState(false);
+
+  const [whatsappModal, setWhatsappModal] = useState<{ isOpen: boolean; donation: Donation | null }>({
+    isOpen: false,
+    donation: null,
+  });
+
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((d) => d.id), [items]);
   const skipAutoFetchRef = useRef(false);
 
-  const hasFilters = Boolean(q.trim() || (status && status !== "pending"));
-  const inputClass =
-    "mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10";
-  const labelClass = "block text-xs font-bold uppercase tracking-wider text-slate-400";
-  const compactSelectClass =
-    "rounded-xl border border-slate-200 bg-slate-50 px-2 py-1 text-sm font-bold text-slate-700 focus:border-emerald-500 focus:outline-none";
+  const hasFilters = Boolean(
+    q.trim() || 
+    (status && status !== "pending") || 
+    programId || 
+    dateFrom || 
+    dateTo
+  );
+
+  const fetchPrograms = async () => {
+    setProgramLoading(true);
+    try {
+      const res = await http.get<ProgramsPayload>("/admin/programs", { params: { page: 1, per_page: 100 } });
+      const list = Array.isArray(res.data?.data) ? res.data.data : [];
+      setProgramOptions(
+        list
+          .filter((item) => item && typeof item === "object" && typeof (item as any).id === "number")
+          .map((item) => ({ id: Number((item as any).id), title: String((item as any).title ?? "") }))
+      );
+    } catch {
+      setProgramOptions([]);
+    } finally {
+      setProgramLoading(false);
+    }
+  };
 
   const fetchConfirmations = async (
     nextPage: number,
-    overrides?: Partial<{ q: string; status: DonationStatus; perPage: number }>,
+    overrides?: Partial<{ q: string; status: string; perPage: number; programId: string; dateFrom: string; dateTo: string }>,
     options?: { background?: boolean }
   ) => {
     const qValue = (overrides?.q ?? q).trim();
     const statusValue = overrides?.status ?? status;
     const perPageValue = overrides?.perPage ?? perPage;
+    const programIdValue = overrides?.programId ?? programId;
+    const dateFromValue = overrides?.dateFrom ?? dateFrom;
+    const dateToValue = overrides?.dateTo ?? dateTo;
 
     if (!options?.background) {
       setLoading(true);
@@ -121,7 +141,10 @@ export function AdminDonationConfirmationsPage() {
           per_page: perPageValue,
           q: qValue || undefined,
           status: statusValue || undefined,
-          payment_source: "manual",
+          program_id: programIdValue || undefined,
+          start_date: dateFromValue || undefined,
+          end_date: dateToValue || undefined,
+          payment_source: "manual", // Paksa manual untuk konfirmasi
         },
       });
       setItems(res.data.data ?? []);
@@ -140,32 +163,34 @@ export function AdminDonationConfirmationsPage() {
     }
   };
 
+  useEffect(() => {
+    void fetchPrograms();
+  }, []);
+
   // Real-time polling
   useEffect(() => {
-    // Jangan polling jika user sedang mengetik search
     if (q.trim().length > 0) return;
 
     const interval = window.setInterval(() => {
-      // Background fetch: tidak mengubah loading state
       void fetchConfirmations(page, undefined, { background: true });
-    }, 3000); // 3 detik delay
+    }, 3000);
 
     return () => window.clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, perPage, q, status]); // Re-create interval if params change
+  }, [page, perPage, q, status, programId, dateFrom, dateTo]);
 
   useEffect(() => {
     if (skipAutoFetchRef.current) {
       skipAutoFetchRef.current = false;
       return;
     }
-    const delay = q.trim().length ? 350 : 0;
+    const delay = q.trim().length ? 500 : 0;
     const timer = window.setTimeout(() => {
-      void fetchConfirmations(1, { q, status, perPage });
+      void fetchConfirmations(1);
     }, delay);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, status, perPage]);
+  }, [q, status, perPage, programId, dateFrom, dateTo]);
 
   useEffect(() => {
     selection.keepOnly(pageIds);
@@ -176,7 +201,10 @@ export function AdminDonationConfirmationsPage() {
     skipAutoFetchRef.current = true;
     setQ("");
     setStatus("pending");
-    void fetchConfirmations(1, { q: "", status: "pending" });
+    setProgramId("");
+    setDateFrom("");
+    setDateTo("");
+    void fetchConfirmations(1, { q: "", status: "pending", programId: "", dateFrom: "", dateTo: "" });
   };
 
   const onDeleteSelected = async () => {
@@ -202,113 +230,39 @@ export function AdminDonationConfirmationsPage() {
     }
   };
 
+  const handleOpenWhatsapp = (donation: Donation, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setWhatsappModal({ isOpen: true, donation });
+  };
+
+  const openDonation = (id: number) => {
+    navigate(`/admin/donations/${id}`);
+  };
+
   return (
     <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 pb-10">
-      <div className="relative overflow-hidden rounded-[32px] bg-emerald-700 shadow-xl">
-        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
-        <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
-        <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
+      <AdminDonationHeader 
+        onInputManual={() => navigate("/admin/donations/manual")}
+      />
 
-        <div className="relative z-10 p-7 sm:p-9 lg:p-10">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="space-y-4">
-              <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-50 ring-1 ring-white/20">
-                  <span className="h-2 w-2 rounded-full bg-emerald-300" />
-                  Donasi manual
-                </span>
-                <h1 className="mt-3 font-heading text-2xl font-bold text-white sm:text-3xl md:text-5xl">Konfirmasi Donasi</h1>
-                <p className="mt-2 max-w-2xl text-xs font-medium text-emerald-100/90 sm:text-sm">
-                  Daftar transfer manual yang perlu diverifikasi agar dana tercatat dengan benar.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-              <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-xs font-semibold text-emerald-50 backdrop-blur-sm sm:text-sm">
-                Total data
-                <span className="font-bold text-white">{formatCount(total)}</span>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100">
-                <FontAwesomeIcon icon={faFilter} />
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Filter</p>
-                <h2 className="text-lg font-bold text-slate-900">Cari Konfirmasi</h2>
-                <p className="text-sm font-medium text-slate-500">Saring donasi manual yang perlu diverifikasi.</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm">
-                <span className="hidden text-slate-400 sm:inline">
-                  <FontAwesomeIcon icon={faFilter} />
-                </span>
-                <span className="whitespace-nowrap">Per hal.</span>
-                <select
-                  value={perPage}
-                  onChange={(e) => setPerPage(Number(e.target.value))}
-                  className={compactSelectClass}
-                >
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={30}>30</option>
-                  <option value={50}>50</option>
-                </select>
-              </label>
-              {hasFilters && (
-                <button
-                  type="button"
-                  onClick={onResetFilters}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 sm:rounded-2xl sm:px-5 sm:py-3 sm:text-sm"
-                >
-                  Reset
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className={labelClass}>Pencarian</span>
-              <div className="relative">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-                  <FontAwesomeIcon icon={faMagnifyingGlass} className="text-sm" />
-                </span>
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Kode donasi atau nama donatur..."
-                  className={`${inputClass} pl-11`}
-                />
-              </div>
-            </label>
-
-            <label className="block">
-              <span className={labelClass}>Status</span>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className={inputClass}
-              >
-                <option value="">Semua status</option>
-                <option value="pending">Menunggu</option>
-                <option value="paid">Lunas</option>
-                <option value="failed">Gagal</option>
-                <option value="expired">Kedaluwarsa</option>
-                <option value="cancelled">Dibatalkan</option>
-              </select>
-            </label>
-          </div>
-        </div>
-      </div>
+      <AdminDonationFilters 
+        q={q}
+        setQ={setQ}
+        status={status}
+        setStatus={setStatus}
+        paymentSource={paymentSource}
+        setPaymentSource={setPaymentSource}
+        programId={programId}
+        setProgramId={setProgramId}
+        dateFrom={dateFrom}
+        setDateFrom={setDateFrom}
+        dateTo={dateTo}
+        setDateTo={setDateTo}
+        programOptions={programOptions}
+        programLoading={programLoading}
+        hasFilters={hasFilters}
+        onResetFilters={onResetFilters}
+      />
 
       {error && (
         <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">
@@ -323,217 +277,63 @@ export function AdminDonationConfirmationsPage() {
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
-        
       />
 
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-        <div className="hidden overflow-x-auto md:block">
-          <table className="min-w-full table-fixed">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="w-[6%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  <input
-                    type="checkbox"
-                    checked={pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id))}
-                    onChange={() => selection.toggleAll(pageIds)}
-                    aria-label="Pilih semua donasi di halaman"
-                    className="h-4 w-4 accent-emerald-600"
-                  />
-                </th>
-                <th className="w-[26%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Kode
-                </th>
-                <th className="w-[28%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Donatur
-                </th>
-                <th className="w-[16%] px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Nominal
-                </th>
-                <th className="w-[14%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Status
-                </th>
-                <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Waktu
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                Array.from({ length: 8 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-4 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-32 rounded bg-slate-100" />
-                      <div className="mt-2 h-3 w-24 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-44 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="ml-auto h-4 w-28 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-6 w-24 rounded-full bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-28 rounded bg-slate-100" />
-                    </td>
-                  </tr>
-                ))
-              ) : items.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
-                    Belum ada konfirmasi donasi.
-                  </td>
-                </tr>
-              ) : (
-                items.map((donation) => {
-                  const code = String(donation.donation_code ?? "").trim() || `#${donation.id}`;
-                  const donor = String(donation.donor_name ?? "").trim() || "Anonim";
-                  const when = donation.paid_at ?? donation.created_at;
+        <AdminDonationTable 
+          items={items}
+          loading={loading}
+          selection={selection}
+          pageIds={pageIds}
+          formatCurrency={formatCurrency}
+          formatDateTime={formatDateTime}
+          getStatusTone={getStatusTone}
+          getStatusLabel={getStatusLabel}
+          normalizeSourceLabel={normalizeSourceLabel}
+          handleOpenWhatsapp={handleOpenWhatsapp}
+          openDonation={openDonation}
+        />
 
-                  const s = String(donation.status ?? "").toLowerCase();
-                  let barColor = "border-l-slate-200";
-                  if (s === "paid") barColor = "border-l-emerald-500";
-                  else if (s === "pending") barColor = "border-l-amber-500";
-                  else if (s === "failed" || s === "cancelled") barColor = "border-l-rose-500";
-                  else if (s === "expired") barColor = "border-l-slate-600";
-
-                  return (
-                    <tr
-                      key={donation.id}
-                      className={`group cursor-pointer border-l-[6px] border-transparent transition hover:bg-emerald-50/40 ${barColor}`}
-                      onClick={() => navigate(`/admin/donations/${donation.id}`)}
-                    >
-                      <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={selection.isSelected(donation.id)}
-                          onChange={() => selection.toggle(donation.id)}
-                          aria-label={`Pilih donasi ${code}`}
-                          className="h-4 w-4 accent-emerald-600"
-                        />
-                      </td>
-                      <td className="px-6 py-5">
-                        <p className="text-sm font-bold text-slate-900">{code}</p>
-                        <p className="mt-1 text-xs font-semibold text-slate-500">Manual transfer</p>
-                      </td>
-                      <td className="px-6 py-5">
-                        <p className="line-clamp-1 text-sm font-semibold text-slate-900">{donor}</p>
-                      </td>
-                      <td className="px-6 py-5 text-right text-sm font-bold text-slate-900">
-                        {formatCurrency(donation.amount)}
-                      </td>
-                      <td className="px-6 py-5">
-                        <span
-                          className={[
-                            "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
-                            getStatusTone(String(donation.status ?? "")),
-                          ].join(" ")}
-                        >
-                          {getStatusLabel(String(donation.status ?? ""))}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-600">{formatDateTime(when)}</td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="divide-y divide-slate-100 md:hidden">
-          {loading ? (
-            Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="p-5 animate-pulse">
-                <div className="h-4 w-2/3 rounded bg-slate-100" />
-                <div className="mt-3 h-3 w-1/2 rounded bg-slate-100" />
-                <div className="mt-4 h-6 w-28 rounded-full bg-slate-100" />
-              </div>
-            ))
-          ) : items.length === 0 ? (
-            <div className="p-6 text-center text-sm font-semibold text-slate-500">Belum ada konfirmasi.</div>
-          ) : (
-            items.map((donation) => {
-              const code = String(donation.donation_code ?? "").trim() || `#${donation.id}`;
-              const donor = String(donation.donor_name ?? "").trim() || "Anonim";
-              const when = donation.paid_at ?? donation.created_at;
-
-              const s = String(donation.status ?? "").toLowerCase();
-              let barColor = "border-l-slate-200";
-              if (s === "paid") barColor = "border-l-emerald-500";
-              else if (s === "pending") barColor = "border-l-amber-500";
-              else if (s === "failed" || s === "cancelled") barColor = "border-l-rose-500";
-              else if (s === "expired") barColor = "border-l-slate-600";
-
-              return (
-                <button
-                  key={donation.id}
-                  type="button"
-                  onClick={() => navigate(`/admin/donations/${donation.id}`)}
-                  className={`relative w-full overflow-hidden p-4 text-left transition hover:bg-emerald-50/50 border-l-[6px] border-transparent ${barColor}`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-slate-900 truncate">{code}</p>
-                      <p className="mt-0.5 line-clamp-1 text-[11px] font-semibold text-slate-500">{donor}</p>
-                    </div>
-                    <span
-                      className={[
-                        "inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-                        getStatusTone(String(donation.status ?? "")),
-                      ].join(" ")}
-                    >
-                      {getStatusLabel(String(donation.status ?? ""))}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-50 pt-3">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Nominal</span>
-                      <span className="text-sm font-bold text-slate-900">{formatCurrency(donation.amount)}</span>
-                    </div>
-                    <div className="text-right flex flex-col items-end">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Waktu</span>
-                      <span className="text-[11px] font-semibold text-slate-600">{formatDateTime(when)}</span>
-                    </div>
-                  </div>
-                </button>
-              );
-            })
-          )}
-        </div>
+        <AdminDonationMobileList 
+          items={items}
+          loading={loading}
+          formatCurrency={formatCurrency}
+          formatDateTime={formatDateTime}
+          getStatusTone={getStatusTone}
+          getStatusLabel={getStatusLabel}
+          normalizeSourceLabel={normalizeSourceLabel}
+          handleOpenWhatsapp={handleOpenWhatsapp}
+          openDonation={openDonation}
+        />
       </div>
 
-      <div className="flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="grid grid-cols-2 gap-3 w-full sm:flex sm:w-auto sm:items-center sm:gap-2">
-          <button
-            type="button"
-            onClick={() => void fetchConfirmations(Math.max(1, page - 1))}
-            disabled={page <= 1 || loading}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 sm:w-auto"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} />
-            Sebelumnya
-          </button>
-          <button
-            type="button"
-            onClick={() => void fetchConfirmations(Math.min(lastPage, page + 1))}
-            disabled={page >= lastPage || loading}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 sm:w-auto"
-          >
-            Berikutnya
-            <FontAwesomeIcon icon={faArrowRight} />
-          </button>
-        </div>
-      </div>
+      <AdminDonationPagination 
+        page={page}
+        lastPage={lastPage}
+        perPage={perPage}
+        total={total}
+        loading={loading}
+        pageLabel={`Menampilkan ${items.length} dari ${formatCount(total)} konfirmasi`}
+        onPageChange={(p) => void fetchConfirmations(p)}
+      />
+
+      {whatsappModal.donation && (
+        <AdminWhatsappConfirmationModal 
+          isOpen={whatsappModal.isOpen}
+          onClose={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}
+          donationId={whatsappModal.donation.id}
+          donorName={whatsappModal.donation.donor_name || "Hamba Allah"}
+          donorPhone={whatsappModal.donation.donor_phone || ""}
+          amount={whatsappModal.donation.amount || 0}
+          programTitle={whatsappModal.donation.program?.title || "Program Umum"}
+          donationCode={whatsappModal.donation.donation_code || "-"}
+          onSuccess={() => {
+              void fetchConfirmations(page);
+          }}
+        />
+      )}
     </div>
   );
 }
 
 export default AdminDonationConfirmationsPage;
-
-
-

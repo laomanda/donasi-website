@@ -1,4 +1,4 @@
-  import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import http from "@/lib/http";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -13,6 +13,15 @@ import AdminDonationTable from "@/components/management/admin/donations/AdminDon
 import AdminDonationMobileList from "@/components/management/admin/donations/AdminDonationMobileList";
 import AdminDonationPagination from "@/components/management/admin/donations/AdminDonationPagination";
 import AdminWhatsappConfirmationModal from "@/components/management/admin/AdminWhatsappConfirmationModal";
+
+// Utilities
+import {
+  formatCurrency,
+  formatDateTime,
+  getStatusLabel,
+  getStatusTone,
+  normalizeSourceLabel,
+} from "@/utils/management/adminDonationUtils";
 
 type DonationStatus = "pending" | "paid" | "failed" | "expired" | "cancelled" | string;
 
@@ -49,53 +58,6 @@ type ProgramsPayload = PaginationPayload<{
   id: number;
   title: string;
 }>;
-
-const formatCurrency = (value: number | string | null | undefined) => {
-  const n = Number(value ?? 0);
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(
-    Number.isFinite(n) ? n : 0
-  );
-};
-
-const formatDateTime = (value: string | null | undefined) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-};
-
-const getStatusTone = (status: DonationStatus) => {
-  const s = String(status ?? "").toLowerCase();
-  if (s === "paid") return "bg-emerald-600 text-white shadow-md shadow-emerald-600/20";
-  if (s === "pending") return "bg-amber-500 text-white shadow-md shadow-amber-500/20";
-  if (s === "failed" || s === "cancelled") return "bg-rose-600 text-white shadow-md shadow-rose-600/20";
-  if (s === "expired") return "bg-slate-600 text-white shadow-md shadow-slate-600/20";
-  return "bg-slate-600 text-white shadow-md shadow-slate-600/20";
-};
-
-const getStatusLabel = (status: DonationStatus) => {
-  const s = String(status ?? "").toLowerCase();
-  if (s === "paid") return "Lunas";
-  if (s === "pending") return "Menunggu";
-  if (s === "failed") return "Gagal";
-  if (s === "expired") return "Kedaluwarsa";
-  if (s === "cancelled") return "Dibatalkan";
-  return String(status || "-");
-};
-
-const normalizeSourceLabel = (value: string | null | undefined) => {
-  const s = String(value ?? "").trim().toLowerCase();
-  if (!s) return "-";
-  if (s === "midtrans") return "Midtrans";
-  if (s === "manual") return "Manual";
-  return value ?? "-";
-};
 
 export function AdminDonationsPage() {
   const navigate = useNavigate();
@@ -260,7 +222,7 @@ export function AdminDonationsPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6">
+    <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 pb-10">
       <AdminDonationHeader 
         onInputManual={() => navigate("/admin/donations/manual")}
       />
@@ -311,31 +273,33 @@ export function AdminDonationsPage() {
         disabled={loading || bulkDeleting}
       />
 
-      <AdminDonationTable 
-        items={items}
-        loading={loading}
-        selection={selection}
-        pageIds={pageIds}
-        formatCurrency={formatCurrency}
-        formatDateTime={formatDateTime}
-        getStatusTone={getStatusTone}
-        getStatusLabel={getStatusLabel}
-        normalizeSourceLabel={normalizeSourceLabel}
-        handleOpenWhatsapp={handleOpenWhatsapp}
-        openDonation={openDonation}
-      />
+      <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+        <AdminDonationTable 
+          items={items}
+          loading={loading}
+          selection={selection}
+          pageIds={pageIds}
+          formatCurrency={formatCurrency}
+          formatDateTime={formatDateTime}
+          getStatusTone={getStatusTone}
+          getStatusLabel={getStatusLabel}
+          normalizeSourceLabel={normalizeSourceLabel}
+          handleOpenWhatsapp={handleOpenWhatsapp}
+          openDonation={openDonation}
+        />
 
-      <AdminDonationMobileList 
-        items={items}
-        loading={loading}
-        formatCurrency={formatCurrency}
-        formatDateTime={formatDateTime}
-        getStatusTone={getStatusTone}
-        getStatusLabel={getStatusLabel}
-        normalizeSourceLabel={normalizeSourceLabel}
-        handleOpenWhatsapp={handleOpenWhatsapp}
-        openDonation={openDonation}
-      />
+        <AdminDonationMobileList 
+          items={items}
+          loading={loading}
+          formatCurrency={formatCurrency}
+          formatDateTime={formatDateTime}
+          getStatusTone={getStatusTone}
+          getStatusLabel={getStatusLabel}
+          normalizeSourceLabel={normalizeSourceLabel}
+          handleOpenWhatsapp={handleOpenWhatsapp}
+          openDonation={openDonation}
+        />
+      </div>
 
       <AdminDonationPagination 
         page={page}

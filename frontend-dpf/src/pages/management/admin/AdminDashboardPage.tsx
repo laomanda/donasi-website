@@ -9,11 +9,11 @@ import {
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { TONE_STYLES } from "@/components/management/StatCard";
 
-import AdminDashboardHeader from "@/components/management/admin/AdminDashboardHeader";
-import AdminDashboardStats from "@/components/management/admin/AdminDashboardStats";
-import AdminRecentDonations from "@/components/management/admin/AdminRecentDonations";
-import AdminUpcomingPickups from "@/components/management/admin/AdminUpcomingPickups";
-import AdminUrgentConsultations from "@/components/management/admin/AdminUrgentConsultations";
+import AdminDashboardHeader from "@/components/management/admin/dashboard/AdminDashboardHeader";
+import AdminDashboardStats from "@/components/management/admin/dashboard/AdminDashboardStats";
+import AdminRecentDonations from "@/components/management/admin/dashboard/AdminRecentDonations";
+import AdminUpcomingPickups from "@/components/management/admin/dashboard/AdminUpcomingPickups";
+import AdminUrgentConsultations from "@/components/management/admin/dashboard/AdminUrgentConsultations";
 
 // --- Utils & Helpers ---
 const formatCurrency = (value: number) =>

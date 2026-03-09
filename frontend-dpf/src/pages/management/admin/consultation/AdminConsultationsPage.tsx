@@ -8,33 +8,12 @@ import {
   faHeadset,
   faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
-import http from "../../../../lib/http";
-import { useToast } from "../../../../components/ui/ToastProvider";
-import { runWithConcurrency } from "../../../../lib/bulk";
-import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
-
-type ConsultationStatus = "baru" | "dibalas" | "ditutup" | string;
-
-type Consultation = {
-  id: number;
-  name: string;
-  phone?: string | null;
-  email?: string | null;
-  topic: string;
-  message: string;
-  status?: ConsultationStatus | null;
-  admin_notes?: string | null;
-  created_at?: string | null;
-};
-
-type PaginationPayload<T> = {
-  data: T[];
-  current_page: number;
-  per_page: number;
-  last_page: number;
-  total: number;
-};
+import type { Consultation, ConsultationStatus, PaginationPayload } from "@/types/consultation";
+import http from "@/lib/http";
+import { useToast } from "@/components/ui/ToastProvider";
+import { runWithConcurrency } from "@/lib/bulk";
+import { useBulkSelection } from "@/components/ui/useBulkSelection";
+import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
 
 const formatDateTime = (value?: string | null) => {
   if (!value) return "-";
@@ -82,8 +61,6 @@ export function AdminConsultationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
-
-
 
   const selection = useBulkSelection<number>();
   const pageIds = useMemo(() => items.map((item) => item.id), [items]);
@@ -150,7 +127,6 @@ export function AdminConsultationsPage() {
   const onReset = () => {
     setQ("");
     setStatus("");
-    // Effect will trigger fetch
   };
 
   const onDeleteSelected = async () => {
@@ -170,6 +146,7 @@ export function AdminConsultationsPage() {
       }
 
       await fetchConsultations(1);
+      window.dispatchEvent(new Event("refresh-badges"));
     } finally {
       setBulkDeleting(false);
     }
@@ -253,7 +230,7 @@ export function AdminConsultationsPage() {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
               >
                 <option value="">Semua status</option>
                 <option value="baru">Baru</option>
@@ -273,7 +250,7 @@ export function AdminConsultationsPage() {
                 <select
                   value={perPage}
                   onChange={(e) => setPerPage(Number(e.target.value))}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
                 >
                   <option value={10}>10 Data</option>
                   <option value={20}>20 Data</option>
@@ -302,7 +279,6 @@ export function AdminConsultationsPage() {
         onSelectAllPage={() => selection.toggleAll(pageIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
-        
       />
 
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
@@ -362,7 +338,6 @@ export function AdminConsultationsPage() {
                   </td>
                 </tr>
               ) : (
-
                 items.map((item) => {
                   const statusValue = String(item.status ?? "").trim().toLowerCase();
                   let barColor = "border-l-slate-200";
@@ -423,7 +398,6 @@ export function AdminConsultationsPage() {
           ) : items.length === 0 ? (
             <div className="p-6 text-center text-sm font-semibold text-slate-500">Belum ada konsultasi.</div>
           ) : (
-
             items.map((item) => {
               const statusValue = String(item.status ?? "").trim().toLowerCase();
               let barColor = "border-l-slate-200";
@@ -488,4 +462,3 @@ export function AdminConsultationsPage() {
 }
 
 export default AdminConsultationsPage;
-

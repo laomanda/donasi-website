@@ -38,7 +38,7 @@ export function JemputWakafForm({ translate: t, locale }: JemputWakafFormProps) 
     address_full: "",
     city: "",
     district: "",
-    wakaf_type: "",
+    zakat_type: "",
     estimation: "",
     preferred_time: "",
   });
@@ -113,7 +113,7 @@ export function JemputWakafForm({ translate: t, locale }: JemputWakafFormProps) 
   };
 
   const handleWakafTypeChange = (value: string) => {
-    handleChange("wakaf_type", value);
+    handleChange("zakat_type", value);
     if (value !== "Lainnya") setCustomWakaf("");
   };
 
@@ -130,7 +130,7 @@ export function JemputWakafForm({ translate: t, locale }: JemputWakafFormProps) 
     if (!form.address_full.trim()) next.address_full = "jemput.form.error.address.required";
     if (!form.city.trim()) next.city = "jemput.form.error.city.required";
     if (!form.district.trim()) next.district = "jemput.form.error.district.required";
-    if (!form.wakaf_type.trim()) next.wakaf_type = "jemput.form.error.wakaf.required";
+    if (!form.zakat_type.trim()) next.zakat_type = "jemput.form.error.wakaf.required";
 
     if (form.estimation.trim() && !/^[0-9.,\s]+$/.test(form.estimation)) {
         next.estimation = "jemput.form.error.estimation.numeric";
@@ -160,7 +160,7 @@ export function JemputWakafForm({ translate: t, locale }: JemputWakafFormProps) 
         address_full: form.address_full,
         city: form.city,
         district: form.district,
-        zakat_type: form.wakaf_type === "Lainnya" ? customWakaf : form.wakaf_type,
+        zakat_type: form.zakat_type === "Lainnya" ? customWakaf : form.zakat_type,
         estimation: form.estimation ? `${form.estimation} ${estimationUnit}` : undefined,
         preferred_time: form.preferred_time || undefined,
       });
@@ -171,7 +171,7 @@ export function JemputWakafForm({ translate: t, locale }: JemputWakafFormProps) 
         address_full: "",
         city: "",
         district: "",
-        wakaf_type: "",
+        zakat_type: "",
         estimation: "",
         preferred_time: "",
       });
@@ -296,10 +296,10 @@ export function JemputWakafForm({ translate: t, locale }: JemputWakafFormProps) 
             <div className="grid gap-4 sm:grid-cols-2">
               <SelectField
                 label={t("jemput.form.fields.wakaf")}
-                value={form.wakaf_type}
+                value={form.zakat_type}
                 onChange={handleWakafTypeChange}
                 required
-                error={errors.wakaf_type ? t(errors.wakaf_type) : ""}
+                error={errors.zakat_type ? t(errors.zakat_type) : ""}
                 options={[
                   ...programs.map(p => ({ value: pickLocale(p.title, p.title_en), label: pickLocale(p.title, p.title_en) })),
                   { value: "Lainnya", label: locale === "en" ? "Other" : "Lainnya" }
@@ -336,7 +336,7 @@ export function JemputWakafForm({ translate: t, locale }: JemputWakafFormProps) 
               </label>
             </div>
 
-            {form.wakaf_type === "Lainnya" && (
+            {form.zakat_type === "Lainnya" && (
               <InputField
                 label={locale === "en" ? "Specify Other Wakaf" : "Tuliskan Jenis Wakaf Lainnya"}
                 value={customWakaf}
