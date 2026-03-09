@@ -43,9 +43,8 @@ class ArticleController extends Controller
 
     public function store(Request $request)
     {
+        $this->ensureSlugIsPresent($request);
         $data = $this->validatePayload($request);
-
-        $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
 
         $article = Article::create($data);
 
@@ -59,11 +58,8 @@ class ArticleController extends Controller
 
     public function update(Request $request, Article $article)
     {
+        $this->ensureSlugIsPresent($request, $article);
         $data = $this->validatePayload($request, $article->id);
-
-        if (blank($data['slug'] ?? null)) {
-            $data['slug'] = Str::slug($data['title']);
-        }
 
         $article->update($data);
 
@@ -96,13 +92,34 @@ class ArticleController extends Controller
     public function categories()
     {
         $categories = Article::query()
-            ->select('category')
+            ->select('category', 'category_en')
             ->distinct()
             ->whereNotNull('category')
             ->orderBy('category')
-            ->pluck('category');
+            ->get();
 
         return response()->json($categories);
+    }
+
+    private function ensureSlugIsPresent(Request $request, ?Article $article = null): void
+    {
+        $title = $request->string('title')->trim()->toString();
+        $slug = $request->string('slug')->trim()->toString();
+
+        if ($slug === '' && $title !== '') {
+            $baseSlug = Str::slug($title);
+            $finalSlug = $baseSlug;
+            $counter = 1;
+
+            while (Article::where('slug', $finalSlug)
+                ->when($article, fn($q) => $q->where('id', '!=', $article->id))
+                ->exists()) {
+                $finalSlug = "{$baseSlug}-{$counter}";
+                $counter++;
+            }
+
+            $request->merge(['slug' => $finalSlug]);
+        }
     }
 
     private function validatePayload(Request $request, ?int $articleId = null): array
@@ -110,7 +127,7 @@ class ArticleController extends Controller
         return $request->validate([
             'title'          => ['required', 'string', 'max:255'],
             'title_en'       => ['nullable', 'string', 'max:255'],
-            'slug'           => ['nullable', 'string', 'max:255', 'unique:articles,slug,' . $articleId],
+            'slug'           => ['required', 'string', 'max:255', 'unique:articles,slug,' . $articleId],
             'program_id'     => ['nullable', 'exists:programs,id'],
             'category'       => ['required', 'string', 'max:100'],
             'category_en'    => ['nullable', 'string', 'max:100'],
