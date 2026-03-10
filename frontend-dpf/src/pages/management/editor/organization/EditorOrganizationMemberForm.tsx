@@ -17,6 +17,7 @@ type OrganizationMember = {
   photo_path?: string | null;
   email?: string | null;
   phone?: string | null;
+  show_contact?: boolean;
   order: number;
   is_active: boolean;
 };
@@ -30,6 +31,7 @@ type FormState = {
   photo_path: string;
   email: string;
   phone: string;
+  show_contact: boolean;
   order: string;
   is_active: boolean;
 };
@@ -45,6 +47,7 @@ const emptyForm: FormState = {
   photo_path: "",
   email: "",
   phone: "",
+  show_contact: false,
   order: "0",
   is_active: true,
 };
@@ -176,6 +179,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
           photo_path: m.photo_path ?? "",
           email: m.email ?? "",
           phone: m.phone ?? "",
+          show_contact: Boolean(m.show_contact),
           order: String(m.order ?? 0),
           is_active: Boolean(m.is_active),
         });
@@ -282,6 +286,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
       photo_path: state.photo_path.trim() || null,
       email: state.email.trim() || null,
       phone: state.phone.trim() || null,
+      show_contact: Boolean(state.show_contact),
       is_active: Boolean(state.is_active),
     };
   };
@@ -482,6 +487,26 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                     />
                 </div>
               </label>
+
+              <div className="sm:col-span-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setForm((s) => ({ ...s, show_contact: !s.show_contact }))}
+                  disabled={loading || saving || deleting}
+                  className={[
+                    "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-bold shadow-sm transition",
+                    form.show_contact
+                      ? "border-sky-200 bg-sky-50 text-sky-800"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
+                  ].join(" ")}
+                >
+                  <div className="flex flex-col text-left">
+                    <span>Tampilkan Kontak di Publik</span>
+                    <span className="text-[10px] font-normal opacity-80 mt-0.5">Jika aktif, email dan No. HP akan terlihat oleh pengunjung website.</span>
+                  </div>
+                  <span className="text-xs font-semibold opacity-80">{form.show_contact ? "Ya" : "Tidak"}</span>
+                </button>
+              </div>
             </div>
 
           </div>

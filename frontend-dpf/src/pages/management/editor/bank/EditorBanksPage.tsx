@@ -1,37 +1,15 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBuildingColumns, faMagnifyingGlass, faPlus } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
 import { runWithConcurrency } from "../../../../lib/bulk";
 import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
 import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
 
-type BankAccount = {
-  id: number;
-  bank_name: string;
-  account_number: string;
-  account_name: string;
-  is_visible_public: boolean;
-  order: number;
-  updated_at?: string | null;
-  created_at?: string | null;
-  category?: string | null;
-  type?: string | null;
-};
-
-const formatDate = (value: string | null | undefined) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short", year: "numeric" }).format(date);
-};
-
-const getStatusTone = (isActive: boolean) =>
-  isActive
-    ? "bg-brandGreen-600 text-white shadow-sm ring-1 ring-brandGreen-600"
-    : "bg-slate-500 text-white shadow-sm ring-1 ring-slate-500";
+import { EditorBanksHeader } from "../../../../components/management/editor/bank/list/EditorBanksHeader";
+import { EditorBanksFilter } from "../../../../components/management/editor/bank/list/EditorBanksFilter";
+import { EditorBanksTable } from "../../../../components/management/editor/bank/list/EditorBanksTable";
+import type { BankAccount } from "../../../../components/management/editor/bank/EditorBankTypes";
 
 export function EditorBanksPage() {
   const navigate = useNavigate();
@@ -123,93 +101,20 @@ export function EditorBanksPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
-      {/* Hero Header */}
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0">
-            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
-              <span className="h-2 w-2 rounded-full bg-brandGreen-500" />
-              Keuangan
-            </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">Rekening Resmi</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Kelola rekening yang tampil di halaman donasi publik.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-bold text-slate-500">
-              <span className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 ring-1 ring-slate-200">
-                Total: <span className="text-slate-900">{items.length}</span>
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 ring-1 ring-slate-200">
-                Tampil: <span className="text-slate-900">{activeCount}</span>
-              </span>
-            </div>
-          </div>
+      <EditorBanksHeader
+        totalItems={items.length}
+        activeCount={activeCount}
+        onAdd={() => navigate("/editor/bank-accounts/create")}
+      />
 
-          <button
-            type="button"
-            onClick={() => navigate("/editor/bank-accounts/create")}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700"
-          >
-            <FontAwesomeIcon icon={faPlus} />
-            Tambah Rekening
-          </button>
-        </div>
-      </div>
-
-      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="grid flex-1 gap-4 sm:grid-cols-3">
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Pencarian</span>
-              <div className="mt-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm focus-within:bg-white focus-within:ring-2 focus-within:ring-brandGreen-500/20 focus-within:border-brandGreen-500 transition">
-                <FontAwesomeIcon icon={faMagnifyingGlass} className="text-slate-400" />
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Cari bank, nomor, atau atas nama..."
-                  className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none"
-                />
-              </div>
-            </label>
-
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Status tampil</span>
-              <div className="relative mt-2">
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as any)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-brandGreen-500 focus:bg-white focus:ring-4 focus:ring-brandGreen-500/10"
-                >
-                  <option value="">Semua Status</option>
-                  <option value="active">Tampil</option>
-                  <option value="inactive">Disembunyikan</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faBuildingColumns} className="text-xs" />
-                </div>
-              </div>
-            </label>
-
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Wilayah</span>
-              <div className="relative mt-2">
-                <select
-                  value={bankType}
-                  onChange={(e) => setBankType(e.target.value as any)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-brandGreen-500 focus:bg-white focus:ring-4 focus:ring-brandGreen-500/10"
-                >
-                  <option value="">Semua Wilayah</option>
-                  <option value="domestic">Dalam Negeri</option>
-                  <option value="international">Luar Negeri</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <FontAwesomeIcon icon={faBuildingColumns} className="text-xs" />
-                </div>
-              </div>
-            </label>
-          </div>
-        </div>
-      </div>
+      <EditorBanksFilter
+        q={q}
+        setQ={setQ}
+        status={status}
+        setStatus={setStatus}
+        bankType={bankType}
+        setBankType={setBankType}
+      />
 
       {error ? (
         <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div>
@@ -222,204 +127,17 @@ export function EditorBanksPage() {
         onSelectAllPage={() => selection.toggleAll(filteredIds)}
         onDeleteSelected={onDeleteSelected}
         disabled={loading || bulkDeleting}
-        
       />
 
-      <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
-        <div className="hidden overflow-x-auto md:block">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="w-[6%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  <input
-                    type="checkbox"
-                    checked={filteredIds.length > 0 && filteredIds.every((id) => selection.isSelected(id))}
-                    onChange={() => selection.toggleAll(filteredIds)}
-                    aria-label="Pilih semua rekening"
-                    className="h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500"
-                  />
-                </th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Urutan</th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Bank</th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Nomor</th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Atas nama</th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Kategori</th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status</th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Diperbarui</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-4 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-6 w-14 rounded-full bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-32 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-36 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-32 rounded bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-6 w-24 rounded-full bg-slate-100" />
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="h-4 w-24 rounded bg-slate-100" />
-                    </td>
-                  </tr>
-                ))
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-10 text-center text-sm font-semibold text-slate-500">
-                    Belum ada rekening yang cocok.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((acc) => {
-                  const updated = acc.updated_at ?? acc.created_at;
-                  // Status bar color logic
-                  const barColor = acc.is_visible_public ? "border-l-brandGreen-500" : "border-l-slate-300";
-
-                  return (
-                    <tr
-                      key={acc.id}
-                      className={`cursor-pointer transition hover:bg-slate-50 border-l-4 ${barColor}`}
-                      onClick={() => navigate(`/editor/bank-accounts/${acc.id}/edit`)}
-                    >
-                      <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={selection.isSelected(acc.id)}
-                          onChange={() => selection.toggle(acc.id)}
-                          aria-label={`Pilih rekening ${acc.bank_name}`}
-                          className="h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500 accent-brandGreen-600"
-                        />
-                      </td>
-                      <td className="px-6 py-5">
-                        <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
-                          #{acc.order ?? 0}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex items-center gap-3">
-                          <span className="line-clamp-1 text-sm font-bold text-slate-900">{acc.bank_name}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5 text-sm font-bold text-slate-900">{acc.account_number}</td>
-                      <td className="px-6 py-5">
-                        <p className="line-clamp-1 text-sm font-semibold text-slate-700">{acc.account_name}</p>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex flex-col items-start gap-1.5">
-                            <span
-                            className={`whitespace-nowrap inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                                acc.type === "international"
-                                ? "bg-blue-600 text-white ring-1 ring-blue-600/20"
-                                : "bg-brandGreen-500 text-white ring-1 ring-brandGreen-600/20"
-                            }`}
-                            >
-                            {acc.type === "international" ? "Luar Negeri" : "Dalam Negeri"}
-                            </span>
-                            {acc.category && (
-                                <span className="text-xs font-semibold bg-primary-600 text-white px-2 py-1 rounded-lg ring-1 ring-primary-600/20">
-                                {acc.category}
-                                </span>
-                            )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(Boolean(acc.is_visible_public))}`}>
-                          {acc.is_visible_public ? "Tampil" : "Disembunyikan"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-slate-500">{formatDate(updated)}</td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="divide-y divide-slate-100 md:hidden">
-          {loading ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="p-5 animate-pulse">
-                <div className="h-4 w-3/4 rounded bg-slate-100" />
-                <div className="mt-3 h-3 w-full rounded bg-slate-100" />
-                <div className="mt-4 h-6 w-24 rounded-full bg-slate-100" />
-              </div>
-            ))
-          ) : filtered.length === 0 ? (
-            <div className="p-8 text-center text-sm font-semibold text-slate-500">
-              Belum ada rekening yang cocok.
-            </div>
-          ) : (
-            filtered.map((acc) => {
-              const updated = acc.updated_at ?? acc.created_at;
-              const barColor = acc.is_visible_public ? "border-l-brandGreen-500" : "border-l-slate-300";
-
-              return (
-                <button
-                  key={acc.id}
-                  type="button"
-                  onClick={() => navigate(`/editor/bank-accounts/${acc.id}/edit`)}
-                  className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor} `}
-                >
-                  <div className="flex items-start gap-3">
-                    <span onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={selection.isSelected(acc.id)}
-                        onChange={() => selection.toggle(acc.id)}
-                        aria-label={`Pilih rekening ${acc.bank_name}`}
-                        className="mt-1 h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500"
-                      />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-base font-bold text-slate-900">{acc.bank_name}</p>
-                      <p className="mt-1 text-sm text-slate-600">{acc.account_number}</p>
-                      <p className="mt-1 text-xs text-slate-500">Atas nama: {acc.account_name}</p>
-                      <div className="mt-2 flex items-center gap-2">
-                          <span
-                            className={`whitespace-nowrap inline-flex items-center rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                                acc.type === "international"
-                                ? "bg-blue-50 text-blue-700 ring-1 ring-blue-600/20"
-                                : "bg-brandGreen-50 text-brandGreen-700 ring-1 ring-brandGreen-600/20"
-                            }`}
-                           >
-                            {acc.type === "international" ? "Luar Negeri" : "Dalam Negeri"}
-                          </span>
-                          {acc.category && (
-                              <span className="text-xs font-semibold text-slate-600 line-clamp-1">
-                                {acc.category}
-                              </span>
-                          )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between gap-2 pl-7">
-                    <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700">
-                      #{acc.order ?? 0}
-                    </span>
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(Boolean(acc.is_visible_public))}`}>
-                      {acc.is_visible_public ? "Tampil" : "Disembunyikan"}
-                    </span>
-                  </div>
-                  <p className="mt-3 pl-7 text-xs font-semibold text-slate-500">Diperbarui: {formatDate(updated)}</p>
-                </button>
-              );
-            })
-          )}
-        </div>
-      </div>
+      <EditorBanksTable
+        items={filtered}
+        loading={loading}
+        isSelected={selection.isSelected}
+        onToggle={selection.toggle}
+        onToggleAll={() => selection.toggleAll(filteredIds)}
+        allSelected={filteredIds.length > 0 && filteredIds.every((id) => selection.isSelected(id))}
+        onEdit={(id) => navigate(`/editor/bank-accounts/${id}/edit`)}
+      />
     </div>
   );
 }
