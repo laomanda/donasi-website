@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {
@@ -35,11 +36,18 @@ class SettingController extends Controller
             return response()->json([]);
         }
 
-        return response()->json(
-            Setting::query()
-                ->whereIn('key', $keys->all())
+        $allSettings = Cache::remember('frontend.settings', 600, function () use ($allowed) {
+            return Setting::whereIn('key', $allowed->all())
                 ->orderBy('key')
                 ->get()
-        );
+                ->keyBy('key');
+        });
+
+        // Collect requested settings
+        $result = $keys->map(function ($key) use ($allSettings) {
+            return $allSettings->get($key);
+        })->filter()->values();
+
+        return response()->json($result);
     }
 }

@@ -55,7 +55,7 @@ export function AdminAllocationsPage() {
       setLastPage(data.data.last_page);
     } catch (err) {
       console.error(err);
-      toast.error("Gagal memuat data alokasi.");
+      toast.error("Gagal memuat data alokasi.", { title: "Gagal" });
     } finally {
       setLoading(false);
     }

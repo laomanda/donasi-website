@@ -4,12 +4,17 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
-use App\Models\Program;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use App\Http\Requests\Admin\ArticleRequest;
+use App\Http\Requests\Admin\PublishArticleRequest;
+use App\Services\ArticleService;
 
 class ArticleController extends Controller
 {
+    public function __construct(private ArticleService $articleService)
+    {
+    }
+
     public function index(Request $request)
     {
         $query = Article::query();
@@ -33,21 +38,16 @@ class ArticleController extends Controller
             });
         }
 
-        // Untuk management UI: tampilkan yang terbaru diubah/dibuat dulu,
-        // agar draft baru tidak "hilang" karena published_at null.
+        // Untuk management UI: tampilkan yang terbaru diubah/dibuat dulu
         $articles = $query->orderByDesc('updated_at')
             ->paginate($request->integer('per_page', 15));
 
         return response()->json($articles);
     }
 
-    public function store(Request $request)
+    public function store(ArticleRequest $request)
     {
-        $this->ensureSlugIsPresent($request);
-        $data = $this->validatePayload($request);
-
-        $article = Article::create($data);
-
+        $article = $this->articleService->storeArticle($request->validated());
         return response()->json($article, 201);
     }
 
@@ -56,37 +56,22 @@ class ArticleController extends Controller
         return response()->json($article);
     }
 
-    public function update(Request $request, Article $article)
+    public function update(ArticleRequest $request, Article $article)
     {
-        $this->ensureSlugIsPresent($request, $article);
-        $data = $this->validatePayload($request, $article->id);
-
-        $article->update($data);
-
-        return response()->json($article->refresh());
+        $updatedArticle = $this->articleService->updateArticle($article, $request->validated());
+        return response()->json($updatedArticle);
     }
 
     public function destroy(Article $article)
     {
         $article->delete();
-
         return response()->json(['message' => 'Article deleted.']);
     }
 
-    public function publish(Request $request, Article $article)
+    public function publish(PublishArticleRequest $request, Article $article)
     {
-        $data = $request->validate([
-            'status'        => ['sometimes', 'in:draft,review,published'],
-            'published_at'  => ['nullable', 'date'],
-        ]);
-
-        if (($data['status'] ?? $article->status) === 'published' && empty($data['published_at'])) {
-            $data['published_at'] = now();
-        }
-
-        $article->update($data);
-
-        return response()->json($article->refresh());
+        $publishedArticle = $this->articleService->publishArticle($article, $request->validated());
+        return response()->json($publishedArticle);
     }
 
     public function categories()
@@ -99,46 +84,5 @@ class ArticleController extends Controller
             ->get();
 
         return response()->json($categories);
-    }
-
-    private function ensureSlugIsPresent(Request $request, ?Article $article = null): void
-    {
-        $title = $request->string('title')->trim()->toString();
-        $slug = $request->string('slug')->trim()->toString();
-
-        if ($slug === '' && $title !== '') {
-            $baseSlug = Str::slug($title);
-            $finalSlug = $baseSlug;
-            $counter = 1;
-
-            while (Article::where('slug', $finalSlug)
-                ->when($article, fn($q) => $q->where('id', '!=', $article->id))
-                ->exists()) {
-                $finalSlug = "{$baseSlug}-{$counter}";
-                $counter++;
-            }
-
-            $request->merge(['slug' => $finalSlug]);
-        }
-    }
-
-    private function validatePayload(Request $request, ?int $articleId = null): array
-    {
-        return $request->validate([
-            'title'          => ['required', 'string', 'max:255'],
-            'title_en'       => ['nullable', 'string', 'max:255'],
-            'slug'           => ['required', 'string', 'max:255', 'unique:articles,slug,' . $articleId],
-            'program_id'     => ['nullable', 'exists:programs,id'],
-            'category'       => ['required', 'string', 'max:100'],
-            'category_en'    => ['nullable', 'string', 'max:100'],
-            'thumbnail_path' => ['nullable', 'string', 'max:255'],
-            'excerpt'        => ['required', 'string'],
-            'excerpt_en'     => ['nullable', 'string'],
-            'body'           => ['required', 'string'],
-            'body_en'        => ['nullable', 'string'],
-            'author_name'    => ['nullable', 'string', 'max:255'],
-            'published_at'   => ['nullable', 'date'],
-            'status'         => ['required', 'in:draft,review,published'],
-        ]);
     }
 }

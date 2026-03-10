@@ -271,10 +271,10 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
       const payload = payloadForRequest(form);
       if (mode === "create") {
         await http.post("/editor/articles", payload);
-        toast.success("Artikel berhasil dibuat.");
+        toast.success("Artikel berhasil dibuat.", { title: "Berhasil" });
       } else {
         await http.put(`/editor/articles/${articleId}`, payload);
-        toast.success("Perubahan artikel berhasil disimpan.");
+        toast.success("Perubahan artikel berhasil disimpan.", { title: "Berhasil" });
       }
       navigate("/editor/articles", { replace: true });
     } catch (err: any) {
@@ -289,7 +289,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
     setErrors([]);
     try {
       await http.delete(`/editor/articles/${articleId}`);
-      toast.success("Artikel berhasil dihapus.");
+      toast.success("Artikel berhasil dihapus.", { title: "Berhasil" });
       navigate("/editor/articles", { replace: true });
     } catch (err: any) {
       setErrors(normalizeErrors(err));

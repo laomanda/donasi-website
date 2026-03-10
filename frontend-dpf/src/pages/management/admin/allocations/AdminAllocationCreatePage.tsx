@@ -34,7 +34,7 @@ export function AdminAllocationCreatePage() {
         setUsers(data.data?.data || []);
       } catch (err) {
         console.error(err);
-        toast.error("Gagal memuat data mitra.");
+        toast.error("Gagal memuat data mitra.", { title: "Gagal" });
       }
     };
     void fetchData();
@@ -46,20 +46,24 @@ export function AdminAllocationCreatePage() {
 
     if (!userId) return;
 
-    const loadingToastId = toast.info("Mengecek saldo program...", { durationMs: 0 });
+    const loadingToastId = toast.info("Mengecek saldo program...", {
+        title: "Informasi",
+        durationMs: 0 });
     try {
       const { data } = await http.get(`/admin/users/${userId}/allocatable-programs`);
       setAllocatablePrograms(data.data || []);
       toast.dismiss(loadingToastId);
 
       if (data.data.length === 0) {
-        toast.error("Mitra ini belum memiliki saldo donasi yang bisa dialokasikan.", { durationMs: 5000 });
+        toast.error("Mitra ini belum memiliki saldo donasi yang bisa dialokasikan.", {
+            title: "Gagal",
+            durationMs: 5000 });
       } else {
-        toast.success(`Ditemukan ${data.data.length} program dengan saldo.`);
+        toast.success(`Ditemukan ${data.data.length} program dengan saldo.`, { title: "Berhasil" });
       }
     } catch (err) {
       console.error(err);
-      toast.error("Gagal memuat saldo program.");
+      toast.error("Gagal memuat saldo program.", { title: "Gagal" });
       toast.dismiss(loadingToastId);
     }
   };
@@ -99,12 +103,12 @@ export function AdminAllocationCreatePage() {
     if (e) e.preventDefault();
 
     if (Number(formData.amount) > maxAmount) {
-      toast.error(`Nominal melebihi saldo tersedia (Maks: ${formatRupiah(maxAmount)})`);
+      toast.error(`Nominal melebihi saldo tersedia (Maks: ${formatRupiah(maxAmount)})`, { title: "Gagal" });
       return;
     }
 
     if (!formData.proof) {
-      toast.error("Bukti penggunaan wajib diunggah.");
+      toast.error("Bukti penggunaan wajib diunggah.", { title: "Gagal" });
       return;
     }
 
@@ -125,10 +129,10 @@ export function AdminAllocationCreatePage() {
       await http.post("/admin/allocations", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      toast.success("Dana berhasil dialokasikan.");
+      toast.success("Dana berhasil dialokasikan.", { title: "Berhasil" });
       navigate("/admin/allocations");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Gagal mengalokasikan dana.");
+      toast.error(err.response?.data?.message || "Gagal mengalokasikan dana.", { title: "Gagal" });
     } finally {
       setSubmitting(false);
     }

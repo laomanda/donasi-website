@@ -58,16 +58,16 @@ export function LoginPage() {
         setAuthToken(token);
         setAuthUser(user);
         
-        toast.success(t("login.google_success"));
+        toast.success(t("login.google_success"), { title: "Berhasil" });
         navigate(getRedirectPath(user), { replace: true });
       } catch (err) {
-        toast.error(t("login.google_fail"));
+        toast.error(t("login.google_fail"), { title: "Gagal" });
       } finally {
         setSubmitting(false);
       }
     },
     onError: () => {
-      toast.error(t("login.google_connection_error"));
+      toast.error(t("login.google_connection_error"), { title: "Gagal" });
     },
   });
 

@@ -2,6 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Donation;
+use App\Models\Program;
+use Midtrans\Config as MidtransConfig;
+use Midtrans\Snap;
+
 class MidtransService
 {
     /**
@@ -74,5 +79,56 @@ class MidtransService
 
         // Default to pending for safety
         return 'pending';
+    }
+
+    public function createSnapTransaction(Donation $donation, ?Program $program = null): array
+    {
+        $this->setupMidtrans();
+
+        $finishUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL', config('app.url') ?? url('/'))), '/');
+        // Midtrans kadang tidak melampirkan parameter secara otomatis jika callbacks dire-define.
+        // Jadi kita tambahkan manual agar front-end selalu menerima parameter yang dibutuhkan.
+        $baseUrl = $finishUrl . '/donate?order_id=' . urlencode($donation->midtrans_order_id);
+
+        $payload = [
+            'transaction_details' => [
+                'order_id'     => $donation->midtrans_order_id,
+                'gross_amount' => (int) round($donation->amount),
+            ],
+            'customer_details' => [
+                'first_name' => $donation->donor_name,
+                'email'      => $donation->donor_email,
+                'phone'      => $donation->donor_phone,
+            ],
+            'item_details' => [
+                [
+                    'id'       => $donation->program_id ?? 'general',
+                    'price'    => (int) round($donation->amount),
+                    'quantity' => 1,
+                    'name'     => $program?->title ?? 'Donasi Umum',
+                ],
+            ],
+            'callbacks' => [
+                'finish'   => $baseUrl . '&transaction_status=settlement',
+                'pending'  => $baseUrl . '&transaction_status=pending',
+                'error'    => $baseUrl . '&transaction_status=deny',
+            ],
+            'custom_expiry' => [
+                'expiry_duration' => 5,
+                'unit'            => 'minute'
+            ],
+        ];
+
+        $response = Snap::createTransaction($payload);
+
+        return json_decode(json_encode($response), true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    public function setupMidtrans(): void
+    {
+        MidtransConfig::$serverKey = config('midtrans.server_key');
+        MidtransConfig::$isProduction = (bool) config('midtrans.is_production', false);
+        MidtransConfig::$isSanitized = true;
+        MidtransConfig::$is3ds = true;
     }
 }

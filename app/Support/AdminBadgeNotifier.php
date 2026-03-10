@@ -4,7 +4,7 @@ namespace App\Support;
 
 use App\Events\AdminBadgeCountsUpdated;
 use App\Models\PickupRequest;
-use App\Models\ZiswafConsultation;
+use App\Models\WakafConsultation;
 use App\Models\Suggestion;
 use App\Models\User;
 
@@ -22,7 +22,7 @@ class AdminBadgeNotifier
         }
 
         $pickupCount = PickupRequest::where('status', 'baru')->count();
-        $consultationCount = ZiswafConsultation::where('status', 'baru')->count();
+        $consultationCount = WakafConsultation::where('status', 'baru')->count();
         $suggestionCount = Suggestion::where('status', 'baru')->count();
 
         foreach ($listenerIds as $listenerId) {

@@ -6,70 +6,44 @@ use App\Http\Controllers\Controller;
 use App\Models\Donation;
 use App\Models\Program;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use Midtrans\Config as MidtransConfig;
-use Midtrans\Snap;
+use Illuminate\Support\Facades\Cache;
+use App\Http\Requests\Frontend\StoreMidtransDonationRequest;
+use App\Services\DonationService;
+use App\Services\MidtransService;
+use Illuminate\Support\Facades\Log;
 
 class DonationController extends Controller
 {
+    public function __construct(
+        private DonationService $donationService,
+        private MidtransService $midtransService
+    ) {}
+
     public function summary()
     {
-        $generalQuery = Donation::paid()->whereNull('program_id');
-
-        return response()->json([
-            'general' => [
-                'count'  => (clone $generalQuery)->count(),
-                'amount' => (clone $generalQuery)->sum('amount'),
-            ],
-        ]);
-    }
-
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'program_id'   => ['nullable', 'exists:programs,id'],
-            'donor_name'   => ['required', 'string', 'max:255'],
-            'donor_email'  => ['nullable', 'email'],
-            'donor_phone'  => ['required', 'string', 'max:30'],
-            'amount'       => ['required', 'numeric', 'min:1000'],
-            'is_anonymous' => ['required', 'boolean'],
-            'notes'        => ['nullable', 'string'],
-        ]);
-
-        $orderId = $this->generateMidtransOrderId();
-        $programId = $data['program_id'] ?? null;
-        $program = $programId ? Program::find($programId) : null;
-
-        $donation = DB::transaction(function () use ($data, $orderId, $programId) {
-            $created = Donation::create([
-                'program_id'            => $programId,
-                'donation_code'         => $this->generateDonationCode(),
-                'donor_name'            => $data['donor_name'],
-                'donor_email'           => $data['donor_email'] ?? null,
-                'donor_phone'           => $data['donor_phone'] ?? null,
-                'amount'                => $data['amount'],
-                'is_anonymous'          => $data['is_anonymous'],
-                'payment_source'        => 'midtrans',
-                'payment_method'        => 'snap',
-                'status'                => 'pending', 
-                'paid_at'               => null,
-                'notes'                 => $data['notes'] ?? null,
-                'midtrans_order_id'     => $orderId,
-                'user_id'               => auth('sanctum')->id(),
-            ]);
-
-            // Removed optimistic increment logic here. 
-            // The collected_amount will be incremented in the webhook when status becomes 'paid'.
-
-            return $created;
+        $data = Cache::remember('frontend_donation_summary', 600, function () {
+            $generalQuery = Donation::paid()->whereNull('program_id');
+            return [
+                'general' => [
+                    'count'  => (clone $generalQuery)->count(),
+                    'amount' => (clone $generalQuery)->sum('amount'),
+                ],
+            ];
         });
 
+        return response()->json($data);
+    }
+
+    public function store(StoreMidtransDonationRequest $request)
+    {
+        $donation = $this->donationService->createMidtransDonation($request->validated());
+        $program = $donation->program_id ? Program::find($donation->program_id) : null;
+
         try {
-            $snapResponse = $this->createMidtransTransaction($donation, $program);
+            $snapResponse = $this->midtransService->createSnapTransaction($donation, $program);
         } catch (\Throwable $th) {
             report($th);
-            $donation->delete();
+            $this->donationService->deleteDonation($donation);
 
             return response()->json([
                 'message' => 'Gagal membuat transaksi Midtrans.',
@@ -88,75 +62,7 @@ class DonationController extends Controller
         ], 201);
     }
 
-    private function createMidtransTransaction(Donation $donation, ?Program $program = null): array
-    {
-        $this->setupMidtrans();
 
-        $finishUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL', config('app.url') ?? url('/'))), '/');
-        // Midtrans kadang tidak melampirkan parameter secara otomatis jika callbacks dire-define. 
-        // Jadi kita tambahkan manual agar front-end selalu menerima parameter yang dibutuhkan.
-        $baseUrl = $finishUrl . '/donate?order_id=' . urlencode($donation->midtrans_order_id);
-
-        $payload = [
-            'transaction_details' => [
-                'order_id'     => $donation->midtrans_order_id,
-                'gross_amount' => (int) round($donation->amount),
-            ],
-            'customer_details' => [
-                'first_name' => $donation->donor_name,
-                'email'      => $donation->donor_email,
-                'phone'      => $donation->donor_phone,
-            ],
-            'item_details' => [
-                [
-                    'id'       => $donation->program_id ?? 'general',
-                    'price'    => (int) round($donation->amount),
-                    'quantity' => 1,
-                    'name'     => $program?->title ?? 'Donasi Umum',
-                ],
-            ],
-            'callbacks' => [
-                'finish'   => $baseUrl . '&transaction_status=settlement',
-                'pending'  => $baseUrl . '&transaction_status=pending',
-                'error'    => $baseUrl . '&transaction_status=deny',
-            ],
-            'custom_expiry' => [
-                'expiry_duration' => 5,
-                'unit'            => 'minute'
-            ],
-        ];
-
-        $response = Snap::createTransaction($payload);
-
-        return json_decode(json_encode($response), true, 512, JSON_THROW_ON_ERROR);
-    }
-
-    private function setupMidtrans(): void
-    {
-        MidtransConfig::$serverKey = config('midtrans.server_key');
-        MidtransConfig::$isProduction = (bool) config('midtrans.is_production', false);
-        MidtransConfig::$isSanitized = true;
-        MidtransConfig::$is3ds = true;
-    }
-
-    private function generateMidtransOrderId(): string
-    {
-        return 'DPF-' . now()->format('YmdHis') . '-' . Str::random(5);
-    }
-
-    private function generateDonationCode(): string
-    {
-        $prefix = 'DPF-' . now()->format('Ymd');
-
-        $lastCode = Donation::where('donation_code', 'like', "{$prefix}%")
-            ->orderByDesc('donation_code')
-            ->value('donation_code');
-
-        $sequence = $lastCode ? (int) substr($lastCode, -4) : 0;
-        $sequence++;
-
-        return sprintf('%s-%04d', $prefix, $sequence);
-    }
 
     public function cancel(Donation $donation)
     {
@@ -171,7 +77,7 @@ class DonationController extends Controller
         return response()->json(['message' => 'Donasi berhasil dibatalkan.']);
     }
 
-    public function checkStatusByOrder(Request $request, \App\Services\MidtransService $midtransService)
+    public function checkStatusByOrder(Request $request)
     {
         $orderId = $request->input('order_id');
         if (!$orderId) {
@@ -183,13 +89,12 @@ class DonationController extends Controller
             return response()->json(['message' => 'Donation not found'], 404);
         }
 
-        return $this->checkStatus($request, $donation, $midtransService);
+        return $this->checkStatus($request, $donation);
     }
 
-    public function checkStatus(Request $request, Donation $donation, \App\Services\MidtransService $midtransService)
+    public function checkStatus(Request $request, Donation $donation)
     {
-        $this->setupMidtrans();
-        $isProduction = (bool) config('midtrans.is_production', false);
+        $this->midtransService->setupMidtrans();
 
         $snapResult = $request->input('snap_result'); // Payload dari onSuccess Frontend
         $forcePaid  = $request->boolean('force_paid', false);
@@ -204,7 +109,7 @@ class DonationController extends Controller
                 'paid_at'              => now(),
                 'midtrans_raw_response' => ['transaction_status' => 'settlement', 'fraud_status' => 'accept', 'source' => 'frontend_redirect_force'],
             ]);
-            $this->syncProgramAmount($donation->fresh(), 'pending', 'paid');
+            $this->donationService->syncProgramAmount($donation->fresh(), 'pending', 'paid');
             return response()->json([
                 'message'  => 'Status berhasil diperbarui via redirect.',
                 'status'   => 'paid',
@@ -217,7 +122,7 @@ class DonationController extends Controller
             $transactionStatus = $snapResult['transaction_status'];
             $fraudStatus = $snapResult['fraud_status'] ?? null;
 
-            $newStatus = $midtransService->mapTransactionStatus($transactionStatus, $fraudStatus);
+            $newStatus = $this->midtransService->mapTransactionStatus($transactionStatus, $fraudStatus);
 
             \Illuminate\Support\Facades\Log::info('DonationController::checkStatus using Snap Frontend Payload', [
                 'order_id'                => $donation->midtrans_order_id,
@@ -234,7 +139,7 @@ class DonationController extends Controller
                     'paid_at'             => $newStatus === 'paid' ? now() : $donation->paid_at,
                     'midtrans_raw_response' => $snapResult,
                 ]);
-                $this->syncProgramAmount($donation->fresh(), $previousStatus, $newStatus);
+                $this->donationService->syncProgramAmount($donation->fresh(), $previousStatus, $newStatus);
             }
 
             // Always return early — don't fall through to Midtrans API
@@ -270,7 +175,7 @@ class DonationController extends Controller
         $fraudStatus       = $status->fraud_status ?? null;
         $paymentType       = $status->payment_type ?? '';
 
-        $newStatus = $midtransService->mapTransactionStatus($transactionStatus, $fraudStatus);
+        $newStatus = $this->midtransService->mapTransactionStatus($transactionStatus, $fraudStatus);
         $previousStatus = $donation->status;
 
         \Illuminate\Support\Facades\Log::info('DonationController::checkStatus Mapping', [
@@ -297,7 +202,7 @@ class DonationController extends Controller
             'midtrans_raw_response' => (array) $status,
         ]);
 
-        $this->syncProgramAmount($donation->fresh(), $previousStatus, $newStatus);
+        $this->donationService->syncProgramAmount($donation->fresh(), $previousStatus, $newStatus);
 
         return response()->json([
             'message' => 'Status berhasil diperbarui.',
@@ -307,26 +212,4 @@ class DonationController extends Controller
     }
 
 
-    private function syncProgramAmount(Donation $donation, ?string $oldStatus, string $newStatus): void
-    {
-        if (! $donation->program_id) {
-            return;
-        }
-
-        $program = $donation->program;
-
-        if (! $program) {
-            return;
-        }
-
-        if ($oldStatus !== 'paid' && $newStatus === 'paid') {
-            \Illuminate\Support\Facades\Log::info('SyncProgramAmount: Incrementing', ['program_id' => $program->id, 'amount' => $donation->amount]);
-            $program->increment('collected_amount', $donation->amount);
-        } elseif ($oldStatus === 'paid' && $newStatus !== 'paid') {
-            \Illuminate\Support\Facades\Log::info('SyncProgramAmount: Decrementing', ['program_id' => $program->id, 'amount' => $donation->amount]);
-            $program->decrement('collected_amount', $donation->amount);
-        } else {
-             \Illuminate\Support\Facades\Log::info('SyncProgramAmount: No change', ['old' => $oldStatus, 'new' => $newStatus]);
-        }
-    }
 }

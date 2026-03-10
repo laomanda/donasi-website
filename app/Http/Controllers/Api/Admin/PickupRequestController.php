@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\PickupRequest;
 use App\Support\AdminBadgeNotifier;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\PickupFormRequest;
+use App\Http\Requests\Admin\UpdatePickupStatusRequest;
 
 class PickupRequestController extends Controller
 {
@@ -32,9 +34,9 @@ class PickupRequestController extends Controller
         return response()->json($requests);
     }
 
-    public function store(Request $request)
+    public function store(PickupFormRequest $request)
     {
-        $data = $this->validatePayload($request);
+        $data = $request->validated();
         $data['status'] = $data['status'] ?? 'baru';
 
         $pickup = PickupRequest::create($data);
@@ -48,25 +50,17 @@ class PickupRequestController extends Controller
         return response()->json($pickupRequest);
     }
 
-    public function update(Request $request, PickupRequest $pickupRequest)
+    public function update(PickupFormRequest $request, PickupRequest $pickupRequest)
     {
-        $data = $this->validatePayload($request, false);
-
-        $pickupRequest->update($data);
+        $pickupRequest->update($request->validated());
         AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($pickupRequest->refresh());
     }
 
-    public function updateStatus(Request $request, PickupRequest $pickupRequest)
+    public function updateStatus(UpdatePickupStatusRequest $request, PickupRequest $pickupRequest)
     {
-        $data = $request->validate([
-            'status'           => ['required', 'in:baru,dijadwalkan,selesai,dibatalkan'],
-            'assigned_officer' => ['nullable', 'string', 'max:255'],
-            'notes'            => ['nullable', 'string'],
-        ]);
-
-        $pickupRequest->update($data);
+        $pickupRequest->update($request->validated());
         AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($pickupRequest->refresh());
@@ -78,27 +72,5 @@ class PickupRequestController extends Controller
         AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json(['message' => 'Pickup request deleted.']);
-    }
-
-    private function validatePayload(Request $request, bool $requireStatus = true): array
-    {
-        $rules = [
-            'donor_name'      => ['required', 'string', 'max:255'],
-            'donor_phone'     => ['required', 'string', 'max:30'],
-            'address_full'    => ['required', 'string'],
-            'city'            => ['required', 'string', 'max:100'],
-            'district'        => ['required', 'string', 'max:100'],
-            'zakat_type'      => ['required', 'string', 'max:100'],
-            'estimation'      => ['nullable', 'string', 'max:255'],
-            'preferred_time'  => ['nullable', 'string', 'max:255'],
-            'assigned_officer'=> ['nullable', 'string', 'max:255'],
-            'notes'           => ['nullable', 'string'],
-        ];
-
-        if ($requireStatus) {
-            $rules['status'] = ['nullable', 'in:baru,dijadwalkan,selesai,dibatalkan'];
-        }
-
-        return $request->validate($rules);
     }
 }

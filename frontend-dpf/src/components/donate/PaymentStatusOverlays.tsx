@@ -58,11 +58,8 @@ export const PaymentStatusOverlays = ({
                                 </div>
                             </div>
                             <h2 className="mb-2 text-2xl font-bold text-slate-900">
-                                🎉 {t("donate.success.overlay.title", "Donasi Berhasil!")}
+                                {t("donate.success.overlay.title", "Donasi Berhasil!")}
                             </h2>
-                            <p className="mb-1 text-base text-slate-600">
-                                {t("donate.success.overlay.desc", "Pembayaran Anda telah diterima dan sedang diverifikasi.")}
-                            </p>
                             <p className="mb-6 text-sm text-slate-400">
                                 {t("donate.success.overlay.sub", "Terima kasih atas kebaikan Anda. Semoga menjadi amal jariyah.")}
                             </p>
@@ -100,13 +97,10 @@ export const PaymentStatusOverlays = ({
                                 </div>
                             </div>
                             <h2 className="mb-2 text-2xl font-bold text-slate-900">
-                                ❌ {t("donate.failed.overlay.title", "Transaksi Gagal")}
+                                {t("donate.failed.overlay.title", "Transaksi Gagal")}
                             </h2>
-                            <p className="mb-1 text-base text-slate-600">
+                            <p className="mb-6 text-base text-slate-600">
                                 {t("donate.failed.overlay.desc", "Pembayaran tidak diselesaikan. Transaksi dibatalkan.")}
-                            </p>
-                            <p className="mb-6 text-sm text-slate-400">
-                                {t("donate.failed.overlay.sub", "Silakan coba lagi jika Anda masih ingin berdonasi.")}
                             </p>
                             <button
                                 onClick={() => setShowFailedOverlay(false)}

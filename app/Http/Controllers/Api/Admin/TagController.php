@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Tag;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use App\Http\Requests\Admin\TagRequest;
 
 class TagController extends Controller
 {
@@ -15,18 +15,9 @@ class TagController extends Controller
         return response()->json($tags);
     }
 
-    public function store(Request $request)
+    public function store(TagRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'url' => 'nullable|string|max:2048',
-            'is_active' => 'boolean',
-            'sort_order' => 'integer|unique:tags,sort_order',
-            'open_in_new_tab' => 'boolean',
-        ]);
-
-        $tag = Tag::create($validated);
-
+        $tag = Tag::create($request->validated());
         return response()->json($tag, 201);
     }
 
@@ -35,18 +26,9 @@ class TagController extends Controller
         return response()->json($tag);
     }
 
-    public function update(Request $request, Tag $tag)
+    public function update(TagRequest $request, Tag $tag)
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'url' => 'nullable|string|max:2048',
-            'is_active' => 'boolean',
-            'sort_order' => ['integer', Rule::unique('tags', 'sort_order')->ignore($tag->id)],
-            'open_in_new_tab' => 'boolean',
-        ]);
-
-        $tag->update($validated);
-
+        $tag->update($request->validated());
         return response()->json($tag);
     }
 

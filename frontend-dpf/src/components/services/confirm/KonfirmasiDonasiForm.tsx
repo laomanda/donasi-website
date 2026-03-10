@@ -117,19 +117,24 @@ export function KonfirmasiDonasiForm({ translate: t, locale }: KonfirmasiDonasiF
 
     try {
       const data = new FormData();
-      data.append("name", form.name);
-      data.append("phone", form.phone);
-      if (form.program_id === "other") {
-        data.append("program_name", form.custom_program);
-      } else {
+      data.append("donor_name", form.name);
+      data.append("donor_phone", form.phone);
+      
+      let purposeText = form.custom_program;
+      if (form.program_id !== "other") {
         data.append("program_id", form.program_id);
+        const selected = programOptions.find(p => p.value === form.program_id);
+        purposeText = selected ? selected.label : "Donasi Program";
       }
-      data.append("bank_account", form.bank_account);
+      data.append("purpose", purposeText || "Donasi Umum");
+      
+      data.append("bank_destination", form.bank_account);
       data.append("amount", form.amount);
-      data.append("donation_date", form.donation_date);
+      data.append("notes", `Tanggal Transfer: ${form.donation_date}`);
+      
       if (form.proof) data.append("proof", form.proof);
 
-      await http.post("/confirmations", data, {
+      await http.post("/donations/confirm", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setStatus("success");

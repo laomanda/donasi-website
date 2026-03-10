@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Donation;
 use App\Models\PickupRequest;
 use App\Models\Program;
-use App\Models\ZiswafConsultation;
+use App\Models\WakafConsultation;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -30,7 +30,7 @@ class DashboardController extends Controller
                 'donations_paid'     => $totalDonations,
                 'monthly_donations'  => $monthlyDonations,
                 'pickup_pending'     => PickupRequest::where('status', 'baru')->count(),
-                'consultation_new'   => ZiswafConsultation::where('status', 'baru')->count(),
+                'consultation_new'   => WakafConsultation::where('status', 'baru')->count(),
             ],
             'recent_donations' => Donation::with('program')
                 ->orderByDesc('created_at')
@@ -40,7 +40,7 @@ class DashboardController extends Controller
                 ->orderByDesc('created_at')
                 ->limit(5)
                 ->get(),
-            'urgent_consultations' => ZiswafConsultation::where('status', 'baru')
+            'urgent_consultations' => WakafConsultation::where('status', 'baru')
                 ->orderBy('created_at', 'asc')
                 ->limit(5)
                 ->get(),

@@ -139,7 +139,7 @@ export default function EditorProgramForm({ mode, programId }: Props) {
             const path = await uploadImage(file, "uploads/programs/thumbnails");
             updateForm({ thumbnail_path: path });
             setThumbnailPreviewUrl(URL.createObjectURL(file));
-            toast.success("Thumbnail berhasil diunggah.");
+            toast.success("Thumbnail berhasil diunggah.", { title: "Berhasil" });
         } catch (err: any) {
             setThumbnailError(normalizeErrors(err).join(" "));
         } finally {
@@ -154,7 +154,7 @@ export default function EditorProgramForm({ mode, programId }: Props) {
             const path = await uploadImage(file, "uploads/programs/banners");
             updateForm({ banner_path: path });
             setBannerPreviewUrl(URL.createObjectURL(file));
-            toast.success("Banner berhasil diunggah.");
+            toast.success("Banner berhasil diunggah.", { title: "Berhasil" });
         } catch (err: any) {
             setBannerError(normalizeErrors(err).join(" "));
         } finally {
@@ -171,7 +171,7 @@ export default function EditorProgramForm({ mode, programId }: Props) {
             newImages[index] = path;
             updateForm({ program_images: newImages });
             setGalleryPreviewUrls(prev => prev.map((v, i) => i === index ? URL.createObjectURL(file) : v));
-            toast.success(`Gambar ${index + 1} berhasil diunggah.`);
+            toast.success(`Gambar ${index + 1} berhasil diunggah.`, { title: "Berhasil" });
         } catch (err: any) {
             setGalleryErrors(prev => prev.map((v, i) => i === index ? normalizeErrors(err).join(" ") : v));
         } finally {
@@ -232,10 +232,10 @@ export default function EditorProgramForm({ mode, programId }: Props) {
             const payload = payloadForRequest(form);
             if (mode === "create") {
                 await http.post("/editor/programs", payload);
-                toast.success("Program berhasil dibuat.");
+                toast.success("Program berhasil dibuat.", { title: "Berhasil" });
             } else {
                 await http.put(`/editor/programs/${programId}`, payload);
-                toast.success("Program berhasil diperbarui.");
+                toast.success("Program berhasil diperbarui.", { title: "Berhasil" });
             }
             navigate("/editor/programs", { replace: true });
         } catch (err: any) {
@@ -252,7 +252,7 @@ export default function EditorProgramForm({ mode, programId }: Props) {
         setErrors([]);
         try {
             await http.delete(`/editor/programs/${programId}`);
-            toast.success("Program berhasil dihapus.");
+            toast.success("Program berhasil dihapus.", { title: "Berhasil" });
             navigate("/editor/programs", { replace: true });
         } catch (err: any) {
             setErrors(normalizeErrors(err));

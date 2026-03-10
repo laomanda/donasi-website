@@ -7,6 +7,7 @@ use App\Models\Allocation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\Admin\AllocationRequest;
 
 class AllocationController extends Controller
 {
@@ -46,15 +47,9 @@ class AllocationController extends Controller
     /**
      * Store a new allocation (Admin Action)
      */
-    public function store(Request $request)
+    public function store(AllocationRequest $request)
     {
-        $data = $request->validate([
-            'user_id'     => ['required', 'exists:users,id'],
-            'program_id'  => ['nullable', 'exists:programs,id'],
-            'amount'      => ['required', 'numeric', 'min:0'],
-            'description' => ['required', 'string'],
-            'proof'       => ['nullable', 'image', 'max:2048'], // 2MB max
-        ]);
+        $data = $request->validated();
 
         // Upload proof if exists
         if ($request->hasFile('proof')) {

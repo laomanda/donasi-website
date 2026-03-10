@@ -3,25 +3,18 @@
 namespace App\Http\Controllers\Api\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\ZiswafConsultation;
+use App\Models\WakafConsultation;
 use App\Support\AdminBadgeNotifier;
-use Illuminate\Http\Request;
+use App\Http\Requests\Frontend\StoreConsultationRequest;
 
 class ConsultationController extends Controller
 {
-    public function store(Request $request)
+    public function store(StoreConsultationRequest $request)
     {
-        $data = $request->validate([
-            'name'    => ['required', 'string', 'max:255'],
-            'phone'   => ['nullable', 'string', 'max:30'],
-            'email'   => ['nullable', 'email'],
-            'topic'   => ['required', 'string', 'max:255'],
-            'message' => ['required', 'string'],
-        ]);
-
+        $data = $request->validated();
         $data['status'] = 'baru';
 
-        $consultation = ZiswafConsultation::create($data);
+        $consultation = WakafConsultation::create($data);
         AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($consultation, 201);

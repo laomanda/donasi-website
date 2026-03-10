@@ -101,7 +101,7 @@ export default function EditorBannerEditPage() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setForm(s => ({ ...s, image_path: res.data.path }));
-      toast.success("Gambar berhasil diperbarui.");
+      toast.success("Gambar berhasil diperbarui.", { title: "Berhasil" });
     } catch {
       setImageError("Gagal memperbarui gambar.");
     } finally {
@@ -126,7 +126,7 @@ export default function EditorBannerEditPage() {
         image_path: form.image_path,
         display_order: orderNumber
       });
-      toast.success("Perubahan banner berhasil disimpan.");
+      toast.success("Perubahan banner berhasil disimpan.", { title: "Berhasil" });
       navigate("/editor/banners", { replace: true });
     } catch (err: any) {
       const msg = err.response?.data?.message ?? "Gagal menyimpan perubahan.";

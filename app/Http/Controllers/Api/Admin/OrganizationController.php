@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\OrganizationMember;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use App\Http\Requests\Admin\OrganizationRequest;
 
 class OrganizationController extends Controller
 {
@@ -31,12 +31,9 @@ class OrganizationController extends Controller
         return response()->json($members);
     }
 
-    public function store(Request $request)
+    public function store(OrganizationRequest $request)
     {
-        $data = $this->validatePayload($request);
-
-        $member = OrganizationMember::create($data);
-
+        $member = OrganizationMember::create($request->validated());
         return response()->json($member, 201);
     }
 
@@ -45,36 +42,15 @@ class OrganizationController extends Controller
         return response()->json($organizationMember);
     }
 
-    public function update(Request $request, OrganizationMember $organizationMember)
+    public function update(OrganizationRequest $request, OrganizationMember $organizationMember)
     {
-        $data = $this->validatePayload($request, $organizationMember->id);
-
-        $organizationMember->update($data);
-
+        $organizationMember->update($request->validated());
         return response()->json($organizationMember->refresh());
     }
 
     public function destroy(OrganizationMember $organizationMember)
     {
         $organizationMember->delete();
-
         return response()->json(['message' => 'Member deleted.']);
-    }
-
-    private function validatePayload(Request $request, ?int $memberId = null): array
-    {
-        return $request->validate([
-            'name'           => ['required', 'string', 'max:255'],
-            'position_title' => ['required', 'string', 'max:255'],
-            'position_title_en' => ['nullable', 'string', 'max:255'],
-            'group'          => ['required', 'string', 'max:100'],
-            'group_en'       => ['nullable', 'string', 'max:100'],
-            'photo_path'     => ['nullable', 'string', 'max:255'],
-            'email'          => ['nullable', 'email'],
-            'phone'          => ['nullable', 'string', 'max:30'],
-            'show_contact'   => ['required', 'boolean'],
-            'order'          => ['required', 'integer', 'min:0'],
-            'is_active'      => ['required', 'boolean'],
-        ]);
     }
 }

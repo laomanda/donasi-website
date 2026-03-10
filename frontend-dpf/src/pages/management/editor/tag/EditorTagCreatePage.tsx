@@ -59,7 +59,7 @@ export default function EditorTagCreatePage() {
         open_in_new_tab: form.open_in_new_tab,
       });
 
-      toast.success("Tag berhasil dibuat.");
+      toast.success("Tag berhasil dibuat.", { title: "Berhasil" });
       navigate("/editor/tags");
     } catch (err: any) {
       console.error(err);

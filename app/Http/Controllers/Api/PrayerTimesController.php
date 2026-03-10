@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\PrayerTimesService;
-use Illuminate\Http\Request;
+use App\Http\Requests\Frontend\PrayerTimesRequest;
 
 class PrayerTimesController extends Controller
 {
@@ -12,13 +12,9 @@ class PrayerTimesController extends Controller
     {
     }
 
-    public function index(Request $request)
+    public function index(PrayerTimesRequest $request)
     {
-        $validated = $request->validate([
-            'city'    => ['required', 'string', 'max:100'],
-            'country' => ['required', 'string', 'max:5'],
-            'method'  => ['nullable', 'integer', 'min:0', 'max:99'],
-        ]);
+        $validated = $request->validated();
 
         $city = trim($validated['city']);
         $country = trim($validated['country']);

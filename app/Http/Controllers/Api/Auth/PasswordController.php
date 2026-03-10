@@ -3,18 +3,14 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\Auth\UpdatePasswordRequest;
 
 class PasswordController extends Controller
 {
-    public function update(Request $request)
+    public function update(UpdatePasswordRequest $request)
     {
-        $data = $request->validate([
-            'current_password' => ['required', 'string'],
-            'new_password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
-
+        $data = $request->validated();
         $user = $request->user();
 
         if (! $user || ! Hash::check($data['current_password'], $user->password)) {

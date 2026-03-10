@@ -75,7 +75,7 @@ export function AdminConsultationShowPage() {
       setStatus(res.data.status || "baru");
       setAdminNotes(res.data.admin_notes || "");
     } catch {
-      toast.error("Gagal memuat detail konsultasi.");
+      toast.error("Gagal memuat detail konsultasi.", { title: "Gagal" });
       navigate(-1);
     } finally {
       setLoading(false);
@@ -94,11 +94,11 @@ export function AdminConsultationShowPage() {
         status,
         admin_notes: adminNotes,
       });
-      toast.success("Perubahan berhasil disimpan.");
+      toast.success("Perubahan berhasil disimpan.", { title: "Berhasil" });
       void fetchDetail();
       window.dispatchEvent(new Event("refresh-badges"));
     } catch {
-      toast.error("Gagal menyimpan perubahan.");
+      toast.error("Gagal menyimpan perubahan.", { title: "Gagal" });
     } finally {
       setIsSaving(false);
     }
@@ -108,12 +108,12 @@ export function AdminConsultationShowPage() {
     setIsDeleting(true);
     try {
       await http.delete(`/admin/consultations/${id}`);
-      toast.success("Konsultasi berhasil dihapus.");
+      toast.success("Konsultasi berhasil dihapus.", { title: "Berhasil" });
       setIsDeleteModalOpen(false);
       navigate(-1);
       window.dispatchEvent(new Event("refresh-badges"));
     } catch {
-      toast.error("Gagal menghapus data.");
+      toast.error("Gagal menghapus data.", { title: "Gagal" });
     } finally {
       setIsDeleting(false);
     }

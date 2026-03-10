@@ -65,7 +65,7 @@ export function AdminPickupRequestShowPage() {
       setAssignedOfficer(res.data.assigned_officer ?? "");
       setNotes(res.data.notes ?? "");
     } catch {
-      toast.error("Gagal memuat data permintaan.");
+      toast.error("Gagal memuat data permintaan.", { title: "Gagal" });
     } finally {
       setLoading(false);
     }
@@ -84,11 +84,11 @@ export function AdminPickupRequestShowPage() {
         assigned_officer: assignedOfficer,
         notes,
       });
-      toast.success("Berhasil memperbarui data.");
+      toast.success("Berhasil memperbarui data.", { title: "Berhasil" });
       void fetchData();
       window.dispatchEvent(new Event("refresh-badges"));
     } catch {
-      toast.error("Gagal memperbarui data.");
+      toast.error("Gagal memperbarui data.", { title: "Gagal" });
     } finally {
       setSaving(false);
     }

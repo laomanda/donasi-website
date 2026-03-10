@@ -68,7 +68,7 @@ export default function EditorTagEditPage() {
         open_in_new_tab: form.open_in_new_tab,
       });
 
-      toast.success("Tag berhasil diperbarui.");
+      toast.success("Tag berhasil diperbarui.", { title: "Berhasil" });
       navigate("/editor/tags");
     } catch (err: any) {
       console.error(err);
@@ -84,7 +84,7 @@ export default function EditorTagEditPage() {
     setError(null);
     try {
       await http.delete(`/editor/tags/${tag.id}`);
-      toast.success("Tag berhasil dihapus.");
+      toast.success("Tag berhasil dihapus.", { title: "Berhasil" });
       navigate("/editor/tags");
     } catch (err: any) {
       console.error(err);

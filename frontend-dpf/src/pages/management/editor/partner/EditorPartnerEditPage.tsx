@@ -91,7 +91,7 @@ export default function EditorPartnerEditPage() {
         logo_path: finalLogoPath || partner?.logo_path,
       });
 
-      toast.success("Mitra berhasil diperbarui.");
+      toast.success("Mitra berhasil diperbarui.", { title: "Berhasil" });
       navigate("/editor/partners");
     } catch (err: any) {
       console.error(err);
@@ -107,7 +107,7 @@ export default function EditorPartnerEditPage() {
     setError(null);
     try {
       await http.delete(`/editor/partners/${partner.id}`);
-      toast.success("Mitra berhasil dihapus.");
+      toast.success("Mitra berhasil dihapus.", { title: "Berhasil" });
       navigate("/editor/partners");
     } catch (err: any) {
       console.error(err);

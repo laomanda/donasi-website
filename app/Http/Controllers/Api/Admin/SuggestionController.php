@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Suggestion;
 use App\Support\AdminBadgeNotifier;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\UpdateSuggestionStatusRequest;
 
 class SuggestionController extends Controller
 {
@@ -78,16 +79,13 @@ class SuggestionController extends Controller
     /**
      * Update the status of the specified suggestion.
      */
-    public function updateStatus(Request $request, Suggestion $suggestion)
+    public function updateStatus(UpdateSuggestionStatusRequest $request, Suggestion $suggestion)
     {
         if ($request->user()->hasRole('superadmin')) {
             return response()->json(['message' => 'Forbidden'], 200);
         }
-        $request->validate([
-            'status' => ['required', 'in:baru,dibalas'],
-        ]);
 
-        $suggestion->update(['status' => $request->status]);
+        $suggestion->update(['status' => $request->validated('status')]);
         AdminBadgeNotifier::dispatchCountForAllAdmins();
 
         return response()->json($suggestion->refresh());

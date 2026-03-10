@@ -51,11 +51,11 @@ export default function EditorBannersPage() {
     setDeletingId(banner.id);
     try {
       await http.delete(`/editor/banners/${banner.id}`);
-      toast.success("Banner berhasil dihapus.");
+      toast.success("Banner berhasil dihapus.", { title: "Berhasil" });
       fetchBanners();
       selection.setSelected(new Set([...selection.selectedIds].filter(id => id !== banner.id)));
     } catch {
-      toast.error("Gagal menghapus banner.");
+      toast.error("Gagal menghapus banner.", { title: "Gagal" });
     } finally {
       setDeletingId(null);
       setConfirmDeleteId(null);
@@ -72,15 +72,15 @@ export default function EditorBannersPage() {
       });
       
       if (result.failed.length > 0) {
-        toast.error(`Berhasil menghapus ${result.succeeded.length} banner, gagal ${result.failed.length}.`);
+        toast.error(`Berhasil menghapus ${result.succeeded.length} banner, gagal ${result.failed.length}.`, { title: "Gagal" });
         selection.setSelected(new Set(result.failed.map(f => f.id)));
       } else {
-        toast.success(`Berhasil menghapus ${result.succeeded.length} banner.`);
+        toast.success(`Berhasil menghapus ${result.succeeded.length} banner.`, { title: "Berhasil" });
         selection.clear();
       }
       fetchBanners();
     } catch {
-      toast.error("Terjadi kesalahan saat penghapusan massal.");
+      toast.error("Terjadi kesalahan saat penghapusan massal.", { title: "Gagal" });
     } finally {
       setBulkDeleting(false);
     }

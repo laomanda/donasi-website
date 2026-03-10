@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Api\Admin\PickupRequestController as AdminPickupRequestController;
 use App\Http\Controllers\Api\Admin\ProgramController as AdminProgramController;
 use App\Http\Controllers\Api\Admin\SettingController as AdminSettingController;
-use App\Http\Controllers\Api\Admin\ZiswafConsultationController as AdminZiswafConsultationController;
+use App\Http\Controllers\Api\Admin\WakafConsultationController as AdminWakafConsultationController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\Admin\AllocationController as AdminAllocationController;
 use App\Http\Controllers\Api\Admin\SuggestionController as AdminSuggestionController;
@@ -88,7 +88,7 @@ Route::prefix('v1')->group(function () {
     | PUBLIC FRONTEND API (Tanpa Auth)
     |--------------------------------------------------------------------------
     */
-    Route::middleware('throttle:60,1')->group(function () {
+    Route::middleware('throttle:300,1')->group(function () {
         Route::get('home', HomeController::class);
         Route::get('banners', [FrontendBannerController::class, 'index']);
         Route::get('settings', [FrontendSettingController::class, 'index']);
@@ -151,10 +151,10 @@ Route::prefix('v1')->group(function () {
                 Route::apiResource('suggestions', AdminSuggestionController::class)->only(['index', 'show', 'destroy']);
                 Route::patch('suggestions/{suggestion}/status', [AdminSuggestionController::class, 'updateStatus']);
                 
-                Route::apiResource('consultations', AdminZiswafConsultationController::class)
-                    ->parameters(['consultations' => 'ziswaf_consultation'])
+                Route::apiResource('consultations', AdminWakafConsultationController::class)
+                    ->parameters(['consultations' => 'wakaf_consultation'])
                     ->except(['index', 'show']);
-                Route::patch('consultations/{ziswaf_consultation}/status', [AdminZiswafConsultationController::class, 'updateStatus']);
+                Route::patch('consultations/{wakaf_consultation}/status', [AdminWakafConsultationController::class, 'updateStatus']);
 
 
                 Route::apiResource('partners', AdminPartnerController::class)->except(['index', 'show']);
@@ -185,8 +185,8 @@ Route::prefix('v1')->group(function () {
             Route::get('reports/donations/export', [DonationReportController::class, 'export']);
             
             Route::apiResource('pickup-requests', AdminPickupRequestController::class)->only(['index', 'show']);
-            Route::apiResource('consultations', AdminZiswafConsultationController::class)
-                ->parameters(['consultations' => 'ziswaf_consultation'])
+            Route::apiResource('consultations', AdminWakafConsultationController::class)
+                ->parameters(['consultations' => 'wakaf_consultation'])
                 ->only(['index', 'show']);
 
             Route::get('settings', [AdminSettingController::class, 'index']);

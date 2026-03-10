@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\SettingRequest;
 
 class SettingController extends Controller
 {
@@ -24,13 +25,9 @@ class SettingController extends Controller
         return response()->json($query->orderBy('key')->get());
     }
 
-    public function update(Request $request)
+    public function update(SettingRequest $request)
     {
-        $data = $request->validate([
-            'settings'         => ['required', 'array'],
-            'settings.*.key'   => ['required', 'string', 'max:255'],
-            'settings.*.value' => ['nullable'],
-        ]);
+        $data = $request->validated();
 
         foreach ($data['settings'] as $item) {
             Setting::setValue($item['key'], $item['value']);

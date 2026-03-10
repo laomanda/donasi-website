@@ -6,10 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Program;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use App\Http\Requests\Admin\ProgramRequest;
+use App\Http\Requests\Admin\UpdateProgramStatusRequest;
+use App\Services\ProgramService;
 
 class ProgramController extends Controller
 {
+    public function __construct(private ProgramService $programService)
+    {
+    }
+
     /**
      * List programs with filter & pagination.
      */
@@ -44,15 +50,9 @@ class ProgramController extends Controller
     /**
      * Store a new program.
      */
-    public function store(Request $request)
+    public function store(ProgramRequest $request)
     {
-        $data = $this->validatePayload($request);
-
-        $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
-        $data['collected_amount'] ??= 0;
-
-        $program = Program::create($data);
-
+        $program = $this->programService->storeProgram($request->validated());
         return response()->json($program, 201);
     }
 
@@ -67,17 +67,10 @@ class ProgramController extends Controller
     /**
      * Update program.
      */
-    public function update(Request $request, Program $program)
+    public function update(ProgramRequest $request, Program $program)
     {
-        $data = $this->validatePayload($request, $program->id, true);
-
-        if (blank($data['slug'] ?? null)) {
-            $data['slug'] = Str::slug($data['title']);
-        }
-
-        $program->update($data);
-
-        return response()->json($program->refresh());
+        $updatedProgram = $this->programService->updateProgram($program, $request->validated());
+        return response()->json($updatedProgram);
     }
 
     /**
@@ -101,15 +94,10 @@ class ProgramController extends Controller
     /**
      * Update status via simple endpoint.
      */
-    public function updateStatus(Request $request, Program $program)
+    public function updateStatus(UpdateProgramStatusRequest $request, Program $program)
     {
-        $data = $request->validate([
-            'status' => ['required', 'in:draft,active,completed'],
-        ]);
-
-        $program->update($data);
-
-        return response()->json($program);
+        $updatedProgram = $this->programService->updateStatus($program, $request->validated());
+        return response()->json($updatedProgram);
     }
 
     /**
@@ -117,10 +105,8 @@ class ProgramController extends Controller
      */
     public function toggleHighlight(Program $program)
     {
-        $program->is_highlight = ! $program->is_highlight;
-        $program->save();
-
-        return response()->json($program);
+        $updatedProgram = $this->programService->toggleHighlight($program);
+        return response()->json($updatedProgram);
     }
 
     public function categories()
@@ -133,46 +119,5 @@ class ProgramController extends Controller
             ->get();
 
         return response()->json($categories);
-    }
-
-    private function validatePayload(Request $request, ?int $programId = null, bool $isUpdate = false): array
-    {
-        $required = $isUpdate ? 'sometimes' : 'required';
-
-        $data = $request->validate([
-            'title'             => [$required, 'string', 'max:255'],
-            'title_en'          => ['nullable', 'string', 'max:255'],
-            'slug'              => ['nullable', 'string', 'max:255', 'unique:programs,slug,' . $programId],
-            'category'          => [$required, 'string', 'max:100'],
-            'category_en'       => ['nullable', 'string', 'max:100'],
-            'short_description' => [$required, 'string'],
-            'short_description_en' => ['nullable', 'string'],
-            'description'       => [$required, 'string'],
-            'description_en'    => ['nullable', 'string'],
-            'benefits'          => ['nullable', 'string'],
-            'benefits_en'       => ['nullable', 'string'],
-            'target_amount'     => [$required, 'numeric', 'min:0'],
-            'collected_amount'  => ['nullable', 'numeric', 'min:0'],
-            'thumbnail_path'    => ['nullable', 'string', 'max:255'],
-            'banner_path'       => ['nullable', 'string', 'max:255'],
-            'program_images'    => ['nullable', 'array', 'max:3'],
-            'program_images.*'  => ['string', 'max:255'],
-            'is_highlight'      => ['sometimes', 'boolean'],
-            'status'            => [$required, 'in:draft,active,completed'],
-            'deadline_days'     => ['nullable', 'integer', 'min:0'],
-            'published_at'      => ['nullable', 'date'],
-        ]);
-
-        if (array_key_exists('program_images', $data)) {
-            $images = collect($data['program_images'])
-                ->map(fn ($value) => trim((string) $value))
-                ->filter()
-                ->values()
-                ->take(3)
-                ->all();
-            $data['program_images'] = $images ?: null;
-        }
-
-        return $data;
     }
 }

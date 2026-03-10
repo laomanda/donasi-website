@@ -74,7 +74,7 @@ export default function EditorPartnerCreatePage() {
         logo_path: finalLogoPath,
       });
 
-      toast.success("Mitra berhasil ditambahkan.");
+      toast.success("Mitra berhasil ditambahkan.", { title: "Berhasil" });
       navigate("/editor/partners");
     } catch (err: any) {
       console.error(err);

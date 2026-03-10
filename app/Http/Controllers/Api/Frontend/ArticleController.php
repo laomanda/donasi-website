@@ -10,36 +10,50 @@ class ArticleController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Article::published();
-
         $category = $request->string('category')->trim()->toString();
-        if ($category !== '') {
-            $query->where('category', $category);
-        }
-
         $search = $request->string('q')->trim()->toString();
-        if ($search !== '') {
-            $query->where('title', 'like', "%{$search}%");
-        }
+        $perPage = $request->integer('per_page', 12);
+        $page = $request->integer('page', 1);
 
-        return response()->json(
-            $query->paginate($request->integer('per_page', 12))
-        );
+        $cacheKey = "frontend_articles_{$category}_{$search}_{$perPage}_{$page}";
+
+        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 600, function () use ($category, $search, $perPage) {
+            $query = Article::published()->with('program:id,title,slug');
+
+            if ($category !== '') {
+                $query->where('category', $category);
+            }
+
+            if ($search !== '') {
+                $query->where('title', 'like', "%{$search}%");
+            }
+
+            return $query->paginate($perPage)->toArray();
+        });
+
+        return response()->json($data);
     }
 
     public function show(string $slug)
     {
-        $article = Article::published()->where('slug', $slug)->firstOrFail();
+        $cacheKey = "frontend_article_show_{$slug}";
 
-        $related = Article::published()
-            ->where('category', $article->category)
-            ->where('id', '!=', $article->id)
-            ->limit(3)
-            ->get();
+        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 600, function () use ($slug) {
+            $article = Article::published()->with('program:id,title,slug')->where('slug', $slug)->firstOrFail();
 
-        return response()->json([
-            'article' => $article,
-            'related' => $related,
-        ]);
+            $related = Article::published()
+                ->with('program:id,title,slug')
+                ->where('category', $article->category)
+                ->where('id', '!=', $article->id)
+                ->limit(3)
+                ->get();
+
+            return [
+                'article' => $article->toArray(),
+                'related' => $related->toArray(),
+            ];
+        });
+
+        return response()->json($data);
     }
 }

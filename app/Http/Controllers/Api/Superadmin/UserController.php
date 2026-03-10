@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use App\Http\Requests\Superadmin\UserRequest;
 
 class UserController extends Controller
 {
@@ -35,9 +36,9 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    public function store(Request $request)
+    public function store(UserRequest $request)
     {
-        $data = $this->validatePayload($request);
+        $data = $request->validated();
 
         $user = User::create([
             'name'      => $data['name'],
@@ -60,9 +61,9 @@ class UserController extends Controller
         return response()->json($user->load('roles'));
     }
 
-    public function update(Request $request, User $user)
+    public function update(UserRequest $request, User $user)
     {
-        $data = $this->validatePayload($request, $user->id);
+        $data = $request->validated();
 
         $payload = [
             'name'      => $data['name'],
@@ -106,19 +107,5 @@ class UserController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'name', 'guard_name', 'created_at', 'updated_at'])
         );
-    }
-
-    private function validatePayload(Request $request, ?int $userId = null): array
-    {
-        return $request->validate([
-            'name'       => ['required', 'string', 'max:255'],
-            'email'      => ['required', 'email', 'max:255', 'unique:users,email,' . $userId],
-            'phone'      => ['nullable', 'string', 'max:30'],
-            'password'   => [$userId ? 'nullable' : 'required', 'string', 'min:8'],
-            'is_active'  => ['required', 'boolean'],
-            'role_label' => ['nullable', 'string', 'max:100'],
-            'roles'      => ['nullable', 'array'],
-            'roles.*'    => ['string', 'exists:roles,name'],
-        ]);
     }
 }

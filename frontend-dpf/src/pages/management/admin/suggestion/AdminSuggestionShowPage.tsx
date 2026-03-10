@@ -68,9 +68,9 @@ export function AdminSuggestionShowPage() {
     try {
       await http.patch(`/admin/suggestions/${item.id}/status`, { status: val });
       setItem({ ...item, status: val });
-      toast.success("Status berhasil diubah.");
+      toast.success("Status berhasil diubah.", { title: "Berhasil" });
     } catch {
-      toast.error("Gagal mengubah status.");
+      toast.error("Gagal mengubah status.", { title: "Gagal" });
     } finally {
       setIsChangingStatus(false);
     }

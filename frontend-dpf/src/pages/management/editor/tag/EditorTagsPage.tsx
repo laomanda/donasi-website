@@ -55,7 +55,7 @@ export default function EditorTagsPage() {
     setError(null);
     try {
       await http.delete(`/editor/tags/${tag.id}`);
-      toast.success("Tag berhasil dihapus.");
+      toast.success("Tag berhasil dihapus.", { title: "Berhasil" });
       await fetchTags();
     } catch (err) {
       console.error(err);
@@ -79,7 +79,7 @@ export default function EditorTagsPage() {
         setError(`Berhasil menghapus ${result.succeeded.length}, gagal ${result.failed.length}.`);
         selection.setSelected(new Set(result.failed.map((f) => f.id)));
       } else {
-        toast.success(`Berhasil menghapus ${result.succeeded.length} tag.`);
+        toast.success(`Berhasil menghapus ${result.succeeded.length} tag.`, { title: "Berhasil" });
         selection.clear();
       }
       await fetchTags();

@@ -110,7 +110,7 @@ export default function EditorPartnersPage() {
         setError(`Berhasil menghapus ${result.succeeded.length}, gagal ${result.failed.length}.`);
         selection.setSelected(new Set(result.failed.map((f) => f.id)));
       } else {
-        toast.success(`Berhasil menghapus ${result.succeeded.length} mitra.`);
+        toast.success(`Berhasil menghapus ${result.succeeded.length} mitra.`, { title: "Berhasil" });
         selection.clear();
       }
       await fetchPartners();

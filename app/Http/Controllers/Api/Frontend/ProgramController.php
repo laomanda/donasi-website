@@ -12,66 +12,80 @@ class ProgramController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Program::query();
-
-        if ($request->has('status')) {
-            $query->where('status', $request->input('status'));
-        } else {
-            $query->whereIn('status', ['active', 'draft', 'completed']);
-        }
-
+        $status = $request->input('status', 'default');
         $category = $request->string('category')->trim()->toString();
-        if ($category !== '') {
-            $query->where('category', $category);
-        }
-
-        if ($request->boolean('highlight')) {
-            $query->highlight();
-        }
-
+        $highlight = $request->boolean('highlight') ? '1' : '0';
         $perPage = $request->integer('per_page', 12);
+        $page = $request->integer('page', 1);
 
-        return response()->json(
-            $query->orderBy('is_highlight', 'desc')
+        $cacheKey = "frontend_programs_{$status}_{$category}_{$highlight}_{$perPage}_{$page}";
+
+        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 600, function () use ($request, $category, $perPage) {
+            $query = Program::query();
+
+            if ($request->has('status')) {
+                $query->where('status', $request->input('status'));
+            } else {
+                $query->whereIn('status', ['active', 'draft', 'completed']);
+            }
+
+            if ($category !== '') {
+                $query->where('category', $category);
+            }
+
+            if ($request->boolean('highlight')) {
+                $query->highlight();
+            }
+
+            return $query->orderBy('is_highlight', 'desc')
                 ->orderByDesc(DB::raw('COALESCE(published_at, created_at)'))
                 ->paginate($perPage)
-        );
+                ->toArray();
+        });
+
+        return response()->json($data);
     }
 
     public function show(string $slug)
     {
-        $program = Program::where('slug', $slug)
-            ->whereIn('status', ['active', 'draft', 'completed'])
-            ->firstOrFail();
+        $cacheKey = "frontend_program_show_{$slug}";
 
-        $recentDonations = $program->donations()->paid()
-            ->select(['id', 'donor_name', 'amount', 'is_anonymous', 'paid_at'])
-            ->latest('paid_at')
-            ->limit(20)
-            ->get()
-            ->map(function ($donation) {
-                if ($donation->is_anonymous) {
-                    $donation->donor_name = 'Hamba Allah';
-                }
+        $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () use ($slug) {
+            $program = Program::where('slug', $slug)
+                ->whereIn('status', ['active', 'draft', 'completed'])
+                ->firstOrFail();
 
-                return $donation;
-            });
+            $recentDonations = $program->donations()->paid()
+                ->select(['id', 'donor_name', 'amount', 'is_anonymous', 'paid_at'])
+                ->latest('paid_at')
+                ->limit(20)
+                ->get()
+                ->map(function ($donation) {
+                    if ($donation->is_anonymous) {
+                        $donation->donor_name = 'Hamba Allah';
+                    }
 
-        $progress = $program->target_amount > 0
-            ? round(($program->collected_amount / $program->target_amount) * 100, 2)
-            : 0;
+                    return $donation;
+                });
 
-        $latestUpdates = Article::published()
-            ->where('program_id', $program->id)
-            ->orderByDesc('published_at')
-            ->limit(10)
-            ->get(['id', 'slug', 'title', 'excerpt', 'published_at']);
+            $progress = $program->target_amount > 0
+                ? round(($program->collected_amount / $program->target_amount) * 100, 2)
+                : 0;
 
-        return response()->json([
-            'program'          => $program,
-            'progress_percent' => $progress,
-            'recent_donations' => $recentDonations,
-            'latest_updates'   => $latestUpdates,
-        ]);
+            $latestUpdates = Article::published()
+                ->where('program_id', $program->id)
+                ->orderByDesc('published_at')
+                ->limit(10)
+                ->get(['id', 'slug', 'title', 'excerpt', 'published_at']);
+
+            return [
+                'program'          => $program->toArray(),
+                'progress_percent' => $progress,
+                'recent_donations' => $recentDonations->toArray(),
+                'latest_updates'   => $latestUpdates->toArray(),
+            ];
+        });
+
+        return response()->json($data);
     }
 }

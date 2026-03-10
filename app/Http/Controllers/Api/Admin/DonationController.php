@@ -4,12 +4,17 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Donation;
-use App\Models\Program;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Http\Requests\Admin\StoreManualDonationRequest;
+use App\Http\Requests\Admin\UpdateDonationStatusRequest;
+use App\Services\DonationService;
 
 class DonationController extends Controller
 {
+    public function __construct(private DonationService $donationService)
+    {
+    }
+
     /**
      * List donations with filters.
      */
@@ -56,172 +61,52 @@ class DonationController extends Controller
     /**
      * Store manual donation (offline).
      */
-    public function storeManual(Request $request)
+    public function storeManual(StoreManualDonationRequest $request)
     {
-        $data = $request->validate([
-            'program_id'      => ['nullable', 'exists:programs,id'],
-            'donor_name'      => ['required', 'string', 'max:255'],
-            'donor_email'     => ['nullable', 'email'],
-            'donor_phone'     => ['nullable', 'string', 'max:50'],
-            'amount'          => ['required', 'numeric', 'min:1'],
-            'is_anonymous'    => ['required', 'boolean'],
-            'payment_method'  => ['required', 'string', 'max:100'],
-            'payment_channel' => ['nullable', 'string', 'max:255'],
-            'notes'           => ['nullable', 'string'],
-            'manual_proof_path' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $data['payment_source'] = 'manual';
-        $data['status'] = 'paid';
-        $data['paid_at'] = now();
-        $data['donation_code'] = $this->generateDonationCode();
-
-        $donation = DB::transaction(function () use ($data) {
-            $created = Donation::create($data);
-            $this->syncProgramAmount($created, null, 'paid');
-
-            return $created->load('program');
-        });
-
+        $donation = $this->donationService->storeManualDonation($request->validated());
         return response()->json($donation, 201);
     }
 
-    public function show(int $donationId)
+    public function show(Donation $donation)
     {
-        $donation = $this->findDonation($donationId);
-
-        if (! $donation) {
-            return response()->json(['message' => 'Donation not found.'], 404);
-        }
-
         return response()->json($donation->load('program'));
     }
 
     /**
      * Update donation status (manual verification, etc).
      */
-    public function updateStatus(Request $request, int $donationId)
+    public function updateStatus(UpdateDonationStatusRequest $request, Donation $donation)
     {
-        $donation = $this->findDonation($donationId);
-
-        if (! $donation) {
-            return response()->json(['message' => 'Donation not found.'], 404);
-        }
-
-        $data = $request->validate([
-            'status' => ['required', 'in:pending,paid,failed,expired,cancelled'],
-            'paid_at' => ['nullable', 'date'],
-            'notes'   => ['nullable', 'string'],
-        ]);
-
-        $previousStatus = $donation->status;
-
-        $donation->update($data);
-
-        $this->syncProgramAmount($donation, $previousStatus, $donation->status);
-
-        return response()->json($donation->refresh()->load('program'));
+        $updatedDonation = $this->donationService->updateStatus($donation, $request->validated());
+        return response()->json($updatedDonation->load('program'));
     }
 
     /**
      * Delete donation (rare). Adjust totals if needed.
      */
-    public function destroy(int $donationId)
+    public function destroy(Donation $donation)
     {
-        $donation = $this->findDonation($donationId);
-
-        if (! $donation) {
-            return response()->json(['message' => 'Donation not found.'], 404);
-        }
-
-        $previousStatus = $donation->status;
-
-        $donation->delete();
-
-        if ($previousStatus === 'paid' && $donation->program_id) {
-            $donation->program()->decrement('collected_amount', $donation->amount);
-        }
-
+        $this->donationService->deleteDonation($donation);
         return response()->json(['message' => 'Donation deleted.']);
-    }
-
-    private function generateDonationCode(): string
-    {
-        $prefix = 'DPF-' . now()->format('Ymd');
-
-        $lastCode = Donation::where('donation_code', 'like', "{$prefix}%")
-            ->orderByDesc('donation_code')
-            ->value('donation_code');
-
-        $sequence = $lastCode ? (int) substr($lastCode, -4) : 0;
-        $sequence++;
-
-        return sprintf('%s-%04d', $prefix, $sequence);
-    }
-
-    private function syncProgramAmount(Donation $donation, ?string $oldStatus, string $newStatus): void
-    {
-        if (! $donation->program_id) {
-            return;
-        }
-
-        $program = Program::find($donation->program_id);
-
-        if (! $program) {
-            return;
-        }
-
-        if ($oldStatus !== 'paid' && $newStatus === 'paid') {
-            $program->increment('collected_amount', $donation->amount);
-        } elseif ($oldStatus === 'paid' && $newStatus !== 'paid') {
-            $program->decrement('collected_amount', $donation->amount);
-        }
-    }
-
-    private function findDonation(int $donationId): ?Donation
-    {
-        return Donation::find($donationId);
     }
 
     /**
      * Terminate donation (kirim WA manual dari admin).
      */
-    public function sendWhatsapp(Request $request, \App\Services\WhatsappService $whatsappService, int $donationId)
+    public function sendWhatsapp(Request $request, Donation $donation)
     {
-        $donation = $this->findDonation($donationId);
-
-        if (!$donation) {
-            return response()->json(['message' => 'Donation not found.'], 404);
-        }
-
-        $data = $request->validate([
+        $request->validate([
             'phone'   => ['required', 'string', 'max:20'],
             'message' => ['required', 'string'],
         ]);
 
-        // Kirim WA via Service (SKIPPED: Manual Link Mode)
-        // $success = $whatsappService->sendMessage($data['phone'], $data['message']);
-
-        // if ($donation->whatsapp_sent_at) {
-        //     return response()->json(['message' => 'WhatsApp message already sent.'], 400);
-        // }
-
-        // Since we are using manual link "wa.me", assume success if this endpoint is hit
-        $donation->update(['whatsapp_sent_at' => now()]);
+        $this->donationService->markWhatsappSent($donation);
 
         return response()->json(['message' => 'WhatsApp status updated successfully.']);
-
-        return response()->json(['message' => 'Failed to send WhatsApp message.'], 500);
     }
 
-    public function export(int $donationId)
+    public function export(Donation $donation)
     {
-        $donation = $this->findDonation($donationId);
-
-        if (!$donation) {
-            return response()->json(['message' => 'Donation not found.'], 404);
-        }
-
         $donation->load('program');
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.donation_invoice', [

@@ -4,18 +4,24 @@ namespace App\Http\Controllers\Api\Reports;
 
 use App\Exports\DonationReportExport;
 use App\Http\Controllers\Controller;
-use App\Models\Donation;
+use App\Services\DonationReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DonationReportController extends Controller
 {
+    private DonationReportService $reportService;
+
+    public function __construct(DonationReportService $reportService)
+    {
+        $this->reportService = $reportService;
+    }
+
     public function index(Request $request)
     {
-        $query = $this->buildQuery($request);
-        $summary = $this->buildSummary($query);
+        $query = $this->reportService->buildQuery($request);
+        $summary = $this->reportService->buildSummary($query);
 
         if ($request->boolean('all')) {
             $items = $query->orderByDesc('created_at')->get();
@@ -45,8 +51,8 @@ class DonationReportController extends Controller
     public function export(Request $request)
     {
         $format = strtolower($request->string('format', 'pdf')->trim()->toString());
-        $query = $this->buildQuery($request);
-        $summary = $this->buildSummary($query);
+        $query = $this->reportService->buildQuery($request);
+        $summary = $this->reportService->buildSummary($query);
         $donations = $query->orderByDesc('created_at')->get();
 
         $timestamp = now()->format('Ymd_His');
@@ -71,124 +77,6 @@ class DonationReportController extends Controller
         }
 
         return response()->json(['message' => 'Format export tidak didukung.'], 400);
-    }
-
-    private function buildQuery(Request $request): Builder
-    {
-        $query = Donation::query()->with('program');
-
-        $status = $request->string('status')->trim()->toString();
-        if ($status !== '') {
-            $query->where('status', $status);
-        }
-
-        $source = $request->string('payment_source')->trim()->toString();
-        if ($source !== '') {
-            $query->where('payment_source', $source);
-        }
-
-        if ($dateFrom = $request->date('date_from')) {
-            $query->whereDate('created_at', '>=', $dateFrom);
-        }
-
-        if ($dateTo = $request->date('date_to')) {
-            $query->whereDate('created_at', '<=', $dateTo);
-        }
-
-        $search = $request->string('q')->trim()->toString();
-        if ($search !== '') {
-            $query->where('donor_name', 'like', "%{$search}%");
-        }
-
-        $qualification = $request->string('qualification')->trim()->toString();
-        if ($qualification !== '') {
-            if ($qualification === 'anonim') {
-                // Anonim: No phone number
-                $query->whereNull('donor_phone')->orWhere('donor_phone', '');
-            } else {
-                // Qualified donors: Must have phone number
-                $query->whereNotNull('donor_phone')->where('donor_phone', '!=', '');
-
-                // Subquery to count paid donations per phone
-                $phones = Donation::select('donor_phone')
-                    ->whereNotNull('donor_phone')
-                    ->where('donor_phone', '!=', '')
-                    ->where('status', 'paid')
-                    ->groupBy('donor_phone');
-
-                if ($qualification === 'baru') {
-                    $phones->havingRaw('COUNT(id) <= 1');
-                } elseif ($qualification === 'tetap') {
-                    $phones->havingRaw('COUNT(id) > 1 AND COUNT(id) <= 5');
-                } elseif ($qualification === 'lama') {
-                    $phones->havingRaw('COUNT(id) > 5');
-                }
-                
-                $query->whereIn('donor_phone', $phones);
-            }
-        }
-
-        return $query;
-    }
-
-    private function buildSummary(Builder $base): array
-    {
-        // Force stats to only count PAID donations
-        $paidBase = (clone $base)->where('status', 'paid');
-
-        $totalCount = (clone $paidBase)->count();
-        $totalAmount = (float) (clone $paidBase)->sum('amount');
-
-        $manualBase = (clone $paidBase)->where('payment_source', 'manual');
-        $manualCount = (clone $manualBase)->count();
-        $manualAmount = (float) (clone $manualBase)->sum('amount');
-
-        $midtransBase = (clone $paidBase)->where('payment_source', 'midtrans');
-        $midtransCount = (clone $midtransBase)->count();
-        $midtransAmount = (float) (clone $midtransBase)->sum('amount');
-
-        // Top Donor
-        $topDonor = (clone $base)
-            ->selectRaw('donor_name, SUM(amount) as total_amount, COUNT(id) as donation_count')
-            ->where('status', 'paid')
-            ->whereNotNull('donor_name')
-            ->groupBy('donor_name')
-            ->orderByDesc('total_amount')
-            ->first();
-
-        // Top Program
-        $topProgramData = (clone $base)
-            ->selectRaw('program_id, SUM(amount) as total_amount, COUNT(id) as donation_count')
-            ->where('status', 'paid')
-            ->whereNotNull('program_id')
-            ->groupBy('program_id')
-            ->orderByDesc('total_amount')
-            ->with('program:id,title')
-            ->first();
-            
-        $topProgram = null;
-        if ($topProgramData && $topProgramData->program) {
-            $topProgram = [
-                'program_title' => $topProgramData->program->title,
-                'total_amount' => (float) $topProgramData->total_amount,
-                'donation_count' => (int) $topProgramData->donation_count
-            ];
-        }
-
-        return [
-            'total_count' => $totalCount,
-            'total_amount' => $totalAmount,
-            'manual_count' => $manualCount,
-            'manual_amount' => $manualAmount,
-            'midtrans_count' => $midtransCount,
-            'midtrans_amount' => $midtransAmount,
-            'top_donor' => $topDonor ? [
-                'donor_name' => $topDonor->donor_name,
-                'total_amount' => (float) $topDonor->total_amount,
-                'donation_count' => (int) $topDonor->donation_count
-            ] : null,
-            'top_program' => $topProgram,
-        ];
     }
 
     private function normalizeFilters(Request $request): array
