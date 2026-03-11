@@ -7,6 +7,7 @@ export type AuthUser = {
   email?: string;
   role_label?: string;
   roles?: Array<{ name: string }>;
+  permissions?: Array<{ name: string }>;
 };
 
 export const getAuthToken = (): string | null => {

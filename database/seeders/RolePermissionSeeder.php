@@ -15,6 +15,7 @@ class RolePermissionSeeder extends Seeder
             'superadmin',
             'admin',
             'editor',
+            'mitra',
         ];
 
         foreach ($roles as $roleName) {
@@ -35,6 +36,13 @@ class RolePermissionSeeder extends Seeder
             'manage organization',
             'manage settings',
             'view reports',
+            'manage banners',
+            'manage tags',
+            'manage bank_accounts',
+            'manage allocations',
+            'manage suggestions',
+            'manage tasks',
+            'manage users',
         ];
 
         foreach ($permissions as $permissionName) {

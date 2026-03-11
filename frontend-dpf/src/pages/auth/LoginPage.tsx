@@ -99,6 +99,11 @@ export function LoginPage() {
                 .filter((r: any) => r && typeof r === "object" && typeof r.name === "string")
                 .map((r: any) => ({ name: r.name as string }))
             : undefined,
+          permissions: Array.isArray(raw.permissions)
+            ? raw.permissions
+                .filter((p: any) => p && typeof p === "object" && typeof p.name === "string")
+                .map((p: any) => ({ name: p.name as string }))
+            : undefined,
         });
       }
 

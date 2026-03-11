@@ -250,6 +250,7 @@ Route::prefix('v1')->group(function () {
             Route::get('dashboard', SuperadminDashboardController::class)->name('dashboard');
 
             Route::get('roles', [SuperadminUserController::class, 'roles']);
+            Route::get('permissions', [SuperadminUserController::class, 'permissions']);
             Route::apiResource('users', SuperadminUserController::class);
             Route::get('reports/donations', [DonationReportController::class, 'index']);
             Route::get('reports/donations/export', [DonationReportController::class, 'export']);

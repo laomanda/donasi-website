@@ -36,6 +36,7 @@ export type NavItem = {
   label: string;
   href: string;
   icon: IconProp;
+  permission?: string;
 };
 
 export type NavSection = {
@@ -49,6 +50,7 @@ export type StoredUser = {
   email?: unknown;
   role_label?: unknown;
   roles?: { name?: unknown }[] | unknown;
+  permissions?: { name?: string }[] | string[] | any;
 };
 
 export type PaginationMeta = {
@@ -101,30 +103,54 @@ export const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
   },
 };
 
+export const PERMISSION_TEMPLATES: Record<string, string[]> = {
+  admin: [
+    "manage donations",
+    "manage pickup_requests",
+    "manage consultations",
+    "manage suggestions",
+    "manage allocations",
+    "view reports",
+    "manage bank_accounts",
+  ],
+  editor: [
+    "manage articles",
+    "manage programs",
+    "manage banners",
+    "manage tags",
+    "manage tasks",
+    "manage partners",
+    "manage organization",
+  ],
+  superadmin: [], // Superadmin handled specially or gets everything
+  mitra: [],
+};
+
+
 export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
   editor: [
     {
       title: "Ringkasan",
       items: [
         { label: "Dashboard", href: "/editor/dashboard", icon: faGaugeHigh },
-        { label: "Tugas Editor", href: "/editor/tasks", icon: faListCheck },
+        { label: "Tugas Editor", href: "/editor/tasks", icon: faListCheck, permission: "manage tasks" },
       ],
     },
     {
       title: "Konten",
       items: [
-        { label: "Artikel", href: "/editor/articles", icon: faBookOpen },
-        { label: "Program", href: "/editor/programs", icon: faHeart },
-        { label: "Banner", href: "/editor/banners", icon: faImage },
-        { label: "Tags", href: "/editor/tags", icon: faTags },
+        { label: "Artikel", href: "/editor/articles", icon: faBookOpen, permission: "manage articles" },
+        { label: "Program", href: "/editor/programs", icon: faHeart, permission: "manage programs" },
+        { label: "Banner", href: "/editor/banners", icon: faImage, permission: "manage banners" },
+        { label: "Tags", href: "/editor/tags", icon: faTags, permission: "manage tags" },
       ],
     },
     {
       title: "Organisasi",
       items: [
-        { label: "Mitra", href: "/editor/partners", icon: faHandshake },
-        { label: "Struktur", href: "/editor/organization-members", icon: faSitemap },
-        { label: "Rekening", href: "/editor/bank-accounts", icon: faBuildingColumns },
+        { label: "Mitra", href: "/editor/partners", icon: faHandshake, permission: "manage partners" },
+        { label: "Struktur", href: "/editor/organization-members", icon: faSitemap, permission: "manage organization" },
+        { label: "Rekening", href: "/editor/bank-accounts", icon: faBuildingColumns, permission: "manage bank_accounts" },
       ],
     },
     {
@@ -140,19 +166,19 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Operasional",
       items: [
-        { label: "Donasi", href: "/admin/donations", icon: faReceipt },
-        { label: "Konfirmasi Donasi", href: "/admin/donation-confirmations", icon: faCheckCircle },
-        { label: "Saran Wakaf", href: "/admin/suggestions", icon: faCommentDots },
-        { label: "Editor Tasks", href: "/admin/editor-tasks", icon: faListCheck },
-        { label: "Jemput Wakaf", href: "/admin/pickup-requests", icon: faTruckRampBox },
-        { label: "Konsultasi", href: "/admin/consultations", icon: faHeadset },
+        { label: "Donasi", href: "/admin/donations", icon: faReceipt, permission: "manage donations" },
+        { label: "Konfirmasi Donasi", href: "/admin/donation-confirmations", icon: faCheckCircle, permission: "manage donations" },
+        { label: "Saran Wakaf", href: "/admin/suggestions", icon: faCommentDots, permission: "manage suggestions" },
+        { label: "Editor Tasks", href: "/admin/editor-tasks", icon: faListCheck, permission: "manage tasks" },
+        { label: "Jemput Wakaf", href: "/admin/pickup-requests", icon: faTruckRampBox, permission: "manage pickup_requests" },
+        { label: "Konsultasi", href: "/admin/consultations", icon: faHeadset, permission: "manage consultations" },
       ],
     },
     {
       title: "Keuangan",
       items: [
-        { label: "Laporan Donasi", href: "/admin/reports/donations", icon: faChartLine },
-        { label: "Alokasi", href: "/admin/allocations", icon: faHandshake },
+        { label: "Laporan Donasi", href: "/admin/reports/donations", icon: faChartLine, permission: "view reports" },
+        { label: "Alokasi", href: "/admin/allocations", icon: faHandshake, permission: "manage allocations" },
       ],
     },
     {
@@ -167,11 +193,11 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     },
     {
       title: "Akses",
-      items: [{ label: "Pengguna", href: "/superadmin/users", icon: faUserGroup }],
+      items: [{ label: "Pengguna", href: "/superadmin/users", icon: faUserGroup, permission: "manage users" }],
     },
     {
       title: "Laporan",
-      items: [{ label: "Laporan Donasi", href: "/superadmin/reports/donations", icon: faChartLine }],
+      items: [{ label: "Laporan Donasi", href: "/superadmin/reports/donations", icon: faChartLine, permission: "view reports" }],
     },
     {
       title: "Sistem",
@@ -226,18 +252,41 @@ export const resolveUserRoles = (user: StoredUser | null): DashboardRole[] => {
   return roles;
 };
 
-export const buildNavSections = (roles: DashboardRole[], t: any): NavSection[] => {
+export const resolveUserPermissions = (user: StoredUser | null): string[] => {
+  if (!user) return [];
+  const permissions: string[] = [];
+
+  if (Array.isArray(user.permissions)) {
+    user.permissions.forEach((p: any) => {
+      if (typeof p === "string") permissions.push(p);
+      else if (p && typeof p === "object" && typeof p.name === "string") {
+        permissions.push(p.name);
+      }
+    });
+  }
+
+  return Array.from(new Set(permissions));
+};
+
+export const buildNavSections = (roles: DashboardRole[], permissions: string[], t: any): NavSection[] => {
   const sections = new Map<string, NavItem[]>();
   const seen = new Set<string>();
 
   const isSuperAdmin = roles.includes("superadmin");
+  const permissionSet = new Set(permissions);
 
   roles.forEach((role) => {
     NAV_SECTIONS_BY_ROLE[role].forEach((section) => {
       const bucket = sections.get(t(`nav.section.${section.title}`, section.title)) ?? [];
       section.items.forEach((item) => {
         if (seen.has(item.href)) return;
+        
+        // Granular check: if item has a permission requirement, verify it
+        // Superadmin bypasses this check
+        if (!isSuperAdmin && item.permission && !permissionSet.has(item.permission)) return;
+        
         if (isSuperAdmin && item.href.includes("suggestions")) return;
+        
         seen.add(item.href);
         bucket.push({
           ...item,

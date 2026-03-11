@@ -1,37 +1,19 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { getAuthToken, getAuthUser } from "../../lib/auth";
 import { DashboardLayout } from "./DashboardLayout";
-import type { DashboardRole } from "../../components/management/dashboard/DashboardUtils";
+import * as Utils from "../../components/management/dashboard/DashboardUtils";
 
-const normalizeRoleValue = (value: string) => value.toLowerCase().replace(/[^a-z]/g, "");
-
-const resolveUserRoles = (): DashboardRole[] => {
+const resolveUserRoles = (): Utils.DashboardRole[] => {
   const user = getAuthUser();
-  const candidates: string[] = [];
-
-  if (user?.roles && Array.isArray(user.roles)) {
-    user.roles.forEach((r) => {
-      if (r && typeof r === "object" && typeof (r as any).name === "string") {
-        candidates.push(String((r as any).name));
-      }
-    });
-  }
-
-  if (typeof user?.role_label === "string") {
-    candidates.push(user.role_label);
-  }
-
-  const normalized = new Set(candidates.map((value) => normalizeRoleValue(value)));
-
-  const roles: DashboardRole[] = [];
-  if (normalized.has("superadmin")) roles.push("superadmin");
-  if (normalized.has("admin")) roles.push("admin");
-  if (normalized.has("editor")) roles.push("editor");
-  if (normalized.has("mitra")) roles.push("mitra");
-  return roles;
+  return Utils.resolveUserRoles(user as Utils.StoredUser);
 };
 
-function RequireDashboardRole({ role }: { role: DashboardRole }) {
+const resolveUserPermissions = (): string[] => {
+  const user = getAuthUser();
+  return Utils.resolveUserPermissions(user as Utils.StoredUser);
+};
+
+function RequireDashboardRole({ role }: { role: Utils.DashboardRole }) {
   const location = useLocation();
   const token = getAuthToken();
 
@@ -40,6 +22,9 @@ function RequireDashboardRole({ role }: { role: DashboardRole }) {
   }
 
   const roles = resolveUserRoles();
+  const permissions = resolveUserPermissions();
+  const permissionSet = new Set(permissions);
+
   if (!roles.length) {
     return <Navigate to="/error/403" replace />;
   }
@@ -48,6 +33,21 @@ function RequireDashboardRole({ role }: { role: DashboardRole }) {
     const home = roles[0];
     const redirectPath = `/${home}/dashboard`;
     return <Navigate to={redirectPath} replace />;
+  }
+
+  // Final check: Granular access control for current path
+  const sections = Utils.NAV_SECTIONS_BY_ROLE[role];
+  const allItems = sections.flatMap((s) => s.items);
+  const currentItem = allItems.find((item) => {
+    // Exact match or sub-path match (e.g. /admin/users matches /admin/users/create)
+    return location.pathname === item.href || location.pathname.startsWith(`${item.href}/`);
+  });
+
+  const isSuperAdmin = roles.includes("superadmin");
+  if (!isSuperAdmin && currentItem?.permission && !permissionSet.has(currentItem.permission)) {
+    // If user doesn't have specific permission for this page, boot to unauthorized
+    // Superadmin bypasses this check
+    return <Navigate to="/error/403" replace />;
   }
 
   return (

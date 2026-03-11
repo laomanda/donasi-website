@@ -11,7 +11,15 @@ import { UserPersonalInfoFields } from "./UserPersonalInfoFields";
 import { UserRoleAksesFields } from "./UserRoleAksesFields";
 import { UserStatusAksiSidebar } from "./UserStatusAksiSidebar";
 
+// Utils
+import { PERMISSION_TEMPLATES } from "../../dashboard/DashboardUtils";
+
 type Role = {
+  id: number;
+  name: string;
+};
+
+type Permission = {
   id: number;
   name: string;
 };
@@ -24,6 +32,7 @@ type User = {
   is_active: boolean;
   role_label?: string | null;
   roles?: { id?: number; name: string }[];
+  permissions?: { id?: number; name: string }[];
 };
 
 type UserFormState = {
@@ -34,6 +43,8 @@ type UserFormState = {
   is_active: boolean;
   role_label: string;
   roles: string[];
+  permissions: string[];
+  access_mode: "template" | "custom";
 };
 
 const emptyForm: UserFormState = {
@@ -44,6 +55,8 @@ const emptyForm: UserFormState = {
   is_active: true,
   role_label: "",
   roles: [],
+  permissions: [],
+  access_mode: "template",
 };
 
 const normalizeErrors = (error: any): string[] => {
@@ -70,18 +83,24 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
 
   const [form, setForm] = useState<UserFormState>(emptyForm);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
   const isEditIdValid = typeof userId === "number" && Number.isFinite(userId) && userId > 0;
 
-  const fetchRoles = async () => {
+  const fetchRolesAndPermissions = async () => {
     try {
-      const res = await http.get<Role[]>("/superadmin/roles");
-      setRoles(Array.isArray(res.data) ? res.data : []);
+      const [rolesRes, permsRes] = await Promise.all([
+        http.get<Role[]>("/superadmin/roles"),
+        http.get<Permission[]>("/superadmin/permissions"),
+      ]);
+      setRoles(Array.isArray(rolesRes.data) ? rolesRes.data : []);
+      setAllPermissions(Array.isArray(permsRes.data) ? permsRes.data : []);
     } catch {
       setRoles([]);
+      setAllPermissions([]);
     }
   };
 
@@ -94,6 +113,9 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
       const userRoles = Array.isArray(user.roles)
         ? user.roles.map((r) => String(r?.name ?? "").trim()).filter(Boolean)
         : [];
+      const userPermissions = Array.isArray(user.permissions)
+        ? user.permissions.map((p) => String(p?.name ?? "").trim()).filter(Boolean)
+        : [];
       setForm({
         name: String(user.name ?? ""),
         email: String(user.email ?? ""),
@@ -102,6 +124,8 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
         is_active: Boolean(user.is_active),
         role_label: String(user.role_label ?? ""),
         roles: userRoles,
+        permissions: userPermissions,
+        access_mode: "custom", // Default to custom for existing users to be safe
       });
     } catch (err) {
       setErrors(normalizeErrors(err));
@@ -111,7 +135,7 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
   };
 
   useEffect(() => {
-    void fetchRoles();
+    void fetchRolesAndPermissions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -128,10 +152,39 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
 
   const toggleRole = (name: string) => {
     setForm((prev) => {
-      const next = new Set(prev.roles);
+      const nextPermissions = prev.access_mode === "template" 
+        ? (PERMISSION_TEMPLATES[name] || []) 
+        : prev.permissions;
+        
+      return { 
+        ...prev, 
+        roles: [name],
+        permissions: nextPermissions
+      };
+    });
+  };
+
+  const setAccessMode = (mode: "template" | "custom") => {
+    setForm((prev) => {
+      const currentRole = prev.roles[0];
+      const nextPermissions = (mode === "template" && currentRole)
+        ? (PERMISSION_TEMPLATES[currentRole] || [])
+        : prev.permissions;
+        
+      return {
+        ...prev,
+        access_mode: mode,
+        permissions: nextPermissions
+      };
+    });
+  };
+
+  const togglePermission = (name: string) => {
+    setForm((prev) => {
+      const next = new Set(prev.permissions);
       if (next.has(name)) next.delete(name);
       else next.add(name);
-      return { ...prev, roles: Array.from(next) };
+      return { ...prev, permissions: Array.from(next) };
     });
   };
 
@@ -148,7 +201,9 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
         toast.error(message, { title: "Validasi gagal" });
         return;
       }
-      const payload = {
+      const permissions = Array.from(new Set([...form.permissions, "manage settings"]));
+      
+      const data = {
         name: form.name.trim(),
         email: form.email.trim(),
         phone: trimmedPhone || null,
@@ -156,15 +211,16 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
         is_active: Boolean(form.is_active),
         role_label: form.role_label.trim() || null,
         roles: form.roles,
+        permissions: permissions,
       };
 
       if (mode === "create") {
-        await http.post("/superadmin/users", payload);
+        await http.post("/superadmin/users", data);
         toast.success("Pengguna berhasil dibuat.", { title: "Berhasil" });
         navigate("/superadmin/users");
       } else {
         if (!isEditIdValid) throw new Error("ID pengguna tidak valid.");
-        await http.put(`/superadmin/users/${userId}`, payload);
+        await http.put(`/superadmin/users/${userId}`, data);
         toast.success("Pengguna berhasil diperbarui.", { title: "Berhasil" });
         navigate("/superadmin/users");
       }
@@ -211,6 +267,11 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
             roles={roles}
             selectedRoles={form.roles}
             toggleRole={toggleRole}
+            permissions={allPermissions}
+            selectedPermissions={form.permissions}
+            togglePermission={togglePermission}
+            accessMode={form.access_mode}
+            setAccessMode={setAccessMode}
             roleLabel={form.role_label}
             setRoleLabel={(val) => setForm((s) => ({ ...s, role_label: val }))}
             loading={loading}

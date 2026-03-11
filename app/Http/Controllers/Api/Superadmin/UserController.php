@@ -7,13 +7,14 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use App\Http\Requests\Superadmin\UserRequest;
 
 class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with('roles');
+        $query = User::with(['roles', 'permissions']);
 
         $role = $request->string('role')->trim()->toString();
         if ($role !== '') {
@@ -53,12 +54,16 @@ class UserController extends Controller
             $user->syncRoles($data['roles']);
         }
 
-        return response()->json($user->load('roles'), 201);
+        if (array_key_exists('permissions', $data)) {
+            $user->syncPermissions($data['permissions'] ?? []);
+        }
+
+        return response()->json($user->load('roles', 'permissions'), 201);
     }
 
     public function show(User $user)
     {
-        return response()->json($user->load('roles'));
+        return response()->json($user->load('roles', 'permissions'));
     }
 
     public function update(UserRequest $request, User $user)
@@ -83,7 +88,11 @@ class UserController extends Controller
             $user->syncRoles($data['roles'] ?? []);
         }
 
-        return response()->json($user->refresh()->load('roles'));
+        if (array_key_exists('permissions', $data)) {
+            $user->syncPermissions($data['permissions'] ?? []);
+        }
+
+        return response()->json($user->refresh()->load('roles', 'permissions'));
     }
 
     public function destroy(User $user)
@@ -106,6 +115,15 @@ class UserController extends Controller
                 ->withCount('users')
                 ->orderBy('name')
                 ->get(['id', 'name', 'guard_name', 'created_at', 'updated_at'])
+        );
+    }
+
+    public function permissions()
+    {
+        return response()->json(
+            Permission::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'guard_name'])
         );
     }
 }

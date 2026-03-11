@@ -22,9 +22,11 @@ class UserRequest extends FormRequest
             'phone'      => ['nullable', 'string', 'max:30'],
             'password'   => [$userId ? 'nullable' : 'required', 'string', 'min:8'],
             'is_active'  => ['required', 'boolean'],
-            'role_label' => ['nullable', 'string', 'max:100'],
-            'roles'      => ['nullable', 'array'],
-            'roles.*'    => ['string', 'exists:roles,name'],
+            'role_label'  => ['nullable', 'string', 'max:100'],
+            'roles'       => ['nullable', 'array'],
+            'roles.*'     => ['string', 'exists:roles,name'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string', 'exists:permissions,name'],
         ];
     }
 }

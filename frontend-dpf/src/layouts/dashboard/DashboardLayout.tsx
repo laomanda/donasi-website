@@ -26,10 +26,11 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const isSearchEnabled = role === "editor" || role === "superadmin" || role === "admin";
   const storedUser = useMemo(() => getAuthUser() as Utils.StoredUser | null, []);
   const userRoles = useMemo(() => Utils.resolveUserRoles(storedUser), [storedUser]);
+  const userPermissions = useMemo(() => Utils.resolveUserPermissions(storedUser), [storedUser]);
   const navSections = useMemo(() => {
     const roles = userRoles.length ? userRoles : [role];
-    return Utils.buildNavSections(roles, t);
-  }, [role, userRoles, locale]);
+    return Utils.buildNavSections(roles, userPermissions, t);
+  }, [role, userRoles, userPermissions, locale]);
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
