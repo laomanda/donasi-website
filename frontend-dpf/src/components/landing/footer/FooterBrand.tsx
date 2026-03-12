@@ -41,7 +41,7 @@ export function FooterBrand({ t, whatsappLink }: FooterBrandProps) {
 
       <div className="flex flex-col items-start gap-3 pt-2">
         <Link
-          to="/donate"
+          to="/donate#donate-form-section"
           className="inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm ring-1 ring-white/20 transition-all hover:bg-emerald-600 hover:ring-emerald-600 hover:shadow-lg hover:-translate-y-0.5"
         >
           <FontAwesomeIcon icon={faHandHoldingHeart} />

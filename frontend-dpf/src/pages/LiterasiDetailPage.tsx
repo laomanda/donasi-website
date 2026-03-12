@@ -32,7 +32,7 @@ export function LiterasiDetailPage() {
 
   return (
     <LandingLayout>
-      <section className="relative overflow-hidden bg-slate-50">
+      <section id="hero" className="relative overflow-hidden bg-slate-50">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-24 top-24 h-[420px] w-[420px] rounded-full bg-primary-100/30 blur-[120px]" />
           <div className="absolute -right-24 top-10 h-[380px] w-[380px] rounded-full bg-brandGreen-100/30 blur-[110px]" />

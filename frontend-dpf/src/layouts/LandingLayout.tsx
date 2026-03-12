@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type PropsWithChildren } from "react";
+import { useLocation } from "react-router-dom";
 import { LandingNavbar } from "../components/landing/navbar/LandingNavbar";
 import { LandingFooter } from "../components/landing/footer/LandingFooter";
 import { FloatingWhatsApp } from "../components/landing/FloatingWhatsApp";
@@ -33,6 +34,23 @@ export function LandingLayout({
 }: LandingLayoutProps) {
   const [programs, setPrograms] = useState<ProgramSummary[]>([]);
   const { locale } = useLang();
+  const location = useLocation();
+
+  // Global Instant Scrolling for Navigation
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace("#", "");
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: "auto", block: "start" });
+        }
+      }, 10);
+    } else {
+      // Default to top for any navigation without hash
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
+  }, [location.pathname, location.hash]);
 
   useEffect(() => {
     let active = true;
@@ -57,7 +75,7 @@ export function LandingLayout({
       .slice(0, 5)
       .map((program) => ({
         label: pickLocale(program.title, program.title_en, locale) || "Program",
-        href: program.slug ? `/program/${program.slug}` : "/program",
+        href: program.slug ? `/program/${program.slug}#hero` : "/program#hero",
       }));
   }, [programs, locale]);
 

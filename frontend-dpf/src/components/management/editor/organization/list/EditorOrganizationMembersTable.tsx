@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { imagePlaceholder } from "@/lib/placeholder";
 import type { OrganizationMember } from "../EditorOrganizationMemberTypes";
 import { resolveStorageUrl, formatDate, getStatusTone, groupTone } from "../EditorOrganizationMemberTypes";
@@ -20,7 +20,6 @@ type Props = {
   loading: boolean;
   selection: BulkSelectionType;
   pageIds: number[];
-  onShow: (id: number) => void;
   onEdit: (id: number) => void;
 };
 
@@ -29,7 +28,6 @@ export default function EditorOrganizationMembersTable({
   loading,
   selection,
   pageIds,
-  onShow,
   onEdit,
 }: Props) {
   return (
@@ -185,7 +183,7 @@ export default function EditorOrganizationMembersTable({
                   </span>
                   <span className="text-xs font-bold text-slate-500">Pilih</span>
                 </div>
-                <button type="button" onClick={() => onShow(member.id)} className="block w-full text-left">
+                <div className="block w-full text-left">
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
                       <img
@@ -200,7 +198,7 @@ export default function EditorOrganizationMembersTable({
                       <p className="mt-1 line-clamp-1 text-sm text-slate-600">{member.position_title}</p>
                     </div>
                   </div>
-                </button>
+                </div>
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-2">
@@ -213,14 +211,6 @@ export default function EditorOrganizationMembersTable({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onShow(member.id)}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
-                      aria-label="Detail"
-                    >
-                      <FontAwesomeIcon icon={faEye} />
-                    </button>
                     <button
                       type="button"
                       onClick={() => onEdit(member.id)}

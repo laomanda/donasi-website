@@ -28,7 +28,7 @@ export const PageHero: React.FC<PageHeroProps> = ({
   children,
 }) => {
   return (
-    <section className={`relative overflow-hidden bg-slate-50 pb-16 pt-32 lg:pb-24 lg:pt-40 ${fullHeight ? "min-h-screen flex flex-col justify-center" : ""}`}>
+    <section id="hero" className={`relative overflow-hidden bg-slate-50 pb-16 pt-32 lg:pb-24 lg:pt-40 ${fullHeight ? "min-h-screen flex flex-col justify-center" : ""}`}>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2">

@@ -30,7 +30,10 @@ export const globalDict: Dict = {
         en: "DPF Waqf Foundation focuses on empowering the community through professional and transparent waqf management."
     },
     "footer.cta.donate": { id: "Salurkan Donasi", en: "Give Donation" },
-    "footer.address": { id: "Gedung DPF Jakarta\nJl. Duren Tiga Raya No.15...", en: "DPF Jakarta Building\nJl. Duren Tiga Raya No.15..." },
+    "footer.address": { 
+        id: "Signature Park Grande\nJl. Letjen M.T. Haryono No.Kav. 20, Cawang, Jakarta Timur 13630", 
+        en: "Signature Park Grande\nJl. Letjen M.T. Haryono No.Kav. 20, Cawang, East Jakarta 13630" 
+    },
     "footer.phone": { id: "Telepon", en: "Phone" },
     "footer.email": { id: "Email", en: "Email" },
     "footer.copyright": { id: "Dikelola oleh Yayasan DPF Indonesia.", en: "Managed by Yayasan DPF Indonesia." },

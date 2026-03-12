@@ -13,7 +13,7 @@ export function HeroSection({
 }) {
   return (
     <section
-      id="home"
+      id="hero"
       className="relative overflow-hidden bg-slate-50"
     >
       <div className="relative mx-auto flex max-w-7xl flex-col gap-8 px-4 py-12 sm:gap-10 sm:px-6 lg:grid lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8 lg:py-20">

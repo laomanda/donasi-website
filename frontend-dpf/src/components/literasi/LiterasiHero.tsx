@@ -7,7 +7,7 @@ interface LiterasiHeroProps {
 
 export function LiterasiHero({ t }: LiterasiHeroProps) {
   return (
-    <section className="relative overflow-hidden bg-slate-50 pb-20 pt-28">
+    <section id="hero" className="relative overflow-hidden bg-slate-50 pb-20 pt-28">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 font-heading text-xs font-semibold tracking-wide text-primary-700 shadow-sm border border-primary-100">

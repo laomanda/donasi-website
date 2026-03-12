@@ -106,7 +106,6 @@ export function EditorOrganizationMembersPage() {
     void fetchMembers(1, { q: "", group: "" });
   };
 
-  const goShow = (id: number) => navigate(`/editor/organization-members/${id}`);
   const goEdit = (id: number) => navigate(`/editor/organization-members/${id}/edit`);
 
   const onDeleteSelected = async () => {
@@ -169,7 +168,6 @@ export function EditorOrganizationMembersPage() {
         loading={loading}
         selection={selection}
         pageIds={pageIds}
-        onShow={goShow}
         onEdit={goEdit}
       />
 

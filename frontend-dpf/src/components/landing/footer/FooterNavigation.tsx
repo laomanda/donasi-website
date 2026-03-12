@@ -12,11 +12,11 @@ export function FooterNavigation({ t, limitedPrograms }: FooterNavigationProps) 
       <div className="lg:col-span-3 lg:pl-2">
         <FooterHeading>{t('footer.explore')}</FooterHeading>
         <ul className="space-y-3">
-          <FooterLinkItem to="/" label={t('nav.home')} />
-          <FooterLinkItem to="/layanan" label={t('nav.services')} />
-          <FooterLinkItem to="/program" label={t('nav.programs')} />
-          <FooterLinkItem to="/literasi" label={t('nav.literacy')} />
-          <FooterLinkItem to="/tentang-kami" label={t('nav.about')} />
+          <FooterLinkItem to="/#hero" label={t('nav.home')} />
+          <FooterLinkItem to="/layanan#hero" label={t('nav.services')} />
+          <FooterLinkItem to="/program#hero" label={t('nav.programs')} />
+          <FooterLinkItem to="/literasi#hero" label={t('nav.literacy')} />
+          <FooterLinkItem to="/tentang-kami#hero" label={t('nav.about')} />
         </ul>
       </div>
 

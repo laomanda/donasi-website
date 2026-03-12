@@ -55,7 +55,7 @@ export function useLandingFooter() {
     'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63458.32104835289!2d106.80576511303089!3d-6.2446057999999915!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3804815921d%3A0x6b5d698d11d225a9!2sDPF%20(Djalaludin%20Pane%20Foundation)!5e0!3m2!1sid!2sid!4v1768288510620!5m2!1sid!2sid'
   const jakartaMapLink =
     publicSettings['landing.contact_map_jakarta_link']?.trim() ||
-    'https://maps.google.com/?q=-6.24460046114402,106.86403477404349'
+    'https://maps.google.com/?q=-6.244476,106.866638'
 
   const whatsappLink = publicSettings['landing.social_whatsapp_link']?.trim() || phoneLink
 

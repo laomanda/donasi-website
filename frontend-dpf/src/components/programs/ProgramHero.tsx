@@ -4,7 +4,7 @@ interface ProgramHeroProps {
 
 export function ProgramHero({ t }: ProgramHeroProps) {
   return (
-    <section className="relative overflow-hidden bg-slate-50 pb-20 pt-28">
+    <section id="hero" className="relative overflow-hidden bg-slate-50 pb-20 pt-28">
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-xs font-semibold text-brandGreen-700 ring-1 ring-brandGreen-100">

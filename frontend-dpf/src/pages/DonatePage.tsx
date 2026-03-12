@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
@@ -133,7 +133,20 @@ const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" |
 const DonatePage = () => {
     const { locale } = useLang();
     const [searchParams] = useSearchParams();
+    const location = useLocation();
     const t = (key: string, fallback?: string) => translate(donateDict, locale, key, fallback);
+
+    // Handle hash scrolling (e.g. from ProposalSection)
+    useEffect(() => {
+        if (location.hash === "#donate-form-section") {
+            const el = document.getElementById("donate-form-section");
+            if (el) {
+                setTimeout(() => {
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 600);
+            }
+        }
+    }, [location.hash]);
     
     // Core Data State
     const [accounts, setAccounts] = useState<BankAccount[]>([]);
