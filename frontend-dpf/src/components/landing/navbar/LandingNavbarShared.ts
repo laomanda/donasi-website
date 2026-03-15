@@ -9,7 +9,7 @@ import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { globalDict } from "../../../i18n/global";
 
 export interface NavItem {
-    label: { id: string; en: string };
+    label: { id: string; en?: string };
     href: string;
     icon: IconProp;
 }

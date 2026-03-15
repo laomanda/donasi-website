@@ -24,7 +24,8 @@ import { KonsultasiPage } from '../pages/KonsultasiPage'
 import { JemputWakafPage } from '../pages/JemputWakafPage'
 import { KonfirmasiDonasiPage } from '../pages/KonfirmasiDonasiPage'
 
-import { EditorShell, AdminShell, SuperAdminShell, MitraShell } from '../layouts/dashboard/RoleShells'
+import { EditorShell, AdminShell, SuperAdminShell, MitraShell, ManagementShell } from '../layouts/dashboard/RoleShells'
+import { CustomDashboardPage } from '../pages/management/custom/CustomDashboardPage'
 import { MitraRegisterPage } from '../pages/auth/MitraRegisterPage'
 import { MitraDashboardPage } from '../pages/management/mitra/MitraDashboardPage'
 import { MitraAllocationsPage } from "../pages/management/mitra/MitraAllocationsPage";
@@ -209,6 +210,16 @@ export const router = createBrowserRouter([
           { path: 'donations', element: <MitraDonationsPage /> },
           { path: 'guidance', element: <GuidancePage /> },
           { path: 'settings', element: <SettingsPage role="mitra" /> },
+        ],
+      },
+      {
+        path: 'management',
+        element: <ManagementShell />,
+        children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          { path: 'dashboard', element: <CustomDashboardPage /> },
+          { path: 'settings', element: <SettingsPage role="custom" /> },
+          { path: 'guidance', element: <GuidancePage /> },
         ],
       },
       { path: 'error/400', element: <Error400 /> },

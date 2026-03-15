@@ -5,7 +5,7 @@ export type ApiErrorData = {
   errors?: unknown;
 };
 
-export type DashboardRole = "superadmin" | "admin" | "editor" | "mitra";
+export type DashboardRole = "superadmin" | "admin" | "editor" | "mitra" | "custom";
 
 /**
  * Mengekstrak pesan error dari respons API.
@@ -61,6 +61,13 @@ export const resolveDashboardRole = (user: unknown): DashboardRole | null => {
   if (normalized.has("admin")) return "admin";
   if (normalized.has("editor")) return "editor";
   if (normalized.has("mitra")) return "mitra";
+  
+  // If we have permissions but NO hardcoded role, consider it "custom"
+  const perms = (user as any).permissions;
+  if (Array.isArray(perms) && perms.length > 0) {
+    return "custom";
+  }
+
   return null;
 };
 
@@ -69,6 +76,7 @@ export const resolveDashboardRole = (user: unknown): DashboardRole | null => {
  */
 export const getRedirectPath = (user: unknown): string => {
   const role = resolveDashboardRole(user) ?? "editor";
+  if (role === "custom") return "/management/dashboard";
   return `/${role}/dashboard`;
 };
 

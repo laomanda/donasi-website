@@ -86,7 +86,7 @@ export function usePrograms(locale: "id" | "en", t: (key: string, fallback?: str
     const term = search.trim().toLowerCase();
     return localizedPrograms.filter((p) => {
       const matchCategory = activeCategory ? p.category === activeCategory : true;
-      const matchStatus = activeStatus ? canonicalStatus(p.status, p.deadline_days) === activeStatus : true;
+      const matchStatus = activeStatus ? canonicalStatus(p.status, p.published_at, p.deadline_days) === activeStatus : true;
       const matchSearch =
         !term ||
         p.title.toLowerCase().includes(term) ||

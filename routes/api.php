@@ -129,7 +129,7 @@ Route::prefix('v1')->group(function () {
     | ADMIN (Role: admin atau superadmin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role:admin|superadmin'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:admin|superadmin|view reports|manage donations|manage pickup_requests|manage consultations|manage suggestions|manage allocations'])
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
@@ -137,7 +137,7 @@ Route::prefix('v1')->group(function () {
 
             Route::get('editor-tasks/editors', [AdminEditorTaskController::class, 'editors']);
             Route::apiResource('editor-tasks', AdminEditorTaskController::class)->only(['index', 'show']);
-            Route::middleware('role:admin|superadmin')->group(function () {
+            Route::middleware('role_or_permission:admin|superadmin|manage donations|manage pickup_requests|manage consultations|manage suggestions|manage allocations|manage bank_accounts|manage organization|manage partners')->group(function () {
                 Route::post('donations/manual', [AdminDonationController::class, 'storeManual']);
                 Route::patch('donations/{donation}/status', [AdminDonationController::class, 'updateStatus']);
                 Route::post('donations/{donation}/send-whatsapp', [AdminDonationController::class, 'sendWhatsapp']);
@@ -200,7 +200,7 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     |
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role:mitra'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:mitra'])
         ->prefix('mitra')
         ->name('mitra.')
         ->group(function () {
@@ -217,7 +217,7 @@ Route::prefix('v1')->group(function () {
     | EDITOR (Role: editor, admin, superadmin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role:editor|superadmin'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:editor|superadmin|manage articles|manage programs|manage banners|manage tags|manage tasks|manage partners|manage organization|manage bank_accounts'])
         ->prefix('editor')
         ->name('editor.')
         ->group(function () {
@@ -244,7 +244,7 @@ Route::prefix('v1')->group(function () {
     | SUPERADMIN (Role: superadmin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role:superadmin'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:superadmin|manage users|manage roles|view reports'])
         ->prefix('superadmin')
         ->name('superadmin.')
         ->group(function () {

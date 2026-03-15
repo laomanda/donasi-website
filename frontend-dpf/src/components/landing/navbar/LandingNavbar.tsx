@@ -113,7 +113,7 @@ export function LandingNavbar() {
         () =>
             NAV_ITEMS.map((item) => ({
                 ...item,
-                label: item.label[locale as "id" | "en"],
+                label: item.label[locale as "id" | "en"] ?? item.label.id,
             })),
         [locale]
     );

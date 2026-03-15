@@ -29,7 +29,11 @@ function RequireDashboardRole({ role }: { role: Utils.DashboardRole }) {
     return <Navigate to="/error/403" replace />;
   }
 
-  if (!roles.includes(role)) {
+  // Permissive check: allowed if has role OR is a custom role (permissions check below)
+  const isAuthorizedRole = roles.includes(role);
+  const isCustomRole = roles.includes("custom");
+
+  if (!isAuthorizedRole && !isCustomRole) {
     const home = roles[0];
     const redirectPath = `/${home}/dashboard`;
     return <Navigate to={redirectPath} replace />;
@@ -71,4 +75,8 @@ export function SuperAdminShell() {
 
 export function MitraShell() {
   return <RequireDashboardRole role="mitra" />;
+}
+
+export function ManagementShell() {
+  return <RequireDashboardRole role="custom" />;
 }

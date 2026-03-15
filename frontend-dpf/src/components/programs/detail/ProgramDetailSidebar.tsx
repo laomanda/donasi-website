@@ -31,7 +31,7 @@ export function ProgramDetailSidebar({
   shareText
 }: ProgramDetailSidebarProps) {
   const brandName = "Djalalaludin Pane Foundation";
-  const statusTone = getProgramStatusTone(program?.status, program?.deadline_days);
+  const statusTone = getProgramStatusTone(program?.status, program?.published_at, program?.deadline_days);
 
   return (
     <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
@@ -43,7 +43,7 @@ export function ProgramDetailSidebar({
             {localizedProgram?.category}
           </span>
           <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold ring-1 ${statusTone}`}>
-            {getStatusLabel(program?.status, t, program?.deadline_days)}
+            {getStatusLabel(program?.status, t, program?.published_at, program?.deadline_days)}
           </span>
         </div>
 
@@ -82,7 +82,7 @@ export function ProgramDetailSidebar({
           <span>{Math.round(progressPercent)}% {locale === "en" ? "Achieved" : "Tercapai"}</span>
           <span className="inline-flex items-center gap-1.5">
             <FontAwesomeIcon icon={faCheckCircle} className="text-brandGreen-600" />
-            {getStatusLabel(program?.status, t, program?.deadline_days)}
+            {getStatusLabel(program?.status, t, program?.published_at, program?.deadline_days)}
           </span>
         </div>
 

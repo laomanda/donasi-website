@@ -1,8 +1,19 @@
 export type AdminDashboardStats = {
+  programs?: number;
+  articles_total?: number;
   donations_paid?: number;
   monthly_donations?: number;
   pickup_pending?: number;
+  pickup_success?: number;
   consultation_new?: number;
+  consultation_replied?: number;
+  bank_accounts_total?: number;
+  banners_total?: number;
+  partners_total?: number;
+  organization_total?: number;
+  suggestions_replied?: number;
+  donations_confirmed_count?: number;
+  users_total?: number;
 };
 
 export type AdminDonationItem = {

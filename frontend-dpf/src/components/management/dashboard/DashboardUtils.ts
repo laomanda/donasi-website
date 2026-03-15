@@ -22,7 +22,9 @@ import {
   faShieldHalved,
 } from "@fortawesome/free-solid-svg-icons";
 
-export type DashboardRole = "superadmin" | "admin" | "editor" | "mitra";
+import type { ToneKey } from "../StatCard";
+
+export type DashboardRole = "superadmin" | "admin" | "editor" | "mitra" | "custom";
 
 export type RoleTheme = {
   appName: string;
@@ -64,6 +66,7 @@ export const ROLE_LABEL: Record<DashboardRole, string> = {
   admin: "Admin",
   editor: "Editor",
   mitra: "Mitra",
+  custom: "Staff",
 };
 
 export const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
@@ -103,6 +106,15 @@ export const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
     pillBg: "bg-slate-900",
     pillText: "text-slate-100",
   },
+  custom: {
+    appName: "Manajemen DPF",
+    accentRing: "focus-visible:ring-slate-400",
+    navActiveBg: "bg-slate-900",
+    navActiveText: "text-white",
+    navActiveIcon: "text-slate-400",
+    pillBg: "bg-slate-900",
+    pillText: "text-slate-100",
+  },
 };
 
 export const PERMISSION_TEMPLATES: Record<string, string[]> = {
@@ -128,6 +140,153 @@ export const PERMISSION_TEMPLATES: Record<string, string[]> = {
   mitra: [],
 };
 
+export type QuickAction = {
+  permission: string;
+  label: string;
+  description: string;
+  href: string;
+  icon: IconProp;
+  tone: ToneKey;
+};
+
+export const QUICK_ACTIONS: QuickAction[] = [
+  {
+    label: "Kelola Artikel",
+    description: "AKSES PENUH MODUL",
+    href: "/editor/articles",
+    permission: "manage articles",
+    icon: faBookOpen,
+    tone: "blue",
+  },
+  {
+    label: "Kelola Program",
+    description: "AKSES PENUH MODUL",
+    href: "/editor/programs",
+    permission: "manage programs",
+    icon: faHeart,
+    tone: "rose",
+  },
+  {
+    label: "Kelola Banner",
+    description: "AKSES PENUH MODUL",
+    href: "/editor/banners",
+    permission: "manage banners",
+    icon: faImage,
+    tone: "purple",
+  },
+  {
+    label: "Kelola Donasi",
+    description: "AKSES PENUH MODUL",
+    href: "/admin/donations",
+    permission: "manage donations",
+    icon: faReceipt,
+    tone: "emerald",
+  },
+  {
+    label: "Kelola Mitra",
+    description: "AKSES PENUH MODUL",
+    href: "/editor/partners",
+    permission: "manage partners",
+    icon: faHandshake,
+    tone: "orange",
+  },
+  {
+    label: "Kelola Organisasi",
+    description: "AKSES PENUH MODUL",
+    href: "/editor/organization-members",
+    permission: "manage organization",
+    icon: faSitemap,
+    tone: "amber",
+  },
+  {
+    label: "Kelola Rekening Bank",
+    description: "AKSES PENUH MODUL",
+    href: "/editor/bank-accounts",
+    permission: "manage bank_accounts",
+    icon: faBuildingColumns,
+    tone: "slate",
+  },
+  {
+    label: "Kelola Saran",
+    description: "AKSES PENUH MODUL",
+    href: "/admin/suggestions",
+    permission: "manage suggestions",
+    icon: faCommentDots,
+    tone: "fuchsia",
+  },
+  {
+    label: "Kelola Tugas",
+    description: "AKSES PENUH MODUL",
+    href: "/admin/editor-tasks",
+    permission: "manage tasks",
+    icon: faListCheck,
+    tone: "primary",
+  },
+  {
+    label: "Kelola Jemput Wakaf",
+    description: "AKSES PENUH MODUL",
+    href: "/admin/pickup-requests",
+    permission: "manage pickup_requests",
+    icon: faTruckRampBox,
+    tone: "teal",
+  },
+  {
+    label: "Kelola Konsultasi",
+    description: "AKSES PENUH MODUL",
+    href: "/admin/consultations",
+    permission: "manage consultations",
+    icon: faHeadset,
+    tone: "sky",
+  },
+  {
+    label: "Kelola Tag",
+    description: "AKSES PENUH MODUL",
+    href: "/editor/tags",
+    permission: "manage tags",
+    icon: faTags,
+    tone: "pink",
+  },
+  {
+    label: "Kelola Pengguna",
+    description: "AKSES PENUH MODUL",
+    href: "/superadmin/users",
+    permission: "manage users",
+    icon: faUserGroup,
+    tone: "indigo",
+  },
+  {
+    label: "Kelola Hak Akses",
+    description: "AKSES PENUH MODUL",
+    href: "/superadmin/roles",
+    permission: "manage roles",
+    icon: faShieldHalved,
+    tone: "cyan",
+  },
+  {
+    label: "Lihat Laporan",
+    description: "AKSES PENUH MODUL",
+    href: "/admin/reports/donations",
+    permission: "view reports",
+    icon: faChartLine,
+    tone: "violet",
+  },
+  {
+    label: "Kelola Alokasi",
+    description: "AKSES PENUH MODUL",
+    href: "/admin/allocations",
+    permission: "manage allocations",
+    icon: faHandshake,
+    tone: "lime",
+  },
+  {
+    label: "Kelola Pengaturan",
+    description: "AKSES PENUH MODUL",
+    href: "/admin/settings",
+    permission: "manage settings",
+    icon: faGear,
+    tone: "green",
+  },
+];
 
 export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
   editor: [
@@ -218,6 +377,61 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       ],
     },
   ],
+  custom: [
+    {
+      title: "Ringkasan",
+      items: [{ label: "Dashboard", href: "/management/dashboard", icon: faGaugeHigh }],
+    },
+    {
+      title: "Konten",
+      items: [
+        { label: "Artikel", href: "/editor/articles", icon: faBookOpen, permission: "manage articles" },
+        { label: "Program", href: "/editor/programs", icon: faHeart, permission: "manage programs" },
+        { label: "Banner", href: "/editor/banners", icon: faImage, permission: "manage banners" },
+        { label: "Tags", href: "/editor/tags", icon: faTags, permission: "manage tags" },
+      ],
+    },
+    {
+      title: "Operasional",
+      items: [
+        { label: "Donasi", href: "/admin/donations", icon: faReceipt, permission: "manage donations" },
+        { label: "Konfirmasi Donasi", href: "/admin/donation-confirmations", icon: faCheckCircle, permission: "manage donations" },
+        { label: "Saran Wakaf", href: "/admin/suggestions", icon: faCommentDots, permission: "manage suggestions" },
+        { label: "Editor Tasks", href: "/admin/editor-tasks", icon: faListCheck, permission: "manage tasks" },
+        { label: "Jemput Wakaf", href: "/admin/pickup-requests", icon: faTruckRampBox, permission: "manage pickup_requests" },
+        { label: "Konsultasi", href: "/admin/consultations", icon: faHeadset, permission: "manage consultations" },
+      ],
+    },
+    {
+      title: "Organisasi",
+      items: [
+        { label: "Mitra", href: "/editor/partners", icon: faHandshake, permission: "manage partners" },
+        { label: "Struktur", href: "/editor/organization-members", icon: faSitemap, permission: "manage organization" },
+        { label: "Rekening", href: "/editor/bank-accounts", icon: faBuildingColumns, permission: "manage bank_accounts" },
+      ],
+    },
+    {
+      title: "Keuangan",
+      items: [
+        { label: "Laporan Donasi", href: "/admin/reports/donations", icon: faChartLine, permission: "view reports" },
+        { label: "Alokasi", href: "/admin/allocations", icon: faHandshake, permission: "manage allocations" },
+      ],
+    },
+    {
+      title: "Akses",
+      items: [
+        { label: "Pengguna", href: "/superadmin/users", icon: faUserGroup, permission: "manage users" },
+        { label: "Roles", href: "/superadmin/roles", icon: faShieldHalved, permission: "manage roles" },
+      ],
+    },
+    {
+      title: "Sistem",
+      items: [
+        { label: "Panduan", href: "/admin/guidance", icon: faCircleInfo },
+        { label: "Pengaturan", href: "/admin/settings", icon: faGear },
+      ],
+    },
+  ],
   mitra: [
     {
       title: "Ringkasan",
@@ -264,6 +478,12 @@ export const resolveUserRoles = (user: StoredUser | null): DashboardRole[] => {
   if (normalized.has("admin")) roles.push("admin");
   if (normalized.has("editor")) roles.push("editor");
   if (normalized.has("mitra")) roles.push("mitra");
+
+  // If we have permissions but NO hardcoded role, consider it "custom"
+  if (roles.length === 0 && (Array.isArray(user.permissions) && user.permissions.length > 0)) {
+    roles.push("custom");
+  }
+
   return roles;
 };
 

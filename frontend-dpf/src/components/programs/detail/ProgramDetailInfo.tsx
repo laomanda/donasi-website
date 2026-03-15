@@ -65,7 +65,7 @@ export function ProgramDetailInfo({
             {localizedProgram?.category}
           </span>
           <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 ring-1 ring-emerald-100">
-            {getStatusLabel(program?.status, t, program?.deadline_days)}
+            {getStatusLabel(program?.status, t, program?.published_at, program?.deadline_days)}
           </span>
           {program?.is_highlight ? (
             <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
