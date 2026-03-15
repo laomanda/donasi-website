@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { type Program } from "./EditorProgramTypes";
-import { formatDate, formatCurrency, getStatusTone, formatStatusLabel } from "./EditorProgramUtils";
+import { formatDate, formatCurrency, getStatusTone, formatStatusLabel, getRemainingDays } from "./EditorProgramUtils";
 
 type Props = {
     program: Program;
@@ -11,6 +11,11 @@ type Props = {
 };
 
 export default function EditorProgramRow({ program, isSelected, onToggle, onEdit }: Props) {
+    const remainingDays = getRemainingDays(program.published_at, program.deadline_days);
+    const deadlineText = remainingDays !== null 
+        ? (remainingDays > 0 ? `${remainingDays} hari` : "Selesai")
+        : "Tanpa batas";
+
     return (
         <tr className="hover:bg-slate-50">
             <td className="px-6 py-5">
@@ -41,7 +46,7 @@ export default function EditorProgramRow({ program, isSelected, onToggle, onEdit
                             <span className="mx-2 text-slate-300">-</span>
                             Terkumpul: <span className="font-bold text-slate-700">{formatCurrency(program.collected_amount)}</span>
                             <span className="mx-2 text-slate-300">-</span>
-                            Batas hari: <span className="font-bold text-slate-700">{program.deadline_days ?? "–"}</span>
+                            Batas waktu: <span className="font-bold text-slate-700">{deadlineText}</span>
                         </span>
                     </div>
                 </button>

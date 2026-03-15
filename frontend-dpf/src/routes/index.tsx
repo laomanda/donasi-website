@@ -76,6 +76,10 @@ import { SuperAdminUserEditPage } from '../pages/management/superadmin/users/Sup
 import { SuperAdminDashboardPage } from '../pages/management/superadmin/dashboard/SuperAdminDashboardPage'
 import { AdminSuggestionsPage } from '../pages/management/admin/suggestion/AdminSuggestionsPage'
 import { AdminSuggestionShowPage } from '../pages/management/admin/suggestion/AdminSuggestionShowPage'
+import { GuidancePage } from '../pages/management/shared/GuidancePage'
+import { RolesPage } from '../pages/management/superadmin/access/RolesPage'
+import { RoleCreatePage } from '../pages/management/superadmin/access/RoleCreatePage'
+import { RoleEditPage } from '../pages/management/superadmin/access/RoleEditPage'
 
 export const router = createBrowserRouter([
   {
@@ -131,6 +135,7 @@ export const router = createBrowserRouter([
           { path: 'bank-accounts', element: <EditorBanksPage /> },
           { path: 'bank-accounts/create', element: <EditorBankCreatePage /> },
           { path: 'bank-accounts/:id/edit', element: <EditorBankEditPage /> },
+          { path: 'guidance', element: <GuidancePage /> },
           { path: 'settings', element: <SettingsPage role="editor" /> },
         ],
       },
@@ -163,6 +168,7 @@ export const router = createBrowserRouter([
           { path: 'editor-tasks', element: <AdminEditorTasksPage /> },
           { path: 'editor-tasks/create', element: <AdminEditorTaskCreatePage /> },
           { path: 'search', element: <SearchPage role="admin" /> },
+          { path: 'guidance', element: <GuidancePage /> },
           { path: 'settings', element: <SettingsPage role="admin" /> },
         ],
       },
@@ -181,11 +187,15 @@ export const router = createBrowserRouter([
           },
           { path: 'users/create', element: <SuperAdminUserCreatePage /> },
           { path: 'users/:id/edit', element: <SuperAdminUserEditPage /> },
+          { path: 'roles', element: <RolesPage /> },
+          { path: 'roles/create', element: <RoleCreatePage /> },
+          { path: 'roles/:id/edit', element: <RoleEditPage /> },
           { path: 'reports/donations', element: <DonationReportPage /> },
           {
             path: 'search',
             element: <SearchPage role="superadmin" />,
           },
+          { path: 'guidance', element: <GuidancePage /> },
           { path: 'settings', element: <SettingsPage role="superadmin" /> },
         ],
       },
@@ -197,6 +207,7 @@ export const router = createBrowserRouter([
           { path: 'dashboard', element: <MitraDashboardPage /> },
           { path: 'allocations', element: <MitraAllocationsPage /> },
           { path: 'donations', element: <MitraDonationsPage /> },
+          { path: 'guidance', element: <GuidancePage /> },
           { path: 'settings', element: <SettingsPage role="mitra" /> },
         ],
       },

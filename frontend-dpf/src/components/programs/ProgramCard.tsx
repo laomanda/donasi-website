@@ -5,7 +5,7 @@ import { imagePlaceholder } from "@/lib/placeholder";
 import type { 
   Program, 
 } from "./ProgramShared";
-import { getProgress, getStatusLabel, getProgramStatusTone, getImageUrl, canonicalStatus, formatCurrency, formatDate } from "./ProgramShared";
+import { getProgress, getStatusLabel, getProgramStatusTone, getImageUrl, canonicalStatus, formatCurrency, formatDate, getRemainingDays } from "./ProgramShared";
 import { dpfIcon } from "@/assets/brand";
 
 interface ProgramCardProps {
@@ -16,13 +16,15 @@ interface ProgramCardProps {
 
 export function ProgramCard({ program, locale, t }: ProgramCardProps) {
   const progress = getProgress(program.collected_amount, program.target_amount);
-  const statusLabel = getStatusLabel(program.status, t, program.deadline_days);
-  const statusTone = getProgramStatusTone(program.status, program.deadline_days);
+  const statusLabel = getStatusLabel(program.status, t, program.published_at, program.deadline_days);
+  const statusTone = getProgramStatusTone(program.status, program.published_at, program.deadline_days);
   const detailHref = program.slug ? `/program/${program.slug}` : "/program";
   const brandName = "Djalalaludin Pane Foundation";
-  const isCompleted = canonicalStatus(program.status, program.deadline_days) === "completed";
-  const deadlineText = program.deadline_days !== null && program.deadline_days !== undefined && String(program.deadline_days).trim() !== ""
-    ? `${program.deadline_days} ${locale === "en" ? "days" : "hari"}`
+  const isCompleted = canonicalStatus(program.status, program.published_at, program.deadline_days) === "completed";
+  
+  const remainingDays = getRemainingDays(program.published_at, program.deadline_days);
+  const deadlineText = remainingDays !== null 
+    ? (remainingDays > 0 ? `${remainingDays} ${locale === "en" ? "days" : "hari"}` : t("program.deadline.ended", "Selesai"))
     : t("program.deadline.unlimited");
 
   return (

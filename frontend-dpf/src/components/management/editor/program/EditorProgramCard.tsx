@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { type Program } from "./EditorProgramTypes";
-import { formatDate, formatCurrency, getStatusTone, formatStatusLabel } from "./EditorProgramUtils";
+import { formatDate, formatCurrency, getStatusTone, formatStatusLabel, getRemainingDays } from "./EditorProgramUtils";
 
 type Props = {
     program: Program;
@@ -11,6 +11,11 @@ type Props = {
 };
 
 export default function EditorProgramCard({ program, isSelected, onToggle, onEdit }: Props) {
+    const remainingDays = getRemainingDays(program.published_at, program.deadline_days);
+    const deadlineText = remainingDays !== null 
+        ? (remainingDays > 0 ? `${remainingDays} hari` : "Selesai")
+        : "Tanpa batas";
+
     return (
         <div className="p-5 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition">
             <div className="flex items-start gap-3">
@@ -46,7 +51,7 @@ export default function EditorProgramCard({ program, isSelected, onToggle, onEdi
                 <span className="mx-2 text-slate-300">-</span>
                 Terkumpul: <span className="font-bold text-slate-700">{formatCurrency(program.collected_amount)}</span>
                 <span className="mx-2 text-slate-300">-</span>
-                Batas hari: <span className="font-bold text-slate-700">{program.deadline_days ?? "–"}</span>
+                Batas waktu: <span className="font-bold text-slate-700">{deadlineText}</span>
             </p>
 
             <div className="mt-4 flex items-center justify-between gap-3">

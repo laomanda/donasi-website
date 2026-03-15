@@ -20,6 +20,14 @@ export const globalDict: Dict = {
     "nav.emailLabel": { id: "Email", en: "Email" },
     "nav.callCenter": { id: "Pusat Bantuan", en: "Call Center" },
     "nav.search.submit": { id: "Cari", en: "Search" },
+    "nav.item.Panduan": { id: "Panduan", en: "Guidance" },
+    "nav.section.Sistem": { id: "Sistem", en: "System" },
+    "nav.section.Dukungan": { id: "Dukungan", en: "Support" },
+    "nav.item.Dashboard": { id: "Dashboard", en: "Dashboard" },
+    "nav.item.Pengaturan": { id: "Pengaturan", en: "Settings" },
+    "nav.item.Roles": { id: "Roles", en: "Roles" },
+    "nav.item.Permissions": { id: "Permissions", en: "Permissions" },
+    "nav.item.Pengguna": { id: "Pengguna", en: "Users" },
 
     // Footer
     "footer.explore": { id: "Jelajahi", en: "Explore" },

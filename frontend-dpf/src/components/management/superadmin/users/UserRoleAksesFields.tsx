@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShieldHalved, faCheckCircle, faUserShield, faMagic, faUserEdit } from "@fortawesome/free-solid-svg-icons";
+import { faShieldHalved, faCheckCircle, faUserShield, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 
 interface Role {
   id: number;
@@ -17,14 +17,30 @@ interface UserRoleAksesFieldsProps {
   toggleRole: (name: string) => void;
   permissions: Permission[];
   selectedPermissions: string[];
-  togglePermission: (name: string) => void;
-  accessMode: "template" | "custom";
-  setAccessMode: (mode: "template" | "custom") => void;
   roleLabel: string;
   setRoleLabel: (val: string) => void;
   loading: boolean;
   saving: boolean;
 }
+
+const PERMISSION_LABELS: Record<string, string> = {
+  "manage allocations": "Kelola Alokasi",
+  "manage articles": "Kelola Artikel",
+  "manage bank_accounts": "Kelola Rekening Bank",
+  "manage banners": "Kelola Banner",
+  "manage consultations": "Kelola Konsultasi",
+  "manage donations": "Kelola Donasi",
+  "manage organization": "Kelola Organisasi",
+  "manage partners": "Kelola Mitra",
+  "manage pickup_requests": "Kelola Jemput Wakaf",
+  "manage programs": "Kelola Program",
+  "manage settings": "Kelola Pengaturan",
+  "manage suggestions": "Kelola Saran",
+  "manage tags": "Kelola Tag",
+  "manage tasks": "Kelola Tugas",
+  "manage users": "Kelola Pengguna",
+  "view reports": "Lihat Laporan",
+};
 
 export function UserRoleAksesFields({
   roles,
@@ -32,9 +48,6 @@ export function UserRoleAksesFields({
   toggleRole,
   permissions,
   selectedPermissions,
-  togglePermission,
-  accessMode,
-  setAccessMode,
   roleLabel,
   setRoleLabel,
   loading,
@@ -42,19 +55,18 @@ export function UserRoleAksesFields({
 }: UserRoleAksesFieldsProps) {
   const selectedRoleSet = new Set(selectedRoles);
   const selectedPermissionSet = new Set(selectedPermissions);
-  const isTemplate = accessMode === "template";
 
   return (
-    <div className="space-y-8">
-      {/* Identity & Role Section */}
-      <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50 sm:p-10">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+    <div className="space-y-8 animate-fade-in">
+      {/* Role Selection Section */}
+      <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 sm:p-10">
+        <div className="flex items-center gap-4 mb-10 border-b border-slate-100 pb-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm">
             <FontAwesomeIcon icon={faUserShield} className="text-xl" />
           </div>
           <div>
-            <h3 className="font-heading text-xl font-bold text-slate-900">Identitas & Template Peran</h3>
-            <p className="text-sm font-medium text-slate-500">Pilih template dasar untuk akun ini (Hanya untuk pengelompokan).</p>
+            <h3 className="font-heading text-xl font-bold text-slate-900">Hak Akses & Peran</h3>
+            <p className="text-sm font-medium text-slate-500">Pilih jabatan utama untuk menentukan izin akses sistem.</p>
           </div>
         </div>
 
@@ -65,17 +77,19 @@ export function UserRoleAksesFields({
               return (
                 <label
                   key={r.id}
-                  className={`cursor-pointer group relative flex items-center justify-between rounded-xl border p-4 transition-all ${isSelected
-                    ? "border-indigo-500 bg-indigo-50 shadow-md shadow-indigo-500/10"
-                    : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50"
-                    }`}
+                  className={`cursor-pointer group relative flex items-center justify-between rounded-2xl border p-5 transition-all duration-300 ${
+                    isSelected
+                      ? "border-emerald-500 bg-emerald-50 shadow-lg shadow-emerald-500/10 ring-2 ring-emerald-500/5"
+                      : "border-slate-100 bg-slate-50/50 hover:border-emerald-300 hover:bg-white hover:shadow-md"
+                  }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition ${isSelected ? "border-indigo-500 bg-white" : "border-slate-300"
-                      }`}>
-                      {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-indigo-500" />}
+                  <div className="flex items-center gap-4">
+                    <div className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all duration-300 ${
+                      isSelected ? "border-emerald-500 bg-white shadow-inner" : "border-slate-300"
+                    }`}>
+                      {isSelected && <div className="h-3 w-3 rounded-full bg-emerald-500 animate-scale-in" />}
                     </div>
-                    <span className={`font-bold transition ${isSelected ? "text-indigo-800" : "text-slate-700 group-hover:text-slate-900"}`}>
+                    <span className={`text-base font-bold transition-colors ${isSelected ? "text-emerald-900" : "text-slate-600 group-hover:text-slate-900"}`}>
                       {r.name.charAt(0).toUpperCase() + r.name.slice(1)}
                     </span>
                   </div>
@@ -87,151 +101,91 @@ export function UserRoleAksesFields({
                     className="hidden"
                     disabled={loading || saving}
                   />
+                  {isSelected && (
+                    <div className="absolute top-0 right-0 p-3">
+                      <FontAwesomeIcon icon={faCheckCircle} className="text-emerald-500 text-lg opacity-20" />
+                    </div>
+                  )}
                 </label>
               );
             })
           ) : (
-            <div className="sm:col-span-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm font-semibold text-slate-500">
-              Tidak ada data peran yang tersedia.
+            <div className="sm:col-span-2 rounded-[24px] border-2 border-dashed border-slate-200 bg-slate-50 p-10 text-center">
+              <p className="text-sm font-bold text-slate-400 italic">Memuat daftar peran...</p>
             </div>
           )}
         </div>
 
-        <label className="block mt-8 group">
-          <span className="text-xs font-bold uppercase tracking-wide text-slate-400 group-focus-within:text-emerald-600 transition">Label Peran (Opsional)</span>
-          <input
-            value={roleLabel}
-            onChange={(e) => setRoleLabel(e.target.value)}
-            placeholder="Contoh: Kepala Cabang, Staff Keuangan..."
-            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-bold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 placeholder:font-medium placeholder:text-slate-400"
-            disabled={loading || saving}
-          />
-        </label>
+        <div className="mt-10 pt-8 border-t border-slate-100">
+            <label className="block group">
+                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 group-focus-within:text-emerald-600 transition ml-1">
+                    Label Jabatan (Opsional)
+                </span>
+                <div className="relative mt-3">
+                    <input
+                        value={roleLabel}
+                        onChange={(e) => setRoleLabel(e.target.value)}
+                        placeholder="Misal: Koordinator Wilayah, Admin Keuangan..."
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 text-base font-bold text-slate-900 outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 placeholder:text-slate-400 shadow-sm"
+                        disabled={loading || saving}
+                    />
+                </div>
+                <p className="text-[11px] font-medium text-slate-400 mt-2 ml-1 italic">
+                    * Label ini akan muncul di profil pengguna sebagai keterangan jabatan.
+                </p>
+            </label>
+        </div>
       </div>
 
-      {/* Access Mode Toggle & Permission Section */}
-      {!selectedRoleSet.has("mitra") && (
-        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50 sm:p-10">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
-                <FontAwesomeIcon icon={faShieldHalved} className="text-xl" />
-              </div>
-              <div>
-                <h3 className="font-heading text-xl font-bold text-slate-900">Akses Halaman Spesifik</h3>
-                <p className="text-sm font-medium text-slate-500">Tentukan bagaimana izin halaman dikelola.</p>
-              </div>
+      {/* Permissions Transparency Section */}
+      {selectedRoles.length > 0 && !selectedRoleSet.has("mitra") && (
+        <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 sm:p-10 animate-fade-in-up">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-sm">
+              <FontAwesomeIcon icon={faShieldHalved} className="text-xl" />
             </div>
-
-            {/* Access Mode Toggle */}
-            <div className="flex shrink-0 items-center rounded-2xl bg-slate-100 p-1.5 self-start">
-              <button
-                type="button"
-                onClick={() => setAccessMode("template")}
-                className={`flex items-center gap-2 px-4 py-2 text-xs font-bold transition-all rounded-xl ${isTemplate 
-                  ? "bg-white text-indigo-600 shadow-sm" 
-                  : "text-slate-500 hover:text-slate-700"
-                }`}
-                disabled={loading || saving}
-              >
-                <FontAwesomeIcon icon={faMagic} className="text-[10px]" />
-                Template
-              </button>
-              <button
-                type="button"
-                onClick={() => setAccessMode("custom")}
-                className={`flex items-center gap-2 px-4 py-2 text-xs font-bold transition-all rounded-xl ${!isTemplate 
-                  ? "bg-white text-amber-600 shadow-sm" 
-                  : "text-slate-500 hover:text-slate-700"
-                }`}
-                disabled={loading || saving}
-              >
-                <FontAwesomeIcon icon={faUserEdit} className="text-[10px]" />
-                Custom
-              </button>
+            <div>
+              <h3 className="font-heading text-xl font-bold text-slate-900">Izin Terintegrasi</h3>
+              <p className="text-sm font-medium text-slate-500">Berikut adalah daftar izin akses yang diberikan oleh Role terpilih.</p>
             </div>
           </div>
 
-          {isTemplate && (
-            <div className="mb-8 rounded-2xl bg-indigo-50 p-4 border border-indigo-100 flex items-start gap-3">
-              <div className="mt-0.5 text-indigo-500">
-                <FontAwesomeIcon icon={faMagic} className="text-sm" />
-              </div>
-              <p className="text-sm font-medium text-indigo-800 leading-relaxed">
-                <span className="font-bold">Mode Template:</span> Izin halaman akan otomatis menyesuaikan dengan peran yang dipilih di atas. Anda tidak perlu memilihnya secara manual.
-              </p>
+          <div className="mb-6 rounded-2xl bg-slate-50 p-5 border border-slate-100 flex items-start gap-4">
+            <div className="mt-1 text-slate-400">
+              <FontAwesomeIcon icon={faInfoCircle} className="text-sm" />
             </div>
-          )}
+            <p className="text-xs font-bold leading-relaxed text-slate-500 uppercase tracking-wider">
+              Mode Inherited: Izin di bawah bersifat otomatis (read-only) karena dikelola melalui modul Manajemen Role.
+            </p>
+          </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {permissions.length ? (
-              permissions
-                .filter((p) => p.name !== "manage settings")
-                .map((p) => {
-                  const isSelected = selectedPermissionSet.has(p.name);
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {permissions
+              .filter((p) => p.name !== "manage settings")
+              .map((p) => {
+                const isSelected = selectedPermissionSet.has(p.name);
+                const label = PERMISSION_LABELS[p.name] || p.name;
 
-                  // Map permission names to Indonesian labels
-                  const labelMap: Record<string, string> = {
-                    "manage articles": "Artikel",
-                    "manage programs": "Program",
-                    "manage donations": "Donasi",
-                    "manage pickup_requests": "Jemput Wakaf",
-                    "manage consultations": "Konsultasi",
-                    "manage partners": "Mitra",
-                    "manage organization": "Struktur Organisasi",
-                    "manage settings": "Pengaturan",
-                    "view reports": "Laporan",
-                    "manage banners": "Banner",
-                    "manage tags": "Tag",
-                    "manage bank_accounts": "Rekening",
-                    "manage allocations": "Alokasi",
-                    "manage suggestions": "Saran Wakaf",
-                    "manage tasks": "Tugas Editor",
-                    "manage users": "Pengguna",
-                  };
-
-                  const capitalizedLabel = labelMap[p.name] || p.name;
-
-                  return (
-                    <label
-                      key={p.id}
-                      className={`cursor-pointer group relative flex items-center justify-between rounded-xl border p-4 transition-all ${
-                        isSelected
-                          ? isTemplate 
-                            ? "border-indigo-200 bg-indigo-50/50" 
-                            : "border-amber-500 bg-amber-50 shadow-md shadow-amber-500/10"
-                          : "border-slate-200 bg-white hover:border-amber-300 hover:bg-slate-50"
-                      } ${isTemplate ? "cursor-default opacity-80" : ""}`}
-                    >
-                      <span className={`font-bold transition ${
-                        isSelected 
-                          ? isTemplate ? "text-indigo-800" : "text-amber-800" 
-                          : "text-slate-700 group-hover:text-slate-900"
-                      }`}>
-                        {capitalizedLabel}
-                      </span>
-                      <div className={`flex h-6 w-6 items-center justify-center rounded-full border transition ${
-                        isSelected 
-                          ? isTemplate ? "bg-indigo-400 border-indigo-400 text-white" : "bg-amber-500 border-amber-500 text-white" 
-                          : "border-slate-300 bg-white"
-                      }`}>
-                        {isSelected && <FontAwesomeIcon icon={faCheckCircle} className="text-xs" />}
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => !isTemplate && togglePermission(p.name)}
-                        className="hidden"
-                        disabled={loading || saving || isTemplate}
-                      />
-                    </label>
-                  );
-                })
-            ) : (
-              <div className="col-span-full py-12 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                <p className="text-slate-400 font-medium italic">Memuat daftar izin...</p>
-              </div>
-            )}
+                return (
+                  <div
+                    key={p.id}
+                    className={`flex items-center justify-between rounded-xl border p-4 transition-all ${
+                      isSelected
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-900 opacity-100"
+                        : "border-slate-100 bg-slate-50/30 text-slate-300 opacity-40 grayscale"
+                    }`}
+                  >
+                    <span className="text-xs font-black uppercase tracking-tight truncate pr-2">
+                        {label}
+                    </span>
+                    <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-all ${
+                      isSelected ? "bg-emerald-500 border-emerald-500 text-white" : "border-slate-200 bg-white"
+                    }`}>
+                      {isSelected && <FontAwesomeIcon icon={faCheckCircle} className="text-[10px]" />}
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </div>
       )}

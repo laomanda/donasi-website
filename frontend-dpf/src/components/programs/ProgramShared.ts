@@ -88,13 +88,42 @@ export const getProgress = (collected: number | string | undefined, target: numb
   return Number.isNaN(value) ? 0 : value;
 };
 
-export const canonicalStatus = (status?: string | null, deadlineDays?: number | string | null) => {
+export const getRemainingDays = (publishedAt?: string | null, deadlineDays?: number | string | null): number | null => {
+  if (deadlineDays === null || deadlineDays === undefined || String(deadlineDays).trim() === "") {
+    return null; // Unlimited
+  }
+
+  const days = Number(deadlineDays);
+  if (isNaN(days)) return null;
+
+  // Use published_at if available, else consider it not started or fallback to today
+  // If not published yet, should we return full days or null? We'll return full days relative to publish
+  if (!publishedAt) {
+     return days; 
+  }
+
+  const publishDate = new Date(publishedAt);
+  publishDate.setHours(0, 0, 0, 0);
+
+  const deadlineDate = new Date(publishDate);
+  deadlineDate.setDate(publishDate.getDate() + days);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const diffTime = deadlineDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays;
+};
+
+export const canonicalStatus = (status?: string | null, publishedAt?: string | null, deadlineDays?: number | string | null) => {
   const raw = String(status ?? "").trim();
   const s = raw.toLowerCase();
 
-  // Auto-complete if deadline passed (deadline_days <= 0)
-  const hasDeadline = deadlineDays !== null && deadlineDays !== undefined && String(deadlineDays).trim() !== "";
-  if (hasDeadline && Number(deadlineDays) <= 0) {
+  // Auto-complete if deadline passed (remainingDays <= 0)
+  const remaining = getRemainingDays(publishedAt, deadlineDays);
+  if (remaining !== null && remaining <= 0) {
     return "completed";
   }
 
@@ -104,17 +133,17 @@ export const canonicalStatus = (status?: string | null, deadlineDays?: number | 
   return "other";
 };
 
-export const getProgramStatusTone = (status?: string | null, deadlineDays?: number | string | null) => {
-  const s = canonicalStatus(status, deadlineDays);
+export const getProgramStatusTone = (status?: string | null, publishedAt?: string | null, deadlineDays?: number | string | null) => {
+  const s = canonicalStatus(status, publishedAt, deadlineDays);
   if (s === "active") return "bg-brandGreen-50 text-brandGreen-700 ring-brandGreen-100";
   if (s === "draft") return "bg-amber-50 text-amber-700 ring-amber-100";
   if (s === "completed") return "bg-blue-50 text-blue-700 ring-blue-100";
   return "bg-slate-50 text-slate-700 ring-slate-200";
 };
 
-export const getStatusLabel = (status?: string | null, t?: (key: string, fallback?: string) => string, deadlineDays?: number | string | null) => {
+export const getStatusLabel = (status?: string | null, t?: (key: string, fallback?: string) => string, publishedAt?: string | null, deadlineDays?: number | string | null) => {
   const translateFn = t ?? ((key: string, fallback?: string) => translate(programDict, "id", key, fallback));
-  const s = canonicalStatus(status, deadlineDays);
+  const s = canonicalStatus(status, publishedAt, deadlineDays);
   if (s === "active") return translateFn("program.status.ongoing");
   if (s === "completed") return translateFn("program.status.completed");
   if (s === "draft") return translateFn("program.status.upcoming");

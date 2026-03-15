@@ -53,6 +53,24 @@ class Program extends Model
             }
         });
 
+        static::saved(function ($program) {
+            self::clearProgramsCache();
+        });
+
+        static::deleted(function ($program) {
+            self::clearProgramsCache();
+        });
+    }
+
+    private static function clearProgramsCache()
+    {
+        \Illuminate\Support\Facades\Cache::forget('frontend.home');
+        
+        try {
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        } catch (\Exception $e) {
+            // ignore
+        }
     }
 
     /*

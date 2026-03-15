@@ -10,7 +10,8 @@ import type {
 import { 
   pickLocale, 
   getImageUrl,
-  canonicalStatus
+  canonicalStatus,
+  getRemainingDays
 } from "../ProgramShared";
 import { imagePlaceholder } from "@/lib/placeholder";
 
@@ -78,16 +79,18 @@ export function useProgramDetail(locale: "id" | "en", t: (key: string, fallback?
   }, [program, locale, t]);
 
   const isCompleted = useMemo(() => {
-    return canonicalStatus(program?.status, program?.deadline_days) === "completed";
-  }, [program?.status, program?.deadline_days]);
+    return canonicalStatus(program?.status, program?.published_at, program?.deadline_days) === "completed";
+  }, [program?.status, program?.published_at, program?.deadline_days]);
 
   const deadlineText = useMemo(() => {
-    const raw = localizedProgram?.deadline_days;
-    if (raw === null || raw === undefined || String(raw).trim() === "") {
-      return t("landing.programs.deadline.unlimited");
+    const remainingDays = getRemainingDays(localizedProgram?.published_at, localizedProgram?.deadline_days);
+    if (remainingDays === null) {
+      return t("landing.programs.deadline.unlimited", "Tanpa batas waktu");
     }
-    return `${raw} ${locale === "en" ? "days" : "hari"}`;
-  }, [localizedProgram?.deadline_days, locale, t]);
+    return remainingDays > 0 
+      ? `${remainingDays} ${locale === "en" ? "days" : "hari"}` 
+      : t("program.deadline.ended", "Selesai");
+  }, [localizedProgram?.published_at, localizedProgram?.deadline_days, locale, t]);
 
   // Gallery logic
   const galleryUrls = useMemo(() => {

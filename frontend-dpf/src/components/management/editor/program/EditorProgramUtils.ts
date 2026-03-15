@@ -38,6 +38,33 @@ export const normalizeProgramImages = (images?: string[] | null) => {
     return cleaned.slice(0, GALLERY_SLOTS);
 };
 
+export const getRemainingDays = (publishedAt?: string | null, deadlineDays?: number | string | null): number | null => {
+  if (deadlineDays === null || deadlineDays === undefined || String(deadlineDays).trim() === "") {
+    return null; // Unlimited
+  }
+
+  const days = Number(deadlineDays);
+  if (isNaN(days)) return null;
+
+  if (!publishedAt) {
+     return days; 
+  }
+
+  const publishDate = new Date(publishedAt);
+  publishDate.setHours(0, 0, 0, 0);
+
+  const deadlineDate = new Date(publishDate);
+  deadlineDate.setDate(publishDate.getDate() + days);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const diffTime = deadlineDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays;
+};
+
 export const normalizeErrors = (error: any): string[] => {
     const errors = error?.response?.data?.errors;
     if (!errors || typeof errors !== "object") {

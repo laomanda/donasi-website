@@ -6,7 +6,9 @@ import http from "../../lib/http";
 import { clearAuthToken, clearAuthUser, getAuthUser } from "../../lib/auth";
 import { readShowClock, SETTINGS_EVENT } from "../../lib/settings";
 import { useLang } from "../../lib/i18n";
-import { mitraDict, translate } from "../../i18n/mitra";
+import { mitraDict } from "../../i18n/mitra";
+import { globalDict } from "../../i18n/global";
+import { translate } from "../../lib/i18n-utils";
 
 import * as Utils from "../../components/management/dashboard/DashboardUtils";
 import { DashboardSidebar } from "../../components/management/dashboard/DashboardSidebar";
@@ -20,7 +22,11 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { locale, setLocale } = useLang();
-  const t = (key: string, fallback?: string) => translate(mitraDict, locale, key, fallback);
+  const t = (key: string, fallback?: string) => {
+    // Search in global first, then mitra
+    const mergedDict = { ...globalDict, ...mitraDict };
+    return translate(mergedDict, locale, key, fallback);
+  };
 
   const theme = Utils.ROLE_THEME[role];
   const isSearchEnabled = role === "editor" || role === "superadmin" || role === "admin";

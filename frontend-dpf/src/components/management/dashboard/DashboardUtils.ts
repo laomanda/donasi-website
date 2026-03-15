@@ -18,6 +18,8 @@ import {
   faChartLine,
   faGears,
   faUserGroup,
+  faCircleInfo,
+  faShieldHalved,
 } from "@fortawesome/free-solid-svg-icons";
 
 export type DashboardRole = "superadmin" | "admin" | "editor" | "mitra";
@@ -155,7 +157,10 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     },
     {
       title: "Alat",
-      items: [{ label: "Pengaturan", href: "/editor/settings", icon: faGear }],
+      items: [
+        { label: "Panduan", href: "/editor/guidance", icon: faCircleInfo },
+        { label: "Pengaturan", href: "/editor/settings", icon: faGear }
+      ],
     },
   ],
   admin: [
@@ -183,7 +188,10 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     },
     {
       title: "Sistem",
-      items: [{ label: "Pengaturan", href: "/admin/settings", icon: faGears }],
+      items: [
+        { label: "Panduan", href: "/admin/guidance", icon: faCircleInfo },
+        { label: "Pengaturan", href: "/admin/settings", icon: faGears }
+      ],
     },
   ],
   superadmin: [
@@ -193,7 +201,10 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     },
     {
       title: "Akses",
-      items: [{ label: "Pengguna", href: "/superadmin/users", icon: faUserGroup, permission: "manage users" }],
+      items: [
+        { label: "Pengguna", href: "/superadmin/users", icon: faUserGroup, permission: "manage users" },
+        { label: "Roles", href: "/superadmin/roles", icon: faShieldHalved, permission: "manage roles" },
+      ],
     },
     {
       title: "Laporan",
@@ -202,6 +213,7 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Sistem",
       items: [
+        { label: "Panduan", href: "/superadmin/guidance", icon: faCircleInfo },
         { label: "Pengaturan", href: "/superadmin/settings", icon: faGear },
       ],
     },
@@ -220,7 +232,10 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     },
     {
       title: "Dukungan",
-      items: [{ label: "Pengaturan", href: "/mitra/settings", icon: faGear }],
+      items: [
+        { label: "Panduan", href: "/mitra/guidance", icon: faCircleInfo },
+        { label: "Pengaturan", href: "/mitra/settings", icon: faGear }
+      ],
     },
   ],
 };

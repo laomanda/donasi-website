@@ -14,6 +14,23 @@ class Setting extends Model
         'value',
     ];
 
+    protected static function booted()
+    {
+        static::saved(function ($setting) {
+            self::clearSettingsCache();
+        });
+
+        static::deleted(function ($setting) {
+            self::clearSettingsCache();
+        });
+    }
+
+    private static function clearSettingsCache()
+    {
+        \Illuminate\Support\Facades\Cache::forget('frontend.settings');
+        \Illuminate\Support\Facades\Cache::forget('frontend.home');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | HELPER STATIC

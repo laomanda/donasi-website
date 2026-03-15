@@ -25,6 +25,17 @@ class Partner extends Model
         'order'     => 'integer',
     ];
 
+    protected static function booted()
+    {
+        static::saved(function ($partner) {
+            \Illuminate\Support\Facades\Cache::forget('frontend.home');
+        });
+
+        static::deleted(function ($partner) {
+            \Illuminate\Support\Facades\Cache::forget('frontend.home');
+        });
+    }
+
     /*
     |--------------------------------------------------------------------------
     | SCOPES

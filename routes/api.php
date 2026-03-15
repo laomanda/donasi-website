@@ -41,6 +41,7 @@ use App\Http\Controllers\Api\Reports\DonationReportController;
 use App\Http\Controllers\Api\Editor\EditorTaskController as EditorEditorTaskController;
 use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboardController;
 use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
+use App\Http\Controllers\Api\Superadmin\RoleController as SuperadminRoleController;
 use App\Http\Controllers\Api\Mitra\MitraDashboardController;
 use App\Http\Controllers\Api\Mitra\MitraAllocationController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
@@ -249,8 +250,10 @@ Route::prefix('v1')->group(function () {
         ->group(function () {
             Route::get('dashboard', SuperadminDashboardController::class)->name('dashboard');
 
-            Route::get('roles', [SuperadminUserController::class, 'roles']);
-            Route::get('permissions', [SuperadminUserController::class, 'permissions']);
+            Route::get('roles/list', [SuperadminUserController::class, 'roles']); // Legacy dropdown support
+            Route::get('permissions/list', [SuperadminUserController::class, 'permissions']); // Legacy dropdown support
+            Route::get('permissions', [SuperadminRoleController::class, 'permissions']); // Listing for frontend
+            Route::apiResource('roles', SuperadminRoleController::class);
             Route::apiResource('users', SuperadminUserController::class);
             Route::get('reports/donations', [DonationReportController::class, 'index']);
             Route::get('reports/donations/export', [DonationReportController::class, 'export']);
