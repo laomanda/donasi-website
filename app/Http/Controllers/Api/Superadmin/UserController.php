@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with(['roles', 'permissions']);
+        $query = User::with(['roles.permissions', 'permissions']);
 
         $role = $request->string('role')->trim()->toString();
         if ($role !== '') {
@@ -58,7 +58,7 @@ class UserController extends Controller
             $user->syncPermissions($data['permissions'] ?? []);
         }
 
-        return response()->json($user->load('roles', 'permissions'), 201);
+        return response()->json($user->load('roles.permissions', 'permissions'), 201);
     }
 
     public function show(User $user)
@@ -92,7 +92,7 @@ class UserController extends Controller
             $user->syncPermissions($data['permissions'] ?? []);
         }
 
-        return response()->json($user->refresh()->load('roles', 'permissions'));
+        return response()->json($user->refresh()->load('roles.permissions', 'permissions'));
     }
 
     public function destroy(User $user)

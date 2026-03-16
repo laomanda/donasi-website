@@ -34,7 +34,6 @@ const PERMISSION_LABELS: Record<string, string> = {
   "manage partners": "Kelola Mitra",
   "manage pickup_requests": "Kelola Jemput Wakaf",
   "manage programs": "Kelola Program",
-  "manage settings": "Kelola Pengaturan",
   "manage suggestions": "Kelola Saran",
   "manage tags": "Kelola Tag",
   "manage tasks": "Kelola Tugas",

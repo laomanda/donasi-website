@@ -34,7 +34,6 @@ class RolePermissionSeeder extends Seeder
             'manage partners',
             'manage articles',
             'manage organization',
-            'manage settings',
             'view reports',
             'manage banners',
             'manage tags',

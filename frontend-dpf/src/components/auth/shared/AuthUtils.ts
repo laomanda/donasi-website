@@ -62,9 +62,22 @@ export const resolveDashboardRole = (user: unknown): DashboardRole | null => {
   if (normalized.has("editor")) return "editor";
   if (normalized.has("mitra")) return "mitra";
   
-  // If we have permissions but NO hardcoded role, consider it "custom"
-  const perms = (user as any).permissions;
-  if (Array.isArray(perms) && perms.length > 0) {
+  // Jika punya role tapi tidak termasuk 4 role utama, berarti custom
+  if (candidates.length > 0) {
+    return "custom";
+  }
+
+  // Cek apakah punya permission (baik direct maupun dari role)
+  let hasPerms = Array.isArray((user as any).permissions) && (user as any).permissions.length > 0;
+  if (!hasPerms && Array.isArray((user as any).roles)) {
+    (user as any).roles.forEach((r: any) => {
+      if (Array.isArray(r.permissions) && r.permissions.length > 0) {
+        hasPerms = true;
+      }
+    });
+  }
+
+  if (hasPerms) {
     return "custom";
   }
 

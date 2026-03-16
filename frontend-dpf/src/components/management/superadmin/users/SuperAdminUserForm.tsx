@@ -179,7 +179,7 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
         toast.error(message, { title: "Validasi gagal" });
         return;
       }
-      const permissions = Array.from(new Set([...form.permissions, "manage settings"]));
+      const permissions = Array.from(new Set([...form.permissions]));
       
       const data = {
         name: form.name.trim(),

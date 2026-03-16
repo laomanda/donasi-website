@@ -62,7 +62,10 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   }, []);
 
   useEffect(() => {
-    if (role !== "admin" && role !== "superadmin") return;
+    // Aktifkan jika role adalah admin, superadmin, atau kustom (dengan pengecekan di dalam loadCounts)
+    const isActuallyAdmin = role === "admin" || role === "superadmin" || role === "custom";
+    if (!isActuallyAdmin) return;
+    
     let active = true;
     let pollId: number | null = null;
 
@@ -96,7 +99,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
           }),
         ];
 
-        if (role === "admin") {
+        if (role === "admin" || role === "superadmin" || role === "custom") {
           promises.push(
             http.get<Utils.PaginationMeta>("/admin/suggestions", {
               params: { status: "baru", per_page: 1 },
@@ -135,7 +138,10 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   }, [role]);
 
   useEffect(() => {
-    if (role !== "editor") return;
+    // Aktifkan jika role adalah editor atau kustom
+    const isActuallyEditor = role === "editor" || role === "custom";
+    if (!isActuallyEditor) return;
+    
     let active = true;
     let pollId: number | null = null;
 
@@ -210,8 +216,11 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     if (routeSearchQuery === null) return;
     setQuery(routeSearchQuery);
   }, [routeSearchQuery]);
-
-  const currentBadgeCounts = (role === "admin" || role === "superadmin") ? adminBadgeCounts : role === "editor" ? editorBadgeCounts : undefined;
+  
+  // Gabungkan semua badge counts agar sidebar bisa menampilkan semuanya sekaligus (Penting untuk Role Kustom)
+  const currentBadgeCounts = useMemo(() => {
+    return { ...adminBadgeCounts, ...editorBadgeCounts };
+  }, [adminBadgeCounts, editorBadgeCounts]);
 
   return (
     <div className="dashboard-shell min-h-screen font-body text-slate-900 antialiased">

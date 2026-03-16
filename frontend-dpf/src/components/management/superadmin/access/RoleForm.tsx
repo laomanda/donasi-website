@@ -40,7 +40,7 @@ const PERMISSION_LABELS: Record<string, string> = {
   "manage partners": "Kelola Mitra",
   "manage pickup_requests": "Kelola Jemput Wakaf",
   "manage programs": "Kelola Program",
-  "manage settings": "Kelola Pengaturan",
+  "manage role permissions": "Konfigurasi Hak Akses",
   "manage suggestions": "Kelola Saran",
   "manage tags": "Kelola Tag",
   "manage tasks": "Kelola Tugas",
@@ -200,15 +200,17 @@ export default function RoleForm({ mode, roleId }: RoleFormProps) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {allPermissions.map((perm) => {
-                const isSelected = selectedPermissions.includes(perm.name);
-                const label = PERMISSION_LABELS[perm.name] || perm.name;
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {allPermissions
+              .filter((p) => p.name !== "manage settings")
+              .map((p) => {
+                const isSelected = selectedPermissions.includes(p.name);
+                const label = PERMISSION_LABELS[p.name] || p.name;
                 return (
                   <button
-                    key={perm.id}
+                    key={p.id}
                     type="button"
-                    onClick={() => togglePermission(perm.name)}
+                    onClick={() => togglePermission(p.name)}
                     disabled={saving}
                     className={`group flex items-center gap-4 p-5 rounded-2xl border transition-all text-left relative overflow-hidden ${
                       isSelected

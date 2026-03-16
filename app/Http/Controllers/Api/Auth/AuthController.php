@@ -33,7 +33,7 @@ class AuthController extends Controller
             ]);
         }
 
-        $user = $request->user()->load('roles', 'permissions');
+        $user = $request->user()->load('roles.permissions', 'permissions');
 
         return response()->json([
             'token'      => $user->createToken('spa')->plainTextToken,
@@ -60,7 +60,7 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         return response()->json([
-            'user' => $request->user()->load('roles', 'permissions'),
+            'user' => $request->user()->load('roles.permissions', 'permissions'),
         ]);
     }
 
@@ -96,7 +96,7 @@ class AuthController extends Controller
         return response()->json([
             'token' => $user->createToken('spa')->plainTextToken,
             'token_type' => 'Bearer',
-            'user' => $user->load('roles', 'permissions'),
+            'user' => $user->load('roles.permissions', 'permissions'),
         ]);
     }
 }

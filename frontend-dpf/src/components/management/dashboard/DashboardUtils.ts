@@ -278,14 +278,6 @@ export const QUICK_ACTIONS: QuickAction[] = [
     icon: faHandshake,
     tone: "lime",
   },
-  {
-    label: "Kelola Pengaturan",
-    description: "AKSES PENUH MODUL",
-    href: "/admin/settings",
-    permission: "manage settings",
-    icon: faGear,
-    tone: "green",
-  },
 ];
 
 export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
@@ -479,9 +471,17 @@ export const resolveUserRoles = (user: StoredUser | null): DashboardRole[] => {
   if (normalized.has("editor")) roles.push("editor");
   if (normalized.has("mitra")) roles.push("mitra");
 
-  // If we have permissions but NO hardcoded role, consider it "custom"
-  if (roles.length === 0 && (Array.isArray(user.permissions) && user.permissions.length > 0)) {
+  // Jika tidak punya role default, namun punya candidates role lain -> Custom Role
+  if (roles.length === 0 && candidates.length > 0) {
     roles.push("custom");
+  }
+
+  // Jika tetap kosong, cek apakah punya perms (menggunakan resolveUserPermissions)
+  if (roles.length === 0) {
+    const permissions = resolveUserPermissions(user);
+    if (permissions.length > 0) {
+      roles.push("custom");
+    }
   }
 
   return roles;
@@ -491,11 +491,26 @@ export const resolveUserPermissions = (user: StoredUser | null): string[] => {
   if (!user) return [];
   const permissions: string[] = [];
 
+  // 1. Ambil dari direct permissions
   if (Array.isArray(user.permissions)) {
     user.permissions.forEach((p: any) => {
       if (typeof p === "string") permissions.push(p);
       else if (p && typeof p === "object" && typeof p.name === "string") {
         permissions.push(p.name);
+      }
+    });
+  }
+
+  // 2. Ambil dari inherited permissions dalam Roles (PENTING untuk Custom Role)
+  if (Array.isArray(user.roles)) {
+    user.roles.forEach((role: any) => {
+      if (role && typeof role === "object" && Array.isArray(role.permissions)) {
+        role.permissions.forEach((p: any) => {
+          if (typeof p === "string") permissions.push(p);
+          else if (p && typeof p === "object" && typeof p.name === "string") {
+            permissions.push(p.name);
+          }
+        });
       }
     });
   }

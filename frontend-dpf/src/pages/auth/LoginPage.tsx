@@ -97,7 +97,15 @@ export function LoginPage() {
           roles: Array.isArray(raw.roles)
             ? raw.roles
                 .filter((r: any) => r && typeof r === "object" && typeof r.name === "string")
-                .map((r: any) => ({ name: r.name as string }))
+                .map((r: any) => ({
+                  name: r.name as string,
+                  // PENTING: simpan permissions dari role agar custom role sidebar berfungsi
+                  permissions: Array.isArray(r.permissions)
+                    ? r.permissions
+                        .filter((p: any) => p && typeof p === "object" && typeof p.name === "string")
+                        .map((p: any) => ({ name: p.name as string }))
+                    : [],
+                }))
             : undefined,
           permissions: Array.isArray(raw.permissions)
             ? raw.permissions
@@ -107,6 +115,7 @@ export function LoginPage() {
         });
       }
 
+      // Gunakan raw agar custom roles terbaca dengan benar saat redirect
       navigate(getRedirectPath(res.data?.user), { replace: true });
     } catch (err: unknown) {
       toast.error(t("login.error_subtitle"), { 
