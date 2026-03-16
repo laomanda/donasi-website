@@ -1,4 +1,4 @@
-import { resolveBackendBaseUrl } from "./urls";
+export { resolveStorageUrl } from "./urls";
 import type { 
   DonationStatus, 
   EditorTaskStatus, 
@@ -44,13 +44,6 @@ export const formatCurrency = (value: number | string | null | undefined) => {
   );
 };
 
-export const resolveStorageUrl = (path: string | null | undefined) => {
-  const value = String(path ?? "").trim();
-  if (!value) return null;
-  if (value.startsWith("http")) return value;
-  const clean = value.replace(/^\/+/, "").replace(/^storage\//, "");
-  return `${resolveBackendBaseUrl()}/storage/${clean}`;
-};
 
 export const badgeTone = (tone: BadgeTone) => {
   if (tone === "green") return "bg-brandGreen-600 text-white ring-brandGreen-600/20";

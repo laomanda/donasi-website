@@ -1,13 +1,13 @@
 import type { Dict } from "../../lib/i18n-utils";
 
 export const aboutDict: Dict = {
-    "about.hero.badge": { id: "Tentang Kami", en: "About Us" },
+    "about.hero.badge": { id: "Pintu Pemberdayaan", en: "Empowerment Gateway" },
     "about.hero.title.leading": { id: "Djalaludin Pane Foundation", en: "Djalaludin Pane Foundation" },
-    "about.hero.title.highlight": { id: "Pintu", en: "Gateway" },
-    "about.hero.title.trailing": { id: "Pemberdayaan", en: "to Empowerment" },
+    "about.hero.title.highlight": { id: "Arsitek", en: "Architect" },
+    "about.hero.title.trailing": { id: "Masa Depan Abadi", en: "of Eternal Future" },
     "about.hero.subtitle": {
-        id: "Menggalang wakaf, infaq, sedekah dengan izin Nazhir nasional dan sebagai Nazhir Wakaf. Kami menyalurkan amanah melalui program pangan, kesehatan, pendidikan, dan ekonomi pemberdayaan umat.",
-        en: "Mobilizing wakaf, infaq, and sadaqah with a national Nazir license and as a Waqf Nazhir. We channel mandates through food, health, education, and community economic empowerment programs.",
+        id: "Lebih dari sekadar filantropi, kami adalah jembatan penjelajahan kebaikan Anda. Sebagai Nazhir Wakaf Nasional, kami mengelola bekal akhirat Anda untuk membangun kemandirian pangan, kesehatan, dan pendidikan di setiap koordinat pelosok negeri.",
+        en: "More than just philanthropy, we are the bridge to your goodness exploration. As a National Waqf Nazhir, we manage your afterlife provisions to build self-reliance in food, health, and education across every coordinate of the nation.",
     },
     "about.hero.cta.legal": { id: "Legalitas & Audit", en: "Compliance & Audit" },
     "about.hero.cta.vision": { id: "Visi & Misi", en: "Vision & Mission" },
@@ -19,11 +19,11 @@ export const aboutDict: Dict = {
     "about.hero.stats.2.value": { id: "Izin Nazhir Nasional", en: "National Nazir license" },
     "about.hero.stats.3.label": { id: "Wakaf produktif & sosial", en: "Productive & social waqf" },
     "about.hero.stats.3.value": { id: "Nazir BWI 2022", en: "BWI Nazir 2022" },
-    "about.section.intro.label": { id: "Tentang Kami", en: "About Us" },
-    "about.section.intro.heading": { id: "Hadir untuk menggalang dana WAKAF", en: "Here to mobilize WAKAF funds" },
+    "about.section.intro.label": { id: "Misi Kita", en: "Our Mission" },
+    "about.section.intro.heading": { id: "Navigator Kebaikan untuk Umat", en: "Goodness Navigator for the Ummah" },
     "about.section.intro.body": {
-        id: "Hadir untuk menggalang dana wakaf, infaq, sedekah dengan izin Nazhir tingkat nasional dan sekaligus sebagai Lembaga Nazhir Wakaf, bukapangan adalah sebuah brand yang diinisiasi oleh Yayasan Wakaf Djalaluddin Pane, senantiasa membantu umat menyalurkan dana bantuannya kepada para mustahik melalui program pemberdayaan kami di bidang pangan, kesehatan masyarakat, pendidikan, dan ekonomi pemberdayaan umat.",
-        en: "With a national Nazir license and as a Waqf Nazhir, bukapangan is a brand initiated by Yayasan Wakaf Djalaluddin Pane that helps the ummah channel their donations to beneficiaries through our empowerment programs in food, public health, education, and community economic development.",
+        id: "Djalaludin Pane Foundation (DPF) hadir sebagai navigator bagi niat mulia Anda. Kami memastikan setiap wakaf, infaq, dan sedekah Anda bertransformasi menjadi dampak nyata—mulai dari kedaulatan pangan hingga kemandirian ekonomi. Inilah wadah di mana nilai khidmat tradisional bertemu dengan transparansi digital native.",
+        en: "Djalaludin Pane Foundation (DPF) acts as a navigator for your noble intentions. We ensure every wakaf, infaq, and sadaqah of yours transforms into real impact—from food sovereignty to economic independence. This is where traditional service values meet digital native transparency.",
     },
     "about.history.label": { id: "Sejarah", en: "History" },
     "about.history.heading": { id: "Djalaludin Pane Foundation sebagai Pintu Pemberdayaan", en: "Djalaludin Pane Foundation as the Gateway to Empowerment" },

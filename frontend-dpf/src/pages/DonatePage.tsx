@@ -28,6 +28,7 @@ import { type BankAccount, InfoPill } from "@/components/donate/DonateUI";
 
 // Helpers
 import { getImageUrl, normalizeProgramStatus } from "@/lib/utils";
+import { resolveMidtransClientKey, resolveMidtransSnapUrl } from "@/lib/urls";
 
 const ensureSnapLoaded = (clientKey: string) => {
     return new Promise((resolve) => {
@@ -36,7 +37,7 @@ const ensureSnapLoaded = (clientKey: string) => {
             return;
         }
         const script = document.createElement("script");
-        script.src = "https://app.sandbox.midtrans.com/snap/snap.js"; 
+        script.src = resolveMidtransSnapUrl(); 
         script.setAttribute("data-client-key", clientKey);
         script.onload = () => resolve(true);
         document.body.appendChild(script);
@@ -380,8 +381,7 @@ const DonatePage = () => {
                 sessionStorage.setItem('dpf_pending_order_id', String(res.data?.donation?.midtrans_order_id));
                 window.location.href = res.data.redirect_url;
             } else {
-                const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY;
-                await ensureSnapLoaded(clientKey);
+                await ensureSnapLoaded(resolveMidtransClientKey());
                 pollPaymentStatus(res.data?.donation?.id);
                 pendingDonationIdRef.current = res.data?.donation?.id;
 

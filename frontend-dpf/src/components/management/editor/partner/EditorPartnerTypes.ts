@@ -1,3 +1,6 @@
+import { resolveStorageUrl as resolveGlobalStorageUrl } from "../../../../lib/urls";
+import { imagePlaceholder } from "../../../../lib/placeholder";
+
 export type Partner = {
   id: number;
   name: string;
@@ -46,13 +49,7 @@ export const getNextAvailableOrder = (partners: Partner[], excludeId?: number) =
   return candidate;
 };
 
-import { resolveStorageBaseUrl } from "../../../../lib/urls";
-import { imagePlaceholder } from "../../../../lib/placeholder";
-
 export const resolveStorageUrl = (path: string | undefined | null) => {
-  if (!path) return imagePlaceholder;
-  if (path.startsWith("http")) return path;
-  const base = resolveStorageBaseUrl();
-  return `${base}/${path}`;
+  return resolveGlobalStorageUrl(path) || imagePlaceholder;
 };
 export const partnerFolder = "partners";

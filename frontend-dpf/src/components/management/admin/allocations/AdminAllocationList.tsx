@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExternalLinkAlt, faCoins } from "@fortawesome/free-solid-svg-icons";
 import type { Allocation } from "@/types/allocation";
+import { resolveStorageUrl } from "@/lib/urls";
 
 type AdminAllocationListProps = {
   allocations: Allocation[];
@@ -42,7 +43,7 @@ export default function AdminAllocationList({
               </div>
               {alloc.proof_path && (
                 <a
-                  href={`http://localhost:8000/storage/${alloc.proof_path}`}
+                  href={resolveStorageUrl(alloc.proof_path)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100 shadow-sm"

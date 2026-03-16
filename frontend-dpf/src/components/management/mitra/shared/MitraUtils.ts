@@ -1,4 +1,4 @@
-import { resolveStorageBaseUrl } from "../../../../lib/urls";
+import { resolveStorageUrl as resolveGlobalStorageUrl } from "../../../../lib/urls";
 
 export const formatIDR = (val: number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -26,8 +26,4 @@ export const formatDateLong = (dateStr: string, locale: string) => {
   });
 };
 
-export const resolveStorageUrl = (path: string) => {
-  if (!path) return "";
-  const baseUrl = resolveStorageBaseUrl();
-  return `${baseUrl}/${path}`;
-};
+export const resolveStorageUrl = (path: string) => resolveGlobalStorageUrl(path) || "";

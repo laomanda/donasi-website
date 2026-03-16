@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPeopleGroup, faRibbon } from "@fortawesome/free-solid-svg-icons";
 import { GROUP_LABEL_KEYS } from "./AboutShared";
 import type { OrganizationMember } from "./AboutShared";
-import { resolveStorageBaseUrl } from "../../lib/urls";
+import { resolveStorageUrl } from "../../lib/urls";
 import { imagePlaceholder } from "@/lib/placeholder";
 
 type AboutTeamProps = {
@@ -146,9 +146,4 @@ function MemberSkeleton() {
   );
 }
 
-const getImageUrl = (path?: string | null) => {
-  if (!path) return imagePlaceholder;
-  if (path.startsWith("http")) return path;
-  const base = resolveStorageBaseUrl();
-  return `${base}/${path}`;
-};
+const getImageUrl = (path?: string | null) => resolveStorageUrl(path, imagePlaceholder);

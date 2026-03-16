@@ -1,3 +1,5 @@
+export { resolveStorageUrl as resolveBannerUrl } from "@/lib/urls";
+
 export type Banner = {
   id: number;
   image_path: string;
@@ -21,18 +23,6 @@ export const bannerFolder = "uploads/banners";
 /**
  * Utility to resolve full storage URL for banners
  */
-export const resolveBannerUrl = (path: string | null | undefined) => {
-  const value = String(path ?? "").trim();
-  if (!value) return null;
-  if (value.startsWith("http")) return value;
-  
-  const api = (import.meta.env.VITE_API_URL ?? "http://localhost:8000/api/v1").replace(/\/$/, "");
-  const backend = import.meta.env.VITE_BACKEND_URL ?? api.replace(/\/api(\/v1)?$/, "");
-  const baseUrl = String(backend).replace(/\/$/, "");
-  
-  const clean = value.replace(/^\/+/, "").replace(/^storage\//, "");
-  return `${baseUrl}/storage/${clean}`;
-};
 
 /**
  * Utility to format updated/created dates

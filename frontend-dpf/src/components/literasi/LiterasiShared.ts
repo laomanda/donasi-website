@@ -1,5 +1,5 @@
-import { resolveStorageBaseUrl } from "../../lib/urls";
 import { imagePlaceholder } from "../../lib/placeholder";
+import { resolveStorageUrl } from "../../lib/urls";
 
 export type Literasi = {
   id: number;
@@ -16,10 +16,7 @@ export type Literasi = {
 };
 
 export const getImageUrl = (path?: string | null) => {
-  if (!path) return imagePlaceholder;
-  if (path.startsWith("http")) return path;
-  const base = resolveStorageBaseUrl();
-  return `${base}/${path.replace(/^\//, "")}`;
+  return resolveStorageUrl(path, imagePlaceholder);
 };
 
 export const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" | "en" = "id") => {

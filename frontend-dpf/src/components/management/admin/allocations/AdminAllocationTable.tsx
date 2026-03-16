@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import type { Allocation } from "@/types/allocation";
+import { resolveStorageUrl } from "@/lib/urls";
 
 type AdminAllocationTableProps = {
   allocations: Allocation[];
@@ -88,7 +89,7 @@ export default function AdminAllocationTable({
                   <div className="flex justify-center">
                     {alloc.proof_path ? (
                       <a
-                        href={`http://localhost:8000/storage/${alloc.proof_path}`}
+                        href={resolveStorageUrl(alloc.proof_path)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-400 shadow-sm ring-1 ring-slate-200 transition-all hover:bg-white hover:text-emerald-600 hover:shadow-md hover:ring-emerald-500"

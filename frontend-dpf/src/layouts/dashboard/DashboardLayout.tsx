@@ -168,7 +168,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
 
     void loadCounts();
 
-    const fallbackInterval = 5_000;
+    const fallbackInterval = 30_000;
     pollId = window.setInterval(loadCounts, fallbackInterval);
 
     return () => {

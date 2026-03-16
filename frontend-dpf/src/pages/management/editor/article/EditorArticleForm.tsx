@@ -57,7 +57,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
   const isEditIdValid = typeof articleId === "number" && Number.isFinite(articleId) && articleId > 0;
   const canSubmit = (mode === "create" || isEditIdValid) && !loading && !saving && !thumbnailUploading && !contentImageUploading && !deleting;
 
-  const savedThumbnailUrl = useMemo(() => resolveStorageUrl(form.thumbnail_path), [form.thumbnail_path]);
+  const savedThumbnailUrl = useMemo(() => resolveStorageUrl(form.thumbnail_path) ?? null, [form.thumbnail_path]);
   const publicArticleUrl = useMemo(() => form.slug.trim() ? `/articles/${form.slug.trim()}` : null, [form.slug]);
 
   useEffect(() => {

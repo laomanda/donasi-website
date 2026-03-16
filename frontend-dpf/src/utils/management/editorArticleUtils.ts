@@ -1,4 +1,4 @@
-import { resolveBackendBaseUrl } from "../../lib/urls";
+export { resolveStorageUrl } from "../../lib/urls";
 import type { ArticleStatus } from "../../types/article";
 
 export const formatDate = (value: string | null | undefined) => {
@@ -72,13 +72,6 @@ export const normalizeErrors = (error: any): string[] => {
   return messages.length ? messages : ["Validasi gagal."];
 };
 
-export const resolveStorageUrl = (path: string | null | undefined) => {
-  const value = String(path ?? "").trim();
-  if (!value) return null;
-  if (value.startsWith("http")) return value;
-  const clean = value.replace(/^\/+/, "").replace(/^storage\//, "");
-  return `${resolveBackendBaseUrl()}/storage/${clean}`;
-};
 
 export const autoResizeTextarea = (textarea: HTMLTextAreaElement | null) => {
   if (!textarea) return;

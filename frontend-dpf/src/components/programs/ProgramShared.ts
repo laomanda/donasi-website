@@ -1,5 +1,5 @@
 import { imagePlaceholder } from "@/lib/placeholder";
-import { resolveStorageBaseUrl } from "../../lib/urls";
+import { resolveStorageUrl } from "../../lib/urls";
 import { programDict } from "./ProgramI18n";
 import { translate } from "../../lib/i18n-utils";
 
@@ -66,11 +66,9 @@ export const formatCurrency = (value: number | string | null | undefined, locale
     minimumFractionDigits: 0,
   }).format(Number(value ?? 0));
 
+
 export const getImageUrl = (path?: string | null) => {
-  if (!path) return imagePlaceholder;
-  if (path.startsWith("http")) return path;
-  const base = resolveStorageBaseUrl();
-  return `${base}/${path}`;
+  return resolveStorageUrl(path, imagePlaceholder);
 };
 
 export const formatDate = (value?: string | null, locale: "id" | "en" = "id") => {

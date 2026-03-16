@@ -8,11 +8,12 @@ import { LangProvider } from './lib/i18n'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { MusicProvider } from './lib/MusicContext'
 import { SavedItemsProvider } from './lib/SavedItemsContext'
+import { resolveGoogleClientId } from './lib/urls'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LangProvider>
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}>
+      <GoogleOAuthProvider clientId={resolveGoogleClientId()}>
         <MusicProvider>
           <SavedItemsProvider>
             <RouterProvider router={router} />

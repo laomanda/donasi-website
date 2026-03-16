@@ -3,12 +3,12 @@ import type { Dict } from "../../lib/i18n-utils";
 export const landingDict: Dict = {
     // Landing page specific
     "landing.banner.scroll": { id: "Scroll untuk eksplorasi", en: "Scroll to explore" },
-    "landing.hero.title1": { id: "Mata Air", en: "Spring of" },
-    "landing.hero.title2": { id: "Kebajikan", en: "Goodness" },
-    "landing.hero.title3": { id: "", en: "" },
+    "landing.hero.title1": { id: "Jelajahi", en: "Explore" },
+    "landing.hero.title2": { id: "Samudra Kebaikan", en: "Ocean of Goodness" },
+    "landing.hero.title3": { id: "Abadi", en: "Everlasting" },
     "landing.hero.subtitle": { 
-        id: "DPF Wakaf mengundang Anda dalam sebuah penjelajahan kebaikan yang melintasi generasi. Mulai dari bekal abadi bagi mereka yang merindu surga, pembangunan warisan bagi kaum produktif, hingga eksplorasi berdampak bagi generasi digital—Mari bersama berpetualang memberdayakan UMKM, pendidikan, dan kemanusiaan di pelosok Indonesia. Inilah wakaf produktif; misi di mana jejak kebaikan Anda terus hidup, bahkan saat perjalanan kita telah usai.", 
-        en: "DPF Wakaf invites you on an exploration of goodness that spans generations. From eternal provisions for those longing for heaven, building legacies for professionals, to impactful exploration for the digital generation—join us in adventuring to empower MSMEs, education, and humanity in the corners of Indonesia. This is productive waqf; a mission where your footprint of goodness lives on, even when our journey ends." 
+        id: "DPF Wakaf mengundang Anda dalam sebuah ekspedisi kebaikan. Dari ketenangan 'Bekal Akhirat' bagi para mujahid senior, hingga 'Investasi Dampak' bagi kaum produktif, dan 'Eksplorasi Digital' bagi Gen Z. Mari berpetualang menembus batas, memberdayakan UMKM dan pendidikan di pelosok negeri. Inilah misi di mana jejak Anda tidak akan pernah terhapus waktu.", 
+        en: "DPF Wakaf invites you on a goodness expedition. From the peace of 'Afterlife Provisions' for seniors, to 'Impact Investment' for professionals, and 'Digital Exploration' for Gen Z. Let's venture beyond limits, empowering MSMEs and education across the nation. This is a mission where your footprint will never be erased by time." 
     },
     "landing.hero.ctaDonate": { id: "Mulai Donasi", en: "Start Donating" },
     "landing.hero.ctaProgram": { id: "Lihat Program", en: "View Programs" },
@@ -16,20 +16,20 @@ export const landingDict: Dict = {
     "landing.error": { id: "Kami tidak bisa memuat data terbaru. Menampilkan data placeholder.", en: "Unable to load latest data. Showing placeholder." },
 
     // Promise strip
-    "landing.promise.title": { id: "Mulai Misi Kebaikan Anda", en: "Start Your Mission of Goodness" },
-    "landing.promise.subtitle": { id: "Pilih cara terbaik untuk memulai jejak abadi Anda hari ini.", en: "Choose the best way to start your eternal legacy today." },
-    "landing.promise.jemput.title": { id: "Jemput Wakaf", en: "Trust Expedition" },
-    "landing.promise.jemput.text": { id: "Kami siap menjemput amanah wakaf ke lokasi Anda, memulai perjalanan tanpa hambatan.", en: "We are ready to collect your waqf trust at your location, starting a seamless journey." },
-    "landing.promise.konfirmasi.title": { id: "Konfirmasi Donasi", en: "Report Exploration" },
-    "landing.promise.konfirmasi.text": { id: "Pastikan setiap langkah Anda tercatat. Konfirmasikan transfer agar misi segera dimulai.", en: "Ensure every step is recorded. Confirm your transfer to start the mission immediately." },
-    "landing.promise.konsultasi.title": { id: "Konsultasi Wakaf", en: "Goodness Navigation" },
-    "landing.promise.konsultasi.text": { id: "Diskusikan peta jalan wakaf Anda bersama konsultan ahli untuk dampak yang melampaui usia.", en: "Discuss your waqf roadmap with expert consultants for impact that transcends age." },
+    "landing.promise.title": { id: "Pilih Misi Kebaikan Anda", en: "Start Your Mission of Goodness" },
+    "landing.promise.subtitle": { id: "Tentukan rute terbaik untuk menanamkan jejak abadi hari ini.", en: "Identify the best route to plant your eternal footprint today." },
+    "landing.promise.jemput.title": { id: "Jemput Amanah (Khidmat)", en: "Dedicated Pickup" },
+    "landing.promise.jemput.text": { id: "Kami hadir menjemput niat mulia Anda, memastikan bekal akhirat tersampaikan dengan penuh khidmat dan hormat.", en: "We come to collect your noble intention, ensuring afterlife provisions are delivered with full dedication and respect." },
+    "landing.promise.konfirmasi.title": { id: "Lapor Dampak (Digital Native)", en: "Digital Impact Report" },
+    "landing.promise.konfirmasi.text": { id: "Gunakan cara digital Anda. Konfirmasi secepat kilat agar misi penjelajahan manfaat segera dieksekusi.", en: "Use your digital ways. Confirm in a flash so the mission of benefit exploration can be executed immediately." },
+    "landing.promise.konsultasi.title": { id: "Navigasi Kebaikan", en: "Goodness Navigation" },
+    "landing.promise.konsultasi.text": { id: "Butuh kompas untuk niat Anda? Bedah potensi wakaf bersama navigator ahli kami untuk dampak yang melampaui usia.", en: "Need a compass for your intention? Deep-dive into waqf potential with our expert navigators for impact that transcends age." },
     "landing.promise.more": { id: "Jelajahi", en: "Explore" },
 
     // Programs section (landing)
     "landing.programs.badge": { id: "Misi Utama", en: "Main Missions" },
-    "landing.programs.title": { id: "Pilih Rute Kebaikan Anda", en: "Choose Your Route of Goodness" },
-    "landing.programs.subtitle": { id: "Kumpulan ekspedisi wakaf produktif yang siap mengubah masa depan pelosok Indonesia.", en: "A collection of productive waqf expeditions ready to transform the future of Indonesia." },
+    "landing.programs.title": { id: "Pilih Rute Penjelajahan", en: "Choose Your Route of Exploration" },
+    "landing.programs.subtitle": { id: "Kumpulan rute wakaf produktif yang siap menjadi saksi bisu petualangan amal jariyah Anda.", en: "A collection of productive waqf routes ready to witness your adventure of jariyah charity." },
     "landing.programs.all": { id: "Jelajahi semua rute", en: "Explore all routes" },
     "landing.programs.empty": { id: "Belum ada program yang dipublikasikan.", en: "No published programs yet." },
     "landing.programs.progress": { id: "Progres", en: "Progress" },
@@ -61,8 +61,8 @@ export const landingDict: Dict = {
 
     // Articles section (landing)
     "landing.articles.badge": { id: "Catatan Misi", en: "Mission Notes" },
-    "landing.articles.title": { id: "Jurnal Penjelajahan", en: "Exploration Journal" },
-    "landing.articles.subtitle": { id: "Temukan wawasan, cerita lapangan, dan inspirasi dari setiap rute kebaikan yang kita lalui bersama.", en: "Find insights, field stories, and inspiration from every route of goodness we travel together." },
+    "landing.articles.title": { id: "Logbook Penjelajahan", en: "Exploration Logbook" },
+    "landing.articles.subtitle": { id: "Kumpulan cerita lapangan, data dampak, dan inspirasi dari setiap titik koordinat kebaikan kita.", en: "A collection of field stories, impact data, and inspiration from every coordinate of our goodness." },
     "landing.articles.empty": { id: "Belum ada artikel terbaru.", en: "No recent articles." },
     "landing.articles.anonymous": { id: "Penulis anonim", en: "Anonymous author" },
     "landing.articles.author": { id: "Penulis", en: "Author" },

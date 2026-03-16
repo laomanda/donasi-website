@@ -1,5 +1,5 @@
-import { resolveStorageBaseUrl } from "@/lib/urls";
 import { imagePlaceholder } from "@/lib/placeholder";
+import { resolveStorageUrl } from "@/lib/urls";
 
 /* --- Types --- */
 
@@ -86,8 +86,5 @@ export const pickLocale = (idVal?: string | null, enVal?: string | null, locale:
 };
 
 export const getImageUrl = (path?: string | null) => {
-  if (!path) return imagePlaceholder;
-  if (path.startsWith("http")) return path;
-  const base = resolveStorageBaseUrl();
-  return `${base}/${path}`;
+  return resolveStorageUrl(path, imagePlaceholder);
 };

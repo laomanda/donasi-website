@@ -15,7 +15,6 @@ const App = () => {
     location.pathname.startsWith('/superadmin') ||
     location.pathname.startsWith('/management');
 
-  console.log("App.tsx - isDashboard:", isDashboard, "Path:", location.pathname);
 
   // Global cleanup: if there's a pending donation in sessionStorage but user
   // navigated away from /donate without completing payment → cancel immediately.

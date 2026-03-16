@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
     faQrcode
 } from "@fortawesome/free-solid-svg-icons";
-import { resolveStorageBaseUrl } from "@/lib/urls";
+import { resolveStorageUrl } from "@/lib/urls";
 
 export interface BankAccount {
     id: number;
@@ -18,10 +18,7 @@ export interface BankAccount {
 }
 
 export const getImageUrl = (path?: string | null) => {
-    if (!path) return undefined;
-    if (path.startsWith("http")) return path;
-    const baseUrl = resolveStorageBaseUrl();
-    return `${baseUrl}/${path}`; 
+    return resolveStorageUrl(path) ?? undefined;
 };
 
 export const InfoPill = ({ icon, label }: { icon: any; label: string }) => (

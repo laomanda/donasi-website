@@ -65,7 +65,7 @@ export function ProgramDetailPage() {
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
               <div className="space-y-8">
                 <ProgramDetailGallery 
-                  galleryUrls={galleryUrls}
+                  galleryUrls={galleryUrls.filter((url): url is string => !!url)}
                   activeImageIndex={activeImageIndex}
                   setActiveImageIndex={setActiveImageIndex}
                   programTitle={localizedProgram.title}

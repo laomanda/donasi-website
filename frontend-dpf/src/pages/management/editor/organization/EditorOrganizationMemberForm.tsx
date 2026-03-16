@@ -6,6 +6,7 @@ import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
 import PhoneInput from "../../../../components/ui/PhoneInput";
 import { translateGroupToEn, ORGANIZATION_GROUPS } from "../../../../lib/organizationGroups";
+import { resolveStorageUrl } from "../../../../lib/urls";
 
 type OrganizationMember = {
   id: number;
@@ -68,19 +69,6 @@ const normalizeErrors = (error: any): string[] => {
   return messages.length ? messages : ["Validasi gagal."];
 };
 
-const getBackendBaseUrl = () => {
-  const api = (import.meta.env.VITE_API_URL ?? "http://localhost:8000/api/v1").replace(/\/$/, "");
-  const backend = import.meta.env.VITE_BACKEND_URL ?? api.replace(/\/api(\/v1)?$/, "");
-  return String(backend).replace(/\/$/, "");
-};
-
-const resolveStorageUrl = (path: string) => {
-  const value = String(path ?? "").trim();
-  if (!value) return null;
-  if (value.startsWith("http")) return value;
-  const clean = value.replace(/^\/+/, "").replace(/^storage\//, "");
-  return `${getBackendBaseUrl()}/storage/${clean}`;
-};
 
 
 

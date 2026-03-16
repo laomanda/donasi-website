@@ -1,11 +1,11 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faBuildingColumns, faTrash, faImage, faUpload, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
-import { resolveStorageBaseUrl } from "../../../../lib/urls";
+import { resolveStorageUrl } from "../../../../lib/urls";
 
 type BankAccount = {
   id: number;
@@ -99,12 +99,7 @@ export function EditorBankForm({ mode, accountId }: { mode: Mode; accountId?: nu
   const [deleting, setDeleting] = useState(false);
   const [inputMethod, setInputMethod] = useState<'manual' | 'qris'>('manual');
 
-  const getImageUrl = (path?: string | null) => {
-    if (!path) return null;
-    if (path.startsWith("http")) return path;
-    const base = resolveStorageBaseUrl();
-    return `${base}/${path}`;
-  };
+  const getImageUrl = (path?: string | null) => resolveStorageUrl(path);
 
   const qrisFileInputRef = useRef<HTMLInputElement>(null);
 

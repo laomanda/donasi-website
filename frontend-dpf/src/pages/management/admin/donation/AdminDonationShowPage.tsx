@@ -19,6 +19,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
+import { resolveStorageUrl } from "../../../../lib/urls";
 
 type DonationStatus = "pending" | "paid" | "failed" | "expired" | "cancelled" | string;
 
@@ -46,19 +47,6 @@ type Donation = {
   program?: { id?: number; title?: string | null; slug?: string | null } | null;
 };
 
-const getBackendBaseUrl = () => {
-  const api = (import.meta.env.VITE_API_URL ?? "http://localhost:8000/api/v1").replace(/\/$/, "");
-  const backend = import.meta.env.VITE_BACKEND_URL ?? api.replace(/\/api(\/v1)?$/, "");
-  return String(backend).replace(/\/$/, "");
-};
-
-const resolveStorageUrl = (path: string | null | undefined) => {
-  const value = String(path ?? "").trim();
-  if (!value) return null;
-  if (value.startsWith("http")) return value;
-  const clean = value.replace(/^\/+/, "").replace(/^storage\//, "");
-  return `${getBackendBaseUrl()}/storage/${clean}`;
-};
 
 const formatCurrency = (value: number | string | null | undefined) => {
   const n = Number(value ?? 0);
