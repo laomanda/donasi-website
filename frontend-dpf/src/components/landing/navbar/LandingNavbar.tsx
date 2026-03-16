@@ -14,6 +14,7 @@ import { useLandingNavbar } from "./useLandingNavbar";
 import { NAV_ITEMS, SEARCH_ITEMS } from "./LandingNavbarShared";
 import { TopBar } from "./TopBar";
 import { LanguageSwitch } from "./LanguageSwitch";
+import { MusicToggle } from "./MusicToggle";
 import { MobileMenu } from "./MobileMenu";
 
 export function LandingNavbar() {
@@ -193,6 +194,12 @@ export function LandingNavbar() {
                             </nav>
 
                             <div className="hidden lg:flex items-center gap-2 overflow-visible">
+                                <MusicToggle 
+                                    className={heroMode 
+                                        ? "text-white/80 hover:text-white hover:bg-white/10" 
+                                        : "text-slate-500 hover:text-primary-700 hover:bg-slate-50"} 
+                                />
+
                                 <LanguageSwitch 
                                     langRef={langRef}
                                     langOpen={langOpen}

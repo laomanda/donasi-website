@@ -12,6 +12,7 @@ import {
 import { PrayerBadge } from "../PrayerBadge";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { indonesiaFlag, ukFlag } from "@/assets/brand";
+import { MusicToggle } from "./MusicToggle";
 
 interface MobileMenuProps {
     open: boolean;
@@ -69,12 +70,15 @@ export function MobileMenu({
                         <div className="flex items-center gap-2">
                             <span className="font-heading font-bold text-slate-800">{t("nav.menuTitle")}</span>
                         </div>
-                        <button
-                            onClick={() => setOpen(false)}
-                            className="h-9 w-9 rounded-full bg-slate-100 text-slate-500 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition"
-                        >
-                            <FontAwesomeIcon icon={faXmark} />
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <MusicToggle className="text-slate-500 hover:text-brandGreen-600" />
+                            <button
+                                onClick={() => setOpen(false)}
+                                className="h-9 w-9 rounded-full bg-slate-100 text-slate-500 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition"
+                            >
+                                <FontAwesomeIcon icon={faXmark} />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="p-5 space-y-1">

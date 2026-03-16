@@ -24,9 +24,15 @@ export function ArticlesSection({
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
+            <p className="inline-flex items-center rounded-full bg-brandGreen-50 px-3 py-1 text-xs font-semibold text-brandGreen-700 ring-1 ring-brandGreen-100">
+              {t("landing.articles.badge")}
+            </p>
             <h2 className="text-3xl font-heading font-semibold text-slate-900 sm:text-4xl">
               {t("landing.articles.title")}
             </h2>
+            <p className="max-w-2xl text-sm leading-relaxed text-slate-600">
+              {t("landing.articles.subtitle")}
+            </p>
           </div>
           <Link
             to="/literasi"

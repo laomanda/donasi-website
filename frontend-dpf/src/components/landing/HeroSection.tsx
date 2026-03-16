@@ -18,13 +18,10 @@ export function HeroSection({
     >
       <div className="relative mx-auto flex max-w-7xl flex-col gap-8 px-4 py-12 sm:gap-10 sm:px-6 lg:grid lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8 lg:py-20">
         <div className="space-y-6">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary-700 shadow-sm">
-            {t("landing.hero.badge")}
-          </span>
           <h1 className="font-heading text-4xl font-semibold leading-tight text-slate-900 sm:text-5xl">
             {t("landing.hero.title1")} <span className="text-primary-500">{t("landing.hero.title2")} </span>{t("landing.hero.title3")}
           </h1>
-          <p className="max-w-2xl text-2xl text-slate-700">
+          <p className="max-w-2xl text-xl text-slate-700 leading-relaxed whitespace-pre-line text-justify">
             {t("landing.hero.subtitle")}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">

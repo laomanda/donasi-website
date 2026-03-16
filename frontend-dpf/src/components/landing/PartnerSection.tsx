@@ -142,24 +142,20 @@ export function PartnerSection({
           </div>
 
           <div className="relative z-10 flex flex-col items-center gap-6">
-            <h3 className="font-heading text-2xl font-bold text-white sm:text-3xl">
-              {locale === "id" ? "Ingin Berkolaborasi?" : "Want to Collaborate?"}
-            </h3>
-            <p className="text-slate-300 max-w-lg text-base">
-              {locale === "id"
-                ? "Jadilah bagian dari perubahan baik. Diskusikan peluang kemitraan strategis bersama kami."
-                : "Be part of the good change. Discuss strategic partnership opportunities with us."}
-            </p>
-
             <a
               href="https://wa.me/6281311768254?text=Assalamu%27alaikum%2C%20saya%20tertarik%20untuk%20mendiskusikan%20program%20kemitraan%2FCSR%20dengan%20Djalaludin%20Pane%20Foundation."
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-primary-600 shadow-lg transition-transform hover:bg-slate-200"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-bold text-primary-600 shadow-lg transition-transform hover:bg-slate-200"
             >
               <FontAwesomeIcon icon={faHandshake} className="text-primary-600" />
               {locale === "id" ? "Hubungi Kami" : "Contact Us"}
             </a>
+            <p className="text-slate-100 max-w-2xl text-xl font-medium leading-relaxed">
+              {locale === "id"
+                ? "Jadilah bagian dari perubahan baik. Diskusikan peluang kemitraan strategis bersama kami."
+                : "Be part of the good change. Discuss strategic partnership opportunities with us."}
+            </p>
           </div>
         </div>
       </div>

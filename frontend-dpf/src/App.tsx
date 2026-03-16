@@ -2,9 +2,20 @@ import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { ToastProvider } from './components/ui/ToastProvider'
 import http from './lib/http'
+import { BackgroundMusic } from './components/landing/BackgroundMusic'
+import { MusicProvider } from './lib/MusicContext'
 
 const App = () => {
   const location = useLocation();
+
+  const isDashboard = 
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/editor') ||
+    location.pathname.startsWith('/mitra') ||
+    location.pathname.startsWith('/superadmin') ||
+    location.pathname.startsWith('/management');
+
+  console.log("App.tsx - isDashboard:", isDashboard, "Path:", location.pathname);
 
   // Global cleanup: if there's a pending donation in sessionStorage but user
   // navigated away from /donate without completing payment → cancel immediately.
@@ -27,11 +38,14 @@ const App = () => {
   }, [location.pathname]);
 
   return (
-    <ToastProvider>
-      <div className="min-h-screen bg-white text-slate-900 antialiased">
-        <Outlet />
-      </div>
-    </ToastProvider>
+    <MusicProvider>
+      <ToastProvider>
+        <div className="min-h-screen bg-white text-slate-900 antialiased">
+          <Outlet />
+          {!isDashboard && <BackgroundMusic />}
+        </div>
+      </ToastProvider>
+    </MusicProvider>
   )
 }
 

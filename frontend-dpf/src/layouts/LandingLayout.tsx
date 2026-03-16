@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { LandingNavbar } from "../components/landing/navbar/LandingNavbar";
 import { LandingFooter } from "../components/landing/footer/LandingFooter";
 import { FloatingWhatsApp } from "../components/landing/FloatingWhatsApp";
+import { ScrollToTop } from "../components/landing/ScrollToTop";
 import { WaveDivider } from "../components/landing/WaveDivider";
 import http from "../lib/http";
 import { useLang } from "../lib/i18n";
@@ -92,6 +93,7 @@ export function LandingLayout({
       <LandingFooter programLinks={programLinks} />
 
       <FloatingWhatsApp phoneE164={whatsappPhone} />
+      <ScrollToTop />
     </div>
   );
 }

@@ -174,7 +174,6 @@ const DonatePage = () => {
     const [checkingPayment, setCheckingPayment] = useState(false);
     const [errorKey, setErrorKey] = useState<string | null>(null);
     const [qrisImage, setQrisImage] = useState<string | null>(null);
-    const [wakifLocation, setWakifLocation] = useState<'domestic' | 'international'>('domestic');
 
     // Refs for persistence
     const currentDonationIdRef = useRef<string | number | null>(null);
@@ -436,11 +435,7 @@ const DonatePage = () => {
     const selectedProgram = localizedPrograms.find((p) => String(p.id) === form.program_id) || null;
     const selectedProgramImage = getImageUrl(selectedProgram?.program_images?.[0] || selectedProgram?.banner_path || selectedProgram?.thumbnail_path) || "";
     
-    const visibleAccounts = accounts.filter(a => {
-        if (a.is_visible === false) return false;
-        const loc = a.type === 'international' ? 'international' : 'domestic';
-        return loc === wakifLocation;
-    });
+    const visibleAccounts = accounts.filter(a => a.is_visible !== false);
 
     const groupedAccounts = useMemo(() => {
         const groups: Record<string, BankAccount[]> = {};
@@ -503,22 +498,7 @@ const DonatePage = () => {
                     </div>
                 }
             >
-                <div className="flex flex-col gap-3 sm:flex-row">
-                    <a
-                        href="/program"
-                        className="inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition hover:-translate-y-0.5 hover:bg-primary-700"
-                    >
-                        <FontAwesomeIcon icon={faHandHoldingHeart} />
-                        {t("donate.hero.cta.program")}
-                    </a>
-                    <a
-                        href="/konfirmasi-donasi"
-                        className="inline-flex items-center justify-center gap-2 rounded-full border border-brandGreen-200 bg-brandGreen-500 text-white px-6 py-3 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:border-brandGreen-300"
-                    >
-                        <FontAwesomeIcon icon={faPaperPlane} />
-                        {t("donate.hero.cta.confirm")}
-                    </a>
-                </div>
+
             </PageHero>
 
             {/* DONASI ONLINE */}
@@ -612,8 +592,6 @@ const DonatePage = () => {
 
             {/* REKENING */}
             <BankAccountsSection
-                wakifLocation={wakifLocation}
-                setWakifLocation={setWakifLocation}
                 activeCategory={activeCategory}
                 setActiveCategory={setActiveCategory}
                 loading={loading}
@@ -628,28 +606,12 @@ const DonatePage = () => {
 
             {/* CTA */}
             <section className="bg-white pb-20">
-                <div className="mx-auto max-w-7xl rounded-[28px] border border-slate-100 bg-gradient-to-r from-brandGreen-600 to-primary-600 px-6 py-10 text-white shadow-[0_28px_80px_-50px_rgba(16,185,129,0.6)] sm:px-10">
-                    <div className="flex flex-col items-center justify-between gap-8 lg:flex-row">
-                        <div className="space-y-3 text-center lg:text-left">
-                            <p className="text-sm font-bold text-emerald-50">{t("donate.cta.badge")}</p>
-                            <h3 className="text-3xl font-body font-semibold leading-tight">{t("donate.cta.heading")}</h3>
-                            <p className="text-sm text-emerald-50">{t("donate.cta.subtitle")}</p>
-                        </div>
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                            <a
-                                href="/program"
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-6 py-3 text-sm font-semibold text-brandGreen-600 transition hover:bg-slate-200"
-                            >
-                                <FontAwesomeIcon icon={faHandHoldingHeart} className="text-brandGreen-500 hover:text-brandGreen-600" />
-                                {t("donate.cta.program")}
-                            </a>
-                            <a
-                                href="/konfirmasi-donasi"
-                                className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-6 py-3 text-sm font-semibold text-primary-600 hover:bg-slate-200"
-                            >
-                                <FontAwesomeIcon icon={faPaperPlane} className="text-primary-500 hover:text-primary-600" />
-                                {t("donate.cta.confirmManual")}
-                            </a>
+                <div className="mx-auto max-w-7xl rounded-[28px] border border-slate-100 bg-gradient-to-r from-brandGreen-600 to-primary-600 px-6 py-12 text-white shadow-[0_28px_80px_-50px_rgba(16,185,129,0.6)] sm:px-10">
+                    <div className="flex flex-col items-center justify-center gap-6 text-center">
+                        <div className="space-y-4 max-w-2xl">
+                            <p className="text-sm font-bold uppercase tracking-widest text-emerald-50 opacity-90">{t("donate.cta.badge")}</p>
+                            <h3 className="text-3xl font-heading font-bold leading-tight sm:text-4xl">{t("donate.cta.heading")}</h3>
+                            <p className="text-base text-emerald-50/90 leading-relaxed font-medium">{t("donate.cta.subtitle")}</p>
                         </div>
                     </div>
                 </div>

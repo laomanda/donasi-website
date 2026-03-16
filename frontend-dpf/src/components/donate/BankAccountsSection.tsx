@@ -1,16 +1,12 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
     faWallet, 
-    faMapMarkerAlt, 
-    faGlobe, 
     faCircleExclamation,
     faChevronDown
 } from "@fortawesome/free-solid-svg-icons";
 import { AccountCard, AccountSkeleton } from "./DonateUI";
 
 interface BankAccountsSectionProps {
-    wakifLocation: 'domestic' | 'international';
-    setWakifLocation: (loc: 'domestic' | 'international') => void;
     activeCategory: string | null;
     setActiveCategory: (cat: string | null) => void;
     loading: boolean;
@@ -24,8 +20,7 @@ interface BankAccountsSectionProps {
 }
 
 export const BankAccountsSection = ({
-    wakifLocation,
-    setWakifLocation,
+
     activeCategory,
     setActiveCategory,
     loading,
@@ -41,31 +36,7 @@ export const BankAccountsSection = ({
         <section id="rekening-resmi" className="bg-slate-50">
             <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
 
-                {/* Wakif Location Switcher */}
-                <div className="mb-8 flex justify-center">
-                    <div className="inline-flex rounded-xl bg-slate-100 p-1">
-                        <button
-                            onClick={() => setWakifLocation('domestic')}
-                            className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-all ${wakifLocation === 'domestic'
-                                ? 'bg-white text-brandGreen-700 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-700'
-                                }`}
-                        >
-                            <FontAwesomeIcon icon={faMapMarkerAlt} />
-                            Wakif Dalam Negeri
-                        </button>
-                        <button
-                            onClick={() => setWakifLocation('international')}
-                            className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition-all ${wakifLocation === 'international'
-                                ? 'bg-white text-brandGreen-700 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-700'
-                                }`}
-                        >
-                            <FontAwesomeIcon icon={faGlobe} />
-                            Wakif Luar Negeri
-                        </button>
-                    </div>
-                </div>
+
 
                 <div className="flex items-center gap-3 mb-8">
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-700">
@@ -146,12 +117,15 @@ export const BankAccountsSection = ({
                 </div>
 
                 <div className="mt-12 rounded-xl border border-slate-200 bg-white p-6 text-center">
-                    <p className="text-sm font-semibold text-slate-600">
-                        {t("donate.accounts.note", "Punya pertanyaan?")}{" "}
+                    <p className="text-sm font-semibold text-slate-600 leading-relaxed">
+                        {t("donate.accounts.note")}{" "}
                         <a className="text-brandGreen-700 underline decoration-2 underline-offset-2 hover:text-brandGreen-800" href="/konfirmasi-donasi">
-                            {t("donate.accounts.note.link", "Konfirmasi Donasi")}
+                            {t("donate.accounts.note.link")}
                         </a>{" "}
-                        {t("donate.accounts.note.suffix", "di sini.")}
+                        {t("donate.accounts.note.suffix")}{" "}
+                        <a href="tel:081311768254" className="text-brandGreen-700 hover:text-brandGreen-800 whitespace-nowrap">
+                            {t("donate.accounts.phone")}
+                        </a>
                     </p>
                 </div>
             </div>

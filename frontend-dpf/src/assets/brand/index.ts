@@ -1,4 +1,4 @@
-import heroImg from "./Hero.webp";
+import heroImg from "./Hero.png";
 import indonesiaFlag from "./Indonesia.webp";
 import ukFlag from "./United-Kingdom.webp";
 import dpfIcon from "./dpf-icon.webp";

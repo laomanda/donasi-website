@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faReceipt, faHandHoldingHeart } from "@fortawesome/free-solid-svg-icons";
+import { faHandHoldingHeart } from "@fortawesome/free-solid-svg-icons";
 import { useLang } from "@/lib/i18n";
 import { proposalWakaf } from "@/assets/brand";
 
@@ -37,15 +37,6 @@ export function ProposalSection() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                 <a 
-                  href={proposalWakaf}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-bold text-[#E87C1E] shadow-lg transition-transform hover:-translate-y-1 hover:shadow-xl active:scale-95"
-                >
-                  <FontAwesomeIcon icon={faReceipt} className="text-lg" />
-                  {locale === "id" ? "Lebih Lengkap" : "View Proposal"}
-                </a>
                 <Link
                   to="/donate#donate-form-section"
                   className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/30 bg-white/10 px-8 py-3.5 text-sm font-bold text-white transition-all hover:bg-white/20 hover:border-white/50"

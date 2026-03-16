@@ -39,4 +39,5 @@ export const programDict: Dict = {
     "program.loadMore": { id: "Lihat Lebih Banyak", en: "Show More" },
     "program.common.na": { id: "-", en: "N/A" },
     "program.defaultCategory": { id: "Umum", en: "General" },
+    "landing.programs.deadline": { id: "Batas hari", en: "Day limit" },
 };

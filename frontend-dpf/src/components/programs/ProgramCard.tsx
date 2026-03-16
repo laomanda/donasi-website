@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHandHoldingHeart, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faHandHoldingHeart, faCheckCircle, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { imagePlaceholder } from "@/lib/placeholder";
 import type { 
   Program, 
@@ -18,7 +18,7 @@ export function ProgramCard({ program, locale, t }: ProgramCardProps) {
   const progress = getProgress(program.collected_amount, program.target_amount);
   const statusLabel = getStatusLabel(program.status, t, program.published_at, program.deadline_days);
   const statusTone = getProgramStatusTone(program.status, program.published_at, program.deadline_days);
-  const detailHref = program.slug ? `/program/${program.slug}` : "/program";
+
   const brandName = "Djalalaludin Pane Foundation";
   const isCompleted = canonicalStatus(program.status, program.published_at, program.deadline_days) === "completed";
   
@@ -51,9 +51,6 @@ export function ProgramCard({ program, locale, t }: ProgramCardProps) {
           <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusTone}`}>
             {statusLabel}
           </span>
-          <span className="text-xs font-semibold text-slate-500 bg-brandGreen-100/80 px-2 py-1 rounded-lg">
-            {t("program.progress")} {progress}%
-          </span>
         </div>
 
         <h3 className="text-lg font-heading font-semibold text-slate-900 leading-snug">{program.title}</h3>
@@ -64,11 +61,16 @@ export function ProgramCard({ program, locale, t }: ProgramCardProps) {
           <FontAwesomeIcon icon={faCheckCircle} className="text-blue-500 text-xs" />
         </div>
 
-        <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="mt-1 relative h-5 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200/50">
           <div
-            className="h-full rounded-full bg-brandGreen-600 transition-[width] duration-500"
+            className="h-full rounded-full bg-brandGreen-600 transition-[width] duration-700 ease-out"
             style={{ width: `${Math.min(progress, 100)}%` }}
           />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className={`text-[10px] font-bold transition-colors duration-300 ${progress >= 55 ? 'text-white' : 'text-brandGreen-800'}`}>
+              {progress}%
+            </span>
+          </div>
         </div>
         <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
           <span>{t("program.collected")} {formatCurrency(program.collected_amount, locale)}</span>
@@ -84,8 +86,12 @@ export function ProgramCard({ program, locale, t }: ProgramCardProps) {
         </div>
 
         <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
-          <Link to={detailHref} className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+          <Link
+            to={`/program/${program.slug}`}
+            className="text-sm font-semibold text-brandGreen-600 hover:text-brandGreen-700 transition-colors"
+          >
             {t("program.detail")}
+            <FontAwesomeIcon icon={faArrowRight} className="ml-2 text-xs" />
           </Link>
           <Link
             to={`/donate?program_id=${program.id}`}
