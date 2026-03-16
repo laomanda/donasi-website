@@ -85,6 +85,11 @@ class Program extends Model
         return $this->hasMany(Donation::class);
     }
 
+    public function savedByUsers()
+    {
+        return $this->morphMany(SavedItem::class, 'saveable');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | SCOPES SEDERHANA

@@ -20,6 +20,7 @@ import {
   faUserGroup,
   faCircleInfo,
   faShieldHalved,
+  faBookmark,
 } from "@fortawesome/free-solid-svg-icons";
 
 import type { ToneKey } from "../StatCard";
@@ -432,6 +433,7 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Transparansi",
       items: [
+        { label: "Item Tersimpan", href: "/mitra/saved-items", icon: faBookmark },
         { label: "Bukti Alokasi", href: "/mitra/allocations", icon: faHandshake },
         { label: "Riwayat Donasi", href: "/mitra/donations", icon: faReceipt },
       ],

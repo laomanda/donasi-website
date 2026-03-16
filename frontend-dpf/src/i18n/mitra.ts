@@ -60,7 +60,16 @@ export const mitraDict: Dict = {
     "nav.item.Dashboard": { id: "Dashboard", en: "Dashboard" },
     "nav.item.Bukti Alokasi": { id: "Bukti Alokasi", en: "Allocation Proof" },
     "nav.item.Riwayat Donasi": { id: "Riwayat Donasi", en: "Donation History" },
+    "nav.item.Item Tersimpan": { id: "Item Tersimpan", en: "Saved Items" },
     "nav.item.Pengaturan": { id: "Pengaturan", en: "Settings" },
+
+    // Saved Items Page
+    "mitra.saved_items_title": { id: "Item Tersimpan", en: "Saved Items" },
+    "mitra.saved_items_subtitle": { id: "Daftar program dan artikel yang Anda simpan.", en: "Your saved programs and articles." },
+    "mitra.saved_programs": { id: "Program Tersimpan", en: "Saved Programs" },
+    "mitra.saved_articles": { id: "Artikel Tersimpan", en: "Saved Articles" },
+    "mitra.no_saved_programs": { id: "Belum ada program yang disimpan.", en: "No programs saved yet." },
+    "mitra.no_saved_articles": { id: "Belum ada artikel yang disimpan.", en: "No articles saved yet." },
 
     // Layout
     "nav.search": { id: "Cari Cepat...", en: "Quick Search..." },

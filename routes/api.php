@@ -44,6 +44,7 @@ use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserControll
 use App\Http\Controllers\Api\Superadmin\RoleController as SuperadminRoleController;
 use App\Http\Controllers\Api\Mitra\MitraDashboardController;
 use App\Http\Controllers\Api\Mitra\MitraAllocationController;
+use App\Http\Controllers\Api\SavedItemController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -210,6 +211,11 @@ Route::prefix('v1')->group(function () {
             Route::get('donations', [\App\Http\Controllers\Api\Mitra\MitraDonationController::class, 'index']);
             Route::get('donations/export/pdf', [\App\Http\Controllers\Api\Mitra\MitraDonationController::class, 'exportPdf']);
             Route::get('donations/{donation}/export', [\App\Http\Controllers\Api\Mitra\MitraDonationController::class, 'export']);
+
+            // Saved Items
+            Route::get('saved-items', [SavedItemController::class, 'index']);
+            Route::post('saved-items/toggle', [SavedItemController::class, 'toggle']);
+            Route::get('saved-items/status', [SavedItemController::class, 'checkStatus']);
         });
 
     /*

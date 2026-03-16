@@ -1,20 +1,26 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHandHoldingHeart, faCheckCircle, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faHandHoldingHeart, faCheckCircle, faArrowRight, faBookmark as faBookmarkSolid, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faBookmark as faBookmarkRegular } from "@fortawesome/free-regular-svg-icons";
 import { imagePlaceholder } from "@/lib/placeholder";
 import type { 
   Program, 
 } from "./ProgramShared";
 import { getProgress, getStatusLabel, getProgramStatusTone, getImageUrl, canonicalStatus, formatCurrency, formatDate, getRemainingDays } from "./ProgramShared";
 import { dpfIcon } from "@/assets/brand";
+import { useSavedItems } from "@/lib/SavedItemsContext";
 
 interface ProgramCardProps {
   program: Program;
   locale: "id" | "en";
   t: (key: string, fallback?: string) => string;
+  variant?: "save" | "remove";
 }
 
-export function ProgramCard({ program, locale, t }: ProgramCardProps) {
+export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCardProps) {
+  const { toggleSave, isSaved } = useSavedItems();
+  const saved = isSaved(Number(program.id), 'Program');
+
   const progress = getProgress(program.collected_amount, program.target_amount);
   const statusLabel = getStatusLabel(program.status, t, program.published_at, program.deadline_days);
   const statusTone = getProgramStatusTone(program.status, program.published_at, program.deadline_days);
@@ -44,6 +50,24 @@ export function ProgramCard({ program, locale, t }: ProgramCardProps) {
             {program.category ?? t("program.defaultCategory")}
           </span>
         </div>
+
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleSave(Number(program.id), 'Program');
+          }}
+          className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-md transition-all active:scale-90 ${
+            variant === "remove"
+              ? "bg-red-50 text-red-500 hover:bg-red-100 shadow-sm border border-red-100"
+              : saved 
+                ? "bg-primary-600 text-white shadow-lg" 
+                : "bg-white/70 text-slate-700 hover:bg-white hover:text-primary-600"
+          }`}
+          title={variant === "remove" ? "Hapus dari simpanan" : (saved ? "Hapus dari simpanan" : "Simpan program")}
+        >
+          <FontAwesomeIcon icon={variant === "remove" ? faTrash : (saved ? faBookmarkSolid : faBookmarkRegular)} className="text-sm" />
+        </button>
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-5">

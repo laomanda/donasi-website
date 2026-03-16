@@ -3,43 +3,60 @@ import { useMusic } from "../../lib/MusicContext";
 import audioFile from "../../assets/brand/audio/audio.mpeg";
 
 export function BackgroundMusic() {
-  const { audioRef } = useMusic();
+  const { audioRef, setIsPlaying } = useMusic();
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    // Handle Autoplay restrictions
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+
+    audio.addEventListener("play", handlePlay);
+    audio.addEventListener("pause", handlePause);
+
+    let interactionListener: (() => void) | null = null;
+    let isPlayAttempted = false;
+
+    // Handle Autoplay restrictions safely
     const startAudio = async () => {
+      if (isPlayAttempted) return;
+      isPlayAttempted = true;
       try {
         await audio.play();
-        console.log("BackgroundMusic: Playback started automatically");
       } catch (err) {
-        console.warn("Autoplay blocked. Waiting for user interaction. Error:", err);
+        console.warn("Autoplay blocked. Waiting for user interaction.");
         
-        const handleFirstInteraction = async () => {
+        interactionListener = async () => {
           try {
             await audio.play();
-            window.removeEventListener("click", handleFirstInteraction);
-            window.removeEventListener("touchstart", handleFirstInteraction);
+            if (interactionListener) {
+              window.removeEventListener("click", interactionListener);
+              window.removeEventListener("touchstart", interactionListener);
+              interactionListener = null;
+            }
           } catch (e) {
-            console.error("Playback failed even after interaction:", e);
+            // Silently ignore if still blocked
           }
         };
 
-        window.addEventListener("click", handleFirstInteraction);
-        window.addEventListener("touchstart", handleFirstInteraction);
+        window.addEventListener("click", interactionListener, { once: true });
+        window.addEventListener("touchstart", interactionListener, { once: true });
       }
     };
 
     startAudio();
 
     return () => {
-      // Audio is managed globally, but we might want to pause if the component unmounts 
-      // (which only happens on dashboard routes in App.tsx)
+      audio.removeEventListener("play", handlePlay);
+      audio.removeEventListener("pause", handlePause);
+      if (interactionListener) {
+        window.removeEventListener("click", interactionListener);
+        window.removeEventListener("touchstart", interactionListener);
+      }
       audio.pause();
     };
-  }, [audioRef]);
+  }, [audioRef, setIsPlaying]);
 
   return (
     <audio

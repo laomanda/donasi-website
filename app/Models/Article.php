@@ -35,6 +35,11 @@ class Article extends Model
         return $this->belongsTo(Program::class);
     }
 
+    public function savedByUsers()
+    {
+        return $this->morphMany(SavedItem::class, 'saveable');
+    }
+
     protected static function booted()
     {
         static::saved(function ($article) {

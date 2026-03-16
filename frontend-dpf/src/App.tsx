@@ -3,7 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { ToastProvider } from './components/ui/ToastProvider'
 import http from './lib/http'
 import { BackgroundMusic } from './components/landing/BackgroundMusic'
-import { MusicProvider } from './lib/MusicContext'
+import { ScrollToTop } from './components/ui/ScrollToTop'
 
 const App = () => {
   const location = useLocation();
@@ -38,14 +38,13 @@ const App = () => {
   }, [location.pathname]);
 
   return (
-    <MusicProvider>
-      <ToastProvider>
-        <div className="min-h-screen bg-white text-slate-900 antialiased">
-          <Outlet />
-          {!isDashboard && <BackgroundMusic />}
-        </div>
-      </ToastProvider>
-    </MusicProvider>
+    <ToastProvider>
+      <ScrollToTop />
+      <div className="min-h-screen bg-white text-slate-900 antialiased">
+        <Outlet />
+        {!isDashboard && <BackgroundMusic />}
+      </div>
+    </ToastProvider>
   )
 }
 

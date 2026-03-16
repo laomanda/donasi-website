@@ -30,6 +30,7 @@ import { MitraRegisterPage } from '../pages/auth/MitraRegisterPage'
 import { MitraDashboardPage } from '../pages/management/mitra/MitraDashboardPage'
 import { MitraAllocationsPage } from "../pages/management/mitra/MitraAllocationsPage";
 import { MitraDonationsPage } from '../pages/management/mitra/MitraDonationsPage'
+import { SavedItemsPage } from '../pages/management/mitra/SavedItemsPage'
 import { PreviewPage } from '../pages/management/editor/PreviewPage'
 import { EditorDashboardPage } from '../pages/management/editor/EditorDashboardPage'
 import { EditorArticlesPage } from '../pages/management/editor/article/EditorArticlesPage'
@@ -208,6 +209,7 @@ export const router = createBrowserRouter([
           { path: 'dashboard', element: <MitraDashboardPage /> },
           { path: 'allocations', element: <MitraAllocationsPage /> },
           { path: 'donations', element: <MitraDonationsPage /> },
+          { path: 'saved-items', element: <SavedItemsPage /> },
           { path: 'guidance', element: <GuidancePage /> },
           { path: 'settings', element: <SettingsPage role="mitra" /> },
         ],

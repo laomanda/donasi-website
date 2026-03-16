@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useRef, useEffect } from "react";
+import React, { createContext, useContext, useState, useRef } from "react";
 
 type MusicContextType = {
   isPlaying: boolean;
+  setIsPlaying: (playing: boolean) => void;
   togglePlay: () => void;
   audioRef: React.RefObject<HTMLAudioElement | null>;
 };
@@ -23,25 +24,11 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  // Sync state if audio ends or other changes
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
-
-    audio.addEventListener("play", handlePlay);
-    audio.addEventListener("pause", handlePause);
-
-    return () => {
-      audio.removeEventListener("play", handlePlay);
-      audio.removeEventListener("pause", handlePause);
-    };
-  }, []);
+  // No longer using useEffect here as audioRef.current is null on mount
+  // instead we will let BackgroundMusic sync the state
 
   return (
-    <MusicContext.Provider value={{ isPlaying, togglePlay, audioRef }}>
+    <MusicContext.Provider value={{ isPlaying, setIsPlaying, togglePlay, audioRef }}>
       {children}
     </MusicContext.Provider>
   );

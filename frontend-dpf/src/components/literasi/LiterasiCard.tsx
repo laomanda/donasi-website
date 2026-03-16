@@ -1,15 +1,23 @@
 import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBookmark as faBookmarkSolid, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faBookmark as faBookmarkRegular } from "@fortawesome/free-regular-svg-icons";
+import { imagePlaceholder } from "@/lib/placeholder";
+import { useSavedItems } from "@/lib/SavedItemsContext";
 import type { Literasi } from "./LiterasiShared.ts";
 import { getImageUrl, formatDate } from "./LiterasiShared.ts";
-import { imagePlaceholder } from "@/lib/placeholder";
 
 interface LiterasiCardProps {
   article: Literasi;
   locale: "id" | "en";
   t: (key: string, fallback?: string) => string;
+  variant?: "save" | "remove";
 }
 
-export function LiterasiCard({ article, locale, t }: LiterasiCardProps) {
+export function LiterasiCard({ article, locale, t, variant = "save" }: LiterasiCardProps) {
+  const { toggleSave, isSaved } = useSavedItems();
+  const saved = isSaved(Number(article.id), 'Article');
+
   const author = (article.author_name ?? "").trim();
   const authorLabel = author !== "" ? author : t("literasi.articles.anonymous");
   const isAnonymous = author === "";
@@ -44,6 +52,24 @@ export function LiterasiCard({ article, locale, t }: LiterasiCardProps) {
           </div>
         </div>
       </Link>
+
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleSave(Number(article.id), 'Article');
+        }}
+        className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-md transition-all active:scale-90 ${
+          variant === "remove"
+            ? "bg-red-50 text-red-500 hover:bg-red-100 shadow-sm border border-red-100"
+            : saved 
+              ? "bg-primary-600 text-white shadow-lg" 
+              : "bg-white/70 text-slate-700 hover:bg-white hover:text-primary-600"
+        }`}
+        title={variant === "remove" ? "Hapus dari simpanan" : (saved ? "Hapus dari simpanan" : "Simpan artikel")}
+      >
+        <FontAwesomeIcon icon={variant === "remove" ? faTrash : (saved ? faBookmarkSolid : faBookmarkRegular)} className="text-sm" />
+      </button>
 
       <div className="flex flex-1 flex-col p-5">
         {/* The old category span is removed as it's replaced by the absolute positioned one */}

@@ -1,6 +1,8 @@
 import { useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faBookmark as faBookmarkSolid } from "@fortawesome/free-solid-svg-icons";
+import { faBookmark as faBookmarkRegular } from "@fortawesome/free-regular-svg-icons";
+import { useSavedItems } from "../lib/SavedItemsContext";
 import { LandingLayout } from "../layouts/LandingLayout";
 import { useLang } from "../lib/i18n";
 import { literasiDict } from "../components/literasi/LiterasiI18n";
@@ -27,8 +29,12 @@ export function LiterasiDetailPage() {
     shareStatus,
     shareText,
     handleShare,
-    copyToClipboard
+    copyToClipboard,
+    article
   } = useLiterasiDetail(locale);
+
+  const { toggleSave, isSaved } = useSavedItems();
+  const saved = isSaved(Number(article?.id), 'Article');
 
   return (
     <LandingLayout>
@@ -54,6 +60,19 @@ export function LiterasiDetailPage() {
             >
               {t("literasi.detail.viewOther")}
             </Link>
+            <span className="h-4 w-px bg-slate-200" />
+            <button
+              type="button"
+              onClick={() => toggleSave(Number(article?.id), 'Article')}
+              className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-semibold shadow-sm transition active:scale-95 ${
+                saved 
+                  ? "bg-primary-600 text-white border-primary-600 hover:bg-primary-700" 
+                  : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              <FontAwesomeIcon icon={saved ? faBookmarkSolid : faBookmarkRegular} />
+              {saved ? (locale === "en" ? "Saved" : "Tersimpan") : (locale === "en" ? "Save" : "Simpan")}
+            </button>
           </div>
 
           {loading ? (

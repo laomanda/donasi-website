@@ -42,6 +42,7 @@ export function ProgramDetailPage() {
       <section id="hero" className="bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
           <ProgramDetailActionHeader 
+            programId={Number(program?.id)}
             locale={locale}
             shareStatus={shareStatus}
             onShare={handleShare}
