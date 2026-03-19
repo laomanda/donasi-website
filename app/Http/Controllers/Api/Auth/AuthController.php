@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterMitraRequest;
-use App\Http\Requests\Auth\GoogleLoginRequest;
 use App\Services\AuthService;
 use Illuminate\Validation\ValidationException;
 
@@ -78,25 +77,5 @@ class AuthController extends Controller
             'message' => 'Registrasi Berhasil. Silakan Login.',
             'user' => $user
         ], 201);
-    }
-
-    /**
-     * Handle Google Login / Registration for Mitra.
-     */
-    public function googleLogin(GoogleLoginRequest $request)
-    {
-        $data = $request->validated();
-
-        $user = $this->authService->googleLogin($data['access_token']);
-
-        if (!$user) {
-            return response()->json(['message' => 'Invalid Google Token'], 401);
-        }
-
-        return response()->json([
-            'token' => $user->createToken('spa')->plainTextToken,
-            'token_type' => 'Bearer',
-            'user' => $user->load('roles.permissions', 'permissions'),
-        ]);
     }
 }

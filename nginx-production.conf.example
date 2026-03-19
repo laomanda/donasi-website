@@ -1,0 +1,42 @@
+server {
+    listen 80;
+    server_name donasi.domainanda.com; # Ganti dengan domain Anda
+    root /var/www/dpf/frontend-dpf/dist; # Path ke hasil build React
+    index index.html;
+
+    # Gzip Compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy ke Backend Laravel (API)
+    location /api {
+        proxy_pass http://127.0.0.1:8000; # Pastikan port sesuai dengan php artisan serve atau gunakan php-fpm
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Proxy ke Backend Laravel (Storage)
+    location /storage {
+        proxy_pass http://127.0.0.1:8000/storage;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Security Headers
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+
+    access_log /var/log/nginx/dpf-access.log;
+    error_log /var/log/nginx/dpf-error.log;
+}
+
+# Tip: Untuk HTTPS, jalankan 'sudo certbot --nginx' setelah file ini aktif.

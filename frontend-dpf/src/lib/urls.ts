@@ -58,10 +58,6 @@ export const resolveMidtransClientKey = () => {
   return readEnv(import.meta.env.VITE_MIDTRANS_CLIENT_KEY) || "";
 };
 
-export const resolveGoogleClientId = () => {
-  return readEnv(import.meta.env.VITE_GOOGLE_CLIENT_ID) || "";
-};
-
 export const resolveMidtransSnapUrl = () => {
   const envURL = readEnv(import.meta.env.VITE_MIDTRANS_SNAP_URL);
   if (envURL) return envURL;

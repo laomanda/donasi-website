@@ -82,7 +82,6 @@ Route::prefix('v1')->group(function () {
 
         // Register Mitra
         Route::post('mitra/register', [AuthController::class, 'registerMitra']);
-        Route::post('google', [AuthController::class, 'googleLogin']);
     });
 
     /*

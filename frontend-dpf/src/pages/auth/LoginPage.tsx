@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { AuthLayout } from "../../layouts/AuthLayout";
 import http from "../../lib/http";
 import { setAuthToken, setAuthUser } from "../../lib/auth";
-import { useGoogleLogin } from "@react-oauth/google";
 import { useToast } from "../../components/ui/ToastProvider";
 import { useLang } from "../../lib/i18n";
 import { authDict, translate } from "../../i18n/auth";
@@ -11,7 +10,6 @@ import { authDict, translate } from "../../i18n/auth";
 // Components
 import { LoginHeader } from "../../components/auth/login/LoginHeader";
 import { LoginForm } from "../../components/auth/login/LoginForm";
-import { SocialLogin } from "../../components/auth/login/SocialLogin";
 import { LoginFooter } from "../../components/auth/login/LoginFooter";
 
 // Utils
@@ -45,31 +43,6 @@ export function LoginPage() {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location, navigate, toast, t]);
-
-  const loginWithGoogle = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setSubmitting(true);
-      try {
-        const res = await http.post("/auth/google", {
-          access_token: tokenResponse.access_token,
-        });
-        
-        const { token, user } = res.data;
-        setAuthToken(token);
-        setAuthUser(user);
-        
-        toast.success(t("login.google_success"), { title: "Berhasil" });
-        navigate(getRedirectPath(user), { replace: true });
-      } catch (err) {
-        toast.error(t("login.google_fail"), { title: "Gagal" });
-      } finally {
-        setSubmitting(false);
-      }
-    },
-    onError: () => {
-      toast.error(t("login.google_connection_error"), { title: "Gagal" });
-    },
-  });
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -131,7 +104,7 @@ export function LoginPage() {
       <div className="mx-auto w-full max-w-md">
         <LoginHeader />
 
-        <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-[0_25px_70px_-45px_rgba(0,0,0,0.45)] sm:p-8">
+        <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-[0_25px_70_px_-45px_rgba(0,0,0,0.45)] sm:p-8">
           <div className="space-y-2">
             <h1 className="font-heading text-2xl font-semibold text-slate-900">{t("login.title")}</h1>
             <p className="text-sm leading-relaxed text-slate-600">{t("login.subtitle")}</p>
@@ -163,12 +136,7 @@ export function LoginPage() {
             />
           </div>
 
-          <SocialLogin
-            disabled={submitting}
-            onGoogleLogin={() => loginWithGoogle()}
-            googleLabel={t("auth.google_login")}
-            orLabel={t("auth.or")}
-          />
+          {/* Social login removed for security and account privacy reasons */}
 
           <LoginFooter
             mitraInterestLabel={t("login.mitra_interest")}

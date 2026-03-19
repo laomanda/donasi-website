@@ -1,5 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faCircleInfo, faEye, faEyeSlash, faLock } from "@fortawesome/free-solid-svg-icons";
+import { useLang } from "../../../lib/i18n";
+import { settingsDict, translate } from "../../../i18n/settings";
 
 interface SettingsSecuritySectionProps {
   passwordForm: any;
@@ -22,6 +24,9 @@ export function SettingsSecuritySection({
   onChangePassword,
   onReset,
 }: SettingsSecuritySectionProps) {
+  const { locale } = useLang();
+  const t = (key: string, fallback?: string) => translate(settingsDict, locale, key, fallback);
+
   return (
     <section id="security" className="scroll-mt-24 space-y-6">
       <div className="flex items-center gap-4">
@@ -29,8 +34,8 @@ export function SettingsSecuritySection({
             <FontAwesomeIcon icon={faLock} className="text-lg" />
          </div>
          <div>
-            <h2 className="font-heading text-2xl font-bold text-slate-900">Keamanan Akun</h2>
-            <p className="text-sm font-medium text-slate-500">Perbarui kata sandi secara berkala.</p>
+            <h2 className="font-heading text-2xl font-bold text-slate-900">{t("settings.security.title")}</h2>
+            <p className="text-sm font-medium text-slate-500">{t("settings.security.subtitle")}</p>
          </div>
       </div>
 
@@ -38,9 +43,9 @@ export function SettingsSecuritySection({
         <form onSubmit={onChangePassword} className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             {[
-              { id: "current", label: "Kata Sandi Saat Ini", value: passwordForm.current, show: showPassword.current },
-              { id: "next", label: "Kata Sandi Baru", value: passwordForm.next, show: showPassword.next },
-              { id: "confirm", label: "Konfirmasi Kata Sandi Baru", value: passwordForm.confirm, show: showPassword.confirm, full: true },
+              { id: "current", label: t("settings.security.current_password"), placeholder: t("settings.security.current_password_placeholder"), value: passwordForm.current, show: showPassword.current },
+              { id: "next", label: t("settings.security.new_password"), placeholder: t("settings.security.new_password_placeholder"), value: passwordForm.next, show: showPassword.next },
+              { id: "confirm", label: t("settings.security.confirm_password"), placeholder: t("settings.security.confirm_password_placeholder"), value: passwordForm.confirm, show: showPassword.confirm, full: true },
             ].map((field) => (
               <div key={field.id} className={`${field.full ? 'md:col-span-2' : ''} space-y-2`}>
                 <label className="text-xs font-bold uppercase tracking-widest text-slate-400">{field.label}</label>
@@ -51,7 +56,7 @@ export function SettingsSecuritySection({
                     onChange={(e) => setPasswordForm((s) => ({ ...s, [field.id]: e.target.value }))}
                     className={`w-full rounded-2xl border ${passwordErrors[field.id] ? 'border-red-500 ring-4 ring-red-500/5' : 'border-slate-200 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5'} bg-slate-50 py-4 pl-5 pr-14 text-sm font-bold text-slate-900 outline-none transition-all focus:bg-white`}
                     disabled={passwordSaving}
-                    placeholder="••••••••"
+                    placeholder={field.placeholder}
                   />
                   <button
                     type="button"
@@ -76,7 +81,7 @@ export function SettingsSecuritySection({
               className="inline-flex h-14 items-center justify-center px-8 text-sm font-bold text-slate-500 transition hover:text-slate-900 disabled:opacity-50"
               disabled={passwordSaving}
             >
-              Reset Form
+              {t("settings.security.reset")}
             </button>
             <button
               type="submit"
@@ -84,7 +89,7 @@ export function SettingsSecuritySection({
               disabled={passwordSaving}
             >
               <FontAwesomeIcon icon={passwordSaving ? faCircleInfo : faCircleCheck} className={passwordSaving ? 'animate-spin' : ''} />
-              {passwordSaving ? "Menyimpan..." : "Perbarui Kata Sandi"}
+              {passwordSaving ? t("settings.security.saving") : t("settings.security.save")}
             </button>
           </div>
         </form>

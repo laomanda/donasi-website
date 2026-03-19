@@ -6,6 +6,7 @@ use Barryvdh\Debugbar\Facades\Debugbar;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -29,6 +30,10 @@ class AppServiceProvider extends ServiceProvider
 
         if (class_exists(Debugbar::class) && request()?->is('api/*')) {
             Debugbar::disable();
+        }
+
+        if (env('APP_ENV') === 'production') {
+            URL::forceScheme('https');
         }
     }
 }

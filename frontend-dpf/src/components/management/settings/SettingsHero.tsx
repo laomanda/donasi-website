@@ -2,17 +2,20 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBriefcase, faGlobe } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import type { DashboardRole } from "../../../components/management/dashboard/DashboardUtils";
+import { useLang } from "../../../lib/i18n";
+import { settingsDict, translate } from "../../../i18n/settings";
 
 interface SettingsHeroProps {
-  user: any;
   role: DashboardRole;
   displayName: string;
   displayEmail: string;
   roleLabel: (role: DashboardRole) => string;
 }
 
-export function SettingsHero({ user, role, displayName, displayEmail, roleLabel }: SettingsHeroProps) {
+export function SettingsHero({ role, displayName, displayEmail, roleLabel }: SettingsHeroProps) {
   const navigate = useNavigate();
+  const { locale } = useLang();
+  const t = (key: string, fallback?: string) => translate(settingsDict, locale, key, fallback);
 
   return (
     <div className="relative overflow-hidden rounded-[40px] bg-slate-900 shadow-2xl">
@@ -30,15 +33,6 @@ export function SettingsHero({ user, role, displayName, displayEmail, roleLabel 
           </div>
 
           <div className="min-w-0 flex-1 space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-                Sesi Aktif
-              </span>
-              <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
-                ID: #{user?.id || '0'}
-              </span>
-            </div>
             <h1 className="font-heading text-4xl font-black tracking-tight text-white md:text-6xl text-shadow-sm">
               {displayName}
             </h1>
@@ -60,7 +54,7 @@ export function SettingsHero({ user, role, displayName, displayEmail, roleLabel 
               onClick={() => navigate(`/${role}/dashboard`)}
               className="inline-flex h-14 items-center justify-center gap-3 rounded-2xl bg-white px-8 text-sm font-bold text-brandGreen-600 shadow-xl shadow-black/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              Ke Dashboard
+              {t("settings.hero.back_to_dashboard")}
             </button>
           </div>
         </div>
