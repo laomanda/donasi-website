@@ -3,6 +3,7 @@ import { getAuthUser } from './auth';
 import http from './http';
 import { toast } from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import { resolveUserRoles } from '../components/management/dashboard/DashboardUtils';
 
 interface SavedItemsContextType {
   savedItems: string[]; // Format "Type:Id" e.g. "Program:1"
@@ -20,7 +21,8 @@ export const SavedItemsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const refreshSavedItems = useCallback(async () => {
     const user = getAuthUser();
-    if (!user || user.role_label?.toLowerCase() !== 'mitra') {
+    const roles = resolveUserRoles(user as any);
+    if (!roles.includes("mitra")) {
       setSavedItems([]);
       return;
     }
@@ -53,7 +55,8 @@ export const SavedItemsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       return;
     }
 
-    if (user.role_label?.toLowerCase() !== 'mitra') {
+    const roles = resolveUserRoles(user as any);
+    if (!roles.includes("mitra")) {
       Swal.fire({
         title: 'Akses Terbatas',
         text: 'Maaf, fitur simpan item hanya tersedia untuk pengguna dengan status Mitra.',
