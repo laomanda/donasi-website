@@ -18,6 +18,7 @@ import { ProgramsSection } from "@/components/landing/ProgramsSection";
 import { ArticlesSection } from "@/components/landing/ArticlesSection";
 import { PartnerSection } from "@/components/landing/PartnerSection";
 import { ProposalSection } from "@/components/landing/ProposalSection";
+import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 
 function LandingPage() {
   const [data, setData] = useState<HomePayload | null>(null);
@@ -113,6 +114,7 @@ function LandingPage() {
       <ProgramsSection highlights={localizedHighlights} loading={loading} t={t} locale={locale as any} />
       <ArticlesSection articles={localizedArticles} loading={loading} t={t} locale={locale as any} />
       <PartnerSection partners={localizedPartners} loading={loading} t={t} locale={locale as any} />
+      <TestimonialsSection />
       <ProposalSection />
     </LandingLayout>
   );
