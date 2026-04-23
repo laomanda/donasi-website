@@ -18,7 +18,7 @@ export function AdminDashboardHeader() {
               Ringkasan Operasional
             </h1>
             <p className="text-sm font-medium text-slate-600">
-              Pantau donasi, layanan, dan tugas editor secara cepat dan terukur.
+              Pantau donasi dan layanan secara cepat dan terukur.
             </p>
           </div>
         </div>

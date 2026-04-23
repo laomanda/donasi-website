@@ -4,7 +4,6 @@ use App\Http\Controllers\Api\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Api\Admin\BankAccountController as AdminBankAccountController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\Admin\DonationController as AdminDonationController;
-use App\Http\Controllers\Api\Admin\EditorTaskController as AdminEditorTaskController;
 use App\Http\Controllers\Api\Admin\OrganizationController as AdminOrganizationController;
 use App\Http\Controllers\Api\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Api\Admin\PickupRequestController as AdminPickupRequestController;
@@ -22,7 +21,6 @@ use App\Http\Controllers\Api\Editor\OrganizationController as EditorOrganization
 use App\Http\Controllers\Api\Editor\PartnerController as EditorPartnerController;
 use App\Http\Controllers\Api\Editor\ProgramController as EditorProgramController;
 use App\Http\Controllers\Api\Editor\UploadController as EditorUploadController;
-use App\Http\Controllers\Api\Editor\EditorTaskStreamController;
 use App\Http\Controllers\Api\Frontend\ArticleController as FrontendArticleController;
 use App\Http\Controllers\Api\Frontend\BannerController as FrontendBannerController;
 use App\Http\Controllers\Api\Frontend\ConsultationController as FrontendConsultationController;
@@ -38,7 +36,6 @@ use App\Http\Controllers\Api\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Api\Editor\BannerController as EditorBannerController;
 use App\Http\Controllers\Api\PrayerTimesController;
 use App\Http\Controllers\Api\Reports\DonationReportController;
-use App\Http\Controllers\Api\Editor\EditorTaskController as EditorEditorTaskController;
 use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboardController;
 use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
 use App\Http\Controllers\Api\Superadmin\RoleController as SuperadminRoleController;
@@ -122,8 +119,6 @@ Route::prefix('v1')->group(function () {
     */
     Route::post('midtrans/webhook', MidtransWebhookController::class);
 
-    Route::get('editor/tasks/stream', EditorTaskStreamController::class);
-
     /*
     |--------------------------------------------------------------------------
     | ADMIN (Role: admin atau superadmin)
@@ -135,16 +130,11 @@ Route::prefix('v1')->group(function () {
         ->group(function () {
             Route::get('dashboard', AdminDashboardController::class)->name('dashboard');
 
-            Route::get('editor-tasks/editors', [AdminEditorTaskController::class, 'editors']);
-            Route::apiResource('editor-tasks', AdminEditorTaskController::class)->only(['index', 'show']);
             Route::middleware('role_or_permission:admin|superadmin|manage donations|manage pickup_requests|manage consultations|manage suggestions|manage allocations|manage bank_accounts|manage organization|manage partners')->group(function () {
                 Route::post('donations/manual', [AdminDonationController::class, 'storeManual']);
                 Route::patch('donations/{donation}/status', [AdminDonationController::class, 'updateStatus']);
                 Route::post('donations/{donation}/send-whatsapp', [AdminDonationController::class, 'sendWhatsapp']);
                 Route::delete('donations/{donation}', [AdminDonationController::class, 'destroy']);
-                
-                Route::apiResource('editor-tasks', AdminEditorTaskController::class)->except(['index', 'show']);
-                Route::delete('editor-tasks/{editor_task}/attachments/{attachment}', [AdminEditorTaskController::class, 'destroyAttachment']);
                 
                 Route::apiResource('pickup-requests', AdminPickupRequestController::class)->except(['index', 'show']);
                 Route::patch('pickup-requests/{pickup_request}/status', [AdminPickupRequestController::class, 'updateStatus']);
@@ -237,9 +227,6 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('banners', EditorBannerController::class)->except('show');
             Route::apiResource('partners', EditorPartnerController::class)->except('show');
             Route::apiResource('organization-members', EditorOrganizationController::class);
-            Route::get('tasks', [EditorEditorTaskController::class, 'index']);
-            Route::get('tasks/{editor_task}', [EditorEditorTaskController::class, 'show']);
-            Route::patch('tasks/{editor_task}', [EditorEditorTaskController::class, 'update']);
             Route::apiResource('bank-accounts', AdminBankAccountController::class);
             Route::apiResource('tags', \App\Http\Controllers\Api\Admin\TagController::class);
         });

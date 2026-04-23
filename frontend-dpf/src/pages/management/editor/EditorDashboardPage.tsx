@@ -6,43 +6,18 @@ import { getAuthUser } from "../../../lib/auth";
 import { useToast } from "../../../components/ui/ToastProvider";
 
 // Dashboard Components
-import type { EditorDashboardPayload, EditorTaskItem } from "../../../components/management/editor/dashboard/EditorDashboardTypes";
+import type { EditorDashboardPayload } from "../../../components/management/editor/dashboard/EditorDashboardTypes";
 import EditorDashboardHeader from "../../../components/management/editor/dashboard/EditorDashboardHeader";
 import EditorDashboardStats from "../../../components/management/editor/dashboard/EditorDashboardStats";
-import EditorDashboardTasks from "../../../components/management/editor/dashboard/EditorDashboardTasks";
 import EditorDashboardActivities from "../../../components/management/editor/dashboard/EditorDashboardActivities";
 
 /* --- Helpers --- */
-
-const formatTaskStatus = (status?: string | null) => {
-  const s = String(status ?? "").toLowerCase();
-  if (s === "done") return "Selesai";
-  if (s === "in_progress") return "Dikerjakan";
-  if (s === "open") return "Baru";
-  if (s === "cancelled") return "Dibatalkan";
-  return s || "-";
-};
-
-const taskStatusOrder: Record<string, number> = {
-  open: 0,
-  in_progress: 1,
-  done: 2,
-};
-
-const isForwardStatus = (current?: string | null, next?: string | null) => {
-  const currentKey = String(current ?? "").toLowerCase();
-  const nextKey = String(next ?? "").toLowerCase();
-  if (!(currentKey in taskStatusOrder) || !(nextKey in taskStatusOrder)) return true;
-  return taskStatusOrder[nextKey] >= taskStatusOrder[currentKey];
-};
 
 export function EditorDashboardPage() {
   const toast = useToast();
   const [data, setData] = useState<EditorDashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [taskItems, setTaskItems] = useState<EditorTaskItem[]>([]);
-  const [taskUpdatingIds, setTaskUpdatingIds] = useState<number[]>([]);
   const storedUser = useMemo(() => getAuthUser(), []);
   const displayName = storedUser?.name || "Editor";
 
@@ -75,44 +50,7 @@ export function EditorDashboardPage() {
     return () => { active = false; };
   }, []);
 
-  useEffect(() => {
-    if (!data) return;
-    setTaskItems(data.tasks?.items ?? []);
-  }, [data]);
 
-  const onUpdateTaskStatus = async (taskId: number, nextStatus: string) => {
-    const current = taskItems.find((item) => item.id === taskId);
-    if (!current || current.status === nextStatus) return;
-    if (String(current.status ?? "").toLowerCase() === "cancelled") return;
-    if (!isForwardStatus(current.status, nextStatus)) {
-      toast.error("Status tidak bisa kembali ke tahap sebelumnya.", { title: "Status tugas" });
-      return;
-    }
-
-    setTaskItems((items) =>
-      items.map((item) => (item.id === taskId ? { ...item, status: nextStatus } : item))
-    );
-    setTaskUpdatingIds((ids) => Array.from(new Set([...ids, taskId])));
-
-    try {
-      await http.patch(`/editor/tasks/${taskId}`, { status: nextStatus });
-      toast.success(`Berhasil memperbarui status menjadi: ${formatTaskStatus(nextStatus)}`, { title: "Update tugas" });
-      
-      // Refresh dashboard data to sync stats and task list
-      http.get<EditorDashboardPayload>("/editor/dashboard")
-        .then((res) => {
-          setData(res.data);
-          setTaskItems(res.data.tasks?.items ?? []);
-        });
-    } catch {
-      setTaskItems((items) =>
-        items.map((item) => (item.id === taskId ? { ...item, status: current.status } : item))
-      );
-      toast.error("Gagal memperbarui status tugas.", { title: "Update tugas" });
-    } finally {
-      setTaskUpdatingIds((ids) => ids.filter((id) => id !== taskId));
-    }
-  };
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6">
@@ -128,17 +66,8 @@ export function EditorDashboardPage() {
 
       <EditorDashboardStats loading={loading} stats={stats} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <EditorDashboardTasks 
-          loading={loading} 
-          taskItems={taskItems} 
-          taskUpdatingIds={taskUpdatingIds} 
-          onUpdateTaskStatus={onUpdateTaskStatus} 
-        />
-
-        <div className="lg:sticky lg:top-24 lg:self-start lg:h-fit">
-          <EditorDashboardActivities loading={loading} activities={activities} />
-        </div>
+      <div className="grid gap-6">
+        <EditorDashboardActivities loading={loading} activities={activities} />
       </div>
     </div>
   );

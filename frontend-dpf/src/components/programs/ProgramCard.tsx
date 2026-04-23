@@ -6,7 +6,7 @@ import { imagePlaceholder } from "@/lib/placeholder";
 import type { 
   Program, 
 } from "./ProgramShared";
-import { getProgress, getStatusLabel, getProgramStatusTone, getImageUrl, canonicalStatus, formatCurrency, formatDate, getRemainingDays } from "./ProgramShared";
+import { getProgress, getStatusLabel, getProgramStatusTone, getImageUrl, canonicalStatus, formatCurrency, formatDate, getRemainingDays, pickLocale } from "./ProgramShared";
 import { dpfIcon } from "@/assets/brand";
 import { useSavedItems } from "@/lib/SavedItemsContext";
 
@@ -47,7 +47,7 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
         />
         <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-semibold text-white">
           <span className="rounded-full uppercase font-heading bg-primary-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm">
-            {program.category ?? t("program.defaultCategory")}
+            {pickLocale(program.category, program.category_en, locale) || t("program.defaultCategory")}
           </span>
         </div>
 
@@ -77,8 +77,8 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
           </span>
         </div>
 
-        <h3 className="text-lg font-heading font-semibold text-slate-900 leading-snug">{program.title}</h3>
-        <p className="text-sm text-slate-600 line-clamp-3 min-h-[60px]">{program.short_description}</p>
+        <h3 className="text-lg font-heading font-semibold text-slate-900 leading-snug">{pickLocale(program.title, program.title_en, locale)}</h3>
+        <p className="text-sm text-slate-600 line-clamp-3 min-h-[60px]">{pickLocale(program.short_description, program.short_description_en, locale)}</p>
         <div className="flex items-center gap-2">
           <img src={dpfIcon} alt={brandName} className="h-6 w-6 rounded-md object-contain bg-white" />
           <span className="text-sm font-semibold text-slate-800">{brandName}</span>

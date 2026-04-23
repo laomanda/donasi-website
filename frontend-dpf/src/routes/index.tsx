@@ -53,7 +53,6 @@ import { EditorOrganizationMemberCreatePage } from '../pages/management/editor/o
 
 import { EditorOrganizationMemberEditPage } from '../pages/management/editor/organization/EditorOrganizationMemberEditPage'
 import { SettingsPage } from '../pages/management/SettingsPage'
-import { EditorTasksPage } from '../pages/management/editor/EditorTasksPage'
 import { SearchPage } from '../pages/management/shared/SearchPage'
 import { AdminDashboardPage } from '../pages/management/admin/AdminDashboardPage'
 import { AdminDonationsPage } from '../pages/management/admin/donation/AdminDonationsPage'
@@ -70,8 +69,6 @@ import { AdminAllocationCreatePage } from '../pages/management/admin/allocations
 import { EditorBanksPage } from '../pages/management/editor/bank/EditorBanksPage'
 import { EditorBankCreatePage } from '../pages/management/editor/bank/EditorBankCreatePage'
 import { EditorBankEditPage } from '../pages/management/editor/bank/EditorBankEditPage'
-import { AdminEditorTasksPage } from '../pages/management/admin/task/AdminEditorTasksPage'
-import { AdminEditorTaskCreatePage } from '../pages/management/admin/task/AdminEditorTaskCreatePage'
 import { SuperAdminUsersPage } from '../pages/management/superadmin/users/SuperAdminUsersPage'
 import { SuperAdminUserCreatePage } from '../pages/management/superadmin/users/SuperAdminUserCreatePage'
 import { SuperAdminUserEditPage } from '../pages/management/superadmin/users/SuperAdminUserEditPage'
@@ -132,7 +129,6 @@ export const router = createBrowserRouter([
           { path: 'organization-members/create', element: <EditorOrganizationMemberCreatePage /> },
 
           { path: 'organization-members/:id/edit', element: <EditorOrganizationMemberEditPage /> },
-          { path: 'tasks', element: <EditorTasksPage /> },
           { path: 'search', element: <SearchPage role="editor" /> },
           { path: 'bank-accounts', element: <EditorBanksPage /> },
           { path: 'bank-accounts/create', element: <EditorBankCreatePage /> },
@@ -167,8 +163,6 @@ export const router = createBrowserRouter([
           { path: 'pickup-requests/:id', element: <AdminPickupRequestShowPage /> },
           { path: 'allocations', element: <AdminAllocationsPage /> },
           { path: 'allocations/create', element: <AdminAllocationCreatePage /> },
-          { path: 'editor-tasks', element: <AdminEditorTasksPage /> },
-          { path: 'editor-tasks/create', element: <AdminEditorTaskCreatePage /> },
           { path: 'search', element: <SearchPage role="admin" /> },
           { path: 'guidance', element: <GuidancePage /> },
           { path: 'settings', element: <SettingsPage role="admin" /> },

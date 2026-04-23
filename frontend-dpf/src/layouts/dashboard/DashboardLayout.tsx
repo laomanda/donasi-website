@@ -45,7 +45,6 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const [now, setNow] = useState(() => new Date());
   const [showClock, setShowClock] = useState(() => readShowClock());
   const [adminBadgeCounts, setAdminBadgeCounts] = useState<Record<string, number>>({});
-  const [editorBadgeCounts, setEditorBadgeCounts] = useState<Record<string, number>>({});
 
   const userName = typeof storedUser?.name === "string" ? storedUser.name : null;
   const userEmail = typeof storedUser?.email === "string" ? storedUser.email : null;
@@ -137,45 +136,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     };
   }, [role]);
 
-  useEffect(() => {
-    // Aktifkan jika role adalah editor atau kustom
-    const isActuallyEditor = role === "editor" || role === "custom";
-    if (!isActuallyEditor) return;
-    
-    let active = true;
-    let pollId: number | null = null;
 
-    const applyCount = (count: number) => {
-      if (!active) return;
-      setEditorBadgeCounts({
-        "/editor/tasks": count,
-      });
-    };
-
-    const loadCounts = async () => {
-      try {
-        const tasksRes = await http.get<Utils.PaginationMeta>("/editor/tasks", {
-          params: { status: "open", per_page: 1 },
-        });
-
-        if (!active) return;
-        const taskCount = Utils.normalizeCount(tasksRes.data?.total);
-        applyCount(taskCount);
-      } catch {
-        if (!active) return;
-      }
-    };
-
-    void loadCounts();
-
-    const fallbackInterval = 30_000;
-    pollId = window.setInterval(loadCounts, fallbackInterval);
-
-    return () => {
-      active = false;
-      if (pollId) window.clearInterval(pollId);
-    };
-  }, [role, storedUser]);
 
   useEffect(() => {
     const onSync = () => setShowClock(readShowClock());
@@ -219,8 +180,8 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   
   // Gabungkan semua badge counts agar sidebar bisa menampilkan semuanya sekaligus (Penting untuk Role Kustom)
   const currentBadgeCounts = useMemo(() => {
-    return { ...adminBadgeCounts, ...editorBadgeCounts };
-  }, [adminBadgeCounts, editorBadgeCounts]);
+    return { ...adminBadgeCounts };
+  }, [adminBadgeCounts]);
 
   return (
     <div className="dashboard-shell min-h-screen font-body text-slate-900 antialiased">

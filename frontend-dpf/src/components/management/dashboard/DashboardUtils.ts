@@ -1,7 +1,6 @@
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faGaugeHigh,
-  faListCheck,
   faBookOpen,
   faHeart,
   faImage,
@@ -133,7 +132,6 @@ export const PERMISSION_TEMPLATES: Record<string, string[]> = {
     "manage programs",
     "manage banners",
     "manage tags",
-    "manage tasks",
     "manage partners",
     "manage organization",
   ],
@@ -216,14 +214,6 @@ export const QUICK_ACTIONS: QuickAction[] = [
     tone: "fuchsia",
   },
   {
-    label: "Kelola Tugas",
-    description: "AKSES PENUH MODUL",
-    href: "/admin/editor-tasks",
-    permission: "manage tasks",
-    icon: faListCheck,
-    tone: "primary",
-  },
-  {
     label: "Kelola Jemput Wakaf",
     description: "AKSES PENUH MODUL",
     href: "/admin/pickup-requests",
@@ -287,7 +277,6 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       title: "Ringkasan",
       items: [
         { label: "Dashboard", href: "/editor/dashboard", icon: faGaugeHigh },
-        { label: "Tugas Editor", href: "/editor/tasks", icon: faListCheck, permission: "manage tasks" },
       ],
     },
     {
@@ -326,7 +315,6 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
         { label: "Donasi", href: "/admin/donations", icon: faReceipt, permission: "manage donations" },
         { label: "Konfirmasi Donasi", href: "/admin/donation-confirmations", icon: faCheckCircle, permission: "manage donations" },
         { label: "Saran Wakaf", href: "/admin/suggestions", icon: faCommentDots, permission: "manage suggestions" },
-        { label: "Editor Tasks", href: "/admin/editor-tasks", icon: faListCheck, permission: "manage tasks" },
         { label: "Jemput Wakaf", href: "/admin/pickup-requests", icon: faTruckRampBox, permission: "manage pickup_requests" },
         { label: "Konsultasi", href: "/admin/consultations", icon: faHeadset, permission: "manage consultations" },
       ],
@@ -390,7 +378,6 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
         { label: "Donasi", href: "/admin/donations", icon: faReceipt, permission: "manage donations" },
         { label: "Konfirmasi Donasi", href: "/admin/donation-confirmations", icon: faCheckCircle, permission: "manage donations" },
         { label: "Saran Wakaf", href: "/admin/suggestions", icon: faCommentDots, permission: "manage suggestions" },
-        { label: "Editor Tasks", href: "/admin/editor-tasks", icon: faListCheck, permission: "manage tasks" },
         { label: "Jemput Wakaf", href: "/admin/pickup-requests", icon: faTruckRampBox, permission: "manage pickup_requests" },
         { label: "Konsultasi", href: "/admin/consultations", icon: faHeadset, permission: "manage consultations" },
       ],

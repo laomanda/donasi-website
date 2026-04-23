@@ -5,7 +5,7 @@ import { faBookmark as faBookmarkRegular } from "@fortawesome/free-regular-svg-i
 import { imagePlaceholder } from "@/lib/placeholder";
 import { useSavedItems } from "@/lib/SavedItemsContext";
 import type { Literasi } from "./LiterasiShared.ts";
-import { getImageUrl, formatDate } from "./LiterasiShared.ts";
+import { getImageUrl, formatDate, pickLocale } from "./LiterasiShared.ts";
 
 interface LiterasiCardProps {
   article: Literasi;
@@ -47,7 +47,7 @@ export function LiterasiCard({ article, locale, t, variant = "save" }: LiterasiC
           />
           <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-semibold text-white">
             <span className="rounded-full uppercase font-heading bg-primary-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm">
-              {article.category ?? t("literasi.articles.category.default", "Literasi")}
+              {pickLocale(article.category, article.category_en, locale) || t("literasi.articles.category.default", "Literasi")}
             </span>
           </div>
         </div>
@@ -74,11 +74,11 @@ export function LiterasiCard({ article, locale, t, variant = "save" }: LiterasiC
       <div className="flex flex-1 flex-col p-5">
         {/* The old category span is removed as it's replaced by the absolute positioned one */}
         <h3 className="mt-4 line-clamp-2 min-h-[56px] font-heading text-lg font-semibold leading-snug text-slate-900">
-          <Link to={`/literasi/${article.slug}`}>{article.title}</Link>
+          <Link to={`/literasi/${article.slug}`}>{pickLocale(article.title, article.title_en, locale)}</Link>
         </h3>
 
         <p className="mt-3 line-clamp-3 min-h-[72px] text-sm leading-relaxed text-slate-600">
-          {article.excerpt}
+          {pickLocale(article.excerpt, article.excerpt_en, locale)}
         </p>
 
         <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
