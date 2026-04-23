@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../lib/http";
 import { getAuthUser } from "../../../lib/auth";
-import { useToast } from "../../../components/ui/ToastProvider";
 
 // Dashboard Components
 import type { EditorDashboardPayload } from "../../../components/management/editor/dashboard/EditorDashboardTypes";
@@ -14,7 +13,6 @@ import EditorDashboardActivities from "../../../components/management/editor/das
 /* --- Helpers --- */
 
 export function EditorDashboardPage() {
-  const toast = useToast();
   const [data, setData] = useState<EditorDashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
