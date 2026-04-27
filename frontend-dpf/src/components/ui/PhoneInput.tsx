@@ -1,7 +1,6 @@
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
 import { forwardRef } from 'react';
-// @ts-ignore
 import en from 'react-phone-number-input/locale/en';
 
 interface PhoneInputProps {
@@ -31,7 +30,6 @@ const CustomPhoneInput = forwardRef<any, PhoneInputProps>(({ value, onChange, la
                     onChange={(val) => onChange(val as string)}
                     disabled={disabled}
                     international
-                    /* @ts-ignore: library typings might be missing this prop but it exists */
                     withCountryCallingCode
                     className="flex h-12 w-full items-center px-4 outline-none [&_.PhoneInputCountry]:mr-3 [&_.PhoneInputCountrySelect]:cursor-pointer [&_input]:h-full [&_input]:w-full [&_input]:bg-transparent [&_input]:outline-none [&_input]:placeholder-slate-400"
                 />

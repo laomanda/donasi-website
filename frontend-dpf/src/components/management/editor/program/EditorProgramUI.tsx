@@ -33,7 +33,8 @@ export function FormSection({ title, subtitle, icon: Icon, children, className =
             </div>
             {children}
         </div>
-    ); SectionCard }
+    );
+}
 
 export function ErrorState({ message }: { message: string }) {
     return (

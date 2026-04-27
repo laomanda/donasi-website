@@ -159,7 +159,6 @@ export function AdminConsultationsPage() {
     <div className="mx-auto w-full max-w-7xl space-y-6">
       {/* Hero Header */}
       <div className="relative overflow-hidden rounded-[32px] bg-emerald-600 shadow-xl">
-        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
         <div className="absolute right-0 top-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
         <div className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
 

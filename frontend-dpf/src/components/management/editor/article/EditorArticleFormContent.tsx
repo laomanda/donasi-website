@@ -124,7 +124,7 @@ export default function EditorArticleFormContent({
               const url = await uploadContentImage(file);
               if (!url) return;
 
-              const snippet = `<img src=\"${url}\" alt=\"Gambar artikel\" loading=\"lazy\" />`;
+              const snippet = `<img src="${url}" alt="Gambar artikel" loading="lazy" />`;
               insertIntoBody(snippet);
             }}
             disabled={!canSubmit}

@@ -25,8 +25,7 @@ export function useAdminDashboard() {
          setError(err.message || "Gagal memuat data dashboard admin.");
       }
     } finally {
-      if (!isMounted.current) return;
-      if (!silent) setLoading(false);
+      if (isMounted.current && !silent) setLoading(false);
     }
   };
 

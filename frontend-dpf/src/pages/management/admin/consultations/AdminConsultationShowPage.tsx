@@ -149,7 +149,6 @@ export function AdminConsultationShowPage() {
       {/* PREMIUM HERO HEADER */}
       <div className={`relative overflow-hidden rounded-[40px] shadow-2xl transition-all duration-500 bg-gradient-to-br ${getHeroStyles(data?.status || "baru")}`}>
         {/* Decorative Elements */}
-        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10 mix-blend-overlay" />
         <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-black/10 blur-3xl" />
 

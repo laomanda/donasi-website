@@ -272,7 +272,6 @@ export function AdminDonationShowPage() {
     <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 pb-10">
       {/* Hero Header */}
       <div className={`relative overflow-hidden rounded-[32px] ${statusConfig.headerBg} shadow-xl transition-colors duration-500`}>
-        <div className="absolute inset-0 bg-[url('/patterns/circuit.svg')] opacity-10" />
         <div className="absolute right-0 top-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-white/10 blur-3xl filter" />
         <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-80 w-80 rounded-full bg-white/10 blur-3xl filter" />
 
