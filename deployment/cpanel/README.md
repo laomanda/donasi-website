@@ -27,7 +27,21 @@ Gunakan document root domain ke folder `public` Laravel.
     .env
 ```
 
-Jika cPanel tidak mengizinkan document root ke `dpf/public`, upload isi folder `public` ke `public_html`, lalu sesuaikan path di `index.php`. Pilihan document root ke `dpf/public` lebih rapi dan lebih aman.
+Jika cPanel tidak mengizinkan document root ke `dpf/public`, upload isi folder `public` ke `public_html`, lalu ganti `public_html/index.php` dengan isi `deployment/cpanel/public_html_index.php`. Pilihan document root ke `dpf/public` lebih rapi dan lebih aman, tapi primary domain cPanel sering terkunci ke `public_html`.
+
+## Mengganti Website WordPress Lama
+
+Jangan hapus WordPress langsung tanpa backup. Jalur cutover yang aman:
+
+1. Backup full akun cPanel jika tersedia.
+2. Backup folder WordPress lama dengan rename `public_html` menjadi `public_html_wp_backup_YYYYMMDD`.
+3. Export database WordPress lama lewat phpMyAdmin.
+4. Buat folder `public_html` baru untuk Laravel entry point.
+5. Upload project Laravel ke `/home/u1121903/dpf`.
+6. Copy isi `/home/u1121903/dpf/public` ke `/home/u1121903/public_html`.
+7. Ganti `/home/u1121903/public_html/index.php` dengan template `deployment/cpanel/public_html_index.php`.
+
+Email dan DNS tidak perlu diubah selama domain tetap berada di akun cPanel yang sama.
 
 ## Build Lokal Sebelum Upload
 
