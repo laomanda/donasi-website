@@ -42,10 +42,13 @@ export function LanguageSwitch({
                     setLangOpen((v) => !v);
                 }}
                 className={langButtonClass}
+                aria-label="Pilih Bahasa / Switch Language"
             >
                 <img
                     src={locale === "id" ? indonesiaFlag : ukFlag}
                     alt={locale === "id" ? "Indonesia" : "English"}
+                    width="28"
+                    height="20"
                     className="h-5 w-7 rounded-sm object-cover"
                 />
                 <FontAwesomeIcon icon={faGlobe} className={langIconClass} />
@@ -70,7 +73,14 @@ export function LanguageSwitch({
                         className={`flex w-full items-center gap-3 px-3 py-2 text-sm transition ${langOptionClass} ${locale === opt.code ? langOptionActiveClass : langOptionHoverClass
                             }`}
                     >
-                        <img src={opt.flag} alt={opt.label} className="h-6 w-9 rounded-sm object-cover" />
+                        <img
+                            src={opt.flag}
+                            alt={opt.label}
+                            width="36"
+                            height="24"
+                            loading="lazy"
+                            className="h-6 w-9 rounded-sm object-cover"
+                        />
                         <span className="font-semibold">{opt.label}</span>
                     </button>
                 ))}

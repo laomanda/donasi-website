@@ -39,6 +39,9 @@ export function LiterasiCard({ article, locale, t, variant = "save" }: LiterasiC
           <img
             src={getImageUrl(article.thumbnail_path)}
             alt={article.title}
+            width="400"
+            height="225"
+            loading="lazy"
             className="h-full w-full object-cover"
             onError={(evt) => {
               const target = evt.target as HTMLImageElement;

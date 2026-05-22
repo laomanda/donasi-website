@@ -63,7 +63,7 @@ class ArticleService
      */
     private function generateUniqueSlug(string $title, string $slug, ?Article $article = null): string
     {
-        $parsedSlug = trim($slug);
+        $parsedSlug = Str::slug(trim($slug));
 
         if ($parsedSlug !== '') {
             return $parsedSlug;
@@ -78,8 +78,10 @@ class ArticleService
         $counter = 1;
 
         while (
-            Article::where('slug', $finalSlug)
-                ->when($article, fn($q) => $q->where('id', '!=', $article->id))
+            Article::query()->where('slug', $finalSlug)
+                ->when($article, function ($q) use ($article) {
+                    return $q->where('id', '!=', $article->id);
+                })
                 ->exists()
         ) {
             $finalSlug = "{$baseSlug}-{$counter}";

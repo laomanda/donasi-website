@@ -45,9 +45,11 @@ export function BackgroundMusic() {
       }
     };
 
-    startAudio();
+    // Defer autoplay/interaction listener by 3 seconds to clear the critical loading path (FCP/LCP)
+    const timeoutId = setTimeout(startAudio, 3000);
 
     return () => {
+      clearTimeout(timeoutId);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
       if (interactionListener) {
@@ -63,7 +65,7 @@ export function BackgroundMusic() {
       ref={audioRef}
       src={audioFile}
       loop
-      preload="auto"
+      preload="none"
     />
   );
 }

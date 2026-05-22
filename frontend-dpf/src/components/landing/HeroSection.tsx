@@ -50,6 +50,10 @@ export function HeroSection({
               <img
                 src={heroImg}
                 alt={t("landing.hero.imageAlt")}
+                width="600"
+                height="450"
+                loading="eager"
+                decoding="async"
                 className="h-auto w-full max-w-full object-contain transition-transform duration-1000 lg:h-full lg:scale-125 lg:object-cover"
                 onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
               />

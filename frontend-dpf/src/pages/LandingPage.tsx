@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import http from "@/lib/http";
 import { useLang } from "@/lib/i18n";
 import { landingDict } from "@/components/landing/LandingI18n";
@@ -16,9 +16,11 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { PromiseStrip } from "@/components/landing/PromiseStrip";
 import { ProgramsSection } from "@/components/landing/ProgramsSection";
 import { ArticlesSection } from "@/components/landing/ArticlesSection";
-import { PartnerSection } from "@/components/landing/PartnerSection";
-import { ProposalSection } from "@/components/landing/ProposalSection";
-import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
+
+// Lazy Loaded below-the-fold components
+const PartnerSection = lazy(() => import("@/components/landing/PartnerSection").then(m => ({ default: m.PartnerSection })));
+const ProposalSection = lazy(() => import("@/components/landing/ProposalSection").then(m => ({ default: m.ProposalSection })));
+const TestimonialsSection = lazy(() => import("@/components/landing/TestimonialsSection").then(m => ({ default: m.TestimonialsSection })));
 
 function LandingPage() {
   const [data, setData] = useState<HomePayload | null>(null);
@@ -113,9 +115,16 @@ function LandingPage() {
       <PromiseStrip t={t} />
       <ProgramsSection highlights={localizedHighlights} loading={loading} t={t} locale={locale as any} />
       <ArticlesSection articles={localizedArticles} loading={loading} t={t} locale={locale as any} />
-      <PartnerSection partners={localizedPartners} loading={loading} t={t} locale={locale as any} />
-      <TestimonialsSection />
-      <ProposalSection />
+      
+      <Suspense fallback={<div className="min-h-[150px] bg-slate-50 animate-pulse" />}>
+        <PartnerSection partners={localizedPartners} loading={loading} t={t} locale={locale as any} />
+      </Suspense>
+      <Suspense fallback={<div className="min-h-[150px] bg-slate-50 animate-pulse" />}>
+        <TestimonialsSection />
+      </Suspense>
+      <Suspense fallback={<div className="min-h-[150px] bg-slate-50 animate-pulse" />}>
+        <ProposalSection />
+      </Suspense>
     </LandingLayout>
   );
 }

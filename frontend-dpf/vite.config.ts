@@ -18,4 +18,7 @@ export default defineConfig({
   server: {
     allowedHosts: true,
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+  }
 })

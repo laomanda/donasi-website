@@ -1,84 +1,111 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter, Navigate, useParams } from 'react-router-dom'
 import App from '../App'
 import { LandingPage } from '../pages/LandingPage'
-import Error400 from '../pages/errors/400'
-import Error401 from '../pages/errors/401'
-import Error402 from '../pages/errors/402'
-import Error403 from '../pages/errors/403'
-import Error404 from '../pages/errors/404'
-import Error405 from '../pages/errors/405'
-import Error408 from '../pages/errors/408'
-import Error409 from '../pages/errors/409'
-import Error429 from '../pages/errors/429'
-import Error500 from '../pages/errors/500'
-import Error503 from '../pages/errors/503'
-import { LayananPage } from '../pages/LayananPage'
-import { ProgramPage } from '../pages/ProgramPage'
-import { LiterasiPage } from '../pages/LiterasiPage'
-import { TentangKamiPage } from '../pages/TentangKamiPage'
-import { DonatePage } from '../pages/DonatePage'
-import { LoginPage } from '../pages/auth/LoginPage'
-import { LiterasiDetailPage } from '../pages/LiterasiDetailPage'
-import { ProgramDetailPage } from '../pages/ProgramDetailPage'
-import { KonsultasiPage } from '../pages/KonsultasiPage'
-import { JemputWakafPage } from '../pages/JemputWakafPage'
-import { KonfirmasiDonasiPage } from '../pages/KonfirmasiDonasiPage'
+import { PageLoader } from '../components/ui/PageLoader'
 
-import { EditorShell, AdminShell, SuperAdminShell, MitraShell, ManagementShell } from '../layouts/dashboard/RoleShells'
-import { CustomDashboardPage } from '../pages/management/custom/CustomDashboardPage'
-import { MitraRegisterPage } from '../pages/auth/MitraRegisterPage'
-import { MitraDashboardPage } from '../pages/management/mitra/MitraDashboardPage'
-import { MitraAllocationsPage } from "../pages/management/mitra/MitraAllocationsPage";
-import { MitraDonationsPage } from '../pages/management/mitra/MitraDonationsPage'
-import { SavedItemsPage } from '../pages/management/mitra/SavedItemsPage'
-import { PreviewPage } from '../pages/management/editor/PreviewPage'
-import { EditorDashboardPage } from '../pages/management/editor/EditorDashboardPage'
-import { EditorArticlesPage } from '../pages/management/editor/article/EditorArticlesPage'
-import { EditorArticleCreatePage } from '../pages/management/editor/article/EditorArticleCreatePage'
-import { EditorArticleEditPage } from '../pages/management/editor/article/EditorArticleEditPage'
-import { EditorProgramsPage } from '../pages/management/editor/program/EditorProgramsPage'
-import { EditorProgramCreatePage } from '../pages/management/editor/program/EditorProgramCreatePage'
-import { EditorProgramEditPage } from '../pages/management/editor/program/EditorProgramEditPage'
-import EditorBannersPage from '../pages/management/editor/banner/EditorBannersPage'
-import EditorBannerCreatePage from '../pages/management/editor/banner/EditorBannerCreatePage'
-import EditorBannerEditPage from '../pages/management/editor/banner/EditorBannerEditPage'
-import EditorPartnersPage from '../pages/management/editor/partner/EditorPartnersPage'
-import EditorPartnerCreatePage from '../pages/management/editor/partner/EditorPartnerCreatePage'
-import EditorPartnerEditPage from '../pages/management/editor/partner/EditorPartnerEditPage'
-import EditorTagsPage from '../pages/management/editor/tag/EditorTagsPage'
-import EditorTagCreatePage from '../pages/management/editor/tag/EditorTagCreatePage'
-import EditorTagEditPage from '../pages/management/editor/tag/EditorTagEditPage'
-import { EditorOrganizationMembersPage } from '../pages/management/editor/organization/EditorOrganizationMembersPage'
-import { EditorOrganizationMemberCreatePage } from '../pages/management/editor/organization/EditorOrganizationMemberCreatePage'
+// Helper to wrap lazy-loaded components with dynamic PageLoader suspense
+const withSuspense = (Component: React.ComponentType) => (
+  <Suspense fallback={<PageLoader />}>
+    <Component />
+  </Suspense>
+)
 
-import { EditorOrganizationMemberEditPage } from '../pages/management/editor/organization/EditorOrganizationMemberEditPage'
-import { SettingsPage } from '../pages/management/SettingsPage'
-import { SearchPage } from '../pages/management/shared/SearchPage'
-import { AdminDashboardPage } from '../pages/management/admin/AdminDashboardPage'
-import { AdminDonationsPage } from '../pages/management/admin/donation/AdminDonationsPage'
-import { DonationReportPage } from '../pages/management/shared/DonationReportPage'
-import { AdminDonationManualCreatePage } from '../pages/management/admin/donation/AdminDonationManualCreatePage'
-import { AdminDonationShowPage } from '../pages/management/admin/donation/AdminDonationShowPage'
-import { AdminDonationConfirmationsPage } from '../pages/management/admin/donation/AdminDonationConfirmationsPage'
-import { AdminConsultationsPage } from '../pages/management/admin/consultations/AdminConsultationsPage'
-import { AdminConsultationShowPage } from '../pages/management/admin/consultations/AdminConsultationShowPage'
-import { AdminPickupRequestsPage } from '../pages/management/admin/pickup/AdminPickupRequestsPage'
-import { AdminPickupRequestShowPage } from '../pages/management/admin/pickup/AdminPickupRequestShowPage'
-import { AdminAllocationsPage } from '../pages/management/admin/allocations/AdminAllocationsPage'
-import { AdminAllocationCreatePage } from '../pages/management/admin/allocations/AdminAllocationCreatePage'
-import { EditorBanksPage } from '../pages/management/editor/bank/EditorBanksPage'
-import { EditorBankCreatePage } from '../pages/management/editor/bank/EditorBankCreatePage'
-import { EditorBankEditPage } from '../pages/management/editor/bank/EditorBankEditPage'
-import { SuperAdminUsersPage } from '../pages/management/superadmin/users/SuperAdminUsersPage'
-import { SuperAdminUserCreatePage } from '../pages/management/superadmin/users/SuperAdminUserCreatePage'
-import { SuperAdminUserEditPage } from '../pages/management/superadmin/users/SuperAdminUserEditPage'
-import { SuperAdminDashboardPage } from '../pages/management/superadmin/dashboard/SuperAdminDashboardPage'
-import { AdminSuggestionsPage } from '../pages/management/admin/suggestion/AdminSuggestionsPage'
-import { AdminSuggestionShowPage } from '../pages/management/admin/suggestion/AdminSuggestionShowPage'
-import { GuidancePage } from '../pages/management/shared/GuidancePage'
-import { RolesPage } from '../pages/management/superadmin/access/RolesPage'
-import { RoleCreatePage } from '../pages/management/superadmin/access/RoleCreatePage'
-import { RoleEditPage } from '../pages/management/superadmin/access/RoleEditPage'
+// Public Pages (Lazy Loaded except LandingPage for LCP optimization)
+const LayananPage = lazy(() => import('../pages/LayananPage').then(m => ({ default: m.LayananPage })))
+const ProgramPage = lazy(() => import('../pages/ProgramPage').then(m => ({ default: m.ProgramPage })))
+const ProgramDetailPage = lazy(() => import('../pages/ProgramDetailPage').then(m => ({ default: m.ProgramDetailPage })))
+const LiterasiPage = lazy(() => import('../pages/LiterasiPage').then(m => ({ default: m.LiterasiPage })))
+const LiterasiDetailPage = lazy(() => import('../pages/LiterasiDetailPage').then(m => ({ default: m.LiterasiDetailPage })))
+const TentangKamiPage = lazy(() => import('../pages/TentangKamiPage').then(m => ({ default: m.TentangKamiPage })))
+const KonsultasiPage = lazy(() => import('../pages/KonsultasiPage').then(m => ({ default: m.KonsultasiPage })))
+const JemputWakafPage = lazy(() => import('../pages/JemputWakafPage').then(m => ({ default: m.JemputWakafPage })))
+const KonfirmasiDonasiPage = lazy(() => import('../pages/KonfirmasiDonasiPage').then(m => ({ default: m.KonfirmasiDonasiPage })))
+const DonatePage = lazy(() => import('../pages/DonatePage').then(m => ({ default: m.DonatePage })))
+const LoginPage = lazy(() => import('../pages/auth/LoginPage').then(m => ({ default: m.LoginPage })))
+const MitraRegisterPage = lazy(() => import('../pages/auth/MitraRegisterPage').then(m => ({ default: m.MitraRegisterPage })))
+
+// Dashboard Shells
+const EditorShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.EditorShell })))
+const AdminShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.AdminShell })))
+const SuperAdminShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.SuperAdminShell })))
+const MitraShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.MitraShell })))
+const ManagementShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.ManagementShell })))
+
+// Shared & Management Pages
+const CustomDashboardPage = lazy(() => import('../pages/management/custom/CustomDashboardPage').then(m => ({ default: m.CustomDashboardPage })))
+const PreviewPage = lazy(() => import('../pages/management/editor/PreviewPage').then(m => ({ default: m.PreviewPage })))
+const SettingsPage = lazy(() => import('../pages/management/SettingsPage').then(m => ({ default: m.SettingsPage })))
+const SearchPage = lazy(() => import('../pages/management/shared/SearchPage').then(m => ({ default: m.SearchPage })))
+const GuidancePage = lazy(() => import('../pages/management/shared/GuidancePage').then(m => ({ default: m.GuidancePage })))
+
+// Mitra Pages
+const MitraDashboardPage = lazy(() => import('../pages/management/mitra/MitraDashboardPage').then(m => ({ default: m.MitraDashboardPage })))
+const MitraAllocationsPage = lazy(() => import('../pages/management/mitra/MitraAllocationsPage').then(m => ({ default: m.MitraAllocationsPage })))
+const MitraDonationsPage = lazy(() => import('../pages/management/mitra/MitraDonationsPage').then(m => ({ default: m.MitraDonationsPage })))
+const SavedItemsPage = lazy(() => import('../pages/management/mitra/SavedItemsPage').then(m => ({ default: m.SavedItemsPage })))
+
+// Editor Pages
+const EditorDashboardPage = lazy(() => import('../pages/management/editor/EditorDashboardPage').then(m => ({ default: m.EditorDashboardPage })))
+const EditorArticlesPage = lazy(() => import('../pages/management/editor/article/EditorArticlesPage').then(m => ({ default: m.EditorArticlesPage })))
+const EditorArticleCreatePage = lazy(() => import('../pages/management/editor/article/EditorArticleCreatePage').then(m => ({ default: m.EditorArticleCreatePage })))
+const EditorArticleEditPage = lazy(() => import('../pages/management/editor/article/EditorArticleEditPage').then(m => ({ default: m.EditorArticleEditPage })))
+const EditorProgramsPage = lazy(() => import('../pages/management/editor/program/EditorProgramsPage').then(m => ({ default: m.EditorProgramsPage })))
+const EditorProgramCreatePage = lazy(() => import('../pages/management/editor/program/EditorProgramCreatePage').then(m => ({ default: m.EditorProgramCreatePage })))
+const EditorProgramEditPage = lazy(() => import('../pages/management/editor/program/EditorProgramEditPage').then(m => ({ default: m.EditorProgramEditPage })))
+const EditorBannersPage = lazy(() => import('../pages/management/editor/banner/EditorBannersPage'))
+const EditorBannerCreatePage = lazy(() => import('../pages/management/editor/banner/EditorBannerCreatePage'))
+const EditorBannerEditPage = lazy(() => import('../pages/management/editor/banner/EditorBannerEditPage'))
+const EditorPartnersPage = lazy(() => import('../pages/management/editor/partner/EditorPartnersPage'))
+const EditorPartnerCreatePage = lazy(() => import('../pages/management/editor/partner/EditorPartnerCreatePage'))
+const EditorPartnerEditPage = lazy(() => import('../pages/management/editor/partner/EditorPartnerEditPage'))
+const EditorTagsPage = lazy(() => import('../pages/management/editor/tag/EditorTagsPage'))
+const EditorTagCreatePage = lazy(() => import('../pages/management/editor/tag/EditorTagCreatePage'))
+const EditorTagEditPage = lazy(() => import('../pages/management/editor/tag/EditorTagEditPage'))
+const EditorOrganizationMembersPage = lazy(() => import('../pages/management/editor/organization/EditorOrganizationMembersPage').then(m => ({ default: m.EditorOrganizationMembersPage })))
+const EditorOrganizationMemberCreatePage = lazy(() => import('../pages/management/editor/organization/EditorOrganizationMemberCreatePage').then(m => ({ default: m.EditorOrganizationMemberCreatePage })))
+const EditorOrganizationMemberEditPage = lazy(() => import('../pages/management/editor/organization/EditorOrganizationMemberEditPage').then(m => ({ default: m.EditorOrganizationMemberEditPage })))
+const EditorBanksPage = lazy(() => import('../pages/management/editor/bank/EditorBanksPage').then(m => ({ default: m.EditorBanksPage })))
+const EditorBankCreatePage = lazy(() => import('../pages/management/editor/bank/EditorBankCreatePage').then(m => ({ default: m.EditorBankCreatePage })))
+const EditorBankEditPage = lazy(() => import('../pages/management/editor/bank/EditorBankEditPage').then(m => ({ default: m.EditorBankEditPage })))
+
+// Admin Pages
+const AdminDashboardPage = lazy(() => import('../pages/management/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })))
+const AdminDonationsPage = lazy(() => import('../pages/management/admin/donation/AdminDonationsPage').then(m => ({ default: m.AdminDonationsPage })))
+const DonationReportPage = lazy(() => import('../pages/management/shared/DonationReportPage').then(m => ({ default: m.DonationReportPage })))
+const AdminDonationManualCreatePage = lazy(() => import('../pages/management/admin/donation/AdminDonationManualCreatePage').then(m => ({ default: m.AdminDonationManualCreatePage })))
+const AdminDonationShowPage = lazy(() => import('../pages/management/admin/donation/AdminDonationShowPage').then(m => ({ default: m.AdminDonationShowPage })))
+const AdminDonationConfirmationsPage = lazy(() => import('../pages/management/admin/donation/AdminDonationConfirmationsPage').then(m => ({ default: m.AdminDonationConfirmationsPage })))
+const AdminConsultationsPage = lazy(() => import('../pages/management/admin/consultations/AdminConsultationsPage').then(m => ({ default: m.AdminConsultationsPage })))
+const AdminConsultationShowPage = lazy(() => import('../pages/management/admin/consultations/AdminConsultationShowPage').then(m => ({ default: m.AdminConsultationShowPage })))
+const AdminPickupRequestsPage = lazy(() => import('../pages/management/admin/pickup/AdminPickupRequestsPage').then(m => ({ default: m.AdminPickupRequestsPage })))
+const AdminPickupRequestShowPage = lazy(() => import('../pages/management/admin/pickup/AdminPickupRequestShowPage').then(m => ({ default: m.AdminPickupRequestShowPage })))
+const AdminAllocationsPage = lazy(() => import('../pages/management/admin/allocations/AdminAllocationsPage').then(m => ({ default: m.AdminAllocationsPage })))
+const AdminAllocationCreatePage = lazy(() => import('../pages/management/admin/allocations/AdminAllocationCreatePage').then(m => ({ default: m.AdminAllocationCreatePage })))
+const AdminSuggestionsPage = lazy(() => import('../pages/management/admin/suggestion/AdminSuggestionsPage').then(m => ({ default: m.AdminSuggestionsPage })))
+const AdminSuggestionShowPage = lazy(() => import('../pages/management/admin/suggestion/AdminSuggestionShowPage').then(m => ({ default: m.AdminSuggestionShowPage })))
+
+// Super Admin Pages
+const SuperAdminUsersPage = lazy(() => import('../pages/management/superadmin/users/SuperAdminUsersPage').then(m => ({ default: m.SuperAdminUsersPage })))
+const SuperAdminUserCreatePage = lazy(() => import('../pages/management/superadmin/users/SuperAdminUserCreatePage').then(m => ({ default: m.SuperAdminUserCreatePage })))
+const SuperAdminUserEditPage = lazy(() => import('../pages/management/superadmin/users/SuperAdminUserEditPage').then(m => ({ default: m.SuperAdminUserEditPage })))
+const SuperAdminDashboardPage = lazy(() => import('../pages/management/superadmin/dashboard/SuperAdminDashboardPage').then(m => ({ default: m.SuperAdminDashboardPage })))
+const RolesPage = lazy(() => import('../pages/management/superadmin/access/RolesPage').then(m => ({ default: m.RolesPage })))
+const RoleCreatePage = lazy(() => import('../pages/management/superadmin/access/RoleCreatePage').then(m => ({ default: m.RoleCreatePage })))
+const RoleEditPage = lazy(() => import('../pages/management/superadmin/access/RoleEditPage').then(m => ({ default: m.RoleEditPage })))
+
+// Error Pages
+const Error400 = lazy(() => import('../pages/errors/400'))
+const Error401 = lazy(() => import('../pages/errors/401'))
+const Error402 = lazy(() => import('../pages/errors/402'))
+const Error403 = lazy(() => import('../pages/errors/403'))
+const Error404 = lazy(() => import('../pages/errors/404'))
+const Error405 = lazy(() => import('../pages/errors/405'))
+const Error408 = lazy(() => import('../pages/errors/408'))
+const Error409 = lazy(() => import('../pages/errors/409'))
+const Error429 = lazy(() => import('../pages/errors/429'))
+const Error500 = lazy(() => import('../pages/errors/500'))
+const Error503 = lazy(() => import('../pages/errors/503'))
 
 export const router = createBrowserRouter([
   {
@@ -86,150 +113,149 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <LandingPage /> },
-      { path: 'layanan', element: <LayananPage /> },
-      { path: 'program', element: <ProgramPage /> },
-      { path: 'program/:slug', element: <ProgramDetailPage /> },
-      { path: 'literasi', element: <LiterasiPage /> },
-      { path: 'literasi/:slug', element: <LiterasiDetailPage /> },
+      { path: 'layanan', element: withSuspense(LayananPage) },
+      { path: 'program', element: withSuspense(ProgramPage) },
+      { path: 'program/:slug', element: withSuspense(ProgramDetailPage) },
+      { path: 'literasi', element: withSuspense(LiterasiPage) },
+      { path: 'literasi/:slug', element: withSuspense(LiterasiDetailPage) },
       {
         path: 'articles/:slug',
         element: <ArticleRedirect />
       },
-      { path: 'tentang-kami', element: <TentangKamiPage /> },
-      { path: 'konsultasi', element: <KonsultasiPage /> },
-      { path: 'jemput-wakaf', element: <JemputWakafPage /> },
-      { path: 'konfirmasi-donasi', element: <KonfirmasiDonasiPage /> },
+      { path: 'tentang-kami', element: withSuspense(TentangKamiPage) },
+      { path: 'konsultasi', element: withSuspense(KonsultasiPage) },
+      { path: 'jemput-wakaf', element: withSuspense(JemputWakafPage) },
+      { path: 'konfirmasi-donasi', element: withSuspense(KonfirmasiDonasiPage) },
 
-      { path: 'donate', element: <DonatePage /> },
-      { path: 'login', element: <LoginPage /> },
-      { path: 'register-mitra', element: <MitraRegisterPage /> },
-      { path: 'preview', element: <PreviewPage /> },
+      { path: 'donate', element: withSuspense(DonatePage) },
+      { path: 'login', element: withSuspense(LoginPage) },
+      { path: 'register-mitra', element: withSuspense(MitraRegisterPage) },
+      { path: 'preview', element: withSuspense(PreviewPage) },
       {
         path: 'editor',
-        element: <EditorShell />,
+        element: withSuspense(EditorShell),
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
-          { path: 'dashboard', element: <EditorDashboardPage /> },
-          { path: 'articles', element: <EditorArticlesPage /> },
-          { path: 'articles/create', element: <EditorArticleCreatePage /> },
-          { path: 'articles/:id/edit', element: <EditorArticleEditPage /> },
-          { path: 'programs', element: <EditorProgramsPage /> },
-          { path: 'programs/create', element: <EditorProgramCreatePage /> },
-          { path: 'programs/:id/edit', element: <EditorProgramEditPage /> },
-          { path: 'partners', element: <EditorPartnersPage /> },
-          { path: 'partners/create', element: <EditorPartnerCreatePage /> },
-          { path: 'partners/:id/edit', element: <EditorPartnerEditPage /> },
-          { path: 'banners', element: <EditorBannersPage /> },
-          { path: 'banners/create', element: <EditorBannerCreatePage /> },
-          { path: 'banners/:id/edit', element: <EditorBannerEditPage /> },
-          { path: 'tags', element: <EditorTagsPage /> },
-          { path: 'tags/create', element: <EditorTagCreatePage /> },
-          { path: 'tags/:id/edit', element: <EditorTagEditPage /> },
-          { path: 'organization-members', element: <EditorOrganizationMembersPage /> },
-          { path: 'organization-members/create', element: <EditorOrganizationMemberCreatePage /> },
+          { path: 'dashboard', element: withSuspense(EditorDashboardPage) },
+          { path: 'articles', element: withSuspense(EditorArticlesPage) },
+          { path: 'articles/create', element: withSuspense(EditorArticleCreatePage) },
+          { path: 'articles/:id/edit', element: withSuspense(EditorArticleEditPage) },
+          { path: 'programs', element: withSuspense(EditorProgramsPage) },
+          { path: 'programs/create', element: withSuspense(EditorProgramCreatePage) },
+          { path: 'programs/:id/edit', element: withSuspense(EditorProgramEditPage) },
+          { path: 'partners', element: withSuspense(EditorPartnersPage) },
+          { path: 'partners/create', element: withSuspense(EditorPartnerCreatePage) },
+          { path: 'partners/:id/edit', element: withSuspense(EditorPartnerEditPage) },
+          { path: 'banners', element: withSuspense(EditorBannersPage) },
+          { path: 'banners/create', element: withSuspense(EditorBannerCreatePage) },
+          { path: 'banners/:id/edit', element: withSuspense(EditorBannerEditPage) },
+          { path: 'tags', element: withSuspense(EditorTagsPage) },
+          { path: 'tags/create', element: withSuspense(EditorTagCreatePage) },
+          { path: 'tags/:id/edit', element: withSuspense(EditorTagEditPage) },
+          { path: 'organization-members', element: withSuspense(EditorOrganizationMembersPage) },
+          { path: 'organization-members/create', element: withSuspense(EditorOrganizationMemberCreatePage) },
 
-          { path: 'organization-members/:id/edit', element: <EditorOrganizationMemberEditPage /> },
-          { path: 'search', element: <SearchPage role="editor" /> },
-          { path: 'bank-accounts', element: <EditorBanksPage /> },
-          { path: 'bank-accounts/create', element: <EditorBankCreatePage /> },
-          { path: 'bank-accounts/:id/edit', element: <EditorBankEditPage /> },
-          { path: 'guidance', element: <GuidancePage /> },
-          { path: 'settings', element: <SettingsPage role="editor" /> },
+          { path: 'organization-members/:id/edit', element: withSuspense(EditorOrganizationMemberEditPage) },
+          { path: 'search', element: <Suspense fallback={<PageLoader />}><SearchPage role="editor" /></Suspense> },
+          { path: 'bank-accounts', element: withSuspense(EditorBanksPage) },
+          { path: 'bank-accounts/create', element: withSuspense(EditorBankCreatePage) },
+          { path: 'bank-accounts/:id/edit', element: withSuspense(EditorBankEditPage) },
+          { path: 'guidance', element: withSuspense(GuidancePage) },
+          { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="editor" /></Suspense> },
         ],
       },
       {
         path: 'admin',
-        element: <AdminShell />,
+        element: withSuspense(AdminShell),
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
-          { path: 'dashboard', element: <AdminDashboardPage /> },
+          { path: 'dashboard', element: withSuspense(AdminDashboardPage) },
           {
             path: 'donations',
-            element: <AdminDonationsPage />,
+            element: withSuspense(AdminDonationsPage),
           },
-          { path: 'reports/donations', element: <DonationReportPage /> },
+          { path: 'reports/donations', element: withSuspense(DonationReportPage) },
           {
             path: 'donation-confirmations',
-            element: <AdminDonationConfirmationsPage />,
+            element: withSuspense(AdminDonationConfirmationsPage),
           },
-          { path: 'donations/manual', element: <AdminDonationManualCreatePage /> },
-          { path: 'donations/:id', element: <AdminDonationShowPage /> },
-          { path: 'consultations', element: <AdminConsultationsPage /> },
-          { path: 'consultations/:id', element: <AdminConsultationShowPage /> },
-          { path: 'suggestions', element: <AdminSuggestionsPage /> },
-          { path: 'suggestions/:id', element: <AdminSuggestionShowPage /> },
-          { path: 'pickup-requests', element: <AdminPickupRequestsPage /> },
-          { path: 'pickup-requests/:id', element: <AdminPickupRequestShowPage /> },
-          { path: 'pickup-requests/:id', element: <AdminPickupRequestShowPage /> },
-          { path: 'allocations', element: <AdminAllocationsPage /> },
-          { path: 'allocations/create', element: <AdminAllocationCreatePage /> },
-          { path: 'search', element: <SearchPage role="admin" /> },
-          { path: 'guidance', element: <GuidancePage /> },
-          { path: 'settings', element: <SettingsPage role="admin" /> },
+          { path: 'donations/manual', element: withSuspense(AdminDonationManualCreatePage) },
+          { path: 'donations/:id', element: withSuspense(AdminDonationShowPage) },
+          { path: 'consultations', element: withSuspense(AdminConsultationsPage) },
+          { path: 'consultations/:id', element: withSuspense(AdminConsultationShowPage) },
+          { path: 'suggestions', element: withSuspense(AdminSuggestionsPage) },
+          { path: 'suggestions/:id', element: withSuspense(AdminSuggestionShowPage) },
+          { path: 'pickup-requests', element: withSuspense(AdminPickupRequestsPage) },
+          { path: 'pickup-requests/:id', element: withSuspense(AdminPickupRequestShowPage) },
+          { path: 'allocations', element: withSuspense(AdminAllocationsPage) },
+          { path: 'allocations/create', element: withSuspense(AdminAllocationCreatePage) },
+          { path: 'search', element: <Suspense fallback={<PageLoader />}><SearchPage role="admin" /></Suspense> },
+          { path: 'guidance', element: withSuspense(GuidancePage) },
+          { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="admin" /></Suspense> },
         ],
       },
       {
         path: 'superadmin',
-        element: <SuperAdminShell />,
+        element: withSuspense(SuperAdminShell),
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
           {
             path: 'dashboard',
-            element: <SuperAdminDashboardPage />,
+            element: withSuspense(SuperAdminDashboardPage),
           },
           {
             path: 'users',
-            element: <SuperAdminUsersPage />,
+            element: withSuspense(SuperAdminUsersPage),
           },
-          { path: 'users/create', element: <SuperAdminUserCreatePage /> },
-          { path: 'users/:id/edit', element: <SuperAdminUserEditPage /> },
-          { path: 'roles', element: <RolesPage /> },
-          { path: 'roles/create', element: <RoleCreatePage /> },
-          { path: 'roles/:id/edit', element: <RoleEditPage /> },
-          { path: 'reports/donations', element: <DonationReportPage /> },
+          { path: 'users/create', element: withSuspense(SuperAdminUserCreatePage) },
+          { path: 'users/:id/edit', element: withSuspense(SuperAdminUserEditPage) },
+          { path: 'roles', element: withSuspense(RolesPage) },
+          { path: 'roles/create', element: withSuspense(RoleCreatePage) },
+          { path: 'roles/:id/edit', element: withSuspense(RoleEditPage) },
+          { path: 'reports/donations', element: withSuspense(DonationReportPage) },
           {
             path: 'search',
-            element: <SearchPage role="superadmin" />,
+            element: <Suspense fallback={<PageLoader />}><SearchPage role="superadmin" /></Suspense>,
           },
-          { path: 'guidance', element: <GuidancePage /> },
-          { path: 'settings', element: <SettingsPage role="superadmin" /> },
+          { path: 'guidance', element: withSuspense(GuidancePage) },
+          { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="superadmin" /></Suspense> },
         ],
       },
       {
         path: 'mitra',
-        element: <MitraShell />,
+        element: withSuspense(MitraShell),
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
-          { path: 'dashboard', element: <MitraDashboardPage /> },
-          { path: 'allocations', element: <MitraAllocationsPage /> },
-          { path: 'donations', element: <MitraDonationsPage /> },
-          { path: 'saved-items', element: <SavedItemsPage /> },
-          { path: 'guidance', element: <GuidancePage /> },
-          { path: 'settings', element: <SettingsPage role="mitra" /> },
+          { path: 'dashboard', element: withSuspense(MitraDashboardPage) },
+          { path: 'allocations', element: withSuspense(MitraAllocationsPage) },
+          { path: 'donations', element: withSuspense(MitraDonationsPage) },
+          { path: 'saved-items', element: withSuspense(SavedItemsPage) },
+          { path: 'guidance', element: withSuspense(GuidancePage) },
+          { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="mitra" /></Suspense> },
         ],
       },
       {
         path: 'management',
-        element: <ManagementShell />,
+        element: withSuspense(ManagementShell),
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
-          { path: 'dashboard', element: <CustomDashboardPage /> },
-          { path: 'settings', element: <SettingsPage role="custom" /> },
-          { path: 'guidance', element: <GuidancePage /> },
+          { path: 'dashboard', element: withSuspense(CustomDashboardPage) },
+          { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="custom" /></Suspense> },
+          { path: 'guidance', element: withSuspense(GuidancePage) },
         ],
       },
-      { path: 'error/400', element: <Error400 /> },
-      { path: 'error/401', element: <Error401 /> },
-      { path: 'error/402', element: <Error402 /> },
-      { path: 'error/403', element: <Error403 /> },
-      { path: 'error/404', element: <Error404 /> },
-      { path: 'error/405', element: <Error405 /> },
-      { path: 'error/408', element: <Error408 /> },
-      { path: 'error/409', element: <Error409 /> },
-      { path: 'error/429', element: <Error429 /> },
-      { path: 'error/500', element: <Error500 /> },
-      { path: 'error/503', element: <Error503 /> },
-      { path: '*', element: <Error404 /> },
+      { path: 'error/400', element: withSuspense(Error400) },
+      { path: 'error/401', element: withSuspense(Error401) },
+      { path: 'error/402', element: withSuspense(Error402) },
+      { path: 'error/403', element: withSuspense(Error403) },
+      { path: 'error/404', element: withSuspense(Error404) },
+      { path: 'error/405', element: withSuspense(Error405) },
+      { path: 'error/408', element: withSuspense(Error408) },
+      { path: 'error/409', element: withSuspense(Error409) },
+      { path: 'error/429', element: withSuspense(Error429) },
+      { path: 'error/500', element: withSuspense(Error500) },
+      { path: 'error/503', element: withSuspense(Error503) },
+      { path: '*', element: withSuspense(Error404) },
     ],
   },
 ])

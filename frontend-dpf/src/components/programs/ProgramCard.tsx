@@ -42,6 +42,9 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
         <img
           src={getImageUrl(program.thumbnail_path ?? program.program_images?.[0])}
           alt={program.title}
+          width="400"
+          height="225"
+          loading="lazy"
           className="h-full w-full object-cover"
           onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
         />
@@ -80,7 +83,14 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
         <h3 className="text-lg font-heading font-semibold text-slate-900 leading-snug">{pickLocale(program.title, program.title_en, locale)}</h3>
         <p className="text-sm text-slate-600 line-clamp-3 min-h-[60px]">{pickLocale(program.short_description, program.short_description_en, locale)}</p>
         <div className="flex items-center gap-2">
-          <img src={dpfIcon} alt={brandName} className="h-6 w-6 rounded-md object-contain bg-white" />
+          <img
+            src={dpfIcon}
+            alt={brandName}
+            width="24"
+            height="24"
+            loading="lazy"
+            className="h-6 w-6 rounded-md object-contain bg-white"
+          />
           <span className="text-sm font-semibold text-slate-800">{brandName}</span>
           <FontAwesomeIcon icon={faCheckCircle} className="text-blue-500 text-xs" />
         </div>

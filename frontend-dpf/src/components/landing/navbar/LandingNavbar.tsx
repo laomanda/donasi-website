@@ -251,9 +251,9 @@ export function LandingNavbar() {
                                 type="button"
                                 onClick={() => setOpen((v) => !v)}
                                 className="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm transition-all"
+                                aria-label={open ? "Tutup menu navigasi / Close navigation menu" : "Buka menu navigasi / Open navigation menu"}
                             >
                                 <FontAwesomeIcon icon={open ? faXmark : faBars} className="text-lg" />
-                                {/* Note: faBars/faXmark need to be imported or use string if globally configured, but LandingNavbar previously had them in FontAwesomeIcon */}
                             </button>
                         </div>
                     </div>

@@ -66,7 +66,7 @@ class MidtransWebhookController extends Controller
             ]);
 
             // 6. Sync Program Amount
-            $this->syncProgramAmount($donation->fresh(), $previousStatus, $newStatus);
+            $this->syncProgramAmount($donation, $previousStatus, $newStatus);
         } else {
              \Illuminate\Support\Facades\Log::info("Midtrans Webhook: Status unchanged ($newStatus)", ['order_id' => $orderId]);
         }
@@ -83,10 +83,10 @@ class MidtransWebhookController extends Controller
 
         // Logic: Only add if becoming paid. Remove if formerly paid and now isn't.
         if ($oldStatus !== 'paid' && $newStatus === 'paid') {
-            $program->increment('collected_amount', $donation->amount);
+            $program->increment('collected_amount', (float) $donation->amount);
         } elseif ($oldStatus === 'paid' && $newStatus !== 'paid') {
              // This case covers refunds or cancellations after settlement (rare but possible)
-            $program->decrement('collected_amount', $donation->amount);
+            $program->decrement('collected_amount', (float) $donation->amount);
         }
     }
 }

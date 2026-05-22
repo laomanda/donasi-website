@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { 
-    faHandHoldingHeart, 
-    faPaperPlane, 
-    faCreditCard, 
-    faWallet, 
-    faCheckCircle, 
+import {
+    faHandHoldingHeart,
+    faPaperPlane,
+    faCreditCard,
+    faWallet,
+    faCheckCircle,
     faShieldHalved,
     faTimesCircle
 } from "@fortawesome/free-solid-svg-icons";
@@ -37,7 +37,7 @@ const ensureSnapLoaded = (clientKey: string) => {
             return;
         }
         const script = document.createElement("script");
-        script.src = resolveMidtransSnapUrl(); 
+        script.src = resolveMidtransSnapUrl();
         script.setAttribute("data-client-key", clientKey);
         script.onload = () => resolve(true);
         document.body.appendChild(script);
@@ -148,7 +148,7 @@ const DonatePage = () => {
             }
         }
     }, [location.hash]);
-    
+
     // Core Data State
     const [accounts, setAccounts] = useState<BankAccount[]>([]);
     const [programs, setPrograms] = useState<any[]>([]);
@@ -162,7 +162,7 @@ const DonatePage = () => {
         notes: "",
         is_anonymous: false,
     });
-    
+
     // UI & Submission State
     const [activeCategory, setActiveCategory] = useState<string | null>("bank_transfer");
     const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -400,8 +400,8 @@ const DonatePage = () => {
                             setSubmitState({ type: "success", messageKey: "donate.form.status.ewalletProcessing" });
                             setShowSuccessOverlay(true);
                             setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
-                            http.post(`/donations/${res.data?.donation?.id}/check-status`, { 
-                                snap_result: { transaction_status: "settlement", fraud_status: "accept", payment_type: result.payment_type } 
+                            http.post(`/donations/${res.data?.donation?.id}/check-status`, {
+                                snap_result: { transaction_status: "settlement", fraud_status: "accept", payment_type: result.payment_type }
                             }).catch(() => {});
                         } else {
                             setSubmitState({ type: "success", messageKey: "donate.form.status.pending" });
@@ -434,7 +434,7 @@ const DonatePage = () => {
     // Derived States
     const selectedProgram = localizedPrograms.find((p) => String(p.id) === form.program_id) || null;
     const selectedProgramImage = getImageUrl(selectedProgram?.program_images?.[0] || selectedProgram?.banner_path || selectedProgram?.thumbnail_path) || "";
-    
+
     const visibleAccounts = accounts.filter(a => a.is_visible !== false);
 
     const groupedAccounts = useMemo(() => {
@@ -447,8 +447,8 @@ const DonatePage = () => {
         return groups;
     }, [visibleAccounts]);
 
-    const sortedCategories = Object.keys(groupedAccounts).sort((a, b) => 
-        ['bank_transfer', 'virtual_account', 'ewallet', 'qris', 'other'].indexOf(a) - 
+    const sortedCategories = Object.keys(groupedAccounts).sort((a, b) =>
+        ['bank_transfer', 'virtual_account', 'ewallet', 'qris', 'other'].indexOf(a) -
         ['bank_transfer', 'virtual_account', 'ewallet', 'qris', 'other'].indexOf(b)
     );
 
@@ -640,6 +640,7 @@ const DonatePage = () => {
                             <button
                                 type="button"
                                 onClick={() => setQrisImage(null)}
+                                aria-label="Tutup Scan QRIS"
                                 className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
                             >
                                 <FontAwesomeIcon icon={faTimesCircle} />

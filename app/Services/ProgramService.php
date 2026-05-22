@@ -9,7 +9,7 @@ class ProgramService
 {
     public function storeProgram(array $data): Program
     {
-        $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
+        $data['slug'] = isset($data['slug']) && !blank($data['slug']) ? Str::slug($data['slug']) : Str::slug($data['title']);
         $data['collected_amount'] ??= 0;
 
         return Program::create($data);
@@ -17,7 +17,9 @@ class ProgramService
 
     public function updateProgram(Program $program, array $data): Program
     {
-        if (blank($data['slug'] ?? null) && isset($data['title'])) {
+        if (isset($data['slug']) && !blank($data['slug'])) {
+            $data['slug'] = Str::slug($data['slug']);
+        } elseif (isset($data['title'])) {
             $data['slug'] = Str::slug($data['title']);
         }
 

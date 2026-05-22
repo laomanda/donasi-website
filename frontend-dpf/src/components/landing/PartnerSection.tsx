@@ -87,6 +87,7 @@ export function PartnerSection({
                     <img
                       src={getImageUrl(partner.logo_path)}
                       alt={pickLocale(partner.name, partner.name_en, locale)}
+                      loading="lazy"
                       className="h-full w-full object-contain"
                       onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
                     />
@@ -112,6 +113,7 @@ export function PartnerSection({
                     <img
                       src={getImageUrl(partner.logo_path)}
                       alt={pickLocale(partner.name, partner.name_en, locale)}
+                      loading="lazy"
                       className="h-full w-full object-contain"
                       onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
                     />

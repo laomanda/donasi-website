@@ -69,11 +69,20 @@ export function SocialIcon({
     fb: 'hover:bg-blue-600 hover:border-transparent',
   }
 
+  const ariaLabels = {
+    ig: 'Instagram',
+    wa: 'WhatsApp',
+    tiktok: 'TikTok',
+    yt: 'YouTube',
+    fb: 'Facebook',
+  }
+
   return (
     <a
       href={href}
       target="_blank"
       rel="noreferrer"
+      aria-label={ariaLabels[variant]}
       className={`
         flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5
         text-slate-300 transition-all duration-300 ease-out

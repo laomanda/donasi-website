@@ -71,7 +71,10 @@ export function BannerSection({ banners }: { banners: Banner[] }) {
                      e.currentTarget.src = imagePlaceholder;
                   }}
                   alt="Banner"
-                  loading="lazy"
+                  width="1920"
+                  height="1080"
+                  loading="eager"
+                  fetchPriority="high"
                   decoding="async"
                   className="h-full w-full object-cover relative z-10 animate-banner-pan motion-reduce:animate-none"
                 />
