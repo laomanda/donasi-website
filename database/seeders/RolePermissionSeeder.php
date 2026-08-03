@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -36,6 +36,7 @@ class RolePermissionSeeder extends Seeder
             'manage organization',
             'view reports',
             'manage banners',
+            'manage gallery dpf',
             'manage tags',
             'manage bank_accounts',
             'manage allocations',
@@ -55,6 +56,11 @@ class RolePermissionSeeder extends Seeder
         $superadminRole = Role::where('name', 'superadmin')->first();
         if ($superadminRole) {
             $superadminRole->syncPermissions(Permission::all());
+        }
+
+        $editorRole = Role::where('name', 'editor')->first();
+        if ($editorRole) {
+            $editorRole->givePermissionTo('manage gallery dpf');
         }
     }
 }

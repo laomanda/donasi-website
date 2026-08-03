@@ -1,7 +1,8 @@
 <?php
 
-use App\Http\Controllers\Api\Admin\ArticleController as AdminArticleController;
+use App\Http\Controllers\Api\Admin\AllocationController as AdminAllocationController;
 use App\Http\Controllers\Api\Admin\BankAccountController as AdminBankAccountController;
+use App\Http\Controllers\Api\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\Admin\DonationController as AdminDonationController;
 use App\Http\Controllers\Api\Admin\OrganizationController as AdminOrganizationController;
@@ -9,14 +10,15 @@ use App\Http\Controllers\Api\Admin\PartnerController as AdminPartnerController;
 use App\Http\Controllers\Api\Admin\PickupRequestController as AdminPickupRequestController;
 use App\Http\Controllers\Api\Admin\ProgramController as AdminProgramController;
 use App\Http\Controllers\Api\Admin\SettingController as AdminSettingController;
-use App\Http\Controllers\Api\Admin\WakafConsultationController as AdminWakafConsultationController;
-use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Api\Admin\AllocationController as AdminAllocationController;
 use App\Http\Controllers\Api\Admin\SuggestionController as AdminSuggestionController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Api\Admin\WakafConsultationController as AdminWakafConsultationController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordController;
 use App\Http\Controllers\Api\Editor\ArticleController as EditorArticleController;
+use App\Http\Controllers\Api\Editor\BannerController as EditorBannerController;
 use App\Http\Controllers\Api\Editor\DashboardController as EditorDashboardController;
+use App\Http\Controllers\Api\Editor\GalleryDpfController as EditorGalleryDpfController;
 use App\Http\Controllers\Api\Editor\OrganizationController as EditorOrganizationController;
 use App\Http\Controllers\Api\Editor\PartnerController as EditorPartnerController;
 use App\Http\Controllers\Api\Editor\ProgramController as EditorProgramController;
@@ -24,24 +26,23 @@ use App\Http\Controllers\Api\Editor\UploadController as EditorUploadController;
 use App\Http\Controllers\Api\Frontend\ArticleController as FrontendArticleController;
 use App\Http\Controllers\Api\Frontend\BannerController as FrontendBannerController;
 use App\Http\Controllers\Api\Frontend\ConsultationController as FrontendConsultationController;
-use App\Http\Controllers\Api\Frontend\DonationController as FrontendDonationController;
 use App\Http\Controllers\Api\Frontend\DonationConfirmationController as FrontendDonationConfirmationController;
+use App\Http\Controllers\Api\Frontend\DonationController as FrontendDonationController;
+use App\Http\Controllers\Api\Frontend\GalleryDpfController as FrontendGalleryDpfController;
 use App\Http\Controllers\Api\Frontend\HomeController;
 use App\Http\Controllers\Api\Frontend\OrganizationController as FrontendOrganizationController;
 use App\Http\Controllers\Api\Frontend\PickupRequestController as FrontendPickupRequestController;
 use App\Http\Controllers\Api\Frontend\ProgramController as FrontendProgramController;
 use App\Http\Controllers\Api\Frontend\SettingController as FrontendSettingController;
 use App\Http\Controllers\Api\Frontend\SuggestionController as FrontendSuggestionController;
-use App\Http\Controllers\Api\Admin\BannerController as AdminBannerController;
-use App\Http\Controllers\Api\Editor\BannerController as EditorBannerController;
+use App\Http\Controllers\Api\Mitra\MitraAllocationController;
+use App\Http\Controllers\Api\Mitra\MitraDashboardController;
 use App\Http\Controllers\Api\PrayerTimesController;
 use App\Http\Controllers\Api\Reports\DonationReportController;
-use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboardController;
-use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
-use App\Http\Controllers\Api\Superadmin\RoleController as SuperadminRoleController;
-use App\Http\Controllers\Api\Mitra\MitraDashboardController;
-use App\Http\Controllers\Api\Mitra\MitraAllocationController;
 use App\Http\Controllers\Api\SavedItemController;
+use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboardController;
+use App\Http\Controllers\Api\Superadmin\RoleController as SuperadminRoleController;
+use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -61,7 +62,6 @@ Route::prefix('v1')->group(function () {
             'message' => 'pong',
         ]);
     });
-
 
     /*
     |--------------------------------------------------------------------------
@@ -89,6 +89,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('throttle:300,1')->group(function () {
         Route::get('home', HomeController::class);
         Route::get('banners', [FrontendBannerController::class, 'index']);
+        Route::get('gallery-dpf', [FrontendGalleryDpfController::class, 'index']);
         Route::get('settings', [FrontendSettingController::class, 'index']);
         Route::post('suggestions', [FrontendSuggestionController::class, 'store']);
 
@@ -135,29 +136,28 @@ Route::prefix('v1')->group(function () {
                 Route::patch('donations/{donation}/status', [AdminDonationController::class, 'updateStatus']);
                 Route::post('donations/{donation}/send-whatsapp', [AdminDonationController::class, 'sendWhatsapp']);
                 Route::delete('donations/{donation}', [AdminDonationController::class, 'destroy']);
-                
+
                 Route::apiResource('pickup-requests', AdminPickupRequestController::class)->except(['index', 'show']);
                 Route::patch('pickup-requests/{pickup_request}/status', [AdminPickupRequestController::class, 'updateStatus']);
-                
+
                 Route::apiResource('suggestions', AdminSuggestionController::class)->only(['index', 'show', 'destroy']);
                 Route::patch('suggestions/{suggestion}/status', [AdminSuggestionController::class, 'updateStatus']);
-                
+
                 Route::apiResource('consultations', AdminWakafConsultationController::class)
                     ->parameters(['consultations' => 'wakaf_consultation'])
                     ->except(['index', 'show']);
                 Route::patch('consultations/{wakaf_consultation}/status', [AdminWakafConsultationController::class, 'updateStatus']);
 
-
                 Route::apiResource('partners', AdminPartnerController::class)->except(['index', 'show']);
                 Route::apiResource('organization-members', AdminOrganizationController::class)->except(['index', 'show']);
-                
+
                 Route::put('settings', [AdminSettingController::class, 'update']);
                 Route::apiResource('banners', AdminBannerController::class)->except(['index', 'show']);
 
                 // Allocations (Mitra Wallet)
                 Route::get('users/{user}/allocatable-programs', [AdminAllocationController::class, 'getAllocatablePrograms']);
                 Route::apiResource('allocations', AdminAllocationController::class)->only(['store']);
-                
+
                 // Users (for dropdowns etc)
                 Route::get('users', [AdminUserController::class, 'index']);
             });
@@ -170,11 +170,10 @@ Route::prefix('v1')->group(function () {
             Route::get('donations', [AdminDonationController::class, 'index']);
             Route::get('donations/{donation}', [AdminDonationController::class, 'show']);
             Route::get('donations/{donation}/export', [AdminDonationController::class, 'export']);
-            
-            
+
             Route::get('reports/donations', [DonationReportController::class, 'index']);
             Route::get('reports/donations/export', [DonationReportController::class, 'export']);
-            
+
             Route::apiResource('pickup-requests', AdminPickupRequestController::class)->only(['index', 'show']);
             Route::apiResource('consultations', AdminWakafConsultationController::class)
                 ->parameters(['consultations' => 'wakaf_consultation'])
@@ -212,7 +211,7 @@ Route::prefix('v1')->group(function () {
     | EDITOR (Role: editor, admin, superadmin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:editor|superadmin|manage articles|manage programs|manage banners|manage tags|manage tasks|manage partners|manage organization|manage bank_accounts'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:editor|superadmin|manage articles|manage programs|manage banners|manage gallery dpf|manage tags|manage tasks|manage partners|manage organization|manage bank_accounts'])
         ->prefix('editor')
         ->name('editor.')
         ->group(function () {
@@ -225,6 +224,7 @@ Route::prefix('v1')->group(function () {
             Route::get('articles/categories', [EditorArticleController::class, 'categories']);
             Route::apiResource('articles', EditorArticleController::class);
             Route::apiResource('banners', EditorBannerController::class)->except('show');
+            Route::apiResource('gallery-dpf', EditorGalleryDpfController::class);
             Route::apiResource('partners', EditorPartnerController::class)->except('show');
             Route::apiResource('organization-members', EditorOrganizationController::class);
             Route::apiResource('bank-accounts', AdminBankAccountController::class);

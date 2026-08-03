@@ -13,6 +13,7 @@ const withSuspense = (Component: React.ComponentType) => (
 
 // Public Pages (Lazy Loaded except LandingPage for LCP optimization)
 const LayananPage = lazy(() => import('../pages/LayananPage').then(m => ({ default: m.LayananPage })))
+const AktivitasDpfPage = lazy(() => import('../pages/AktivitasDpfPage').then(m => ({ default: m.AktivitasDpfPage })))
 const ProgramPage = lazy(() => import('../pages/ProgramPage').then(m => ({ default: m.ProgramPage })))
 const ProgramDetailPage = lazy(() => import('../pages/ProgramDetailPage').then(m => ({ default: m.ProgramDetailPage })))
 const LiterasiPage = lazy(() => import('../pages/LiterasiPage').then(m => ({ default: m.LiterasiPage })))
@@ -56,6 +57,9 @@ const EditorProgramEditPage = lazy(() => import('../pages/management/editor/prog
 const EditorBannersPage = lazy(() => import('../pages/management/editor/banner/EditorBannersPage'))
 const EditorBannerCreatePage = lazy(() => import('../pages/management/editor/banner/EditorBannerCreatePage'))
 const EditorBannerEditPage = lazy(() => import('../pages/management/editor/banner/EditorBannerEditPage'))
+const EditorGalleryDpfPage = lazy(() => import('../pages/management/editor/gallery-dpf/EditorGalleryDpfPage'))
+const EditorGalleryDpfCreatePage = lazy(() => import('../pages/management/editor/gallery-dpf/EditorGalleryDpfCreatePage'))
+const EditorGalleryDpfEditPage = lazy(() => import('../pages/management/editor/gallery-dpf/EditorGalleryDpfEditPage'))
 const EditorPartnersPage = lazy(() => import('../pages/management/editor/partner/EditorPartnersPage'))
 const EditorPartnerCreatePage = lazy(() => import('../pages/management/editor/partner/EditorPartnerCreatePage'))
 const EditorPartnerEditPage = lazy(() => import('../pages/management/editor/partner/EditorPartnerEditPage'))
@@ -114,6 +118,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <LandingPage /> },
       { path: 'layanan', element: withSuspense(LayananPage) },
+      { path: 'aktivitas-dpf', element: withSuspense(AktivitasDpfPage) },
       { path: 'program', element: withSuspense(ProgramPage) },
       { path: 'program/:slug', element: withSuspense(ProgramDetailPage) },
       { path: 'literasi', element: withSuspense(LiterasiPage) },
@@ -149,6 +154,9 @@ export const router = createBrowserRouter([
           { path: 'banners', element: withSuspense(EditorBannersPage) },
           { path: 'banners/create', element: withSuspense(EditorBannerCreatePage) },
           { path: 'banners/:id/edit', element: withSuspense(EditorBannerEditPage) },
+          { path: 'gallery-dpf', element: withSuspense(EditorGalleryDpfPage) },
+          { path: 'gallery-dpf/create', element: withSuspense(EditorGalleryDpfCreatePage) },
+          { path: 'gallery-dpf/:id/edit', element: withSuspense(EditorGalleryDpfEditPage) },
           { path: 'tags', element: withSuspense(EditorTagsPage) },
           { path: 'tags/create', element: withSuspense(EditorTagCreatePage) },
           { path: 'tags/:id/edit', element: withSuspense(EditorTagEditPage) },
