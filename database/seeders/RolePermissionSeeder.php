@@ -37,6 +37,7 @@ class RolePermissionSeeder extends Seeder
             'view reports',
             'manage banners',
             'manage gallery dpf',
+            'manage gallery mitra',
             'manage tags',
             'manage bank_accounts',
             'manage allocations',
@@ -61,6 +62,7 @@ class RolePermissionSeeder extends Seeder
         $editorRole = Role::where('name', 'editor')->first();
         if ($editorRole) {
             $editorRole->givePermissionTo('manage gallery dpf');
+            $editorRole->givePermissionTo('manage gallery mitra');
         }
     }
 }

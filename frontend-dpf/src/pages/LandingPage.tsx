@@ -17,6 +17,7 @@ import { PromiseStrip } from "@/components/landing/PromiseStrip";
 import { ProgramsSection } from "@/components/landing/ProgramsSection";
 import { ArticlesSection } from "@/components/landing/ArticlesSection";
 import { GalleryDpfCta } from "@/components/landing/GalleryDpfCta";
+import { GalleryMitraCta } from "@/components/landing/GalleryMitraCta";
 
 // Lazy Loaded below-the-fold components
 const PartnerSection = lazy(() => import("@/components/landing/PartnerSection").then(m => ({ default: m.PartnerSection })));
@@ -117,6 +118,7 @@ function LandingPage() {
       <ProgramsSection highlights={localizedHighlights} loading={loading} t={t} locale={locale as any} />
       <ArticlesSection articles={localizedArticles} loading={loading} t={t} locale={locale as any} />
       <GalleryDpfCta locale={locale} />
+      <GalleryMitraCta locale={locale} />
       
       <Suspense fallback={<div className="min-h-[150px] bg-slate-50 animate-pulse" />}>
         <PartnerSection partners={localizedPartners} loading={loading} t={t} locale={locale as any} />
