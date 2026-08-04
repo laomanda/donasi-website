@@ -3,7 +3,11 @@ import { faCircleInfo, faLock, faUser } from "@fortawesome/free-solid-svg-icons"
 import { useLang } from "../../../lib/i18n";
 import { settingsDict, translate } from "../../../i18n/settings";
 
-export function SettingsSidebar() {
+type SettingsSidebarProps = {
+  showSocialSettings?: boolean;
+};
+
+export function SettingsSidebar({ showSocialSettings = false }: SettingsSidebarProps) {
   const { locale } = useLang();
   const t = (key: string, fallback?: string) => translate(settingsDict, locale, key, fallback);
 
@@ -31,6 +35,17 @@ export function SettingsSidebar() {
           </div>
           {t("settings.sidebar.security")}
         </a>
+        {showSocialSettings && (
+          <a
+            href="#social"
+            className="group flex items-center gap-3 rounded-2xl bg-transparent px-5 py-4 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-300 shadow-sm ring-1 ring-slate-100 transition-colors group-hover:text-brandGreen-600 group-hover:ring-brandGreen-100">
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </div>
+            {t("settings.sidebar.social")}
+          </a>
+        )}
 
         <div className="mt-6 border-t border-slate-100 p-4">
           <div className="flex items-center gap-3 text-slate-400">

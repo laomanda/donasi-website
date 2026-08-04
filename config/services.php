@@ -39,6 +39,26 @@ return [
         'base_url' => env('ALADHAN_BASE_URL', 'https://api.aladhan.com/v1'),
     ],
 
+    'instagram' => [
+        'base_url' => env('INSTAGRAM_GRAPH_BASE_URL', 'https://graph.instagram.com'),
+        'api_version' => env('INSTAGRAM_API_VERSION', ''),
+        'user_id' => env('INSTAGRAM_USER_ID'),
+        'access_token' => env('INSTAGRAM_ACCESS_TOKEN'),
+    ],
+
+    'youtube' => [
+        'base_url' => env('YOUTUBE_API_BASE_URL', 'https://www.googleapis.com/youtube/v3'),
+        'api_key' => env('YOUTUBE_API_KEY'),
+        'channel_id' => env('YOUTUBE_CHANNEL_ID'),
+    ],
+
+    'social_media' => [
+        'timeout' => env('SOCIAL_MEDIA_TIMEOUT', 5),
+        'limit' => env('SOCIAL_MEDIA_LIMIT', 6),
+        'cache_ttl' => env('SOCIAL_MEDIA_CACHE_TTL', 600),
+        'stale_ttl' => env('SOCIAL_MEDIA_STALE_TTL', 86400),
+    ],
+
     'pusher' => [
         'app_id' => env('PUSHER_APP_ID'),
         'key' => env('PUSHER_APP_KEY'),

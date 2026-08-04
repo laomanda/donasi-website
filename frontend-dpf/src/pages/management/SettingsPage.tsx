@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { isAxiosError } from "axios";
 import http from "../../lib/http";
 import { getAuthToken, getAuthUser } from "../../lib/auth";
 import type { DashboardRole } from "../../components/management/dashboard/DashboardUtils";
@@ -10,31 +11,44 @@ import SettingsHero from "../../components/management/settings/SettingsHero";
 import SettingsSidebar from "../../components/management/settings/SettingsSidebar";
 import SettingsAccountSection from "../../components/management/settings/SettingsAccountSection";
 import SettingsSecuritySection from "../../components/management/settings/SettingsSecuritySection";
+import SettingsSocialSection from "../../components/management/settings/SettingsSocialSection";
+
+type SocialSettingsState = {
+  instagramEnabled: boolean;
+  youtubeEnabled: boolean;
+};
+
+const SOCIAL_SETTING_KEYS = {
+  instagramEnabled: "social.instagram_enabled",
+  youtubeEnabled: "social.youtube_enabled",
+} as const;
 
 export function SettingsPage({ role }: { role: DashboardRole }) {
   const toast = useToast();
   const { locale } = useLang();
-  const t = (key: string, fallback?: string) => translate(settingsDict, locale, key, fallback);
+  const t = useCallback((key: string, fallback?: string) => translate(settingsDict, locale, key, fallback), [locale]);
 
   const user = useMemo(() => getAuthUser(), []);
   const tokenExists = useMemo(() => Boolean(getAuthToken()), []);
 
-  const roleLabel = (role: DashboardRole) => {
+  const roleLabel = useCallback((role: DashboardRole) => {
     if (role === "superadmin") return t("role.superadmin");
     if (role === "admin") return t("role.admin");
     if (role === "editor") return t("role.editor");
     return t("role.mitra");
-  };
+  }, [t]);
 
   const displayName = useMemo(() => {
     const value = String(user?.name ?? roleLabel(role)).trim();
     return value || roleLabel(role);
-  }, [role, user?.name, locale]); // Add locale to dependency to update role label on change
+  }, [role, user?.name, roleLabel]);
 
   const displayEmail = useMemo(() => {
     const value = String(user?.email ?? "").trim();
     return value || t("settings.hero.email_not_available");
-  }, [user?.email, locale]);
+  }, [user?.email, t]);
+
+  const canManageSocialSettings = role === "admin" || role === "superadmin";
 
   const [passwordForm, setPasswordForm] = useState({
     current: "",
@@ -48,6 +62,12 @@ export function SettingsPage({ role }: { role: DashboardRole }) {
   });
   const [passwordErrors, setPasswordErrors] = useState<{ [k: string]: string }>({});
   const [passwordSaving, setPasswordSaving] = useState(false);
+  const [socialForm, setSocialForm] = useState<SocialSettingsState>({
+    instagramEnabled: false,
+    youtubeEnabled: false,
+  });
+  const [socialLoading, setSocialLoading] = useState(canManageSocialSettings);
+  const [socialSaving, setSocialSaving] = useState(false);
 
   const onCopy = async (value: string, label: string) => {
     const text = String(value ?? "");
@@ -67,6 +87,92 @@ export function SettingsPage({ role }: { role: DashboardRole }) {
       toast.error(t("settings.account.copy_fail", `Tidak bisa menyalin ${label}.`).replace("{label}", label), { 
         title: locale === "en" ? "Failed" : "Gagal" 
       });
+    }
+  };
+
+  useEffect(() => {
+    if (!canManageSocialSettings) return;
+
+    let active = true;
+    const loadSocialSettings = async () => {
+      setSocialLoading(true);
+      try {
+        const response = await http.get("/admin/settings", {
+          params: {
+            keys: Object.values(SOCIAL_SETTING_KEYS).join(","),
+          },
+        });
+
+        if (!active) return;
+
+        const items = Array.isArray(response.data) ? response.data : [];
+        const nextState = items.reduce<SocialSettingsState>(
+          (acc, item) => {
+            if (item?.key === SOCIAL_SETTING_KEYS.instagramEnabled) {
+              acc.instagramEnabled = String(item?.value ?? "0") === "1";
+            }
+            if (item?.key === SOCIAL_SETTING_KEYS.youtubeEnabled) {
+              acc.youtubeEnabled = String(item?.value ?? "0") === "1";
+            }
+            return acc;
+          },
+          {
+            instagramEnabled: false,
+            youtubeEnabled: false,
+          }
+        );
+
+        setSocialForm(nextState);
+      } catch (err: unknown) {
+        if (!active) return;
+        const message = isAxiosError(err)
+          ? err.response?.data?.message ?? t("settings.social.load_fail")
+          : t("settings.social.load_fail");
+        toast.error(message, { title: locale === "en" ? "Failed" : "Gagal" });
+      } finally {
+        if (active) setSocialLoading(false);
+      }
+    };
+
+    void loadSocialSettings();
+    return () => {
+      active = false;
+    };
+  }, [canManageSocialSettings, locale, t, toast]);
+
+  const onToggleSocialSetting = (key: keyof SocialSettingsState, checked: boolean) => {
+    setSocialForm((prev) => ({
+      ...prev,
+      [key]: checked,
+    }));
+  };
+
+  const onSaveSocialSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canManageSocialSettings || socialLoading) return;
+
+    setSocialSaving(true);
+    try {
+      await http.put("/admin/settings", {
+        settings: [
+          {
+            key: SOCIAL_SETTING_KEYS.instagramEnabled,
+            value: socialForm.instagramEnabled ? "1" : "0",
+          },
+          {
+            key: SOCIAL_SETTING_KEYS.youtubeEnabled,
+            value: socialForm.youtubeEnabled ? "1" : "0",
+          },
+        ],
+      });
+      toast.success(t("settings.social.save_success"), { title: locale === "en" ? "Success" : "Berhasil" });
+    } catch (err: unknown) {
+      const message = isAxiosError(err)
+        ? err.response?.data?.message ?? t("settings.social.save_fail")
+        : t("settings.social.save_fail");
+      toast.error(message, { title: locale === "en" ? "Failed" : "Gagal" });
+    } finally {
+      setSocialSaving(false);
     }
   };
 
@@ -101,8 +207,10 @@ export function SettingsPage({ role }: { role: DashboardRole }) {
       });
       setPasswordForm({ current: "", next: "", confirm: "" });
       toast.success(t("settings.validation.success"), { title: locale === "en" ? "Success" : "Berhasil" });
-    } catch (err: any) {
-      const message = err?.response?.data?.message ?? t("settings.validation.fail");
+    } catch (err: unknown) {
+      const message = isAxiosError(err)
+        ? err.response?.data?.message ?? t("settings.validation.fail")
+        : t("settings.validation.fail");
       toast.error(message, { title: locale === "en" ? "Failed" : "Gagal" });
     } finally {
       setPasswordSaving(false);
@@ -119,7 +227,7 @@ export function SettingsPage({ role }: { role: DashboardRole }) {
       />
 
       <div className="grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <SettingsSidebar />
+        <SettingsSidebar showSocialSettings={canManageSocialSettings} />
 
         <div className="space-y-8">
           <SettingsAccountSection 
@@ -144,6 +252,16 @@ export function SettingsPage({ role }: { role: DashboardRole }) {
               setPasswordErrors({});
             }}
           />
+
+          {canManageSocialSettings && (
+            <SettingsSocialSection
+              value={socialForm}
+              loading={socialLoading}
+              saving={socialSaving}
+              onToggle={onToggleSocialSetting}
+              onSave={onSaveSocialSettings}
+            />
+          )}
         </div>
       </div>
     </div>

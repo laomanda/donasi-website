@@ -24,6 +24,7 @@ import { MitraProductCta } from "@/components/landing/MitraProductCta";
 const PartnerSection = lazy(() => import("@/components/landing/PartnerSection").then(m => ({ default: m.PartnerSection })));
 const ProposalSection = lazy(() => import("@/components/landing/ProposalSection").then(m => ({ default: m.ProposalSection })));
 const TestimonialsSection = lazy(() => import("@/components/landing/TestimonialsSection").then(m => ({ default: m.TestimonialsSection })));
+const SocialMediaSection = lazy(() => import("@/components/landing/social-media/SocialMediaSection"));
 
 function LandingPage() {
   const [data, setData] = useState<HomePayload | null>(null);
@@ -121,6 +122,10 @@ function LandingPage() {
       <GalleryDpfCta locale={locale} />
       <GalleryMitraCta locale={locale} />
       <MitraProductCta locale={locale} />
+
+      <Suspense fallback={<div className="min-h-[240px] bg-slate-50 animate-pulse" />}>
+        <SocialMediaSection />
+      </Suspense>
       
       <Suspense fallback={<div className="min-h-[150px] bg-slate-50 animate-pulse" />}>
         <PartnerSection partners={localizedPartners} loading={loading} t={t} locale={locale as any} />

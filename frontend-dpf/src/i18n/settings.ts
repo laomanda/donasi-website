@@ -12,6 +12,7 @@ export const settingsDict: Dict = {
     "settings.sidebar.title": { id: "NAVIGASI PENGATURAN", en: "SETTINGS NAVIGATION" },
     "settings.sidebar.account": { id: "Informasi Akun", en: "Account Information" },
     "settings.sidebar.security": { id: "Kata Sandi", en: "Password & Security" },
+    "settings.sidebar.social": { id: "Sosial Media", en: "Social Media" },
     "settings.sidebar.info": { id: "SEMUA PERUBAHAN AKAN LANGSUNG DITERAPKAN KE SISTEM.", en: "ALL CHANGES WILL BE IMMEDIATELY APPLIED TO THE SYSTEM." },
 
     // Account Section
@@ -42,6 +43,23 @@ export const settingsDict: Dict = {
     "settings.security.reset": { id: "Batal / Reset", en: "Cancel / Reset" },
     "settings.security.save": { id: "Simpan Perubahan", en: "Save Changes" },
     "settings.security.saving": { id: "Menyimpan...", en: "Saving..." },
+
+    // Social Settings
+    "settings.social.title": { id: "Sosial Media", en: "Social Media" },
+    "settings.social.subtitle": { id: "Kelola status publikasi konten sosial dari backend.", en: "Manage public social content flags from the backend." },
+    "settings.social.helper": { id: "Pengaturan ini hanya mengaktifkan atau menonaktifkan section sosial di halaman publik.", en: "These settings only enable or disable the social section on the public site." },
+    "settings.social.loading": { id: "Memuat pengaturan sosial...", en: "Loading social settings..." },
+    "settings.social.instagram.title": { id: "Instagram", en: "Instagram" },
+    "settings.social.instagram.description": { id: "Tampilkan feed Instagram terbaru di landing page.", en: "Show the latest Instagram feed on the landing page." },
+    "settings.social.youtube.title": { id: "YouTube", en: "YouTube" },
+    "settings.social.youtube.description": { id: "Tampilkan video YouTube terbaru di landing page.", en: "Show the latest YouTube videos on the landing page." },
+    "settings.social.enabled": { id: "Aktif", en: "Enabled" },
+    "settings.social.disabled": { id: "Nonaktif", en: "Disabled" },
+    "settings.social.save": { id: "Simpan Sosial Media", en: "Save Social Media" },
+    "settings.social.saving": { id: "Menyimpan...", en: "Saving..." },
+    "settings.social.save_success": { id: "Pengaturan sosial berhasil diperbarui.", en: "Social settings updated successfully." },
+    "settings.social.save_fail": { id: "Gagal memperbarui pengaturan sosial.", en: "Failed to update social settings." },
+    "settings.social.load_fail": { id: "Gagal memuat pengaturan sosial.", en: "Failed to load social settings." },
 
     // Role Labels
     "role.superadmin": { id: "Super Admin", en: "Super Admin" },

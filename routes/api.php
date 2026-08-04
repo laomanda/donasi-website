@@ -38,6 +38,7 @@ use App\Http\Controllers\Api\Frontend\OrganizationController as FrontendOrganiza
 use App\Http\Controllers\Api\Frontend\PickupRequestController as FrontendPickupRequestController;
 use App\Http\Controllers\Api\Frontend\ProgramController as FrontendProgramController;
 use App\Http\Controllers\Api\Frontend\SettingController as FrontendSettingController;
+use App\Http\Controllers\Api\Frontend\SocialMediaController as FrontendSocialMediaController;
 use App\Http\Controllers\Api\Frontend\SuggestionController as FrontendSuggestionController;
 use App\Http\Controllers\Api\Mitra\MitraAllocationController;
 use App\Http\Controllers\Api\Mitra\MitraDashboardController;
@@ -99,6 +100,7 @@ Route::prefix('v1')->group(function () {
         Route::get('mitra-products/{slug}', [FrontendMitraProductController::class, 'show']);
         Route::get('mitra-products/{slug}/contact', [FrontendMitraProductController::class, 'contact']);
         Route::get('settings', [FrontendSettingController::class, 'index']);
+        Route::get('social-media', FrontendSocialMediaController::class);
         Route::post('suggestions', [FrontendSuggestionController::class, 'store']);
 
         Route::get('programs', [FrontendProgramController::class, 'index']);
