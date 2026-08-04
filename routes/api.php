@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\Editor\BannerController as EditorBannerController;
 use App\Http\Controllers\Api\Editor\DashboardController as EditorDashboardController;
 use App\Http\Controllers\Api\Editor\GalleryDpfController as EditorGalleryDpfController;
 use App\Http\Controllers\Api\Editor\GalleryMitraController as EditorGalleryMitraController;
+use App\Http\Controllers\Api\Editor\MitraProductController as EditorMitraProductController;
 use App\Http\Controllers\Api\Editor\OrganizationController as EditorOrganizationController;
 use App\Http\Controllers\Api\Editor\PartnerController as EditorPartnerController;
 use App\Http\Controllers\Api\Editor\ProgramController as EditorProgramController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\Api\Frontend\DonationController as FrontendDonationCont
 use App\Http\Controllers\Api\Frontend\GalleryDpfController as FrontendGalleryDpfController;
 use App\Http\Controllers\Api\Frontend\GalleryMitraController as FrontendGalleryMitraController;
 use App\Http\Controllers\Api\Frontend\HomeController;
+use App\Http\Controllers\Api\Frontend\MitraProductController as FrontendMitraProductController;
 use App\Http\Controllers\Api\Frontend\OrganizationController as FrontendOrganizationController;
 use App\Http\Controllers\Api\Frontend\PickupRequestController as FrontendPickupRequestController;
 use App\Http\Controllers\Api\Frontend\ProgramController as FrontendProgramController;
@@ -93,6 +95,9 @@ Route::prefix('v1')->group(function () {
         Route::get('banners', [FrontendBannerController::class, 'index']);
         Route::get('gallery-dpf', [FrontendGalleryDpfController::class, 'index']);
         Route::get('gallery-mitra', [FrontendGalleryMitraController::class, 'index']);
+        Route::get('mitra-products', [FrontendMitraProductController::class, 'index']);
+        Route::get('mitra-products/{slug}', [FrontendMitraProductController::class, 'show']);
+        Route::get('mitra-products/{slug}/contact', [FrontendMitraProductController::class, 'contact']);
         Route::get('settings', [FrontendSettingController::class, 'index']);
         Route::post('suggestions', [FrontendSuggestionController::class, 'store']);
 
@@ -214,7 +219,7 @@ Route::prefix('v1')->group(function () {
     | EDITOR (Role: editor, admin, superadmin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:editor|superadmin|manage articles|manage programs|manage banners|manage gallery dpf|manage gallery mitra|manage tags|manage tasks|manage partners|manage organization|manage bank_accounts'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:editor|superadmin|manage articles|manage programs|manage banners|manage gallery dpf|manage gallery mitra|manage produk mitra|manage tags|manage tasks|manage partners|manage organization|manage bank_accounts'])
         ->prefix('editor')
         ->name('editor.')
         ->group(function () {
@@ -229,6 +234,7 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('banners', EditorBannerController::class)->except('show');
             Route::apiResource('gallery-dpf', EditorGalleryDpfController::class);
             Route::apiResource('gallery-mitra', EditorGalleryMitraController::class);
+            Route::apiResource('mitra-products', EditorMitraProductController::class);
             Route::apiResource('partners', EditorPartnerController::class)->except('show');
             Route::apiResource('organization-members', EditorOrganizationController::class);
             Route::apiResource('bank-accounts', AdminBankAccountController::class);

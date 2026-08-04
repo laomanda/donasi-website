@@ -15,6 +15,8 @@ const withSuspense = (Component: React.ComponentType) => (
 const LayananPage = lazy(() => import('../pages/LayananPage').then(m => ({ default: m.LayananPage })))
 const AktivitasDpfPage = lazy(() => import('../pages/AktivitasDpfPage').then(m => ({ default: m.AktivitasDpfPage })))
 const AktivitasMitraPage = lazy(() => import('../pages/AktivitasMitraPage').then(m => ({ default: m.AktivitasMitraPage })))
+const ProdukMitraPage = lazy(() => import('../pages/ProdukMitraPage'))
+const ProdukMitraDetailPage = lazy(() => import('../pages/ProdukMitraDetailPage'))
 const ProgramPage = lazy(() => import('../pages/ProgramPage').then(m => ({ default: m.ProgramPage })))
 const ProgramDetailPage = lazy(() => import('../pages/ProgramDetailPage').then(m => ({ default: m.ProgramDetailPage })))
 const LiterasiPage = lazy(() => import('../pages/LiterasiPage').then(m => ({ default: m.LiterasiPage })))
@@ -64,6 +66,9 @@ const EditorGalleryDpfEditPage = lazy(() => import('../pages/management/editor/g
 const EditorGalleryMitraPage = lazy(() => import('../pages/management/editor/gallery-mitra/EditorGalleryMitraPage'))
 const EditorGalleryMitraCreatePage = lazy(() => import('../pages/management/editor/gallery-mitra/EditorGalleryMitraCreatePage'))
 const EditorGalleryMitraEditPage = lazy(() => import('../pages/management/editor/gallery-mitra/EditorGalleryMitraEditPage'))
+const EditorMitraProductsPage = lazy(() => import('../pages/management/editor/mitra-products/EditorMitraProductsPage'))
+const EditorMitraProductCreatePage = lazy(() => import('../pages/management/editor/mitra-products/EditorMitraProductCreatePage'))
+const EditorMitraProductEditPage = lazy(() => import('../pages/management/editor/mitra-products/EditorMitraProductEditPage'))
 const EditorPartnersPage = lazy(() => import('../pages/management/editor/partner/EditorPartnersPage'))
 const EditorPartnerCreatePage = lazy(() => import('../pages/management/editor/partner/EditorPartnerCreatePage'))
 const EditorPartnerEditPage = lazy(() => import('../pages/management/editor/partner/EditorPartnerEditPage'))
@@ -124,6 +129,8 @@ export const router = createBrowserRouter([
       { path: 'layanan', element: withSuspense(LayananPage) },
       { path: 'aktivitas-dpf', element: withSuspense(AktivitasDpfPage) },
       { path: 'aktivitas-mitra', element: withSuspense(AktivitasMitraPage) },
+      { path: 'produk-mitra', element: withSuspense(ProdukMitraPage) },
+      { path: 'produk-mitra/:slug', element: withSuspense(ProdukMitraDetailPage) },
       { path: 'program', element: withSuspense(ProgramPage) },
       { path: 'program/:slug', element: withSuspense(ProgramDetailPage) },
       { path: 'literasi', element: withSuspense(LiterasiPage) },
@@ -165,6 +172,9 @@ export const router = createBrowserRouter([
           { path: 'gallery-mitra', element: withSuspense(EditorGalleryMitraPage) },
           { path: 'gallery-mitra/create', element: withSuspense(EditorGalleryMitraCreatePage) },
           { path: 'gallery-mitra/:id/edit', element: withSuspense(EditorGalleryMitraEditPage) },
+          { path: 'mitra-products', element: withSuspense(EditorMitraProductsPage) },
+          { path: 'mitra-products/create', element: withSuspense(EditorMitraProductCreatePage) },
+          { path: 'mitra-products/:id/edit', element: withSuspense(EditorMitraProductEditPage) },
           { path: 'tags', element: withSuspense(EditorTagsPage) },
           { path: 'tags/create', element: withSuspense(EditorTagCreatePage) },
           { path: 'tags/:id/edit', element: withSuspense(EditorTagEditPage) },

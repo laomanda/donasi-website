@@ -1,0 +1,4 @@
+import type { Dict } from "@/lib/i18n-utils";
+export const mitraProductDict: Dict = {
+  "product.badge": { id: "Produk Mitra", en: "Partner Products" }, "product.title": { id: "Produk Pilihan Mitra", en: "Partner Product Showcase" }, "product.subtitle": { id: "Temukan produk yang dipublikasikan oleh mitra DPF.", en: "Discover products published by DPF partners." }, "product.empty": { id: "Belum ada produk yang dipublikasikan.", en: "No published products yet." }, "product.contact": { id: "Hubungi Mitra", en: "Contact Partner" }, "product.back": { id: "Kembali ke produk", en: "Back to products" }, "product.error": { id: "Produk belum dapat dimuat.", en: "Products could not be loaded." }, "product.detailError": { id: "Produk tidak ditemukan atau belum dipublikasikan.", en: "This product was not found or is not published." },
+};
