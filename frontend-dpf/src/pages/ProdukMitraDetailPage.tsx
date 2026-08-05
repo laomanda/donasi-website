@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faStore, faBoxOpen, faFileLines } from "@fortawesome/free-solid-svg-icons";
+import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { LandingLayout } from "@/layouts/LandingLayout";
 import { useLang } from "@/lib/i18n";
 import { translate } from "@/lib/i18n-utils";
@@ -7,7 +10,158 @@ import http from "@/lib/http";
 import { resolveApiBaseUrl } from "@/lib/urls";
 import MitraProductGallery from "@/components/mitra-products/MitraProductGallery";
 import { mitraProductDict } from "@/components/mitra-products/MitraProductI18n";
-type Product = { slug: string; nama_mitra?: string | null; title_id: string; title_en: string; description_id: string; description_en: string; images: { image: string; sort_order: number }[] }; type Response = { product: Product };
-export default function ProdukMitraDetailPage() { const { slug } = useParams(); const { locale } = useLang(); const t = (key: string) => translate(mitraProductDict, locale, key); const [product, setProduct] = useState<Product | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (!slug) return; let active = true; setLoading(true); http.get<Response>(`/mitra-products/${slug}`).then((response) => active && setProduct(response.data.product)).catch(() => active && setError(t('product.detailError'))).finally(() => active && setLoading(false)); return () => { active = false; }; }, [slug, locale]); if (loading) return <LandingLayout><div className="mx-auto max-w-6xl animate-pulse p-12 text-slate-400">Memuat produk...</div></LandingLayout>; if (!product || error) return <LandingLayout><div className="mx-auto max-w-6xl p-12"><p className="rounded-2xl bg-rose-50 p-4 text-sm font-semibold text-rose-700">{error || t('product.detailError')}</p></div></LandingLayout>; const title = locale === 'en' ? product.title_en || product.title_id : product.title_id || product.title_en; const description = locale === 'en' ? product.description_en || product.description_id : product.description_id || product.description_en; return <LandingLayout><main className="bg-slate-50 py-12 sm:py-16"><div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8"><Link to="/produk-mitra" className="text-sm font-bold text-brandGreen-700">← {t('product.back')}</Link><div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]"><MitraProductGallery images={[...product.images].sort((a, b) => a.sort_order - b.sort_order)} title={title} /><aside className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm"><p className="text-xs font-bold uppercase tracking-wider text-brandGreen-600">{product.nama_mitra || t('product.badge')}</p><h1 className="mt-3 font-heading text-3xl font-bold text-slate-900">{title}</h1><p className="mt-5 whitespace-pre-line text-sm leading-7 text-slate-600">{description}</p><a href={`${resolveApiBaseUrl()}/mitra-products/${product.slug}/contact`} target="_blank" rel="noreferrer" className="mt-8 inline-flex w-full items-center justify-center rounded-2xl bg-brandGreen-600 px-5 py-3 text-sm font-bold text-white hover:bg-brandGreen-700">{t('product.contact')}</a></aside></div></div></main></LandingLayout>; }
+
+type Product = {
+  slug: string;
+  nama_mitra?: string | null;
+  title_id: string;
+  title_en: string;
+  description_id: string;
+  description_en: string;
+  images: { image: string; sort_order: number }[];
+};
+
+type Response = { product: Product };
+
+export default function ProdukMitraDetailPage() {
+  const { slug } = useParams();
+  const { locale } = useLang();
+  const t = (key: string, fallback?: string) =>
+    translate(mitraProductDict, locale, key, fallback);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!slug) return;
+    let active = true;
+    setLoading(true);
+    http
+      .get<Response>(`/mitra-products/${slug}`)
+      .then((response) => active && setProduct(response.data.product))
+      .catch(() => active && setError(t("product.detailError")))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [slug, locale]);
+
+  if (loading) {
+    return (
+      <LandingLayout>
+        <main className="bg-slate-50 py-12 sm:py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="h-6 w-36 animate-pulse rounded-lg bg-slate-200" />
+            <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10">
+              <div className="min-h-[400px] animate-pulse rounded-3xl bg-slate-200 lg:col-span-7" />
+              <div className="min-h-[300px] animate-pulse rounded-3xl bg-slate-200 lg:col-span-5" />
+            </div>
+          </div>
+        </main>
+      </LandingLayout>
+    );
+  }
+
+  if (!product || error) {
+    return (
+      <LandingLayout>
+        <main className="bg-slate-50 py-12 sm:py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <Link
+              to="/produk-mitra"
+              className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-brandGreen-700"
+            >
+              <FontAwesomeIcon icon={faArrowLeft} />
+              <span>{t("product.back")}</span>
+            </Link>
+            <p className="mt-6 rounded-2xl bg-rose-50 p-5 text-sm font-semibold text-rose-700">
+              {error || t("product.detailError")}
+            </p>
+          </div>
+        </main>
+      </LandingLayout>
+    );
+  }
+
+  const isEn = locale === "en";
+  const title = isEn
+    ? product.title_en || product.title_id
+    : product.title_id || product.title_en;
+  const description = isEn
+    ? product.description_en || product.description_id
+    : product.description_id || product.description_en;
+
+  const sortedImages = [...product.images].sort(
+    (a, b) => a.sort_order - b.sort_order
+  );
+
+  return (
+    <LandingLayout>
+      <main className="bg-slate-50 py-12 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Back Navigation */}
+          <Link
+            to="/produk-mitra"
+            className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition-colors duration-200 hover:text-brandGreen-700"
+          >
+            <FontAwesomeIcon icon={faArrowLeft} className="text-xs" />
+            <span>{t("product.back")}</span>
+          </Link>
+
+          {/* Main Showcase Layout (7:5 ratio for comfortable balance) */}
+          <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-10 items-start">
+            {/* Gallery Column (7 columns) */}
+            <div className="lg:col-span-7">
+              <MitraProductGallery images={sortedImages} title={title} />
+            </div>
+
+            {/* Information Column (5 columns - Normal Flow) */}
+            <div className="lg:col-span-5 min-w-0">
+              <div className="flex flex-col rounded-3xl border border-slate-100 bg-white p-6 sm:p-8 shadow-soft overflow-hidden">
+                {/* Eyebrow: Nama Mitra (dengan icon Toko/Mitra) */}
+                <div className="mb-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-brandGreen-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brandGreen-700 ring-1 ring-brandGreen-100">
+                    <FontAwesomeIcon icon={faStore} className="text-[10px]" />
+                    <span>{product.nama_mitra?.trim() || t("product.defaultPartner", "Mitra Wakaf DPF")}</span>
+                  </span>
+                </div>
+
+                {/* Judul Produk (dengan icon Produk/Box) */}
+                <div className="mt-1 flex items-start gap-2.5">
+                  <FontAwesomeIcon icon={faBoxOpen} className="mt-1.5 text-primary-600 text-lg shrink-0" />
+                  <h1 className="font-heading text-2xl sm:text-3xl font-bold leading-tight text-slate-900 break-words">
+                    {title}
+                  </h1>
+                </div>
+
+                {/* Deskripsi Produk (dengan icon Deskripsi/Dokumen) */}
+                <div className="mt-6 border-t border-slate-100 pt-6">
+                  <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                    <FontAwesomeIcon icon={faFileLines} className="text-slate-400 text-xs" />
+                    <span>{isEn ? "Description" : "Deskripsi Produk"}</span>
+                  </h2>
+                  <div className="prose prose-slate max-w-none text-sm sm:text-base leading-relaxed text-slate-600 whitespace-pre-line break-words [word-break:break-word] overflow-hidden">
+                    {description}
+                  </div>
+                </div>
+
+                {/* WhatsApp Contact CTA */}
+                <div className="mt-8 border-t border-slate-100 pt-6 flex justify-start">
+                  <a
+                    href={`${resolveApiBaseUrl()}/mitra-products/${product.slug}/contact`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2.5 rounded-full bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:bg-emerald-700 hover:shadow-md active:scale-95"
+                  >
+                    <FontAwesomeIcon icon={faWhatsapp} className="text-lg" />
+                    <span>{t("product.contact")}</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </LandingLayout>
+  );
+}

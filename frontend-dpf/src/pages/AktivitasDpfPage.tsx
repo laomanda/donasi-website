@@ -42,15 +42,69 @@ export function AktivitasDpfPage() {
 
   return (
     <LandingLayout>
-      <PageHero badge={t("gallery.badge")} title={t("gallery.title")} subtitle={t("gallery.subtitle")} breadcrumb={[{ label: t("gallery.breadcrumb") }]} rightElement={<div className="mx-auto flex aspect-square w-full max-w-sm items-center justify-center rounded-[36px] bg-gradient-to-br from-brandGreen-100 via-white to-primary-100 shadow-inner"><FontAwesomeIcon icon={faImages} className="text-8xl text-brandGreen-600/70" /></div>}>
-        <Link to="/" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-primary-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"><FontAwesomeIcon icon={faArrowLeft} />{t("gallery.back")}</Link>
+      <PageHero
+        badge={t("gallery.badge")}
+        title={t("gallery.title")}
+        subtitle={t("gallery.subtitle")}
+        breadcrumb={[{ label: t("gallery.breadcrumb") }]}
+        rightElement={
+          <div className="mx-auto flex aspect-square w-full max-w-sm items-center justify-center rounded-[36px] bg-gradient-to-br from-brandGreen-100 via-white to-primary-100 shadow-inner">
+            <FontAwesomeIcon icon={faImages} className="text-8xl text-brandGreen-600/70" />
+          </div>
+        }
+      >
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-primary-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+        >
+          <FontAwesomeIcon icon={faArrowLeft} />
+          {t("gallery.back")}
+        </Link>
       </PageHero>
 
       <main className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {error && <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">{error}</div>}
-          {loading ? <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 8 }).map((_, index) => <div key={index} className="aspect-[4/3] animate-pulse rounded-[24px] bg-slate-100" />)}</div> : <GalleryDpfGrid items={items} locale={locale as Locale} emptyLabel={t("gallery.empty")} />}
-          {!loading && lastPage > 1 && <div className="mt-10 flex items-center justify-between text-sm font-bold text-slate-600"><button type="button" disabled={page <= 1} onClick={() => setPage((current) => current - 1)} className="rounded-xl px-4 py-2 hover:bg-slate-50 disabled:opacity-40">{t("gallery.previous")}</button><span>{page} / {lastPage}</span><button type="button" disabled={page >= lastPage} onClick={() => setPage((current) => current + 1)} className="rounded-xl px-4 py-2 hover:bg-slate-50 disabled:opacity-40">{t("gallery.next")}</button></div>}
+          {error && (
+            <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
+              {error}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="columns-1 gap-4 sm:columns-2 md:columns-3 lg:columns-4 space-y-4">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="break-inside-avoid rounded-2xl bg-slate-100 animate-pulse mb-4"
+                  style={{ height: `${200 + (index % 4) * 50}px` }}
+                />
+              ))}
+            </div>
+          ) : (
+            <GalleryDpfGrid items={items} locale={locale as Locale} emptyLabel={t("gallery.empty")} />
+          )}
+
+          {!loading && lastPage > 1 && (
+            <div className="mt-10 flex items-center justify-between text-sm font-bold text-slate-600">
+              <button
+                type="button"
+                disabled={page <= 1}
+                onClick={() => setPage((current) => current - 1)}
+                className="rounded-xl px-4 py-2 hover:bg-slate-50 disabled:opacity-40"
+              >
+                {t("gallery.previous")}
+              </button>
+              <span>{page} / {lastPage}</span>
+              <button
+                type="button"
+                disabled={page >= lastPage}
+                onClick={() => setPage((current) => current + 1)}
+                className="rounded-xl px-4 py-2 hover:bg-slate-50 disabled:opacity-40"
+              >
+                {t("gallery.next")}
+              </button>
+            </div>
+          )}
         </div>
       </main>
     </LandingLayout>

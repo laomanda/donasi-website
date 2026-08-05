@@ -3,43 +3,61 @@ import { resolveStorageUrl } from "@/lib/urls";
 import type { Locale } from "@/lib/i18n";
 
 type GalleryItem = {
-  id: number;
-  image: string;
-  caption_id: string;
-  caption_en: string;
+    id: number;
+    image: string;
+    caption_id: string;
+    caption_en: string;
 };
 
 type Props = {
-  items: GalleryItem[];
-  locale: Locale;
-  emptyLabel: string;
+    items: GalleryItem[];
+    locale: Locale;
+    emptyLabel: string;
 };
 
 const pickCaption = (item: GalleryItem, locale: Locale) =>
-  locale === "en" ? item.caption_en || item.caption_id : item.caption_id || item.caption_en;
+    locale === "en"
+        ? item.caption_en || item.caption_id
+        : item.caption_id || item.caption_en;
 
 export default function GalleryDpfGrid({ items, locale, emptyLabel }: Props) {
-  if (items.length === 0) {
-    return <div className="rounded-[28px] border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center text-sm font-semibold text-slate-500">{emptyLabel}</div>;
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {items.map((item) => {
-        const caption = pickCaption(item, locale);
-        const imageUrl = resolveStorageUrl(item.image, imagePlaceholder) ?? imagePlaceholder;
+    if (items.length === 0) {
         return (
-          <figure key={item.id} className="group overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-[0_18px_45px_-28px_rgba(15,23,42,0.45)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_-26px_rgba(15,23,42,0.5)] focus-within:ring-2 focus-within:ring-brandGreen-400">
-            <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-              <img src={imageUrl} alt={caption} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" onError={(event) => { event.currentTarget.src = imagePlaceholder; }} />
-              <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 hidden bg-gradient-to-t from-slate-950/85 via-slate-950/50 to-transparent px-5 pb-5 pt-14 text-sm font-bold text-white sm:block sm:translate-y-2 sm:opacity-0 sm:transition sm:duration-300 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
-                {caption}
-              </figcaption>
+            <div className="rounded-[28px] border-2 border-dashed border-slate-200 bg-slate-50 p-12 text-center text-sm font-semibold text-slate-500">
+                {emptyLabel}
             </div>
-            <figcaption className="px-5 py-4 text-sm font-bold text-slate-800 sm:hidden">{caption}</figcaption>
-          </figure>
         );
-      })}
-    </div>
-  );
+    }
+
+    return (
+        <div className="columns-1 gap-4 sm:columns-2 md:columns-3 lg:columns-4 space-y-4">
+            {items.map((item) => {
+                const caption = pickCaption(item, locale);
+                const imageUrl =
+                    resolveStorageUrl(item.image, imagePlaceholder) ??
+                    imagePlaceholder;
+                return (
+                    <figure
+                        key={item.id}
+                        className="break-inside-avoid overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"
+                    >
+                        <img
+                            src={imageUrl}
+                            alt={caption || "Aktivitas DPF"}
+                            loading="lazy"
+                            className="w-full h-auto object-cover block"
+                            onError={(event) => {
+                                event.currentTarget.src = imagePlaceholder;
+                            }}
+                        />
+                        {caption && (
+                            <figcaption className="p-3.5 text-xs font-semibold leading-relaxed text-slate-700 bg-white">
+                                {caption}
+                            </figcaption>
+                        )}
+                    </figure>
+                );
+            })}
+        </div>
+    );
 }
