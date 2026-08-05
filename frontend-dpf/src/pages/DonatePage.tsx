@@ -164,7 +164,8 @@ const DonatePage = () => {
     });
 
     // UI & Submission State
-    const [activeCategory, setActiveCategory] = useState<string | null>("bank_transfer");
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
+    const [isUserInteracted, setIsUserInteracted] = useState(false);
     const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
     const [submitState, setSubmitState] = useState<SubmitState>({ type: null, messageKey: null });
     const [submitting, setSubmitting] = useState(false);
@@ -447,10 +448,23 @@ const DonatePage = () => {
         return groups;
     }, [visibleAccounts]);
 
-    const sortedCategories = Object.keys(groupedAccounts).sort((a, b) =>
-        ['bank_transfer', 'virtual_account', 'ewallet', 'qris', 'other'].indexOf(a) -
-        ['bank_transfer', 'virtual_account', 'ewallet', 'qris', 'other'].indexOf(b)
-    );
+    const sortedCategories = useMemo(() => {
+        return Object.keys(groupedAccounts).sort((a, b) =>
+            ['bank_transfer', 'virtual_account', 'ewallet', 'qris', 'other'].indexOf(a) -
+            ['bank_transfer', 'virtual_account', 'ewallet', 'qris', 'other'].indexOf(b)
+        );
+    }, [groupedAccounts]);
+
+    useEffect(() => {
+        if (!isUserInteracted && sortedCategories.length > 0) {
+            setActiveCategory(sortedCategories[0]);
+        }
+    }, [sortedCategories, isUserInteracted]);
+
+    const handleCategoryToggle = (cat: string | null) => {
+        setIsUserInteracted(true);
+        setActiveCategory(cat);
+    };
 
     const STEPS = [
         { titleKey: "donate.steps.1.title", descKey: "donate.steps.1.desc", icon: faCheckCircle },
@@ -593,7 +607,7 @@ const DonatePage = () => {
             {/* REKENING */}
             <BankAccountsSection
                 activeCategory={activeCategory}
-                setActiveCategory={setActiveCategory}
+                setActiveCategory={handleCategoryToggle}
                 loading={loading}
                 errorKey={errorKey}
                 visibleAccounts={visibleAccounts}
