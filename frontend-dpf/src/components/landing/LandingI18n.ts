@@ -69,6 +69,9 @@ export const landingDict: Dict = {
     "landing.articles.all": { id: "Informasi Lengkap", en: "Complete Information" },
 
     // Partners section (landing)
+    "landing.trioCta.badge": { id: "Eksplorasi & Galeri", en: "Exploration & Gallery" },
+    "landing.trioCta.title": { id: "Aktivitas & Produk DPF", en: "DPF Activities & Products" },
+    "landing.trioCta.subtitle": { id: "Lihat wujud nyata dampak wakaf dan produk pemberdayaan UMKM mitra DPF.", en: "See the real impact of waqf and empowered products from DPF partners." },
     "landing.partners.badge": { id: "Mitra Perjalanan", en: "Travel Partners" },
     "landing.partners.title": { id: "Rekan Jejak", en: "Legacy Partners" },
     "landing.partners.subtitle": { id: "Lembaga-lembaga hebat yang bekerja sama dengan kami.", en: "Great institutions that collaborate with us." },

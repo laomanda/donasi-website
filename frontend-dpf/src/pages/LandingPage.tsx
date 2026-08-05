@@ -16,9 +16,7 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { PromiseStrip } from "@/components/landing/PromiseStrip";
 import { ProgramsSection } from "@/components/landing/ProgramsSection";
 import { ArticlesSection } from "@/components/landing/ArticlesSection";
-import { GalleryDpfCta } from "@/components/landing/GalleryDpfCta";
-import { GalleryMitraCta } from "@/components/landing/GalleryMitraCta";
-import { MitraProductCta } from "@/components/landing/MitraProductCta";
+import { TrioCtaSection } from "@/components/landing/TrioCtaSection";
 
 // Lazy Loaded below-the-fold components
 const PartnerSection = lazy(() => import("@/components/landing/PartnerSection").then(m => ({ default: m.PartnerSection })));
@@ -119,9 +117,7 @@ function LandingPage() {
       <PromiseStrip t={t} />
       <ProgramsSection highlights={localizedHighlights} loading={loading} t={t} locale={locale as any} />
       <ArticlesSection articles={localizedArticles} loading={loading} t={t} locale={locale as any} />
-      <GalleryDpfCta locale={locale} />
-      <GalleryMitraCta locale={locale} />
-      <MitraProductCta locale={locale} />
+      <TrioCtaSection locale={locale as any} />
 
       <Suspense fallback={<div className="min-h-[240px] bg-slate-50 animate-pulse" />}>
         <SocialMediaSection />
