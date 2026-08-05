@@ -23,9 +23,9 @@ export function FooterTagsAndMap({ tags, jakartaMapEmbed, jakartaMapLink }: Foot
                 href={tag.url || "#"}
                 target={tag.open_in_new_tab && tag.url ? "_blank" : "_self"}
                 rel={tag.open_in_new_tab && tag.url ? "noreferrer" : undefined}
-                className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-white/10 to-white/5 px-4 py-2.5 text-[13px] font-semibold text-slate-200 ring-1 ring-white/15 backdrop-blur-sm transition-all duration-300 hover:from-emerald-600 hover:to-emerald-500 hover:text-white hover:ring-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25"
+                className="group inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-[13px] font-semibold text-slate-200 backdrop-blur-sm transition-colors duration-200 hover:bg-emerald-600 hover:text-white hover:ring-emerald-400"
               >
-                <FontAwesomeIcon icon={faCircleCheck} className="h-3.5 w-3.5 text-emerald-400 transition-transform duration-300 group-hover:text-white group-hover:scale-110" />
+                <FontAwesomeIcon icon={faCircleCheck} className="h-3.5 w-3.5 text-emerald-400 transition-colors duration-200 group-hover:text-white" />
                 {tag.name}
               </a>
             ))}
