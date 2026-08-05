@@ -1,5 +1,16 @@
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlus,
+  faCircleInfo,
+  faBold,
+  faItalic,
+  faListUl,
+  faListOl,
+  faLink,
+  faXmark,
+  faCheck,
+} from "@fortawesome/free-solid-svg-icons";
 import type { ArticleFormState } from "../../../../types/article";
 import React from "react";
 
@@ -42,6 +53,219 @@ export default function EditorArticleFormContent({
 }: EditorArticleFormContentProps) {
   const disabled = loading || saving || deleting;
 
+  const [activeLinkField, setActiveLinkField] = useState<"body" | "body_en" | null>(null);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkText, setLinkText] = useState("");
+  const [linkError, setLinkError] = useState<string | null>(null);
+
+  const openLinkPopover = (field: "body" | "body_en") => {
+    if (field === "body") rememberBodySelection();
+    else rememberBodyEnSelection();
+
+    const textarea = field === "body" ? bodyTextareaRef.current : bodyEnTextareaRef.current;
+    const bodyVal = field === "body" ? form.body : form.body_en;
+
+    let selected = "";
+    if (textarea && typeof textarea.selectionStart === "number" && typeof textarea.selectionEnd === "number") {
+      selected = bodyVal.slice(textarea.selectionStart, textarea.selectionEnd);
+    }
+
+    setLinkError(null);
+    setLinkUrl("");
+    setLinkText(selected);
+    setActiveLinkField(field);
+  };
+
+  const handleInsertLink = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeLinkField) return;
+
+    const trimmedUrl = linkUrl.trim();
+    if (!trimmedUrl) {
+      setLinkError("URL tautan tidak boleh kosong.");
+      return;
+    }
+
+    let cleanUrl = trimmedUrl;
+    if (!/^https?:\/\//i.test(cleanUrl) && !cleanUrl.startsWith("/") && !cleanUrl.startsWith("#")) {
+      cleanUrl = `https://${cleanUrl}`;
+    }
+
+    const cleanText = linkText.trim() || (activeLinkField === "body" ? "Teks tautan" : "Link text");
+    const openTag = `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">`;
+    const closeTag = `</a>`;
+
+    insertInlineTag(activeLinkField, openTag, closeTag, cleanText);
+
+    setActiveLinkField(null);
+    setLinkUrl("");
+    setLinkText("");
+    setLinkError(null);
+  };
+
+  const renderToolbar = (field: "body" | "body_en") => {
+    const isBody = field === "body";
+    const rememberFn = isBody ? rememberBodySelection : rememberBodyEnSelection;
+
+    return (
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {isBody && (
+            <button
+              type="button"
+              onMouseDown={rememberFn}
+              onClick={() => contentImageInputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={!canSubmit}
+              title="Sisipkan Gambar"
+            >
+              <FontAwesomeIcon icon={faPlus} />
+              <span>Gambar</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onMouseDown={rememberFn}
+            onClick={() => insertInlineTag(field, "<strong>", "</strong>", isBody ? "teks tebal" : "bold text")}
+            className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={!canSubmit}
+            title="Tebal"
+          >
+            <FontAwesomeIcon icon={faBold} />
+            <span>Tebal</span>
+          </button>
+
+          <button
+            type="button"
+            onMouseDown={rememberFn}
+            onClick={() => insertInlineTag(field, "<em>", "</em>", isBody ? "teks miring" : "italic text")}
+            className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={!canSubmit}
+            title="Miring"
+          >
+            <FontAwesomeIcon icon={faItalic} />
+            <span>Miring</span>
+          </button>
+
+          <button
+            type="button"
+            onMouseDown={rememberFn}
+            onClick={() => insertInlineTag(field, "<ul>\n  <li>", "</li>\n  <li>Item kedua</li>\n</ul>", isBody ? "Item pertama" : "First item")}
+            className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={!canSubmit}
+            title="Bullet List"
+          >
+            <FontAwesomeIcon icon={faListUl} />
+            <span>List</span>
+          </button>
+
+          <button
+            type="button"
+            onMouseDown={rememberFn}
+            onClick={() => insertInlineTag(field, "<ol>\n  <li>", "</li>\n  <li>Langkah kedua</li>\n</ol>", isBody ? "Langkah pertama" : "First step")}
+            className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={!canSubmit}
+            title="Numbered List"
+          >
+            <FontAwesomeIcon icon={faListOl} />
+            <span>Nomor</span>
+          </button>
+
+          <button
+            type="button"
+            onMouseDown={rememberFn}
+            onClick={() => openLinkPopover(field)}
+            className={`inline-flex items-center gap-1.5 rounded-2xl border px-3 py-1.5 text-xs font-bold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-70 ${
+              activeLinkField === field
+                ? "border-brandGreen-600 bg-brandGreen-50 text-brandGreen-700"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+            }`}
+            disabled={!canSubmit}
+            title="Sisipkan Tautan"
+          >
+            <FontAwesomeIcon icon={faLink} />
+            <span>Tautan</span>
+          </button>
+
+          {isBody && contentImageUploading && (
+            <span className="text-xs font-semibold text-slate-500">Mengunggah...</span>
+          )}
+        </div>
+
+        {activeLinkField === field && (
+          <form onSubmit={handleInsertLink} className="rounded-2xl border border-brandGreen-200 bg-brandGreen-50/60 p-4 space-y-3 shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-brandGreen-800 flex items-center gap-2">
+                <FontAwesomeIcon icon={faLink} />
+                Sisipkan Tautan ({isBody ? "Bahasa Indonesia" : "Bahasa Inggris"})
+              </h4>
+              <button
+                type="button"
+                onClick={() => setActiveLinkField(null)}
+                className="text-slate-400 hover:text-slate-600 transition"
+              >
+                <FontAwesomeIcon icon={faXmark} />
+              </button>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                  URL Tautan <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={linkUrl}
+                  onChange={(e) => {
+                    setLinkUrl(e.target.value);
+                    setLinkError(null);
+                  }}
+                  placeholder="https://example.com"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 shadow-sm focus:border-brandGreen-500 focus:outline-none focus:ring-1 focus:ring-brandGreen-500"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                  Teks Tautan
+                </label>
+                <input
+                  type="text"
+                  value={linkText}
+                  onChange={(e) => setLinkText(e.target.value)}
+                  placeholder="Teks yang dapat diklik"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 shadow-sm focus:border-brandGreen-500 focus:outline-none focus:ring-1 focus:ring-brandGreen-500"
+                />
+              </div>
+            </div>
+
+            {linkError && (
+              <p className="text-xs font-semibold text-red-600">{linkError}</p>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setActiveLinkField(null)}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-slate-50 transition"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-brandGreen-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-brandGreen-700 transition"
+              >
+                <FontAwesomeIcon icon={faCheck} />
+                Sisipkan
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
       <div className="grid grid-cols-1 gap-6">
@@ -55,41 +279,9 @@ export default function EditorArticleFormContent({
 
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs font-semibold text-slate-500">
-              Sisipkan gambar langsung ke isi artikel.
+              Gunakan toolbar di bawah untuk menambah heading, list, atau tautan.
             </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onMouseDown={rememberBodySelection}
-                onClick={() => contentImageInputRef.current?.click()}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-                disabled={!canSubmit}
-              >
-                <FontAwesomeIcon icon={faPlus} />
-                Sisipkan Gambar
-              </button>
-              <button
-                type="button"
-                onMouseDown={rememberBodySelection}
-                onClick={() => insertInlineTag("body", "<strong>", "</strong>", "teks tebal")}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-                disabled={!canSubmit}
-              >
-                Tebal
-              </button>
-              <button
-                type="button"
-                onMouseDown={rememberBodySelection}
-                onClick={() => insertInlineTag("body", "<em>", "</em>", "teks miring")}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-                disabled={!canSubmit}
-              >
-                Miring
-              </button>
-              {contentImageUploading && (
-                <span className="text-xs font-semibold text-slate-500">Mengunggah...</span>
-              )}
-            </div>
+            {renderToolbar("body")}
           </div>
 
           <textarea
@@ -139,25 +331,8 @@ export default function EditorArticleFormContent({
             </span>
           </span>
 
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onMouseDown={rememberBodyEnSelection}
-              onClick={() => insertInlineTag("body_en", "<strong>", "</strong>", "bold text")}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-              disabled={!canSubmit}
-            >
-              Tebal
-            </button>
-            <button
-              type="button"
-              onMouseDown={rememberBodyEnSelection}
-              onClick={() => insertInlineTag("body_en", "<em>", "</em>", "italic text")}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-              disabled={!canSubmit}
-            >
-              Miring
-            </button>
+          <div className="mt-3">
+            {renderToolbar("body_en")}
           </div>
 
           <textarea
