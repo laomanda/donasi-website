@@ -57,9 +57,9 @@ export default function EditorArticleList({
                 className="mt-1 h-4 w-4 accent-brandGreen-600"
               />
             </span>
-            <button type="button" onClick={() => onEdit(article.id)} className="block w-full text-left">
-              <p className="text-base font-bold text-slate-900">{article.title}</p>
-              <p className="mt-2 line-clamp-2 text-sm text-slate-600">{article.excerpt}</p>
+            <button type="button" onClick={() => onEdit(article.id)} className="block w-full max-w-full overflow-hidden text-left">
+              <p className="line-clamp-2 overflow-hidden text-base font-bold text-slate-900">{article.title}</p>
+              <p className="mt-2 line-clamp-2 overflow-hidden text-sm text-slate-600">{article.excerpt}</p>
             </button>
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">

@@ -76,15 +76,15 @@ export function LiterasiCard({ article, locale, t, variant = "save" }: LiterasiC
 
       <div className="flex flex-1 flex-col p-5">
         {/* The old category span is removed as it's replaced by the absolute positioned one */}
-        <h3 className="mt-4 line-clamp-2 min-h-[56px] font-heading text-lg font-semibold leading-snug text-slate-900">
-          <Link to={`/literasi/${article.slug}`}>{pickLocale(article.title, article.title_en, locale)}</Link>
+        <h3 className="mt-4 h-[56px] overflow-hidden font-heading text-lg font-semibold leading-snug text-slate-900">
+          <Link to={`/literasi/${article.slug}`} className="line-clamp-2 overflow-hidden">{pickLocale(article.title, article.title_en, locale)}</Link>
         </h3>
 
-        <p className="mt-3 line-clamp-3 min-h-[72px] text-sm leading-relaxed text-slate-600">
+        <p className="mt-3 line-clamp-3 overflow-hidden h-[72px] text-sm leading-relaxed text-slate-600">
           {pickLocale(article.excerpt, article.excerpt_en, locale)}
         </p>
 
-        <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
+        <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
           <div className="flex items-center gap-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brandGreen-50 text-xs font-bold text-brandGreen-700 ring-1 ring-brandGreen-100">
               {initials || "A"}
