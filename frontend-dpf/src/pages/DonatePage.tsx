@@ -515,43 +515,22 @@ const DonatePage = () => {
 
             </PageHero>
 
-            {/* DONASI ONLINE */}
-            <section id="donate-form-section" className="bg-slate-50">
-                <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-                    <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
-                        <div className="space-y-6">
-                            <ProgramShowcase
-                                isGeneralDonation={!form.program_id}
-                                selectedProgramImage={selectedProgramImage}
-                                selectedProgramTitle={selectedProgram?.title || t("donate.program.empty.title")}
-                                selectedProgramDesc={selectedProgram?.short_description || t("donate.program.empty.desc")}
-                                selectedProgramStatus={normalizeProgramStatus(selectedProgram?.status, locale, t)}
-                                selectedProgramCategory={selectedProgram?.category || null}
-                                hasProgramProgress={!!(selectedProgram?.target_amount || selectedProgram?.collected_amount)}
-                                displayCollected={selectedProgram?.collected_amount}
-                                displayTarget={selectedProgram?.target_amount}
-                                displayProgress={Math.min(100, Math.round((Number(selectedProgram?.collected_amount || 0) / Number(selectedProgram?.target_amount || 1)) * 100))}
-                                detailLink={selectedProgram?.slug ? `/program/${selectedProgram.slug}` : "/program"}
-                                t={t}
-                            />
-                        </div>
+            {/* REKENING RESMI */}
+            <BankAccountsSection
+                activeCategory={activeCategory}
+                setActiveCategory={handleCategoryToggle}
+                loading={loading}
+                errorKey={errorKey}
+                visibleAccounts={visibleAccounts}
+                sortedCategories={sortedCategories}
+                groupedAccounts={groupedAccounts}
+                categoryLabels={categoryLabels}
+                setQrisImage={setQrisImage}
+                t={t}
+            />
 
-                        <DonationForm
-                            form={form}
-                            formErrors={formErrors}
-                            submitting={submitting}
-                            submitState={submitState}
-                            localizedPrograms={localizedPrograms}
-                            handleChange={handleChange}
-                            handleSubmit={handleSubmit}
-                            t={t}
-                        />
-                    </div>
-                </div>
-            </section>
-
-             {/* LANGKAH SINGKAT */}
-             <section className="bg-slate-50 py-16 sm:py-20">
+            {/* LANGKAH SINGKAT */}
+            <section className="bg-slate-50 py-16 sm:py-20">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="text-center space-y-3 mb-12">
@@ -601,22 +580,43 @@ const DonatePage = () => {
                 </div>
             </section>
 
+            {/* DONASI ONLINE */}
+            <section id="donate-form-section" className="bg-slate-50">
+                <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+                    <div className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
+                        <div className="space-y-6">
+                            <ProgramShowcase
+                                isGeneralDonation={!form.program_id}
+                                selectedProgramImage={selectedProgramImage}
+                                selectedProgramTitle={selectedProgram?.title || t("donate.program.empty.title")}
+                                selectedProgramDesc={selectedProgram?.short_description || t("donate.program.empty.desc")}
+                                selectedProgramStatus={normalizeProgramStatus(selectedProgram?.status, locale, t)}
+                                selectedProgramCategory={selectedProgram?.category || null}
+                                hasProgramProgress={!!(selectedProgram?.target_amount || selectedProgram?.collected_amount)}
+                                displayCollected={selectedProgram?.collected_amount}
+                                displayTarget={selectedProgram?.target_amount}
+                                displayProgress={Math.min(100, Math.round((Number(selectedProgram?.collected_amount || 0) / Number(selectedProgram?.target_amount || 1)) * 100))}
+                                detailLink={selectedProgram?.slug ? `/program/${selectedProgram.slug}` : "/program"}
+                                t={t}
+                            />
+                        </div>
+
+                        <DonationForm
+                            form={form}
+                            formErrors={formErrors}
+                            submitting={submitting}
+                            submitState={submitState}
+                            localizedPrograms={localizedPrograms}
+                            handleChange={handleChange}
+                            handleSubmit={handleSubmit}
+                            t={t}
+                        />
+                    </div>
+                </div>
+            </section>
+
             {/* QUOTE SLIDESHOW */}
             <QuoteSlideshow />
-
-            {/* REKENING */}
-            <BankAccountsSection
-                activeCategory={activeCategory}
-                setActiveCategory={handleCategoryToggle}
-                loading={loading}
-                errorKey={errorKey}
-                visibleAccounts={visibleAccounts}
-                sortedCategories={sortedCategories}
-                groupedAccounts={groupedAccounts}
-                categoryLabels={categoryLabels}
-                setQrisImage={setQrisImage}
-                t={t}
-            />
 
             {/* CTA */}
             <section className="bg-white pb-20">

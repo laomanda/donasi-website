@@ -14,26 +14,24 @@ export function FooterBrand({ t, whatsappLink }: FooterBrandProps) {
   return (
     <div className="lg:col-span-4 space-y-6 pr-0 lg:pr-6">
       {/* Logo */}
-      <div className="flex items-center gap-5">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-lg shadow-white/5">
-                    <img
-                        src={dpfIcon}
-                        alt="DPF Logo"
-                        width="56"
-                        height="56"
-                        loading="lazy"
-                        className="h-full w-full object-contain p-1"
-                    />
+      <div className="flex items-center gap-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center">
+          <img
+            src={dpfIcon}
+            alt="DPF Logo"
+            width="48"
+            height="48"
+            loading="lazy"
+            className="h-full w-full object-contain"
+          />
         </div>
-        <div className="space-y-2">
-          <div>
-            <span className="block text-xl font-bold font-heading text-white tracking-tight">
-              DPF WAKAF
-            </span>
-            <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-white">
-              {t('nav.tagline', 'Amanah | Profesional')}
-            </span>
-          </div>
+        <div>
+          <span className="block text-xl font-bold font-heading text-white tracking-tight leading-tight">
+            DPF WAKAF
+          </span>
+          <span className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-emerald-100/90 leading-tight mt-1">
+            {t('nav.tagline', 'AMANAH | PROFESIONAL')}
+          </span>
         </div>
       </div>
 

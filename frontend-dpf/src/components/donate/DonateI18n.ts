@@ -46,7 +46,7 @@ export const donateDict: Dict = {
     "donate.payment.benefits.2": { id: "Bisa anonim dan menulis catatan amanah.", en: "You can stay anonymous and leave a note." },
     "donate.payment.badges.receipt": { id: "Bukti resmi dikirim setelah pembayaran.", en: "Official receipt sent after payment." },
     "donate.payment.badges.notify": { id: "Notifikasi sukses langsung muncul.", en: "Success notification appears instantly." },
-    "donate.steps.badge": { id: "Cara Donasi", en: "How to Donate" },
+    "donate.steps.badge": { id: "Cara Donasi Menggunakan Midtrans", en: "How to Donate Using Midtrans" },
     "donate.steps.title": { id: "Langkah-Langkah Donasi", en: "Donation Steps" },
     "donate.steps.stepLabel": { id: "Langkah", en: "Step" },
     "donate.steps.1.title": { id: "Pilih program atau donasi umum", en: "Choose a program or general donation" },
