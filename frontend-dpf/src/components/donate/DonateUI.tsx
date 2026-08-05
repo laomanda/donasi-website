@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
-    faQrcode
+    faQrcode,
+    faCheck,
+    faCopy
 } from "@fortawesome/free-solid-svg-icons";
 import { resolveStorageUrl } from "@/lib/urls";
 
@@ -39,6 +42,30 @@ export const AccountCard = ({
     t: (key: string, fallback?: string) => string;
     onShowQris: (url: string) => void;
 }) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async () => {
+        if (!account.account_number) return;
+        try {
+            await navigator.clipboard.writeText(account.account_number);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = account.account_number;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textArea);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch {
+                console.error("Gagal menyalin nomor rekening");
+            }
+        }
+    };
+
     const initials = account.bank_name
         .split(/\s+/)
         .filter(Boolean)
@@ -75,13 +102,24 @@ export const AccountCard = ({
                         {account.account_number}
                     </p>
                     <button
-                        onClick={() => {
-                            if (account.account_number) navigator.clipboard.writeText(account.account_number);
-                        }}
-                        className="text-xs font-semibold text-brandGreen-600 hover:text-brandGreen-700"
-                        title="Salin"
+                        type="button"
+                        onClick={handleCopy}
+                        className={`inline-flex items-center gap-1.5 text-xs font-semibold transition ${
+                            copied ? "text-brandGreen-700 font-bold" : "text-brandGreen-600 hover:text-brandGreen-700"
+                        }`}
+                        title="Salin Nomor Rekening"
                     >
-                        Salin
+                        {copied ? (
+                            <>
+                                <FontAwesomeIcon icon={faCheck} className="text-brandGreen-600" />
+                                <span>Tersalin!</span>
+                            </>
+                        ) : (
+                            <>
+                                <FontAwesomeIcon icon={faCopy} className="text-[11px]" />
+                                <span>Salin</span>
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
