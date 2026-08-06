@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faImages } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faImages, faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "@/layouts/LandingLayout";
 import { PageHero } from "@/components/PageHero";
 import { useLang, type Locale } from "@/lib/i18n";
@@ -15,28 +15,61 @@ type GalleryResponse = { data: GalleryItem[]; current_page: number; last_page: n
 
 export function AktivitasMitraPage() {
   const { locale } = useLang();
+  const isEn = locale === "en";
   const t = (key: string, fallback?: string) => translate(galleryMitraDict, locale, key, fallback);
   const errorLabel = t("gallery.error");
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [lastPage, setLastPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
-    http.get<GalleryResponse>("/gallery-mitra", { params: { page, per_page: 24 } })
+    setPage(1);
+    http
+      .get<GalleryResponse>("/gallery-mitra", { params: { page: 1, per_page: 15 } })
       .then((response) => {
         if (!active) return;
-        setItems(response.data.data ?? []);
-        setLastPage(response.data.last_page ?? 1);
+        const data = response.data.data ?? [];
+        setItems(data);
+        setHasMore(response.data.current_page < response.data.last_page);
         setError(null);
       })
-      .catch(() => { if (active) { setItems([]); setError(errorLabel); } })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, [page, errorLabel]);
+      .catch(() => {
+        if (active) {
+          setItems([]);
+          setError(errorLabel);
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [locale, errorLabel]);
+
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    try {
+      const response = await http.get<GalleryResponse>("/gallery-mitra", {
+        params: { page: nextPage, per_page: 15 },
+      });
+      const newData = response.data.data ?? [];
+      setItems((prev) => [...prev, ...newData]);
+      setPage(nextPage);
+      setHasMore(response.data.current_page < response.data.last_page);
+    } catch {
+      setError(errorLabel);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   return (
     <LandingLayout>
@@ -82,24 +115,27 @@ export function AktivitasMitraPage() {
             <GalleryMitraGrid items={items} locale={locale as Locale} emptyLabel={t("gallery.empty")} />
           )}
 
-          {!loading && lastPage > 1 && (
-            <div className="mt-10 flex items-center justify-between text-sm font-bold text-slate-600">
+          {!loading && hasMore && (
+            <div className="mt-12 text-center">
               <button
                 type="button"
-                disabled={page <= 1}
-                onClick={() => setPage((current) => current - 1)}
-                className="rounded-xl px-4 py-2 hover:bg-slate-50 disabled:opacity-40"
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-brandGreen-700 disabled:opacity-60 active:scale-95"
               >
-                {t("gallery.previous")}
-              </button>
-              <span>{page} / {lastPage}</span>
-              <button
-                type="button"
-                disabled={page >= lastPage}
-                onClick={() => setPage((current) => current + 1)}
-                className="rounded-xl px-4 py-2 hover:bg-slate-50 disabled:opacity-40"
-              >
-                {t("gallery.next")}
+                <FontAwesomeIcon
+                  icon={loadingMore ? faSpinner : faPlus}
+                  className={loadingMore ? "animate-spin text-sm" : "text-xs"}
+                />
+                <span>
+                  {loadingMore
+                    ? isEn
+                      ? "Loading..."
+                      : "Memuat..."
+                    : isEn
+                    ? "Load More"
+                    : "Muat Lebih Banyak"}
+                </span>
               </button>
             </div>
           )}

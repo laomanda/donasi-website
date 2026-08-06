@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faStore, faBoxOpen, faFileLines, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { LandingLayout } from "@/layouts/LandingLayout";
 import { useLang } from "@/lib/i18n";
@@ -119,11 +119,10 @@ export default function ProdukMitraDetailPage() {
             {/* Information Column (5 columns - Normal Flow) */}
             <div className="lg:col-span-5 min-w-0">
               <div className="flex flex-col rounded-3xl border border-slate-100 bg-white p-6 sm:p-8 shadow-soft overflow-hidden">
-                {/* Eyebrow: Nama Mitra (dengan icon Toko) & DPF Verified Badge */}
+                {/* Eyebrow: Nama Mitra & DPF Verified Badge */}
                 <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-md bg-brandGreen-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brandGreen-700 ring-1 ring-brandGreen-100">
-                    <FontAwesomeIcon icon={faStore} className="text-[10px]" />
-                    <span>{product.nama_mitra?.trim() || t("product.defaultPartner", "Mitra Wakaf DPF")}</span>
+                  <span className="inline-flex items-center rounded-md bg-brandGreen-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brandGreen-700 ring-1 ring-brandGreen-100">
+                    {product.nama_mitra?.trim() || t("product.defaultPartner", "Mitra Wakaf DPF")}
                   </span>
 
                   <div className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-1 ring-1 ring-slate-200/80">
@@ -133,19 +132,17 @@ export default function ProdukMitraDetailPage() {
                   </div>
                 </div>
 
-                {/* Judul Produk (dengan icon Produk/Box) */}
-                <div className="mt-1 flex items-start gap-2.5">
-                  <FontAwesomeIcon icon={faBoxOpen} className="mt-1.5 text-primary-600 text-lg shrink-0" />
+                {/* Judul Produk */}
+                <div className="mt-1">
                   <h1 className="font-heading text-2xl sm:text-3xl font-bold leading-tight text-slate-900 break-words">
                     {title}
                   </h1>
                 </div>
 
-                {/* Deskripsi Produk (dengan icon Deskripsi/Dokumen) */}
+                {/* Deskripsi Produk */}
                 <div className="mt-6 border-t border-slate-100 pt-6">
-                  <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                    <FontAwesomeIcon icon={faFileLines} className="text-slate-400 text-xs" />
-                    <span>{isEn ? "Description" : "Deskripsi Produk"}</span>
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                    {isEn ? "Description" : "Deskripsi Produk"}
                   </h2>
                   <div className="prose prose-slate max-w-none text-sm sm:text-base leading-relaxed text-slate-600 whitespace-pre-line break-words [word-break:break-word] overflow-hidden">
                     {description}

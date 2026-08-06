@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faStore, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faStore, faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "@/layouts/LandingLayout";
 import { PageHero } from "@/components/PageHero";
 import { useLang } from "@/lib/i18n";
 import { translate } from "@/lib/i18n-utils";
 import http from "@/lib/http";
-import { dpfIcon } from "@/assets/brand";
 import { mitraProductDict } from "@/components/mitra-products/MitraProductI18n";
 import { MitraProductCard, type MitraProductItem } from "@/components/mitra-products/MitraProductCard";
 
@@ -19,22 +17,26 @@ type Response = {
 
 export default function ProdukMitraPage() {
   const { locale } = useLang();
+  const isEn = locale === "en";
   const t = (key: string, fallback?: string) => translate(mitraProductDict, locale, key, fallback);
   const [items, setItems] = useState<MitraProductItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [lastPage, setLastPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
+    setPage(1);
     http
-      .get<Response>("/mitra-products", { params: { page, per_page: 12 } })
+      .get<Response>("/mitra-products", { params: { page: 1, per_page: 9 } })
       .then((response) => {
         if (!active) return;
-        setItems(response.data.data ?? []);
-        setLastPage(response.data.last_page ?? 1);
+        const data = response.data.data ?? [];
+        setItems(data);
+        setHasMore(response.data.current_page < response.data.last_page);
         setError(null);
       })
       .catch(() => active && setError(t("product.error")))
@@ -42,7 +44,26 @@ export default function ProdukMitraPage() {
     return () => {
       active = false;
     };
-  }, [page, locale]);
+  }, [locale]);
+
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    try {
+      const response = await http.get<Response>("/mitra-products", {
+        params: { page: nextPage, per_page: 9 },
+      });
+      const newData = response.data.data ?? [];
+      setItems((prev) => [...prev, ...newData]);
+      setPage(nextPage);
+      setHasMore(response.data.current_page < response.data.last_page);
+    } catch {
+      setError(t("product.error"));
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   return (
     <LandingLayout>
@@ -56,22 +77,7 @@ export default function ProdukMitraPage() {
             <FontAwesomeIcon icon={faStore} className="text-8xl text-primary-600/70" />
           </div>
         }
-      >
-        <div className="flex flex-wrap items-center gap-3">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-primary-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} />
-            {t("product.backHome", "Kembali ke beranda")}
-          </Link>
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-4 py-2.5 shadow-sm backdrop-blur-sm">
-            <img src={dpfIcon} alt="DPF Logo" className="h-5 w-auto object-contain" />
-            <span className="text-xs sm:text-sm font-bold text-slate-900">Djalaluddin Pane Foundation</span>
-            <FontAwesomeIcon icon={faCheckCircle} className="text-blue-500 text-sm shrink-0" />
-          </div>
-        </div>
-      </PageHero>
+      />
 
       <main className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -99,26 +105,27 @@ export default function ProdukMitraPage() {
             </div>
           )}
 
-          {!loading && lastPage > 1 && (
-            <div className="mt-10 flex items-center justify-between text-sm font-bold text-slate-600">
+          {!loading && hasMore && (
+            <div className="mt-12 text-center">
               <button
                 type="button"
-                disabled={page <= 1}
-                onClick={() => setPage((value) => value - 1)}
-                className="rounded-xl px-4 py-2 hover:bg-slate-50 disabled:opacity-40"
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-brandGreen-700 disabled:opacity-60 active:scale-95"
               >
-                ←
-              </button>
-              <span>
-                {page} / {lastPage}
-              </span>
-              <button
-                type="button"
-                disabled={page >= lastPage}
-                onClick={() => setPage((value) => value + 1)}
-                className="rounded-xl px-4 py-2 hover:bg-slate-50 disabled:opacity-40"
-              >
-                →
+                <FontAwesomeIcon
+                  icon={loadingMore ? faSpinner : faPlus}
+                  className={loadingMore ? "animate-spin text-sm" : "text-xs"}
+                />
+                <span>
+                  {loadingMore
+                    ? isEn
+                      ? "Loading..."
+                      : "Memuat..."
+                    : isEn
+                    ? "Load More"
+                    : "Muat Lebih Banyak"}
+                </span>
               </button>
             </div>
           )}

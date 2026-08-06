@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight, faStore, faBoxOpen, faFileLines, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { imagePlaceholder } from "@/lib/placeholder";
 import { resolveStorageUrl } from "@/lib/urls";
 import { dpfIcon } from "@/assets/brand";
@@ -53,15 +53,13 @@ export function MitraProductCard({ product, locale }: MitraProductCardProps) {
       </Link>
 
       <div className="flex flex-1 flex-col p-6 sm:p-7">
-        {/* Eyebrow: Nama Mitra / Fallback Mitra Wakaf DPF (dengan icon faStore) */}
-        <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-brandGreen-700">
-          <FontAwesomeIcon icon={faStore} className="text-[10px]" />
-          <span>{product.nama_mitra?.trim() || (isEn ? "DPF Waqf Partner" : "Mitra Wakaf DPF")}</span>
+        {/* Eyebrow: Nama Mitra / Fallback Mitra Wakaf DPF */}
+        <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-brandGreen-700">
+          {product.nama_mitra?.trim() || (isEn ? "DPF Waqf Partner" : "Mitra Wakaf DPF")}
         </p>
 
-        {/* Judul Produk (dengan icon faBoxOpen) */}
-        <div className="mt-1.5 flex items-start gap-2 min-h-[3.25rem]">
-          <FontAwesomeIcon icon={faBoxOpen} className="mt-1 text-primary-600 text-sm shrink-0" />
+        {/* Judul Produk */}
+        <div className="mt-1.5 min-h-[3.25rem]">
           <h2 className="font-heading text-lg font-bold leading-snug text-slate-900 line-clamp-2">
             <Link to={`/produk-mitra/${product.slug}`}>
               {title}
@@ -69,9 +67,8 @@ export function MitraProductCard({ product, locale }: MitraProductCardProps) {
           </h2>
         </div>
 
-        {/* Deskripsi Ringkas (dengan icon faFileLines) */}
-        <div className="mt-2 flex items-start gap-2 min-h-[2.75rem]">
-          <FontAwesomeIcon icon={faFileLines} className="mt-1 text-slate-400 text-xs shrink-0" />
+        {/* Deskripsi Ringkas */}
+        <div className="mt-2 min-h-[2.75rem]">
           <p className="text-sm leading-relaxed text-slate-600 line-clamp-2">
             {description || "\u00A0"}
           </p>

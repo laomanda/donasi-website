@@ -22,7 +22,7 @@ export function FooterBrand({ t, whatsappLink }: FooterBrandProps) {
             width="48"
             height="48"
             loading="lazy"
-            className="h-full w-full object-contain"
+            className="h-12 w-12 rounded-full object-contain"
           />
         </div>
         <div>
