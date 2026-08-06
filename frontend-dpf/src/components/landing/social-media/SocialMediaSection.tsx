@@ -91,7 +91,7 @@ export default function SocialMediaSection() {
 
                 {payload.instagram.length > 0 ? (
                   <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {payload.instagram.map((post) => (
+                    {payload.instagram.slice(0, 6).map((post) => (
                       <a
                         key={post.id}
                         href={post.post_url}
@@ -163,7 +163,7 @@ export default function SocialMediaSection() {
 
                 {payload.youtube.length > 0 ? (
                   <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {payload.youtube.map((video) => (
+                    {payload.youtube.slice(0, 6).map((video) => (
                       <a
                         key={video.id}
                         href={video.video_url}
