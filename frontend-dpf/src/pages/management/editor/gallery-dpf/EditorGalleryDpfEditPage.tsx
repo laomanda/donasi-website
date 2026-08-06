@@ -7,7 +7,14 @@ import EditorGalleryDpfFormMain from "@/components/management/editor/gallery-dpf
 import EditorGalleryDpfFormSidebar from "@/components/management/editor/gallery-dpf/form/EditorGalleryDpfFormSidebar";
 import { emptyGalleryDpfForm, galleryDpfFolder, type GalleryDpf, type GalleryDpfFormState } from "@/components/management/editor/gallery-dpf/GalleryDpfTypes";
 
-const countWords = (value: string) => value.trim() ? value.trim().split(/\s+/u).length : 0;
+const MAX_WORD_LENGTH = 25;
+const MAX_CAPTION_LENGTH = 250;
+
+const hasWordExceedingLength = (text: string, maxLength = MAX_WORD_LENGTH) => {
+  if (!text.trim()) return false;
+  const words = text.trim().split(/\s+/u);
+  return words.some((word) => word.length > maxLength);
+};
 
 type ApiError = { response?: { data?: { errors?: Record<string, string[]>; message?: string } } };
 
@@ -69,10 +76,32 @@ export default function EditorGalleryDpfEditPage() {
 
   const onSubmit = async () => {
     const validationErrors: string[] = [];
-    if (!form.image) validationErrors.push("Gambar aktivitas wajib diisi.");
-    if (!form.caption_id.trim()) validationErrors.push("Caption Indonesia wajib diisi.");
-    if (!form.caption_en.trim()) validationErrors.push("Caption English wajib diisi.");
-    if (countWords(form.caption_id) > 3 || countWords(form.caption_en) > 3) validationErrors.push("Setiap caption maksimal 3 kata.");
+    if (!form.image) {
+      validationErrors.push("Gambar aktivitas wajib diisi.");
+    }
+
+    if (!form.caption_id.trim()) {
+      validationErrors.push("Caption Indonesia wajib diisi.");
+    } else {
+      if (form.caption_id.trim().length > MAX_CAPTION_LENGTH) {
+        validationErrors.push(`Caption Indonesia maksimal ${MAX_CAPTION_LENGTH} karakter.`);
+      }
+      if (hasWordExceedingLength(form.caption_id, MAX_WORD_LENGTH)) {
+        validationErrors.push(`Setiap kata pada Caption Indonesia maksimal ${MAX_WORD_LENGTH} karakter.`);
+      }
+    }
+
+    if (!form.caption_en.trim()) {
+      validationErrors.push("Caption English wajib diisi.");
+    } else {
+      if (form.caption_en.trim().length > MAX_CAPTION_LENGTH) {
+        validationErrors.push(`Caption English maksimal ${MAX_CAPTION_LENGTH} karakter.`);
+      }
+      if (hasWordExceedingLength(form.caption_en, MAX_WORD_LENGTH)) {
+        validationErrors.push(`Setiap kata pada Caption English maksimal ${MAX_WORD_LENGTH} karakter.`);
+      }
+    }
+
     if (validationErrors.length) { setErrors(validationErrors); return; }
 
     setSaving(true);
