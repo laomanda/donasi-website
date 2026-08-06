@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faStore } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faStore, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "@/layouts/LandingLayout";
 import { PageHero } from "@/components/PageHero";
 import { useLang } from "@/lib/i18n";
 import { translate } from "@/lib/i18n-utils";
 import http from "@/lib/http";
+import { dpfIcon } from "@/assets/brand";
 import { mitraProductDict } from "@/components/mitra-products/MitraProductI18n";
 import { MitraProductCard, type MitraProductItem } from "@/components/mitra-products/MitraProductCard";
 
@@ -56,13 +57,20 @@ export default function ProdukMitraPage() {
           </div>
         }
       >
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-primary-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
-        >
-          <FontAwesomeIcon icon={faArrowLeft} />
-          {t("product.backHome", "Kembali ke beranda")}
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-primary-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
+          >
+            <FontAwesomeIcon icon={faArrowLeft} />
+            {t("product.backHome", "Kembali ke beranda")}
+          </Link>
+          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-4 py-2.5 shadow-sm backdrop-blur-sm">
+            <img src={dpfIcon} alt="DPF Logo" className="h-5 w-auto object-contain" />
+            <span className="text-xs sm:text-sm font-bold text-slate-900">Djalaluddin Pane Foundation</span>
+            <FontAwesomeIcon icon={faCheckCircle} className="text-blue-500 text-sm shrink-0" />
+          </div>
+        </div>
       </PageHero>
 
       <main className="bg-white py-16 sm:py-20">

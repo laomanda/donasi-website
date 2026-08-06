@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faStore, faBoxOpen, faFileLines } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faStore, faBoxOpen, faFileLines, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { LandingLayout } from "@/layouts/LandingLayout";
 import { useLang } from "@/lib/i18n";
 import { translate } from "@/lib/i18n-utils";
 import http from "@/lib/http";
 import { resolveApiBaseUrl } from "@/lib/urls";
+import { dpfIcon } from "@/assets/brand";
 import MitraProductGallery from "@/components/mitra-products/MitraProductGallery";
 import { mitraProductDict } from "@/components/mitra-products/MitraProductI18n";
 
@@ -118,12 +119,18 @@ export default function ProdukMitraDetailPage() {
             {/* Information Column (5 columns - Normal Flow) */}
             <div className="lg:col-span-5 min-w-0">
               <div className="flex flex-col rounded-3xl border border-slate-100 bg-white p-6 sm:p-8 shadow-soft overflow-hidden">
-                {/* Eyebrow: Nama Mitra (dengan icon Toko/Mitra) */}
-                <div className="mb-2">
+                {/* Eyebrow: Nama Mitra (dengan icon Toko) & DPF Verified Badge */}
+                <div className="mb-3 flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 rounded-md bg-brandGreen-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brandGreen-700 ring-1 ring-brandGreen-100">
                     <FontAwesomeIcon icon={faStore} className="text-[10px]" />
                     <span>{product.nama_mitra?.trim() || t("product.defaultPartner", "Mitra Wakaf DPF")}</span>
                   </span>
+
+                  <div className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-1 ring-1 ring-slate-200/80">
+                    <img src={dpfIcon} alt="DPF" className="h-4 w-auto object-contain shrink-0" />
+                    <span className="text-xs font-bold text-slate-900">Djalaluddin Pane Foundation</span>
+                    <FontAwesomeIcon icon={faCheckCircle} className="text-blue-500 text-xs shrink-0" />
+                  </div>
                 </div>
 
                 {/* Judul Produk (dengan icon Produk/Box) */}

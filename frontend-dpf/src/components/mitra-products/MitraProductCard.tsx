@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight, faStore, faBoxOpen, faFileLines } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faStore, faBoxOpen, faFileLines, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { imagePlaceholder } from "@/lib/placeholder";
 import { resolveStorageUrl } from "@/lib/urls";
+import { dpfIcon } from "@/assets/brand";
 
 export type MitraProductItem = {
   id: number;
@@ -59,7 +60,7 @@ export function MitraProductCard({ product, locale }: MitraProductCardProps) {
         </p>
 
         {/* Judul Produk (dengan icon faBoxOpen) */}
-        <div className="mt-1 flex items-start gap-2">
+        <div className="mt-1.5 flex items-start gap-2 min-h-[3.25rem]">
           <FontAwesomeIcon icon={faBoxOpen} className="mt-1 text-primary-600 text-sm shrink-0" />
           <h2 className="font-heading text-lg font-bold leading-snug text-slate-900 line-clamp-2">
             <Link to={`/produk-mitra/${product.slug}`}>
@@ -69,17 +70,24 @@ export function MitraProductCard({ product, locale }: MitraProductCardProps) {
         </div>
 
         {/* Deskripsi Ringkas (dengan icon faFileLines) */}
-        {description && (
-          <div className="mt-2 flex items-start gap-2">
-            <FontAwesomeIcon icon={faFileLines} className="mt-1 text-slate-400 text-xs shrink-0" />
-            <p className="text-sm leading-relaxed text-slate-600 line-clamp-2">
-              {description}
-            </p>
+        <div className="mt-2 flex items-start gap-2 min-h-[2.75rem]">
+          <FontAwesomeIcon icon={faFileLines} className="mt-1 text-slate-400 text-xs shrink-0" />
+          <p className="text-sm leading-relaxed text-slate-600 line-clamp-2">
+            {description || "\u00A0"}
+          </p>
+        </div>
+
+        {/* Verified Foundation Curator Identity (dpf-icon.webp + Djalaluddin Pane Foundation + blue check) */}
+        <div className="mt-auto pt-4">
+          <div className="flex items-center gap-2 rounded-xl bg-slate-50 px-3.5 py-2.5 ring-1 ring-slate-100/80">
+            <img src={dpfIcon} alt="DPF" className="h-5 w-auto object-contain shrink-0" />
+            <span className="text-xs font-bold text-slate-900 truncate">Djalaluddin Pane Foundation</span>
+            <FontAwesomeIcon icon={faCheckCircle} className="ml-auto text-blue-500 text-xs shrink-0" />
           </div>
-        )}
+        </div>
 
         {/* Footer & CTA */}
-        <div className="mt-auto border-t border-slate-100 pt-4 mt-6 flex items-center justify-end">
+        <div className="mt-4 border-t border-slate-100 pt-4 flex items-center justify-end">
           <Link
             to={`/produk-mitra/${product.slug}`}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 transition-colors duration-200 group-hover:text-primary-600"
