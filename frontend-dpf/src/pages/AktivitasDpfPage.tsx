@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faImages, faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faImages, faPlus, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "@/layouts/LandingLayout";
 import { PageHero } from "@/components/PageHero";
 import { useLang, type Locale } from "@/lib/i18n";
@@ -83,15 +82,7 @@ export function AktivitasDpfPage() {
             <FontAwesomeIcon icon={faImages} className="text-8xl text-brandGreen-600/70" />
           </div>
         }
-      >
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-primary-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
-        >
-          <FontAwesomeIcon icon={faArrowLeft} />
-          {t("gallery.back")}
-        </Link>
-      </PageHero>
+      />
 
       <main className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

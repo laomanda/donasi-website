@@ -1,31 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import http from "../../../../lib/http";
-import { useToast } from "../../../../components/ui/ToastProvider";
-import { useBulkSelection } from "../../../../components/ui/useBulkSelection";
-import { BulkActionsBar } from "../../../../components/ui/BulkActionsBar";
-import { runWithConcurrency } from "../../../../lib/bulk";
-
-// Components
 import EditorBannersHeader from "../../../../components/management/editor/banner/list/EditorBannersHeader";
 import EditorBannersTable from "../../../../components/management/editor/banner/list/EditorBannersTable";
-
-// Types
 import { type Banner } from "../../../../components/management/editor/banner/EditorBannerTypes";
 
 export default function EditorBannersPage() {
   const navigate = useNavigate();
-  const toast = useToast();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
-  const [bulkDeleting, setBulkDeleting] = useState(false);
-
-  const selection = useBulkSelection<number>();
-  const pageIds = banners.map(b => b.id);
 
   const fetchBanners = async () => {
     setLoading(true);
@@ -47,45 +31,6 @@ export default function EditorBannersPage() {
     fetchBanners();
   }, []);
 
-  const handleDelete = async (banner: Banner) => {
-    setDeletingId(banner.id);
-    try {
-      await http.delete(`/editor/banners/${banner.id}`);
-      toast.success("Banner berhasil dihapus.", { title: "Berhasil" });
-      fetchBanners();
-      selection.setSelected(new Set([...selection.selectedIds].filter(id => id !== banner.id)));
-    } catch {
-      toast.error("Gagal menghapus banner.", { title: "Gagal" });
-    } finally {
-      setDeletingId(null);
-      setConfirmDeleteId(null);
-    }
-  };
-
-  const handleDeleteSelected = async () => {
-    if (selection.count === 0) return;
-    setBulkDeleting(true);
-    try {
-      const idsToDelete = [...selection.selectedIds];
-      const result = await runWithConcurrency(idsToDelete, 4, async (id) => {
-        await http.delete(`/editor/banners/${id}`);
-      });
-      
-      if (result.failed.length > 0) {
-        toast.error(`Berhasil menghapus ${result.succeeded.length} banner, gagal ${result.failed.length}.`, { title: "Gagal" });
-        selection.setSelected(new Set(result.failed.map(f => f.id)));
-      } else {
-        toast.success(`Berhasil menghapus ${result.succeeded.length} banner.`, { title: "Berhasil" });
-        selection.clear();
-      }
-      fetchBanners();
-    } catch {
-      toast.error("Terjadi kesalahan saat penghapusan massal.", { title: "Gagal" });
-    } finally {
-      setBulkDeleting(false);
-    }
-  };
-
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 pb-12">
       <EditorBannersHeader 
@@ -100,24 +45,10 @@ export default function EditorBannersPage() {
         </div>
       )}
 
-      <BulkActionsBar
-        count={selection.count}
-        itemLabel="banner"
-        onClear={selection.clear}
-        onSelectAllPage={() => selection.toggleAll(pageIds)}
-        onDeleteSelected={handleDeleteSelected}
-        disabled={loading || bulkDeleting}
-      />
-
       <EditorBannersTable
         banners={banners}
         loading={loading}
-        selection={selection}
         onEdit={(id) => navigate(`/editor/banners/${id}/edit`)}
-        onDelete={handleDelete}
-        confirmDeleteId={confirmDeleteId}
-        setConfirmDeleteId={setConfirmDeleteId}
-        deletingId={deletingId}
       />
 
       {!loading && banners.length === 0 && !error && (

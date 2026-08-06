@@ -25,7 +25,21 @@ export default function EditorBannerEditPage() {
   const [form, setForm] = useState<BannerFormState>({ image_path: "", display_order: "0" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+
+  const onDelete = async () => {
+    setDeleting(true);
+    setErrors([]);
+    try {
+      await http.delete(`/editor/banners/${bannerId}`);
+      toast.success("Banner berhasil dihapus.", { title: "Berhasil" });
+      navigate("/editor/banners", { replace: true });
+    } catch {
+      setErrors(["Gagal menghapus banner."]);
+      setDeleting(false);
+    }
+  };
   
   const [peers, setPeers] = useState<Banner[]>([]);
   const [loadingPeers, setLoadingPeers] = useState(true);
@@ -144,10 +158,11 @@ export default function EditorBannerEditPage() {
         mode="edit"
         saving={saving}
         uploading={imageUploading}
-        deleting={false}
-        canSubmit={!orderErrorMsg && !!form.image_path}
+        deleting={deleting}
+        canSubmit={!orderErrorMsg && !!form.image_path && !deleting}
         onBack={() => navigate("/editor/banners")}
         onSubmit={onSubmit}
+        onDelete={onDelete}
       />
 
       {errors.length > 0 && (

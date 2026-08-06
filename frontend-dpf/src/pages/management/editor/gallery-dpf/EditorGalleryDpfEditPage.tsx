@@ -36,6 +36,7 @@ export default function EditorGalleryDpfEditPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
@@ -50,6 +51,19 @@ export default function EditorGalleryDpfEditPage() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [galleryId]);
+
+  const onDelete = async () => {
+    setDeleting(true);
+    setErrors([]);
+    try {
+      await http.delete(`/editor/gallery-dpf/${galleryId}`);
+      toast.success("Aktivitas DPF berhasil dihapus.", { title: "Berhasil" });
+      navigate("/editor/gallery-dpf", { replace: true });
+    } catch (error) {
+      setErrors(getErrorMessages(error, "Gagal menghapus aktivitas DPF."));
+      setDeleting(false);
+    }
+  };
 
   const onUpload = async (file: File) => {
     setUploadError(null);
@@ -121,11 +135,47 @@ export default function EditorGalleryDpfEditPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 pb-20">
-      <EditorGalleryDpfFormHeader mode="edit" saving={saving} uploading={uploading} canSubmit={!saving && !uploading} onBack={() => navigate("/editor/gallery-dpf")} onSubmit={onSubmit} />
-      {errors.length > 0 && <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">{errors.map((error, index) => <p key={index}>{error}</p>)}</div>}
+      <EditorGalleryDpfFormHeader
+        mode="edit"
+        saving={saving}
+        uploading={uploading}
+        canSubmit={!saving && !uploading && !deleting}
+        onBack={() => navigate("/editor/gallery-dpf")}
+        onSubmit={onSubmit}
+      />
+      {errors.length > 0 && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
+          {errors.map((error, index) => (
+            <p key={index}>{error}</p>
+          ))}
+        </div>
+      )}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-8"><EditorGalleryDpfFormMain form={form} previewUrl={previewUrl} uploading={uploading} uploadError={uploadError} disabled={saving} onUpload={onUpload} onRemove={() => { setForm((current) => ({ ...current, image: "" })); if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }} /></div>
-        <div className="lg:col-span-4"><EditorGalleryDpfFormSidebar form={form} disabled={saving} onChange={(field, value) => setForm((current) => ({ ...current, [field]: value }))} /></div>
+        <div className="lg:col-span-8">
+          <EditorGalleryDpfFormMain
+            form={form}
+            previewUrl={previewUrl}
+            uploading={uploading}
+            uploadError={uploadError}
+            disabled={saving || deleting}
+            onUpload={onUpload}
+            onRemove={() => {
+              setForm((current) => ({ ...current, image: "" }));
+              if (previewUrl) URL.revokeObjectURL(previewUrl);
+              setPreviewUrl(null);
+            }}
+          />
+        </div>
+        <div className="lg:col-span-4">
+          <EditorGalleryDpfFormSidebar
+            form={form}
+            disabled={saving}
+            mode="edit"
+            onDelete={onDelete}
+            deleting={deleting}
+            onChange={(field, value) => setForm((current) => ({ ...current, [field]: value }))}
+          />
+        </div>
       </div>
     </div>
   );

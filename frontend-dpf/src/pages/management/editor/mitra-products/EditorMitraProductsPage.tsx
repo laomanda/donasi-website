@@ -1,22 +1,16 @@
-import { useEffect, useState, useMemo, Fragment } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPenToSquare,
   faPlus,
-  faTrash,
   faSearch,
   faStore,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "@/lib/http";
-import { useToast } from "@/components/ui/ToastProvider";
-import { useBulkSelection } from "@/components/ui/useBulkSelection";
-import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
-import { runWithConcurrency } from "@/lib/bulk";
 import { imagePlaceholder } from "@/lib/placeholder";
 import {
   resolveMitraProductImage,
-  statusLabel,
   type MitraProduct,
 } from "@/components/management/editor/mitra-products/MitraProductTypes";
 
@@ -38,9 +32,19 @@ const getStatusTone = (status: string) => {
   }
 };
 
+const statusLabel = (status: string) => {
+  switch (status) {
+    case "published":
+      return "Terbit";
+    case "archived":
+      return "Arsip";
+    default:
+      return "Draf";
+  }
+};
+
 export default function EditorMitraProductsPage() {
   const navigate = useNavigate();
-  const toast = useToast();
   const [items, setItems] = useState<MitraProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -52,12 +56,6 @@ export default function EditorMitraProductsPage() {
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [bulkDeleting, setBulkDeleting] = useState(false);
-
-  const selection = useBulkSelection<number>();
-  const pageIds = useMemo(() => items.map((a) => a.id), [items]);
 
   const load = async () => {
     setLoading(true);
@@ -86,64 +84,7 @@ export default function EditorMitraProductsPage() {
 
   useEffect(() => {
     load();
-  }, [page, status]);
-
-  useEffect(() => {
-    selection.keepOnly(pageIds);
-  }, [pageIds.join(",")]);
-
-  const handleSearch = (event: React.FormEvent) => {
-    event.preventDefault();
-    setPage(1);
-    load();
-  };
-
-  const handleDelete = async (item: MitraProduct) => {
-    setDeletingId(item.id);
-    try {
-      await http.delete(`/editor/mitra-products/${item.id}`);
-      toast.success("Produk mitra berhasil dihapus.", { title: "Berhasil" });
-      setConfirmDeleteId(null);
-      selection.setSelected(new Set([...selection.selectedIds].filter((id) => id !== item.id)));
-      load();
-    } catch {
-      toast.error("Gagal menghapus produk mitra.", { title: "Gagal" });
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  const onDeleteSelected = async () => {
-    if (selection.count === 0) return;
-    setBulkDeleting(true);
-    try {
-      const idsToDelete = [...selection.selectedIds];
-      const result = await runWithConcurrency(idsToDelete, 4, async (id) => {
-        await http.delete(`/editor/mitra-products/${id}`);
-      });
-
-      if (result.failed.length > 0) {
-        toast.error(
-          `Berhasil menghapus ${result.succeeded.length} item, gagal ${result.failed.length}.`,
-          { title: "Sebagian Gagal" }
-        );
-        selection.setSelected(new Set(result.failed.map((f) => f.id)));
-      } else {
-        toast.success(`Berhasil menghapus ${result.succeeded.length} produk mitra.`, {
-          title: "Berhasil",
-        });
-        selection.clear();
-      }
-
-      load();
-    } catch {
-      toast.error("Terjadi kesalahan saat penghapusan massal.", { title: "Gagal" });
-    } finally {
-      setBulkDeleting(false);
-    }
-  };
-
-  const allSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
+  }, [page, status, search]);
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 pb-12">
@@ -181,10 +122,7 @@ export default function EditorMitraProductsPage() {
       </div>
 
       {/* Filter & Search Bar */}
-      <form
-        onSubmit={handleSearch}
-        className="flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center"
-      >
+      <div className="flex flex-col gap-3 rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <FontAwesomeIcon
             icon={faSearch}
@@ -192,7 +130,10 @@ export default function EditorMitraProductsPage() {
           />
           <input
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setPage(1);
+            }}
             placeholder="Cari produk atau mitra..."
             className="w-full rounded-2xl border border-slate-200 py-3 pl-11 pr-4 text-sm font-semibold text-slate-900 focus:border-brandGreen-400 focus:outline-none focus:ring-4 focus:ring-brandGreen-50"
           />
@@ -210,13 +151,7 @@ export default function EditorMitraProductsPage() {
           <option value="published">Terbit</option>
           <option value="archived">Arsip</option>
         </select>
-        <button
-          type="submit"
-          className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-800 active:scale-95"
-        >
-          Cari
-        </button>
-      </form>
+      </div>
 
       {/* Error Alert */}
       {error && (
@@ -225,16 +160,6 @@ export default function EditorMitraProductsPage() {
         </div>
       )}
 
-      {/* Bulk Actions Bar */}
-      <BulkActionsBar
-        count={selection.count}
-        itemLabel="produk mitra"
-        onClear={selection.clear}
-        onSelectAllPage={() => selection.toggleAll(pageIds)}
-        onDeleteSelected={onDeleteSelected}
-        disabled={loading || bulkDeleting}
-      />
-
       {/* Main Table View */}
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
         {/* Desktop View */}
@@ -242,15 +167,6 @@ export default function EditorMitraProductsPage() {
           <table className="min-w-full table-fixed text-left">
             <thead className="border-b border-slate-200 bg-slate-50/80">
               <tr>
-                <th className="w-12 px-4 py-4 text-center">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={() => selection.toggleAll(pageIds)}
-                    disabled={loading || items.length === 0}
-                    className="h-4 w-4 rounded accent-brandGreen-600 focus:ring-brandGreen-500"
-                  />
-                </th>
                 <th className="w-28 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                   Gambar
                 </th>
@@ -263,7 +179,7 @@ export default function EditorMitraProductsPage() {
                 <th className="w-32 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                   Status
                 </th>
-                <th className="w-28 px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                <th className="w-24 px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                   Aksi
                 </th>
               </tr>
@@ -272,9 +188,6 @@ export default function EditorMitraProductsPage() {
               {loading ? (
                 Array.from({ length: 4 }).map((_, index) => (
                   <tr key={index} className="animate-pulse">
-                    <td className="px-4 py-5 text-center">
-                      <div className="mx-auto h-4 w-4 rounded bg-slate-100" />
-                    </td>
                     <td className="px-6 py-5">
                       <div className="h-14 w-20 rounded-xl bg-slate-100" />
                     </td>
@@ -288,13 +201,13 @@ export default function EditorMitraProductsPage() {
                       <div className="h-6 w-20 rounded-full bg-slate-100" />
                     </td>
                     <td className="px-6 py-5">
-                      <div className="ml-auto h-8 w-16 rounded-xl bg-slate-100" />
+                      <div className="ml-auto h-8 w-10 rounded-xl bg-slate-100" />
                     </td>
                   </tr>
                 ))
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-sm font-semibold text-slate-500">
+                  <td colSpan={5} className="px-6 py-16 text-center text-sm font-semibold text-slate-500">
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
                       <FontAwesomeIcon icon={faStore} className="text-xl" />
                     </div>
@@ -303,109 +216,52 @@ export default function EditorMitraProductsPage() {
                 </tr>
               ) : (
                 items.map((item) => {
-                  const selected = selection.isSelected(item.id);
                   return (
-                    <Fragment key={item.id}>
-                      <tr
-                        className={`transition-colors hover:bg-slate-50/80 ${
-                          selected ? "bg-brandGreen-50/40" : ""
-                        }`}
-                      >
-                        <td className="px-4 py-5 text-center">
-                          <input
-                            type="checkbox"
-                            checked={selected}
-                            onChange={() => selection.toggle(item.id)}
-                            className="h-4 w-4 rounded accent-brandGreen-600 focus:ring-brandGreen-500"
+                    <tr
+                      key={item.id}
+                      className="transition-colors hover:bg-slate-50/80"
+                    >
+                      <td className="px-6 py-5">
+                        <div className="h-14 w-20 overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200">
+                          <img
+                            src={resolveMitraProductImage(item.images?.[0]?.image)}
+                            alt={item.title_id}
+                            className="h-full w-full object-cover"
+                            onError={(event) => {
+                              event.currentTarget.src = imagePlaceholder;
+                            }}
                           />
-                        </td>
-                        <td className="px-6 py-5">
-                          <div className="h-14 w-20 overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200">
-                            <img
-                              src={resolveMitraProductImage(item.images?.[0]?.image)}
-                              alt={item.title_id}
-                              className="h-full w-full object-cover"
-                              onError={(event) => {
-                                event.currentTarget.src = imagePlaceholder;
-                              }}
-                            />
-                          </div>
-                        </td>
-                        <td className="px-6 py-5">
-                          <p className="line-clamp-1 font-bold text-slate-900">{item.title_id}</p>
-                          <p className="mt-0.5 font-mono text-xs text-slate-500">/{item.slug}</p>
-                        </td>
-                        <td className="px-6 py-5 text-sm font-semibold text-slate-700">
-                          {item.nama_mitra || "-"}
-                        </td>
-                        <td className="px-6 py-5">
-                          <span
-                            className={`inline-flex rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ring-1 ${getStatusTone(
-                              item.status
-                            )}`}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <p className="line-clamp-1 font-bold text-slate-900">{item.title_id}</p>
+                        <p className="mt-0.5 font-mono text-xs text-slate-500">/{item.slug}</p>
+                      </td>
+                      <td className="px-6 py-5 text-sm font-semibold text-slate-700">
+                        {item.nama_mitra || "-"}
+                      </td>
+                      <td className="px-6 py-5">
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ring-1 ${getStatusTone(
+                            item.status
+                          )}`}
+                        >
+                          {statusLabel(item.status)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        <div className="flex items-center justify-end">
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/editor/mitra-products/${item.id}/edit`)}
+                            aria-label="Ubah produk mitra"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-brandGreen-600"
                           >
-                            {statusLabel(item.status)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/editor/mitra-products/${item.id}/edit`)}
-                              aria-label="Ubah produk mitra"
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-brandGreen-600"
-                            >
-                              <FontAwesomeIcon icon={faPenToSquare} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setConfirmDeleteId(confirmDeleteId === item.id ? null : item.id)
-                              }
-                              aria-label="Hapus produk mitra"
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-rose-100 bg-white text-rose-500 shadow-sm transition hover:border-rose-200 hover:bg-rose-50"
-                            >
-                              <FontAwesomeIcon icon={faTrash} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-
-                      {/* Inline Delete Confirmation Drawer */}
-                      {confirmDeleteId === item.id && (
-                        <tr>
-                          <td colSpan={6} className="bg-rose-50/50 px-6 py-4">
-                            <div className="flex items-center justify-between gap-4 rounded-2xl border border-rose-200 bg-white p-4 shadow-sm">
-                              <div>
-                                <p className="text-sm font-bold text-slate-900">
-                                  Hapus produk mitra ini?
-                                </p>
-                                <p className="text-xs font-medium text-slate-500">
-                                  Produk dan seluruh gambarnya akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setConfirmDeleteId(null)}
-                                  className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100"
-                                >
-                                  Batal
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDelete(item)}
-                                  disabled={deletingId === item.id}
-                                  className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-rose-700 disabled:opacity-50"
-                                >
-                                  {deletingId === item.id ? "Menghapus..." : "Ya, Hapus"}
-                                </button>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
+                            <FontAwesomeIcon icon={faPenToSquare} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })
               )}
@@ -431,19 +287,12 @@ export default function EditorMitraProductsPage() {
             </div>
           ) : (
             items.map((item) => {
-              const selected = selection.isSelected(item.id);
               return (
                 <div
                   key={item.id}
-                  className={`p-4 transition-colors ${selected ? "bg-brandGreen-50/40" : ""}`}
+                  className="p-4 transition-colors hover:bg-slate-50/80"
                 >
                   <div className="flex gap-3 items-start">
-                    <input
-                      type="checkbox"
-                      checked={selected}
-                      onChange={() => selection.toggle(item.id)}
-                      className="mt-1 h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500"
-                    />
                     <div className="h-20 w-28 shrink-0 overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200">
                       <img
                         src={resolveMitraProductImage(item.images?.[0]?.image)}
@@ -468,7 +317,7 @@ export default function EditorMitraProductsPage() {
                           {statusLabel(item.status)}
                         </span>
                       </div>
-                      <div className="mt-4 flex items-center justify-end gap-2">
+                      <div className="mt-4 flex items-center justify-end">
                         <button
                           type="button"
                           onClick={() => navigate(`/editor/mitra-products/${item.id}/edit`)}
@@ -477,42 +326,9 @@ export default function EditorMitraProductsPage() {
                         >
                           <FontAwesomeIcon icon={faPenToSquare} />
                         </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setConfirmDeleteId(confirmDeleteId === item.id ? null : item.id)
-                          }
-                          aria-label="Hapus produk mitra"
-                          className="rounded-lg bg-rose-50 p-2 text-rose-500 hover:bg-rose-100"
-                        >
-                          <FontAwesomeIcon icon={faTrash} />
-                        </button>
                       </div>
                     </div>
                   </div>
-
-                  {confirmDeleteId === item.id && (
-                    <div className="mt-4 space-y-3 rounded-xl border border-rose-200 bg-rose-50 p-4">
-                      <p className="text-xs font-bold text-rose-800">Produk akan dihapus permanen.</p>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(item)}
-                          disabled={deletingId === item.id}
-                          className="flex-1 rounded-lg bg-rose-600 py-2 text-xs font-bold text-white disabled:opacity-50"
-                        >
-                          {deletingId === item.id ? "..." : "Ya, Hapus"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setConfirmDeleteId(null)}
-                          className="flex-1 rounded-lg border border-rose-200 bg-white py-2 text-xs font-bold text-slate-600"
-                        >
-                          Batal
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
             })

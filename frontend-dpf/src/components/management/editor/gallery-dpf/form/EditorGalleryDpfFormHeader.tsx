@@ -44,6 +44,7 @@ export default function EditorGalleryDpfFormHeader({
             <FontAwesomeIcon icon={faArrowLeft} />
             Kembali
           </button>
+
           <button
             type="button"
             onClick={onSubmit}

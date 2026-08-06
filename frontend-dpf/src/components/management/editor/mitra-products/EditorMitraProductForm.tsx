@@ -52,8 +52,25 @@ export default function EditorMitraProductForm({ mode, productId }: Props) {
   const [form, setForm] = useState<MitraProductFormState>(emptyMitraProductForm);
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+
+  const handleDeleteProduct = async () => {
+    if (!productId) return;
+
+    setDeleting(true);
+    setErrors([]);
+    try {
+      await http.delete(`/editor/mitra-products/${productId}`);
+      toast.success("Produk mitra berhasil dihapus.", { title: "Berhasil" });
+      navigate("/editor/mitra-products", { replace: true });
+    } catch (error) {
+      setErrors(getErrors(error, "Gagal menghapus produk mitra."));
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     if (mode !== "edit" || !productId) return;
@@ -212,7 +229,7 @@ export default function EditorMitraProductForm({ mode, productId }: Props) {
     );
   }
 
-  const disabled = saving || uploading;
+  const disabled = saving || uploading || deleting;
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 pb-20">
@@ -244,6 +261,7 @@ export default function EditorMitraProductForm({ mode, productId }: Props) {
               <FontAwesomeIcon icon={faArrowLeft} />
               <span>Kembali</span>
             </button>
+
             <button
               type="button"
               onClick={submit}
@@ -485,8 +503,8 @@ export default function EditorMitraProductForm({ mode, productId }: Props) {
         </div>
 
         {/* Right Sidebar Panel */}
-        <aside className="space-y-6 lg:col-span-4">
-          <div className="space-y-6 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:sticky lg:top-24">
+        <aside className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:self-start lg:h-fit">
+          <div className="space-y-6 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="font-heading text-lg font-semibold text-slate-900 border-b border-slate-100 pb-3">
               Pengaturan Kontak & Status
             </h2>
@@ -538,6 +556,52 @@ export default function EditorMitraProductForm({ mode, productId }: Props) {
               </p>
             </div>
           </div>
+
+          {/* Zona Berbahaya - Hapus Produk Mitra */}
+          {mode === "edit" && productId && (
+            <div className="rounded-[28px] border border-red-200 bg-white p-6 shadow-sm sm:p-8">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-600">Zona berbahaya</p>
+              <h2 className="mt-2 font-heading text-xl font-semibold text-slate-900">Hapus Produk Mitra</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                Menghapus produk mitra akan menghilangkan produk beserta seluruh foto-fotonya dari sistem. Tindakan ini tidak bisa dibatalkan.
+              </p>
+
+              {!showDeleteConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={disabled}
+                  className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-red-200 bg-white px-5 py-3 text-sm font-bold text-red-700 shadow-sm transition hover:bg-red-50 disabled:opacity-50"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                  Hapus Produk
+                </button>
+              ) : (
+                <div className="mt-6 rounded-2xl border border-red-100 bg-red-50 p-4">
+                  <p className="text-sm font-bold text-red-800">Konfirmasi hapus</p>
+                  <p className="mt-1 text-sm text-red-700">Klik "Ya, hapus" untuk melanjutkan.</p>
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={deleting}
+                      className="inline-flex items-center justify-center rounded-2xl border border-red-200 bg-white px-5 py-3 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDeleteProduct}
+                      disabled={deleting}
+                      className="inline-flex items-center justify-center rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {deleting ? "Menghapus..." : "Ya, hapus"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </aside>
       </div>
     </div>

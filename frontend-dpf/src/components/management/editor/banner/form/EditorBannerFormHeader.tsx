@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 type Props = {
   mode: "create" | "edit";
@@ -9,6 +9,7 @@ type Props = {
   canSubmit: boolean;
   onSubmit: () => void;
   onBack: () => void;
+  onDelete?: () => void;
 };
 
 export default function EditorBannerFormHeader({
@@ -19,6 +20,7 @@ export default function EditorBannerFormHeader({
   canSubmit,
   onSubmit,
   onBack,
+  onDelete,
 }: Props) {
   const title = mode === "create" ? "Tambah Banner" : "Ubah Banner";
 
@@ -47,11 +49,27 @@ export default function EditorBannerFormHeader({
             Kembali
           </button>
 
+          {mode === "edit" && onDelete && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Apakah Anda yakin ingin menghapus banner ini? Tindakan ini tidak dapat dibatalkan.")) {
+                  onDelete();
+                }
+              }}
+              disabled={saving || uploading || deleting}
+              className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-bold text-rose-600 shadow-sm transition hover:bg-rose-100 hover:text-rose-700 disabled:opacity-50"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+              {deleting ? "Menghapus..." : "Hapus"}
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onSubmit}
             className="inline-flex items-center justify-center rounded-2xl bg-brandGreen-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:opacity-70"
-            disabled={!canSubmit || saving}
+            disabled={!canSubmit || saving || deleting}
           >
             {saving ? "Menyimpan..." : "Simpan"}
           </button>
