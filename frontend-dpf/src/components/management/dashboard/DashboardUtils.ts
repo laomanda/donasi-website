@@ -3,7 +3,10 @@ import {
   faGaugeHigh,
   faBookOpen,
   faHeart,
-  faImage,
+  faImages,
+  faSliders,
+  faCameraRetro,
+  faStore,
   faTags,
   faHandshake,
   faSitemap,
@@ -138,7 +141,7 @@ export const PERMISSION_TEMPLATES: Record<string, string[]> = {
     "manage partners",
     "manage organization",
   ],
-  superadmin: [], // Superadmin handled specially or gets everything
+  superadmin: [],
   mitra: [],
 };
 
@@ -173,7 +176,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     description: "AKSES PENUH MODUL",
     href: "/editor/banners",
     permission: "manage banners",
-    icon: faImage,
+    icon: faSliders,
     tone: "purple",
   },
   {
@@ -181,7 +184,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     description: "AKSES PENUH MODUL",
     href: "/editor/gallery-dpf",
     permission: "manage gallery dpf",
-    icon: faImage,
+    icon: faImages,
     tone: "teal",
   },
   {
@@ -189,7 +192,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     description: "AKSES PENUH MODUL",
     href: "/editor/gallery-mitra",
     permission: "manage gallery mitra",
-    icon: faImage,
+    icon: faCameraRetro,
     tone: "teal",
   },
   {
@@ -197,7 +200,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     description: "AKSES PENUH MODUL",
     href: "/editor/mitra-products",
     permission: "manage produk mitra",
-    icon: faImage,
+    icon: faStore,
     tone: "teal",
   },
   {
@@ -311,10 +314,10 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       items: [
         { label: "Artikel", href: "/editor/articles", icon: faBookOpen, permission: "manage articles" },
         { label: "Program", href: "/editor/programs", icon: faHeart, permission: "manage programs" },
-        { label: "Banner", href: "/editor/banners", icon: faImage, permission: "manage banners" },
-        { label: "Gallery DPF", href: "/editor/gallery-dpf", icon: faImage, permission: "manage gallery dpf" },
-        { label: "Gallery Mitra", href: "/editor/gallery-mitra", icon: faImage, permission: "manage gallery mitra" },
-        { label: "Produk Mitra", href: "/editor/mitra-products", icon: faImage, permission: "manage produk mitra" },
+        { label: "Banner", href: "/editor/banners", icon: faSliders, permission: "manage banners" },
+        { label: "Gallery DPF", href: "/editor/gallery-dpf", icon: faImages, permission: "manage gallery dpf" },
+        { label: "Gallery Mitra", href: "/editor/gallery-mitra", icon: faCameraRetro, permission: "manage gallery mitra" },
+        { label: "Produk Mitra", href: "/editor/mitra-products", icon: faStore, permission: "manage produk mitra" },
         { label: "Tags", href: "/editor/tags", icon: faTags, permission: "manage tags" },
       ],
     },
@@ -330,7 +333,7 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       title: "Alat",
       items: [
         { label: "Panduan", href: "/editor/guidance", icon: faCircleInfo },
-        { label: "Pengaturan", href: "/editor/settings", icon: faGear }
+        { label: "Pengaturan", href: "/editor/settings", icon: faGear },
       ],
     },
   ],
@@ -360,7 +363,7 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       title: "Sistem",
       items: [
         { label: "Panduan", href: "/admin/guidance", icon: faCircleInfo },
-        { label: "Pengaturan", href: "/admin/settings", icon: faGears }
+        { label: "Pengaturan", href: "/admin/settings", icon: faGears },
       ],
     },
   ],
@@ -398,7 +401,10 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       items: [
         { label: "Artikel", href: "/editor/articles", icon: faBookOpen, permission: "manage articles" },
         { label: "Program", href: "/editor/programs", icon: faHeart, permission: "manage programs" },
-        { label: "Banner", href: "/editor/banners", icon: faImage, permission: "manage banners" },
+        { label: "Banner", href: "/editor/banners", icon: faSliders, permission: "manage banners" },
+        { label: "Gallery DPF", href: "/editor/gallery-dpf", icon: faImages, permission: "manage gallery dpf" },
+        { label: "Gallery Mitra", href: "/editor/gallery-mitra", icon: faCameraRetro, permission: "manage gallery mitra" },
+        { label: "Produk Mitra", href: "/editor/mitra-products", icon: faStore, permission: "manage produk mitra" },
         { label: "Tags", href: "/editor/tags", icon: faTags, permission: "manage tags" },
       ],
     },
@@ -459,7 +465,7 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       title: "Dukungan",
       items: [
         { label: "Panduan", href: "/mitra/guidance", icon: faCircleInfo },
-        { label: "Pengaturan", href: "/mitra/settings", icon: faGear }
+        { label: "Pengaturan", href: "/mitra/settings", icon: faGear },
       ],
     },
   ],
@@ -490,12 +496,10 @@ export const resolveUserRoles = (user: StoredUser | null): DashboardRole[] => {
   if (normalized.has("editor")) roles.push("editor");
   if (normalized.has("mitra")) roles.push("mitra");
 
-  // Jika tidak punya role default, namun punya candidates role lain -> Custom Role
   if (roles.length === 0 && candidates.length > 0) {
     roles.push("custom");
   }
 
-  // Jika tetap kosong, cek apakah punya perms (menggunakan resolveUserPermissions)
   if (roles.length === 0) {
     const permissions = resolveUserPermissions(user);
     if (permissions.length > 0) {
@@ -510,7 +514,6 @@ export const resolveUserPermissions = (user: StoredUser | null): string[] => {
   if (!user) return [];
   const permissions: string[] = [];
 
-  // 1. Ambil dari direct permissions
   if (Array.isArray(user.permissions)) {
     user.permissions.forEach((p: any) => {
       if (typeof p === "string") permissions.push(p);
@@ -520,7 +523,6 @@ export const resolveUserPermissions = (user: StoredUser | null): string[] => {
     });
   }
 
-  // 2. Ambil dari inherited permissions dalam Roles (PENTING untuk Custom Role)
   if (Array.isArray(user.roles)) {
     user.roles.forEach((role: any) => {
       if (role && typeof role === "object" && Array.isArray(role.permissions)) {
@@ -549,13 +551,11 @@ export const buildNavSections = (roles: DashboardRole[], permissions: string[], 
       const bucket = sections.get(t(`nav.section.${section.title}`, section.title)) ?? [];
       section.items.forEach((item) => {
         if (seen.has(item.href)) return;
-        
-        // Granular check: if item has a permission requirement, verify it
-        // Superadmin bypasses this check
+
         if (!isSuperAdmin && item.permission && !permissionSet.has(item.permission)) return;
-        
+
         if (isSuperAdmin && item.href.includes("suggestions")) return;
-        
+
         seen.add(item.href);
         bucket.push({
           ...item,
