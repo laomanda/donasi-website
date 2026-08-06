@@ -84,7 +84,7 @@ export function AktivitasMitraPage() {
         }
       />
 
-      <main className="bg-white py-16 sm:py-20">
+      <main className="bg-slate-50 py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {error && (
             <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">

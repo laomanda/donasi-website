@@ -55,7 +55,15 @@ export default function EditorMitraProductsPage() {
   });
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const load = async () => {
     setLoading(true);
@@ -65,7 +73,7 @@ export default function EditorMitraProductsPage() {
           page,
           per_page: 15,
           status: status || undefined,
-          q: search || undefined,
+          q: debouncedSearch || undefined,
         },
       });
       setItems(response.data.data ?? []);
@@ -84,7 +92,7 @@ export default function EditorMitraProductsPage() {
 
   useEffect(() => {
     load();
-  }, [page, status, search]);
+  }, [page, status, debouncedSearch]);
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 pb-12">

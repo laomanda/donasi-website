@@ -23,6 +23,14 @@ export default function EditorGalleryMitraPage() {
   const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, total: 0 });
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -33,7 +41,7 @@ export default function EditorGalleryMitraPage() {
           page,
           per_page: 15,
           status: status || undefined,
-          q: search || undefined,
+          q: debouncedSearch || undefined,
         },
       });
       setItems(response.data.data ?? []);
@@ -52,7 +60,7 @@ export default function EditorGalleryMitraPage() {
 
   useEffect(() => {
     fetchItems();
-  }, [page, status, search]);
+  }, [page, status, debouncedSearch]);
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 pb-12">

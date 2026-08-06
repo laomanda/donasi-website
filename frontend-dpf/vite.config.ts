@@ -20,5 +20,18 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 1000,
-  }
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-fontawesome': [
+            '@fortawesome/fontawesome-svg-core',
+            '@fortawesome/free-solid-svg-icons',
+            '@fortawesome/free-brands-svg-icons',
+            '@fortawesome/react-fontawesome',
+          ],
+        },
+      },
+    },
+  },
 })
