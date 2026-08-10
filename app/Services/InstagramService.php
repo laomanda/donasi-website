@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,34 @@ class InstagramService
 
     private const STALE_CACHE_KEY = 'social.instagram.stale';
 
+    public function token(): string
+    {
+        try {
+            $settingToken = Setting::getValue('social.instagram_access_token');
+            if (! empty($settingToken)) {
+                return trim((string) $settingToken);
+            }
+        } catch (\Throwable $e) {
+            // Fallback to config if DB is unreachable
+        }
+
+        return trim((string) config('services.instagram.access_token'));
+    }
+
+    public function userId(): string
+    {
+        try {
+            $settingUserId = Setting::getValue('social.instagram_user_id');
+            if (! empty($settingUserId)) {
+                return trim((string) $settingUserId);
+            }
+        } catch (\Throwable $e) {
+            // Fallback to config if DB is unreachable
+        }
+
+        return trim((string) config('services.instagram.user_id'));
+    }
+
     public function latest(): array
     {
         $fresh = Cache::get(self::FRESH_CACHE_KEY);
@@ -20,8 +49,13 @@ class InstagramService
             return $fresh;
         }
 
-        $token = trim((string) config('services.instagram.access_token'));
-        $userId = trim((string) config('services.instagram.user_id'));
+        return $this->fetchAndSnapshot();
+    }
+
+    public function fetchAndSnapshot(): array
+    {
+        $token = $this->token();
+        $userId = $this->userId();
 
         if ($token === '' || $userId === '') {
             return $this->stale();
@@ -60,6 +94,54 @@ class InstagramService
             Log::warning('Instagram feed refresh failed.', ['message' => $exception->getMessage()]);
 
             return $this->stale();
+        }
+    }
+
+    public function refreshToken(): bool
+    {
+        $currentToken = $this->token();
+        if ($currentToken === '') {
+            Log::error('Instagram token refresh failed: No current token available.');
+
+            return false;
+        }
+
+        try {
+            $baseUrl = rtrim((string) config('services.instagram.base_url', 'https://graph.instagram.com'), '/');
+            $response = Http::timeout($this->timeout())
+                ->get("{$baseUrl}/refresh_access_token", [
+                    'grant_type' => 'ig_refresh_token',
+                    'access_token' => $currentToken,
+                ]);
+
+            if (! $response->successful()) {
+                Log::error('Instagram token refresh HTTP error', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+
+                return false;
+            }
+
+            $newToken = trim((string) $response->json('access_token', ''));
+            if ($newToken !== '') {
+                try {
+                    Setting::setValue('social.instagram_access_token', $newToken);
+                } catch (\Throwable $e) {
+                    Log::warning('Could not save refreshed Instagram token to DB setting: ' . $e->getMessage());
+                }
+                Log::info('Instagram access token refreshed successfully.');
+
+                return true;
+            }
+
+            Log::error('Instagram token refresh failed: response missing access_token.');
+
+            return false;
+        } catch (\Throwable $exception) {
+            Log::error('Instagram token refresh exception', ['message' => $exception->getMessage()]);
+
+            return false;
         }
     }
 
@@ -107,3 +189,4 @@ class InstagramService
         return max($this->cacheTtl(), (int) config('services.social_media.stale_ttl', 86400));
     }
 }
+

@@ -49,4 +49,19 @@ class InstagramServiceTest extends TestCase
 
         $this->assertSame([['id' => 'stale-post']], app(InstagramService::class)->latest());
     }
+
+    public function test_it_refreshes_instagram_access_token(): void
+    {
+        Http::fake([
+            'https://graph.instagram.test/refresh_access_token*' => Http::response([
+                'access_token' => 'new-refreshed-token',
+                'token_type' => 'bearer',
+                'expires_in' => 5184000,
+            ], 200),
+        ]);
+
+        $result = app(InstagramService::class)->refreshToken();
+        $this->assertTrue($result);
+    }
 }
+
