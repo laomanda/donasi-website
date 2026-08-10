@@ -81,7 +81,7 @@ export default function SocialMediaSection() {
             {payload.meta.instagram_enabled && (
               <div>
                 <div className="flex items-center gap-3 border-b border-slate-200/60 pb-4">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white shadow-sm">
                     <FontAwesomeIcon icon={faInstagram} className="text-lg" />
                   </span>
                   <h3 className="font-heading text-2xl font-bold text-slate-900">

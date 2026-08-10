@@ -77,7 +77,11 @@ http.interceptors.response.use(
 
     const url = String(error.config?.url ?? '')
     const shouldSkipRedirect =
-      status === 422 || status === 429 || url.includes('/auth/login')
+      status === 422 ||
+      status === 429 ||
+      Boolean((error.config as any)?.skipErrorRedirect) ||
+      url.includes('/auth/login') ||
+      url.includes('/social-media')
 
     if (!shouldSkipRedirect) {
       redirectToErrorPage(status, message)
