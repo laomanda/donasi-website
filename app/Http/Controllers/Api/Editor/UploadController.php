@@ -31,7 +31,7 @@ class UploadController extends Controller
     public function storeVideo(Request $request)
     {
         $data = $request->validate([
-            'file' => ['required', 'file', 'mimes:mp4,webm,mov,avi,mkv', 'max:102400'], // 100MB max
+            'file' => ['required', 'file', 'mimetypes:video/mp4,video/webm,video/quicktime,video/x-msvideo,video/x-matroska,video/avi,video/mpeg', 'max:1048576'], // 1GB max
             'folder' => ['nullable', 'string', 'max:64'],
         ]);
 
