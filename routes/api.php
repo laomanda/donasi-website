@@ -221,7 +221,7 @@ Route::prefix('v1')->group(function () {
     | EDITOR (Role: editor, admin, superadmin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:editor|superadmin|manage articles|manage programs|manage banners|manage gallery dpf|manage gallery mitra|manage produk mitra|manage tags|manage tasks|manage partners|manage organization|manage bank_accounts'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:editor|admin|superadmin|manage articles|manage programs|manage banners|manage gallery dpf|manage gallery mitra|manage produk mitra|manage tags|manage tasks|manage partners|manage organization|manage bank_accounts'])
         ->prefix('editor')
         ->name('editor.')
         ->group(function () {
