@@ -68,6 +68,64 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
+    Route::get('/og-meta', function (\Illuminate\Http\Request $request) {
+        $path = $request->query('path', '/');
+        $segments = explode('/', trim($path, '/'));
+        $firstSegment = strtolower($segments[0] ?? '');
+        $slug = $segments[1] ?? null;
+
+        $metaTitle = null;
+        $metaDescription = null;
+        $metaImage = null;
+
+        if ($slug && in_array($firstSegment, ['literasi', 'articles', 'article'])) {
+            $article = \App\Models\Article::published()->firstWhere('slug', $slug);
+            if ($article) {
+                $metaTitle = e($article->title);
+                $metaDescription = e(\Illuminate\Support\Str::limit(trim(strip_tags($article->excerpt ?: $article->body)), 160));
+                if ($article->thumbnail_path) {
+                    $metaImage = \Illuminate\Support\Str::startsWith($article->thumbnail_path, ['http://', 'https://'])
+                        ? $article->thumbnail_path
+                        : \Illuminate\Support\Facades\Storage::disk('public')->url($article->thumbnail_path);
+                }
+            }
+        } elseif ($slug && in_array($firstSegment, ['program', 'programs', 'donasi'])) {
+            $program = \App\Models\Program::firstWhere('slug', $slug);
+            if ($program) {
+                $metaTitle = e($program->title);
+                $metaDescription = e(\Illuminate\Support\Str::limit(trim(strip_tags($program->short_description ?: $program->description)), 160));
+                if ($program->thumbnail_path || $program->banner_path) {
+                    $imgPath = $program->thumbnail_path ?: $program->banner_path;
+                    $metaImage = \Illuminate\Support\Str::startsWith($imgPath, ['http://', 'https://'])
+                        ? $imgPath
+                        : \Illuminate\Support\Facades\Storage::disk('public')->url($imgPath);
+                }
+            }
+        }
+
+        $ogTags = [];
+        if ($metaTitle) {
+            $ogTags[] = '<meta property="og:title" content="' . $metaTitle . '" />';
+            $ogTags[] = '<meta name="twitter:title" content="' . $metaTitle . '" />';
+        }
+        if ($metaDescription) {
+            $ogTags[] = '<meta property="og:description" content="' . $metaDescription . '" />';
+            $ogTags[] = '<meta name="twitter:description" content="' . $metaDescription . '" />';
+        }
+        if ($metaImage) {
+            $ogTags[] = '<meta property="og:image" content="' . e($metaImage) . '" />';
+            $ogTags[] = '<meta property="og:image:secure_url" content="' . e($metaImage) . '" />';
+            $ogTags[] = '<meta name="twitter:image" content="' . e($metaImage) . '" />';
+            $ogTags[] = '<meta name="twitter:card" content="summary_large_image" />';
+        }
+
+        return response()->json([
+            'success' => true,
+            'title' => $metaTitle,
+            'tags' => implode("\n    ", $ogTags),
+        ]);
+    });
+
     /*
     |--------------------------------------------------------------------------
     | AUTH
