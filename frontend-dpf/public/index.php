@@ -1,5 +1,5 @@
 <?php
-$html = file_get_contents(__DIR__ . '/index.html');
+$html = file_get_contents(__DIR__ . '/app.html');
 $path = $_SERVER['REQUEST_URI'];
 
 // Avoid overhead for assets and non-HTML requests

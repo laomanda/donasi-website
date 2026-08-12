@@ -377,6 +377,8 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
         status: form.status,
         published_at: form.published_at,
         thumbnail_url: thumbnailPreviewUrl ?? savedThumbnailUrl ?? null,
+        video_path: form.video_path || null,
+        video_url: form.video_path ? resolveStorageUrl(form.video_path) : null,
       },
     };
     localStorage.setItem(storageKey, JSON.stringify(payload));

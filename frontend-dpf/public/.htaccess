@@ -2,6 +2,10 @@
     RewriteEngine On
     RewriteBase /
     
+    # Make sure index.php takes priority if index.html is still on the server
+    DirectoryIndex index.php index.html
+
+    
     # Ignore API routes if any
     RewriteCond %{REQUEST_URI} ^/api/ [NC]
     RewriteRule ^ - [L]
