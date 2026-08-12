@@ -13,8 +13,8 @@ const TESTIMONIALS = [
     role: "Mitra Wakaf",
     image: nurImg,
     text: {
-      id: "Alhamdulillah prosesnya berjalan lancar. Berkat dukungan dan doa dari Djalaluddin Pane Foundation, usaha kami bisa terus berjalan, berkembang, dan penuh keberkahan.",
-      en: "Alhamdulillah, the process went smoothly. Thanks to the support and prayers from Djalaluddin Pane Foundation, our business can keep running, growing, and full of blessings.",
+      id: "Alhamdulillah prosesnya berjalan lancar. Berkat dukungan dan doa dari Djalaludin Pane Foundation, usaha kami bisa terus berjalan, berkembang, dan penuh keberkahan.",
+      en: "Alhamdulillah, the process went smoothly. Thanks to the support and prayers from Djalaludin Pane Foundation, our business can keep running, growing, and full of blessings.",
     },
   },
   {
@@ -67,8 +67,8 @@ export function TestimonialsSection() {
           </h2>
           <p className="mt-5 text-base leading-relaxed text-slate-500 sm:text-lg">
             {locale === "id"
-              ? "Ratusan mitra dan donatur telah mempercayakan ZISWAF mereka melalui Djalaluddin Pane Foundation."
-              : "Hundreds of partners and donors have entrusted their ZISWAF through Djalaluddin Pane Foundation."}
+              ? "Ratusan mitra dan donatur telah mempercayakan ZISWAF mereka melalui Djalaludin Pane Foundation."
+              : "Hundreds of partners and donors have entrusted their ZISWAF through Djalaludin Pane Foundation."}
           </p>
         </div>
 

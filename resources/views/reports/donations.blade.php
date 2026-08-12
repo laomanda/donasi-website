@@ -186,7 +186,7 @@
                 <img src="{{ public_path('brand/dpf-wakaf.png') }}" alt="Logo">
             </td>
             <td class="kop-detail">
-                <h1>Djalaluddin Pane Foundation</h1>
+                <h1>Djalaludin Pane Foundation</h1>
                 <p>
                     Signature Park Grande, Jl. Letjen M.T. Haryono No.Kav. 20, Cawang, Jakarta Timur.<br>
                     Email: layanan@dpf.or.id | Telp: 0813-1176-8254 | Website: www.dpf.or.id

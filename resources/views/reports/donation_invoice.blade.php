@@ -182,7 +182,7 @@
                 <img src="{{ public_path('brand/dpf-wakaf.png') }}" alt="Logo DPF">
             </td>
             <td class="kop-detail">
-                <h1>Djalaluddin Pane Foundation</h1>
+                <h1>Djalaludin Pane Foundation</h1>
                 <p>Signature Park Grande, Jl. Letjen M.T. Haryono No.Kav. 20, Jakarta Timur.</p>
                 <p>Telp: 0813-1176-8254 | Email: layanan@dpf.or.id | Website: www.dpf.or.id</p>
             </td>
@@ -290,7 +290,7 @@
     {{-- ═══════════ FOOTER ═══════════ --}}
     <div class="footer-note">
         <p>{{ __('reports.thanks_note') }}</p>
-        <p style="font-weight: bold; color: #1e293b;">Djalaluddin Pane Foundation - www.dpf.or.id</p>
+        <p style="font-weight: bold; color: #1e293b;">Djalaludin Pane Foundation - www.dpf.or.id</p>
         <p style="font-size: 7px;">Ref ID: {{ md5($donation->donation_code) }} | Dicetak pada: {{ now()->translatedFormat('d/m/Y H:i') }} WIB</p>
     </div>
 

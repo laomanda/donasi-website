@@ -74,11 +74,11 @@ export function MitraProductCard({ product, locale }: MitraProductCardProps) {
           </p>
         </div>
 
-        {/* Verified Foundation Curator Identity (dpf-icon.webp + Djalaluddin Pane Foundation + blue check) */}
+        {/* Verified Foundation Curator Identity (dpf-icon.webp + Djalaludin Pane Foundation + blue check) */}
         <div className="mt-auto pt-4">
           <div className="flex items-center gap-2 rounded-xl bg-slate-50 px-3.5 py-2.5 ring-1 ring-slate-100/80">
             <img src={dpfIcon} alt="DPF" className="h-5 w-auto object-contain shrink-0" />
-            <span className="text-xs font-bold text-slate-900 truncate">Djalaluddin Pane Foundation</span>
+            <span className="text-xs font-bold text-slate-900 truncate">Djalaludin Pane Foundation</span>
             <FontAwesomeIcon icon={faCheckCircle} className="ml-auto text-blue-500 text-xs shrink-0" />
           </div>
         </div>

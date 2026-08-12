@@ -127,7 +127,7 @@ export default function ProdukMitraDetailPage() {
 
                   <div className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-1 ring-1 ring-slate-200/80">
                     <img src={dpfIcon} alt="DPF" className="h-4 w-auto object-contain shrink-0" />
-                    <span className="text-xs font-bold text-slate-900">Djalaluddin Pane Foundation</span>
+                    <span className="text-xs font-bold text-slate-900">Djalaludin Pane Foundation</span>
                     <FontAwesomeIcon icon={faCheckCircle} className="text-blue-500 text-xs shrink-0" />
                   </div>
                 </div>
