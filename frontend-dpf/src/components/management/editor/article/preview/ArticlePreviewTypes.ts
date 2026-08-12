@@ -7,6 +7,8 @@ export type PreviewArticle = {
   status?: string | null;
   author_name?: string | null;
   thumbnail_url?: string | null;
+  video_url?: string | null;
+  video_path?: string | null;
   published_at?: string | null; // datetime-local from editor
 };
 

@@ -99,6 +99,10 @@ export function PreviewPage() {
     return url || imagePlaceholder;
   }, [article?.thumbnail_url]);
 
+  const videoUrl = useMemo(() => {
+    return String(article?.video_url ?? "").trim() || undefined;
+  }, [article?.video_url]);
+
   const isProbablyHtml = useMemo(() => {
     const body = String(article?.body ?? "");
     return /<\/?(p|div|span|h1|h2|h3|h4|ul|ol|li|br|strong|em|img|video|source|a|blockquote)\b/i.test(body);
@@ -144,6 +148,7 @@ export function PreviewPage() {
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <ArticlePreviewHero 
               thumbnailUrl={thumbnailUrl} 
+              videoUrl={videoUrl}
               title={String(article.title ?? "")} 
             />
 
