@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->getAuthIdentifier() ?: $request->ip());
         });
 
-        if (class_exists(Debugbar::class) && request()?->is('api/*')) {
+        if (class_exists(Debugbar::class) && !$this->app->runningInConsole() && $this->app->bound('request') && request()?->is('api/*')) {
             Debugbar::disable();
         }
 
