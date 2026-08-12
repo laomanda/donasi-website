@@ -26,10 +26,3 @@
 
 # Set 1GB max upload size limit for Apache
 LimitRequestBody 1073741824
-
-<IfModule mod_headers.c>
-    Header always set Access-Control-Allow-Origin "https://ywdp.org"
-    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, X-XSRF-TOKEN, Accept, Origin"
-    Header always set Access-Control-Allow-Credentials "true"
-</IfModule>
