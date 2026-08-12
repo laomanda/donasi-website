@@ -17,6 +17,7 @@ class Article extends Model
         'category',
         'category_en',
         'thumbnail_path',
+        'video_path',
         'excerpt',
         'excerpt_en',
         'body',
@@ -26,9 +27,32 @@ class Article extends Model
         'status',
     ];
 
+    protected $appends = [
+        'video_url',
+        'thumbnail_url',
+    ];
+
     protected $casts = [
         'published_at' => 'datetime',
     ];
+
+    public function getVideoUrlAttribute(): ?string
+    {
+        if (!$this->video_path) return null;
+        if (\Illuminate\Support\Str::startsWith($this->video_path, ['http://', 'https://'])) {
+            return $this->video_path;
+        }
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->video_path);
+    }
+
+    public function getThumbnailUrlAttribute(): ?string
+    {
+        if (!$this->thumbnail_path) return null;
+        if (\Illuminate\Support\Str::startsWith($this->thumbnail_path, ['http://', 'https://'])) {
+            return $this->thumbnail_path;
+        }
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->thumbnail_path);
+    }
 
     public function program()
     {

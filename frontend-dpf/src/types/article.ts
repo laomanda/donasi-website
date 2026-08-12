@@ -7,6 +7,10 @@ export type Article = {
   category: string;
   excerpt: string;
   status: ArticleStatus;
+  thumbnail_path?: string | null;
+  thumbnail_url?: string | null;
+  video_path?: string | null;
+  video_url?: string | null;
   updated_at?: string | null;
   created_at?: string | null;
 };
@@ -34,6 +38,9 @@ export type EditorArticle = {
   status: string;
   author_name?: string | null;
   thumbnail_path?: string | null;
+  thumbnail_url?: string | null;
+  video_path?: string | null;
+  video_url?: string | null;
   published_at?: string | null;
 };
 
@@ -46,6 +53,7 @@ export type ArticleFormState = {
   author_name: string;
   program_id: string;
   thumbnail_path: string;
+  video_path: string;
   excerpt: string;
   excerpt_en: string;
   body: string;
@@ -63,6 +71,7 @@ export const emptyArticleForm: ArticleFormState = {
   author_name: "",
   program_id: "",
   thumbnail_path: "",
+  video_path: "",
   excerpt: "",
   excerpt_en: "",
   body: "",

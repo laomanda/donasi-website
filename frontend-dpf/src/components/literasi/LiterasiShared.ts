@@ -10,6 +10,9 @@ export type Literasi = {
   excerpt_en?: string | null;
   published_at: string | null;
   thumbnail_path?: string | null;
+  video_path?: string | null;
+  video_url?: string | null;
+  body?: string | null;
   category?: string | null;
   category_en?: string | null;
   author_name?: string | null;

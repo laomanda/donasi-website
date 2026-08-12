@@ -228,6 +228,7 @@ Route::prefix('v1')->group(function () {
             Route::get('dashboard', EditorDashboardController::class)->name('dashboard');
 
             Route::post('uploads/image', [EditorUploadController::class, 'storeImage']);
+            Route::post('uploads/video', [EditorUploadController::class, 'storeVideo']);
 
             Route::get('programs/categories', [EditorProgramController::class, 'categories']);
             Route::apiResource('programs', EditorProgramController::class);

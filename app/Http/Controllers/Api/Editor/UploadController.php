@@ -27,5 +27,25 @@ class UploadController extends Controller
             'url' => Storage::disk('public')->url($path),
         ], 201);
     }
+
+    public function storeVideo(Request $request)
+    {
+        $data = $request->validate([
+            'file' => ['required', 'file', 'mimes:mp4,webm,mov,avi,mkv', 'max:102400'], // 100MB max
+            'folder' => ['nullable', 'string', 'max:64'],
+        ]);
+
+        $folder = trim((string) ($data['folder'] ?? 'articles/videos'));
+        $folder = $folder !== '' ? $folder : 'articles/videos';
+        $folder = preg_replace('/[^a-zA-Z0-9\-_\/]/', '', $folder) ?: 'articles/videos';
+        $folder = trim($folder, '/');
+
+        $path = $request->file('file')->store($folder, 'public');
+
+        return response()->json([
+            'path' => $path,
+            'url' => Storage::disk('public')->url($path),
+        ], 201);
+    }
 }
 

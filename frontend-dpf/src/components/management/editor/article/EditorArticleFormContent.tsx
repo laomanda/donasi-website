@@ -10,6 +10,7 @@ import {
   faLink,
   faXmark,
   faCheck,
+  faVideo,
 } from "@fortawesome/free-solid-svg-icons";
 import type { ArticleFormState } from "../../../../types/article";
 import React from "react";
@@ -24,13 +25,17 @@ type EditorArticleFormContentProps = {
   bodyTextareaRef: React.RefObject<HTMLTextAreaElement | null>;
   bodyEnTextareaRef: React.RefObject<HTMLTextAreaElement | null>;
   contentImageInputRef: React.RefObject<HTMLInputElement | null>;
+  contentVideoInputRef?: React.RefObject<HTMLInputElement | null>;
   rememberBodySelection: () => void;
   rememberBodyEnSelection: () => void;
   insertInlineTag: (field: "body" | "body_en", open: string, close: string, fallback: string) => void;
   uploadContentImage: (file: File) => Promise<string | null>;
+  uploadContentVideo?: (file: File) => Promise<string | null>;
   insertIntoBody: (snippet: string) => void;
   contentImageUploading: boolean;
   contentImageUploadError: string | null;
+  contentVideoUploading?: boolean;
+  contentVideoUploadError?: string | null;
 };
 
 export default function EditorArticleFormContent({
@@ -43,13 +48,17 @@ export default function EditorArticleFormContent({
   bodyTextareaRef,
   bodyEnTextareaRef,
   contentImageInputRef,
+  contentVideoInputRef,
   rememberBodySelection,
   rememberBodyEnSelection,
   insertInlineTag,
   uploadContentImage,
+  uploadContentVideo,
   insertIntoBody,
   contentImageUploading,
   contentImageUploadError,
+  contentVideoUploading = false,
+  contentVideoUploadError = null,
 }: EditorArticleFormContentProps) {
   const disabled = loading || saving || deleting;
 
@@ -111,17 +120,31 @@ export default function EditorArticleFormContent({
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           {isBody && (
-            <button
-              type="button"
-              onMouseDown={rememberFn}
-              onClick={() => contentImageInputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-              disabled={!canSubmit}
-              title="Sisipkan Gambar"
-            >
-              <FontAwesomeIcon icon={faPlus} />
-              <span>Gambar</span>
-            </button>
+            <>
+              <button
+                type="button"
+                onMouseDown={rememberFn}
+                onClick={() => contentImageInputRef.current?.click()}
+                className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={!canSubmit}
+                title="Sisipkan Gambar"
+              >
+                <FontAwesomeIcon icon={faPlus} />
+                <span>Gambar</span>
+              </button>
+
+              <button
+                type="button"
+                onMouseDown={rememberFn}
+                onClick={() => contentVideoInputRef?.current?.click()}
+                className="inline-flex items-center gap-1.5 rounded-2xl border border-purple-200 bg-purple-50/60 px-3 py-1.5 text-xs font-bold text-purple-700 shadow-sm transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={!canSubmit || contentVideoUploading}
+                title="Sisipkan Video di Paragraf"
+              >
+                <FontAwesomeIcon icon={faVideo} />
+                <span>Video</span>
+              </button>
+            </>
           )}
 
           <button
@@ -189,7 +212,15 @@ export default function EditorArticleFormContent({
           </button>
 
           {isBody && contentImageUploading && (
-            <span className="text-xs font-semibold text-slate-500">Mengunggah...</span>
+            <span className="text-xs font-semibold text-slate-500">Mengunggah gambar...</span>
+          )}
+
+          {isBody && contentVideoUploading && (
+            <span className="text-xs font-semibold text-purple-600">Mengunggah video...</span>
+          )}
+
+          {isBody && contentVideoUploadError && (
+            <span className="text-xs font-semibold text-red-600">{contentVideoUploadError}</span>
           )}
         </div>
 
@@ -356,6 +387,28 @@ export default function EditorArticleFormContent({
             Pastikan judul, kategori, ringkasan, dan konten sudah terisi sebelum menyimpan.
           </span>
         </p>
+
+        {/* Hidden File Input for Paragraph Inline Video */}
+        {contentVideoInputRef && (
+          <input
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime"
+            className="hidden"
+            ref={contentVideoInputRef}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (file && uploadContentVideo) {
+                const videoUrl = await uploadContentVideo(file);
+                if (videoUrl) {
+                  const videoSnippet = `<video controls preload="metadata" class="my-6 w-full rounded-2xl shadow-md overflow-hidden bg-black aspect-video" src="${videoUrl}"></video>`;
+                  insertIntoBody(videoSnippet);
+                }
+              }
+              e.target.value = "";
+            }}
+            disabled={!canSubmit}
+          />
+        )}
       </div>
     </div>
   );

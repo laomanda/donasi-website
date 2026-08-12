@@ -16,6 +16,8 @@ export type LiterasiDetail = {
   category_en?: string | null;
   published_at?: string | null;
   thumbnail_path?: string | null;
+  video_path?: string | null;
+  video_url?: string | null;
   author_name?: string | null;
 };
 

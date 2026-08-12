@@ -96,6 +96,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
           category_en: a.category_en ?? "",
           author_name: a.author_name ?? "",
           thumbnail_path: a.thumbnail_path ?? "",
+          video_path: a.video_path ?? "",
           excerpt: a.excerpt ?? "",
           excerpt_en: a.excerpt_en ?? "",
           body: a.body ?? "",
@@ -129,6 +130,14 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
       .catch(() => undefined);
   }, []);
 
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoUploadError, setVideoUploadError] = useState<string | null>(null);
+  const videoFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [contentVideoUploading, setContentVideoUploading] = useState(false);
+  const [contentVideoUploadError, setContentVideoUploadError] = useState<string | null>(null);
+  const contentVideoInputRef = useRef<HTMLInputElement | null>(null);
+
   const uploadThumbnail = async (file: File) => {
     setThumbnailUploadError(null);
     setThumbnailUploading(true);
@@ -152,6 +161,52 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
       setThumbnailPreviewUrl(null);
     } finally {
       setThumbnailUploading(false);
+    }
+  };
+
+  const uploadVideo = async (file: File) => {
+    setVideoUploadError(null);
+    setVideoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "articles/videos");
+
+      const res = await http.post<{ path?: string; url?: string }>("/editor/uploads/video", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      const path = String(res.data?.path ?? "").trim();
+      if (!path) throw new Error("Upload video gagal: path kosong.");
+      setForm((s) => ({ ...s, video_path: path }));
+    } catch (err: any) {
+      setVideoUploadError(normalizeErrors(err).join(" "));
+    } finally {
+      setVideoUploading(false);
+    }
+  };
+
+  const uploadContentVideo = async (file: File) => {
+    setContentVideoUploadError(null);
+    setContentVideoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "articles/videos");
+
+      const res = await http.post<{ path?: string; url?: string }>("/editor/uploads/video", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      const raw = String(res.data?.url ?? res.data?.path ?? "").trim();
+      const url = resolveStorageUrl(raw);
+      if (!url) throw new Error("Upload video gagal: url kosong.");
+      return url;
+    } catch (err: any) {
+      setContentVideoUploadError(normalizeErrors(err).join(" "));
+      return null;
+    } finally {
+      setContentVideoUploading(false);
     }
   };
 
@@ -250,6 +305,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
       category: state.category.trim(),
       category_en: state.category_en.trim() || null,
       thumbnail_path: state.thumbnail_path.trim() || null,
+      video_path: state.video_path.trim() || null,
       excerpt: state.excerpt.trim(),
       excerpt_en: state.excerpt_en.trim() || null,
       body: state.body.trim(),
@@ -375,6 +431,10 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
             insertIntoBody={insertIntoBody}
             contentImageUploading={contentImageUploading}
             contentImageUploadError={contentImageUploadError}
+            contentVideoUploading={contentVideoUploading}
+            contentVideoUploadError={contentVideoUploadError}
+            contentVideoInputRef={contentVideoInputRef}
+            uploadContentVideo={uploadContentVideo}
           />
 
           {mode === "edit" && (
@@ -401,6 +461,10 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
           savedThumbnailUrl={savedThumbnailUrl}
           fileInputRef={fileInputRef}
           uploadThumbnail={uploadThumbnail}
+          videoUploading={videoUploading}
+          videoUploadError={videoUploadError}
+          videoFileInputRef={videoFileInputRef}
+          uploadVideo={uploadVideo}
           availableCategories={availableCategories}
         />
       </div>

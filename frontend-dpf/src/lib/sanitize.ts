@@ -12,6 +12,7 @@ export const sanitizeHtml = (html: string): string => {
   
   return DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true }, // Only allow HTML, no SVG/MathML by default unless needed
-    ADD_ATTR: ['target'], // Allow target="_blank" for links
+    ADD_TAGS: ['video', 'source'],
+    ADD_ATTR: ['target', 'controls', 'preload', 'src', 'poster', 'class', 'type', 'playsinline', 'muted', 'loop'],
   });
 };

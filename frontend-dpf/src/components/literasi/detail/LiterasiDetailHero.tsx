@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClock, faTag, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faTag, faUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { getImageUrl, formatDate } from "../LiterasiShared.ts";
 import { imagePlaceholder } from "@/lib/placeholder";
@@ -72,22 +73,60 @@ interface LiterasiDetailHeroProps {
 }
 
 export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroProps) {
+  const videoUrl = article.video_path || (article as any).video_url ? getImageUrl((article as any).video_url || article.video_path) : null;
+  const hasVideo = Boolean(videoUrl);
+  const [activeMedia, setActiveMedia] = useState<"video" | "image">(hasVideo ? "video" : "image");
+
   return (
     <div className="space-y-6">
-      <div className="relative aspect-[16/9] overflow-hidden rounded-[32px] border border-slate-100 bg-slate-100 shadow-soft">
-        <img
-          src={getImageUrl(article.thumbnail_path)}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl"
-          onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
-        />
-        <img
-          src={getImageUrl(article.thumbnail_path)}
-          alt={article.title}
-          className="relative z-10 h-full w-full object-cover"
-          onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
-        />
+      <div className="group relative aspect-[16/9] overflow-hidden rounded-[32px] border border-slate-100 bg-slate-950 shadow-soft">
+        {hasVideo && activeMedia === "video" ? (
+          <video
+            src={videoUrl!}
+            controls
+            preload="metadata"
+            className="h-full w-full object-contain"
+          />
+        ) : (
+          <>
+            <img
+              src={getImageUrl(article.thumbnail_path)}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl"
+              onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
+            />
+            <img
+              src={getImageUrl(article.thumbnail_path)}
+              alt={article.title}
+              className="relative z-10 h-full w-full object-cover"
+              onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
+            />
+          </>
+        )}
+
+        {/* Slideshow Media Switcher Controls (Jika Memiliki Video & Foto) */}
+        {hasVideo && (
+          <>
+            {/* Navigasi Panah Kiri & Kanan */}
+            <button
+              type="button"
+              onClick={() => setActiveMedia((prev) => (prev === "video" ? "image" : "video"))}
+              className="absolute left-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition hover:bg-black/80 hover:scale-110"
+              title="Media Sebelumnya"
+            >
+              <FontAwesomeIcon icon={faChevronLeft} className="text-sm" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveMedia((prev) => (prev === "video" ? "image" : "video"))}
+              className="absolute right-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition hover:bg-black/80 hover:scale-110"
+              title="Media Selanjutnya"
+            >
+              <FontAwesomeIcon icon={faChevronRight} className="text-sm" />
+            </button>
+          </>
+        )}
       </div>
 
       <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

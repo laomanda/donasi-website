@@ -1,7 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrash, faImage, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTrash, faImage, faChevronDown, faVideo, faFilm } from "@fortawesome/free-solid-svg-icons";
 import type { ArticleFormState } from "../../../../types/article";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { resolveStorageUrl } from "../../../../utils/management/editorArticleUtils";
 
 type EditorArticleFormSidebarProps = {
   form: ArticleFormState;
@@ -16,6 +17,10 @@ type EditorArticleFormSidebarProps = {
   savedThumbnailUrl: string | null;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   uploadThumbnail: (file: File) => void;
+  videoUploading?: boolean;
+  videoUploadError?: string | null;
+  videoFileInputRef?: React.RefObject<HTMLInputElement | null>;
+  uploadVideo?: (file: File) => void;
   availableCategories: Array<{ category: string; category_en: string | null }>;
 };
 
@@ -32,12 +37,17 @@ export default function EditorArticleFormSidebar({
   savedThumbnailUrl,
   fileInputRef,
   uploadThumbnail,
+  videoUploading = false,
+  videoUploadError = null,
+  videoFileInputRef,
+  uploadVideo,
   availableCategories,
 }: EditorArticleFormSidebarProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const disabled = loading || saving || deleting;
   const currentThumbnail = thumbnailPreviewUrl || savedThumbnailUrl;
+  const currentVideo = useMemo(() => resolveStorageUrl(form.video_path) ?? null, [form.video_path]);
 
   const filteredCategories = availableCategories.filter((cat) =>
     cat.category.toLowerCase().includes(form.category.toLowerCase())
@@ -68,7 +78,6 @@ export default function EditorArticleFormSidebar({
     (c) => c.category.toLowerCase() === form.category.trim().toLowerCase()
   );
 
-  // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -278,6 +287,85 @@ export default function EditorArticleFormSidebar({
             >
               <FontAwesomeIcon icon={faPlus} />
               Ganti Gambar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-purple-400 bg-white p-6 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Video Utama Artikel (Opsional)</p>
+        
+        <div className="mt-4">
+          <div className="relative aspect-video w-full overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-900 transition hover:border-slate-300">
+            {currentVideo ? (
+              <>
+                <video
+                  src={currentVideo}
+                  controls
+                  preload="metadata"
+                  className="h-full w-full object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm((s) => ({ ...s, video_path: "" }))}
+                  className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-red-600 text-white shadow-sm transition hover:bg-red-700"
+                  disabled={disabled}
+                  title="Hapus video"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => videoFileInputRef?.current?.click()}
+                className="flex h-full w-full flex-col items-center justify-center gap-3 text-slate-400 transition hover:text-slate-200"
+                disabled={disabled}
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-purple-400 shadow-sm backdrop-blur-md">
+                  <FontAwesomeIcon icon={faVideo} className="text-xl" />
+                </div>
+                <div className="text-center">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-200">Pilih Berkas Video</p>
+                  <p className="mt-1 text-[10px] font-semibold text-slate-400">Format: .mp4, .webm (Max: 100MB)</p>
+                </div>
+              </button>
+            )}
+          </div>
+
+          <input
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime"
+            className="hidden"
+            ref={videoFileInputRef}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file && uploadVideo) uploadVideo(file);
+              e.target.value = "";
+            }}
+            disabled={disabled}
+          />
+
+          {videoUploading && (
+            <div className="mt-3 flex items-center gap-2 text-xs font-bold text-slate-500">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-purple-500" />
+              Mengunggah video...
+            </div>
+          )}
+
+          {videoUploadError && (
+            <p className="mt-3 text-xs font-semibold text-red-600">{videoUploadError}</p>
+          )}
+
+          <div className="mt-4 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => videoFileInputRef?.current?.click()}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={disabled || videoUploading}
+            >
+              <FontAwesomeIcon icon={faFilm} />
+              {currentVideo ? "Ganti Video" : "Unggah Video"}
             </button>
           </div>
         </div>

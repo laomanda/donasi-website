@@ -9,7 +9,7 @@ interface LiterasiDetailContentProps {
 export function LiterasiDetailContent({ body, excerpt }: LiterasiDetailContentProps) {
   const isProbablyHtml = useMemo(() => {
     const content = String(body ?? "");
-    return /<\/?(p|div|span|h1|h2|h3|h4|ul|ol|li|br|strong|em|img|a|blockquote)\b/i.test(content);
+    return /<\/?(p|div|span|h1|h2|h3|h4|ul|ol|li|br|strong|em|img|video|source|a|blockquote)\b/i.test(content);
   }, [body]);
 
   const rawContent = useMemo(() => {
@@ -36,6 +36,7 @@ export function LiterasiDetailContent({ body, excerpt }: LiterasiDetailContentPr
         "[&_a]:text-primary-700 [&_a]:font-semibold hover:[&_a]:text-primary-800",
         "[&_blockquote]:mt-5 [&_blockquote]:rounded-2xl [&_blockquote]:border [&_blockquote]:border-slate-200 [&_blockquote]:bg-slate-50 [&_blockquote]:px-5 [&_blockquote]:py-4 [&_blockquote]:text-slate-700",
         "[&_img]:my-6 [&_img]:block [&_img]:w-full [&_img]:h-auto [&_img]:rounded-2xl [&_img]:shadow-sm [&_img]:ring-1 [&_img]:ring-slate-200",
+        "[&_video]:my-6 [&_video]:block [&_video]:w-full [&_video]:max-h-[500px] [&_video]:rounded-2xl [&_video]:shadow-md [&_video]:bg-black",
       ].join(" ")}
       {...(isProbablyHtml ? { dangerouslySetInnerHTML: { __html: contentHtml } } : {})}
     >

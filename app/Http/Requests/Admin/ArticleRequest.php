@@ -32,6 +32,7 @@ class ArticleRequest extends FormRequest
             'category'       => ['required', 'string', 'max:100'],
             'category_en'    => ['nullable', 'string', 'max:100'],
             'thumbnail_path' => ['nullable', 'string', 'max:255'],
+            'video_path'     => ['nullable', 'string', 'max:255'],
             'excerpt'        => ['required', 'string'],
             'excerpt_en'     => ['nullable', 'string'],
             'body'           => ['required', 'string'],
