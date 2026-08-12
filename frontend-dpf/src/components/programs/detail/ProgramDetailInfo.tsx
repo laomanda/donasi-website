@@ -52,7 +52,7 @@ export function ProgramDetailInfo({
     .slice(0, 12);
 
   const rawDescription = localizedProgram?.description ?? localizedProgram?.short_description ?? "";
-  const isProbablyHtml = /<\/?(p|div|span|h1|h2|h3|h4|ul|ol|li|br|strong|em|img|a|blockquote)\b/i.test(rawDescription);
+  const isProbablyHtml = /<\/?(p|div|span|h1|h2|h3|h4|ul|ol|li|br|strong|em|img|video|source|a|blockquote)\b/i.test(rawDescription);
   const contentHtml = isProbablyHtml ? sanitizeHtml(rawDescription) : sanitizeHtml(rawDescription.replace(/\n/g, "<br/>"));
 
   return (

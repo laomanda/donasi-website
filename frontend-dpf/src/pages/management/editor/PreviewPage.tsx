@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { LandingLayout } from "../../../layouts/LandingLayout";
 import { imagePlaceholder } from "@/lib/placeholder";
@@ -101,7 +101,7 @@ export function PreviewPage() {
 
   const isProbablyHtml = useMemo(() => {
     const body = String(article?.body ?? "");
-    return /<\/?(p|div|span|h1|h2|h3|h4|ul|ol|li|br|strong|em|img|a|blockquote)\b/i.test(body);
+    return /<\/?(p|div|span|h1|h2|h3|h4|ul|ol|li|br|strong|em|img|video|source|a|blockquote)\b/i.test(body);
   }, [article?.body]);
 
   const rawContent = useMemo(() => {
