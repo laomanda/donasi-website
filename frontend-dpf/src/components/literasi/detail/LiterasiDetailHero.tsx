@@ -79,7 +79,7 @@ export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroPro
 
   return (
     <div className="space-y-6">
-      <div className="group relative aspect-[16/9] overflow-hidden rounded-[32px] border border-slate-100 bg-slate-950 shadow-soft">
+      <div className="group relative aspect-[16/9] max-h-[520px] w-full overflow-hidden rounded-[32px] border border-slate-100 bg-slate-950 shadow-soft flex items-center justify-center">
         {hasVideo && activeMedia === "video" ? (
           <video
             src={videoUrl!}
@@ -93,13 +93,13 @@ export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroPro
               src={getImageUrl(article.thumbnail_path)}
               alt=""
               aria-hidden="true"
-              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl"
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-30 blur-2xl pointer-events-none"
               onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
             />
             <img
               src={getImageUrl(article.thumbnail_path)}
               alt={article.title}
-              className="relative z-10 h-full w-full object-cover"
+              className="relative z-10 max-h-full w-full object-contain mx-auto"
               onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
             />
           </>
