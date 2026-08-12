@@ -233,6 +233,7 @@ Route::prefix('v1')->group(function () {
             Route::get('programs/categories', [EditorProgramController::class, 'categories']);
             Route::apiResource('programs', EditorProgramController::class);
             Route::get('articles/categories', [EditorArticleController::class, 'categories']);
+            Route::get('articles/authors', [EditorArticleController::class, 'authors']);
             Route::apiResource('articles', EditorArticleController::class);
             Route::apiResource('banners', EditorBannerController::class)->except('show');
             Route::apiResource('gallery-dpf', EditorGalleryDpfController::class);

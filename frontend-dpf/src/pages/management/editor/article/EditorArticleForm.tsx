@@ -36,6 +36,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
   const [thumbnailUploadError, setThumbnailUploadError] = useState<string | null>(null);
   const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(null);
   const [availableCategories, setAvailableCategories] = useState<Array<{ category: string; category_en: string | null }>>([]);
+  const [availableAuthors, setAvailableAuthors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const excerptRef = useRef<HTMLTextAreaElement | null>(null);
@@ -127,6 +128,11 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
     http
       .get<Array<{ category: string; category_en: string | null }>>("/editor/articles/categories")
       .then((res) => setAvailableCategories(res.data ?? []))
+      .catch(() => undefined);
+
+    http
+      .get<string[]>("/editor/articles/authors")
+      .then((res) => setAvailableAuthors(res.data ?? []))
       .catch(() => undefined);
   }, []);
 
@@ -466,6 +472,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
           videoFileInputRef={videoFileInputRef}
           uploadVideo={uploadVideo}
           availableCategories={availableCategories}
+          availableAuthors={availableAuthors}
         />
       </div>
     </div>

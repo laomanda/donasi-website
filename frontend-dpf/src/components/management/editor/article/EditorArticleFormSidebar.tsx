@@ -22,6 +22,7 @@ type EditorArticleFormSidebarProps = {
   videoFileInputRef?: React.RefObject<HTMLInputElement | null>;
   uploadVideo?: (file: File) => void;
   availableCategories: Array<{ category: string; category_en: string | null }>;
+  availableAuthors?: string[];
 };
 
 export default function EditorArticleFormSidebar({
@@ -42,15 +43,22 @@ export default function EditorArticleFormSidebar({
   videoFileInputRef,
   uploadVideo,
   availableCategories,
+  availableAuthors = [],
 }: EditorArticleFormSidebarProps) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const authorDropdownRef = useRef<HTMLDivElement>(null);
   const disabled = loading || saving || deleting;
   const currentThumbnail = thumbnailPreviewUrl || savedThumbnailUrl;
   const currentVideo = useMemo(() => resolveStorageUrl(form.video_path) ?? null, [form.video_path]);
 
   const filteredCategories = availableCategories.filter((cat) =>
     cat.category.toLowerCase().includes(form.category.toLowerCase())
+  );
+
+  const filteredAuthors = availableAuthors.filter((author) =>
+    author.toLowerCase().includes(form.author_name.toLowerCase())
   );
 
   const handleCategoryChange = (val: string) => {
@@ -82,6 +90,9 @@ export default function EditorArticleFormSidebar({
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
+      }
+      if (authorDropdownRef.current && !authorDropdownRef.current.contains(event.target as Node)) {
+        setShowAuthorDropdown(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -119,16 +130,46 @@ export default function EditorArticleFormSidebar({
             <p className="mt-2 text-[10px] font-semibold text-slate-500">Jika kosong, akan mengikut saat tombol Terbit ditekan.</p>
           </label>
 
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Nama Penulis</span>
-            <input
-              value={form.author_name}
-              onChange={(e) => setForm((s) => ({ ...s, author_name: e.target.value }))}
-              placeholder="Contoh: Tim Redaksi"
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-              disabled={disabled}
-            />
-          </label>
+          <div className="relative" ref={authorDropdownRef}>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Nama Penulis</span>
+              <div className="relative mt-2">
+                <input
+                  value={form.author_name}
+                  onChange={(e) => {
+                    setForm((s) => ({ ...s, author_name: e.target.value }));
+                    setShowAuthorDropdown(true);
+                  }}
+                  onFocus={() => setShowAuthorDropdown(true)}
+                  onClick={() => setShowAuthorDropdown(true)}
+                  placeholder="Ketik atau pilih nama penulis..."
+                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 pr-10 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+                  disabled={disabled}
+                />
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400">
+                  <FontAwesomeIcon icon={faChevronDown} className={`text-[10px] transition-transform duration-200 ${showAuthorDropdown ? 'rotate-180' : ''}`} />
+                </div>
+              </div>
+            </label>
+
+            {showAuthorDropdown && filteredAuthors.length > 0 && (
+              <div className="absolute left-0 right-0 z-50 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                {filteredAuthors.map((author, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setForm((s) => ({ ...s, author_name: author }));
+                      setShowAuthorDropdown(false);
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-brandGreen-600"
+                  >
+                    <span>{author}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <label className="block">
             <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Slug (URL)</span>

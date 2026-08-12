@@ -85,4 +85,16 @@ class ArticleController extends Controller
 
         return response()->json($categories);
     }
+
+    public function authors()
+    {
+        $authors = Article::query()
+            ->whereNotNull('author_name')
+            ->where('author_name', '!=', '')
+            ->distinct()
+            ->orderBy('author_name')
+            ->pluck('author_name');
+
+        return response()->json($authors);
+    }
 }
