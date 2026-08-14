@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://laznasdpf.org/sitemap.xml
+Sitemap: https://ywdp.org/sitemap.xml
