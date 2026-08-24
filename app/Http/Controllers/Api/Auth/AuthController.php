@@ -25,16 +25,26 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         $credentials = $request->validated();
+        $email = $credentials['email'] ?? null;
 
+        // 1. Cek apakah user dengan email ini terdaftar di database
+        $userExists = \App\Models\User::where('email', $email)->exists();
+        if (! $userExists) {
+            throw ValidationException::withMessages([
+                'email' => __('auth.account_not_found'),
+            ]);
+        }
+
+        // 2. Cek apakah kata sandi cocok
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
+                'password' => __('auth.password_incorrect'),
             ]);
         }
 
         $user = $request->user();
 
-        // Check if user account has been deactivated
+        // 3. Cek apakah akun dinonaktifkan
         if (isset($user->is_active) && ! $user->is_active) {
             if ($request->hasSession()) {
                 Auth::guard('web')->logout();

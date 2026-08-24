@@ -23,6 +23,10 @@ export const authDict: Dict = {
     "login.register_mitra": { id: "Daftar Sekarang", en: "Register Now" },
     "login.error_title": { id: "Login Gagal", en: "Login Failed" },
     "login.error_subtitle": { id: "Email atau kata sandi tidak sesuai.", en: "Invalid email or password." },
+    "login.not_found_title": { id: "Akun Tidak Terdaftar", en: "Account Not Registered" },
+    "login.not_found_subtitle": { id: "Akun dengan email ini belum terdaftar di sistem. Silakan periksa kembali email Anda.", en: "No account found with this email address. Please check your email." },
+    "login.password_incorrect_title": { id: "Kata Sandi Salah", en: "Incorrect Password" },
+    "login.password_incorrect_subtitle": { id: "Kata sandi yang Anda masukkan salah. Silakan periksa kembali.", en: "The password you entered is incorrect. Please try again." },
     "login.deactivated_title": { id: "Akun Dinonaktifkan", en: "Account Deactivated" },
     "login.deactivated_subtitle": { id: "Akun Anda telah dinonaktifkan. Silakan hubungi administrator untuk informasi lebih lanjut.", en: "Your account has been deactivated. Please contact the administrator for further assistance." },
 

@@ -93,27 +93,42 @@ export function LoginPage() {
     } catch (err: any) {
       const emailError = err?.response?.data?.errors?.email?.[0];
       const passwordError = err?.response?.data?.errors?.password?.[0];
-      const serverMessage = emailError || passwordError || err?.response?.data?.message;
+      const serverMessage = (emailError || passwordError || err?.response?.data?.message || "") as string;
+      const lowerMsg = serverMessage.toLowerCase();
 
-      const isDeactivated = 
-        (typeof serverMessage === "string" && (
-          serverMessage.toLowerCase().includes("dinonaktifkan") || 
-          serverMessage.toLowerCase().includes("deactivated") ||
-          serverMessage.toLowerCase().includes("nonaktif")
-        )) || 
-        err?.response?.status === 403;
+      let title = t("login.error_title");
+      let description = serverMessage || t("login.error_subtitle");
 
-      const title = isDeactivated 
-        ? t("login.deactivated_title") 
-        : t("login.error_title");
-
-      const description = isDeactivated 
-        ? t("login.deactivated_subtitle") 
-        : (serverMessage || t("login.error_subtitle"));
+      if (
+        lowerMsg.includes("dinonaktifkan") ||
+        lowerMsg.includes("deactivated") ||
+        lowerMsg.includes("nonaktif") ||
+        err?.response?.status === 403
+      ) {
+        title = t("login.deactivated_title");
+        description = t("login.deactivated_subtitle");
+      } else if (
+        lowerMsg.includes("belum terdaftar") ||
+        lowerMsg.includes("tidak terdaftar") ||
+        lowerMsg.includes("not registered") ||
+        lowerMsg.includes("no account found") ||
+        lowerMsg.includes("not found")
+      ) {
+        title = t("login.not_found_title");
+        description = t("login.not_found_subtitle");
+      } else if (
+        passwordError ||
+        lowerMsg.includes("kata sandi") ||
+        lowerMsg.includes("password") ||
+        lowerMsg.includes("incorrect")
+      ) {
+        title = t("login.password_incorrect_title");
+        description = t("login.password_incorrect_subtitle");
+      }
 
       toast.error(description, { 
         title,
-        durationMs: isDeactivated ? 7000 : 4000,
+        durationMs: 5000,
       });
     } finally {
       setSubmitting(false);
