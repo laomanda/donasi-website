@@ -348,14 +348,14 @@ export default function EditorArticleFormSidebar({
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Video Utama Artikel (Opsional)</p>
         
         <div className="mt-4">
-          <div className="relative aspect-video w-full overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-900 transition hover:border-slate-300">
+          <div className="relative aspect-video w-full overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 transition hover:border-slate-300">
             {currentVideo ? (
               <>
                 <video
                   src={currentVideo}
                   controls
                   preload="metadata"
-                  className="h-full w-full object-contain"
+                  className="h-full w-full object-contain bg-black"
                 />
                 <button
                   type="button"
@@ -371,14 +371,14 @@ export default function EditorArticleFormSidebar({
               <button
                 type="button"
                 onClick={() => videoFileInputRef?.current?.click()}
-                className="flex h-full w-full flex-col items-center justify-center gap-3 text-slate-400 transition hover:text-slate-200"
+                className="flex h-full w-full flex-col items-center justify-center gap-3 text-slate-400 transition hover:text-slate-600"
                 disabled={disabled}
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-purple-400 shadow-sm backdrop-blur-md">
-                  <FontAwesomeIcon icon={faVideo} className="text-xl" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm">
+                  <FontAwesomeIcon icon={faVideo} className="text-xl text-purple-600" />
                 </div>
                 <div className="text-center">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-200">Pilih Berkas Video</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-700">Pilih Berkas Video</p>
                   <p className="mt-1 text-[10px] font-semibold text-slate-400">Format: .mp4, .webm (Max: 100MB)</p>
                 </div>
               </button>
@@ -416,7 +416,7 @@ export default function EditorArticleFormSidebar({
               className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
               disabled={disabled || videoUploading}
             >
-              <FontAwesomeIcon icon={faFilm} />
+              <FontAwesomeIcon icon={faPlus} />
               {currentVideo ? "Ganti Video" : "Unggah Video"}
             </button>
           </div>

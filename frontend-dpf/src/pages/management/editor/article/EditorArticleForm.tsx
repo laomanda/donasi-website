@@ -266,7 +266,23 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
       const finalSnippet = `${needsLeadingNewline ? "\n" : ""}${snippet}${needsTrailingNewline ? "\n" : ""}`;
       const nextBody = `${before}${finalSnippet}${after}`;
       bodyNextCursorRef.current = (before + finalSnippet).length;
-      return { ...state, body: nextBody };
+
+      // Otomatis sisipkan media (gambar/video) ke body_en juga jika belum ada
+      const valueEn = String(state.body_en ?? "");
+      let nextBodyEn = valueEn;
+      if (!valueEn.includes(snippet)) {
+        const selectionEn = bodyEnSelectionRef.current;
+        const startEn = selectionEn?.start ?? valueEn.length;
+        const endEn = selectionEn?.end ?? valueEn.length;
+        const beforeEn = valueEn.slice(0, startEn);
+        const afterEn = valueEn.slice(endEn);
+        const needsLeadingNewlineEn = beforeEn !== "" && !beforeEn.endsWith("\n");
+        const needsTrailingNewlineEn = afterEn !== "" && !afterEn.startsWith("\n");
+        const finalSnippetEn = `${needsLeadingNewlineEn ? "\n" : ""}${snippet}${needsTrailingNewlineEn ? "\n" : ""}`;
+        nextBodyEn = `${beforeEn}${finalSnippetEn}${afterEn}`;
+      }
+
+      return { ...state, body: nextBody, body_en: nextBodyEn };
     });
 
     requestAnimationFrame(() => {

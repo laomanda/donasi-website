@@ -119,33 +119,29 @@ export default function EditorArticleFormContent({
     return (
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
-          {isBody && (
-            <>
-              <button
-                type="button"
-                onMouseDown={rememberFn}
-                onClick={() => contentImageInputRef.current?.click()}
-                className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-                disabled={!canSubmit}
-                title="Sisipkan Gambar"
-              >
-                <FontAwesomeIcon icon={faPlus} />
-                <span>Gambar</span>
-              </button>
+          <button
+            type="button"
+            onMouseDown={rememberFn}
+            onClick={() => contentImageInputRef.current?.click()}
+            className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={!canSubmit}
+            title="Sisipkan Gambar (Otomatis Sync ke Konten Indo & Inggris)"
+          >
+            <FontAwesomeIcon icon={faPlus} />
+            <span>Gambar</span>
+          </button>
 
-              <button
-                type="button"
-                onMouseDown={rememberFn}
-                onClick={() => contentVideoInputRef?.current?.click()}
-                className="inline-flex items-center gap-1.5 rounded-2xl border border-purple-200 bg-purple-50/60 px-3 py-1.5 text-xs font-bold text-purple-700 shadow-sm transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-70"
-                disabled={!canSubmit || contentVideoUploading}
-                title="Sisipkan Video di Paragraf"
-              >
-                <FontAwesomeIcon icon={faVideo} />
-                <span>Video</span>
-              </button>
-            </>
-          )}
+          <button
+            type="button"
+            onMouseDown={rememberFn}
+            onClick={() => contentVideoInputRef?.current?.click()}
+            className="inline-flex items-center gap-1.5 rounded-2xl border border-purple-200 bg-purple-50/60 px-3 py-1.5 text-xs font-bold text-purple-700 shadow-sm transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={!canSubmit || contentVideoUploading}
+            title="Sisipkan Video di Paragraf (Otomatis Sync ke Konten Indo & Inggris)"
+          >
+            <FontAwesomeIcon icon={faVideo} />
+            <span>Video</span>
+          </button>
 
           <button
             type="button"
