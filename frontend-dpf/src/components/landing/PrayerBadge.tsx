@@ -12,16 +12,18 @@ export function PrayerBadge({ variant = "light" }: { variant?: "light" | "dark" 
     return () => window.clearInterval(id);
   }, []);
 
-  const formattedTime = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "id-ID", {
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+
+  const formattedDate = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "id-ID", {
     weekday: "long",
     day: "numeric",
     month: "short",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
   }).format(now);
+
+  const formattedTime = `${formattedDate} • ${hours}:${minutes}:${seconds}${locale === "en" ? "" : " WIB"}`;
 
   const isDark = variant === "dark";
   
@@ -41,3 +43,4 @@ export function PrayerBadge({ variant = "light" }: { variant?: "light" | "dark" 
     </div>
   );
 }
+

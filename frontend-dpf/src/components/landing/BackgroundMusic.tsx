@@ -15,48 +15,9 @@ export function BackgroundMusic() {
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
 
-    let interactionListener: (() => void) | null = null;
-    let isPlayAttempted = false;
-
-    // Handle Autoplay restrictions safely
-    const startAudio = async () => {
-      if (isPlayAttempted) return;
-      isPlayAttempted = true;
-      try {
-        await audio.play();
-      } catch (err) {
-        console.warn("Autoplay blocked. Waiting for user interaction.");
-        
-        interactionListener = async () => {
-          try {
-            await audio.play();
-            if (interactionListener) {
-              window.removeEventListener("click", interactionListener);
-              window.removeEventListener("touchstart", interactionListener);
-              interactionListener = null;
-            }
-          } catch (e) {
-            // Silently ignore if still blocked
-          }
-        };
-
-        window.addEventListener("click", interactionListener, { once: true });
-        window.addEventListener("touchstart", interactionListener, { once: true });
-      }
-    };
-
-    // Defer autoplay/interaction listener by 3 seconds to clear the critical loading path (FCP/LCP)
-    const timeoutId = setTimeout(startAudio, 3000);
-
     return () => {
-      clearTimeout(timeoutId);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
-      if (interactionListener) {
-        window.removeEventListener("click", interactionListener);
-        window.removeEventListener("touchstart", interactionListener);
-      }
-      audio.pause();
     };
   }, [audioRef, setIsPlaying]);
 
@@ -69,3 +30,4 @@ export function BackgroundMusic() {
     />
   );
 }
+
