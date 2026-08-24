@@ -43,6 +43,7 @@ use App\Http\Controllers\Api\Frontend\SuggestionController as FrontendSuggestion
 use App\Http\Controllers\Api\Mitra\MitraAllocationController;
 use App\Http\Controllers\Api\Mitra\MitraDashboardController;
 use App\Http\Controllers\Api\PrayerTimesController;
+use App\Http\Controllers\Api\Reports\CashFlowReportController;
 use App\Http\Controllers\Api\Reports\DonationReportController;
 use App\Http\Controllers\Api\SavedItemController;
 use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboardController;
@@ -243,6 +244,9 @@ Route::prefix('v1')->group(function () {
             Route::get('reports/donations', [DonationReportController::class, 'index']);
             Route::get('reports/donations/export', [DonationReportController::class, 'export']);
 
+            Route::get('reports/cash-flow', [CashFlowReportController::class, 'index']);
+            Route::get('reports/cash-flow/export', [CashFlowReportController::class, 'export']);
+
             Route::apiResource('pickup-requests', AdminPickupRequestController::class)->only(['index', 'show']);
             Route::apiResource('consultations', AdminWakafConsultationController::class)
                 ->parameters(['consultations' => 'wakaf_consultation'])
@@ -322,5 +326,7 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('users', SuperadminUserController::class);
             Route::get('reports/donations', [DonationReportController::class, 'index']);
             Route::get('reports/donations/export', [DonationReportController::class, 'export']);
+            Route::get('reports/cash-flow', [CashFlowReportController::class, 'index']);
+            Route::get('reports/cash-flow/export', [CashFlowReportController::class, 'export']);
         });
 });

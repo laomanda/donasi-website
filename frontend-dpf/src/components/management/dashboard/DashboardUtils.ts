@@ -22,6 +22,7 @@ import {
   faUserGroup,
   faShieldHalved,
   faBookmark,
+  faCoins,
 } from "@fortawesome/free-solid-svg-icons";
 
 import type { ToneKey } from "../StatCard";
@@ -393,8 +394,11 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       ],
     },
     {
-      title: "Laporan",
-      items: [{ label: "Laporan Donasi", href: "/superadmin/reports/donations", icon: faChartLine, permission: "view reports" }],
+      title: "Laporan & Pembukuan",
+      items: [
+        { label: "Laporan Arus Kas", href: "/superadmin/reports/cashflow", icon: faCoins, permission: "view reports" },
+        { label: "Laporan Donasi", href: "/superadmin/reports/donations", icon: faChartLine, permission: "view reports" },
+      ],
     },
     {
       title: "Sistem",
@@ -428,8 +432,9 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       ],
     },
     {
-      title: "Laporan",
+      title: "Laporan & Pembukuan",
       items: [
+        { label: "Laporan Arus Kas", href: "/keuangan/reports/cashflow", icon: faCoins, permission: "view reports" },
         { label: "Laporan Donasi", href: "/keuangan/reports/donations", icon: faChartLine, permission: "view reports" },
       ],
     },

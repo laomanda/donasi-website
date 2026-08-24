@@ -87,6 +87,7 @@ const EditorBankEditPage = lazy(() => import('../pages/management/editor/bank/Ed
 const AdminDashboardPage = lazy(() => import('../pages/management/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })))
 const AdminDonationsPage = lazy(() => import('../pages/management/admin/donation/AdminDonationsPage').then(m => ({ default: m.AdminDonationsPage })))
 const DonationReportPage = lazy(() => import('../pages/management/shared/DonationReportPage').then(m => ({ default: m.DonationReportPage })))
+const CashFlowReportPage = lazy(() => import('../pages/management/keuangan/CashFlowReportPage').then(m => ({ default: m.CashFlowReportPage })))
 const AdminDonationManualCreatePage = lazy(() => import('../pages/management/admin/donation/AdminDonationManualCreatePage').then(m => ({ default: m.AdminDonationManualCreatePage })))
 const AdminDonationShowPage = lazy(() => import('../pages/management/admin/donation/AdminDonationShowPage').then(m => ({ default: m.AdminDonationShowPage })))
 const AdminDonationConfirmationsPage = lazy(() => import('../pages/management/admin/donation/AdminDonationConfirmationsPage').then(m => ({ default: m.AdminDonationConfirmationsPage })))
@@ -201,6 +202,7 @@ export const router = createBrowserRouter([
             element: withSuspense(AdminDonationsPage),
           },
           { path: 'reports/donations', element: withSuspense(DonationReportPage) },
+          { path: 'reports/cashflow', element: withSuspense(CashFlowReportPage) },
           {
             path: 'donation-confirmations',
             element: withSuspense(AdminDonationConfirmationsPage),
@@ -235,6 +237,7 @@ export const router = createBrowserRouter([
           { path: 'bank-accounts/create', element: withSuspense(EditorBankCreatePage) },
           { path: 'bank-accounts/:id/edit', element: withSuspense(EditorBankEditPage) },
           { path: 'reports/donations', element: withSuspense(DonationReportPage) },
+          { path: 'reports/cashflow', element: withSuspense(CashFlowReportPage) },
           { path: 'search', element: <Suspense fallback={<PageLoader />}><SearchPage role="keuangan" /></Suspense> },
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="keuangan" /></Suspense> },
         ],
@@ -258,6 +261,7 @@ export const router = createBrowserRouter([
           { path: 'roles/create', element: withSuspense(RoleCreatePage) },
           { path: 'roles/:id/edit', element: withSuspense(RoleEditPage) },
           { path: 'reports/donations', element: withSuspense(DonationReportPage) },
+          { path: 'reports/cashflow', element: withSuspense(CashFlowReportPage) },
           {
             path: 'search',
             element: <Suspense fallback={<PageLoader />}><SearchPage role="superadmin" /></Suspense>,
