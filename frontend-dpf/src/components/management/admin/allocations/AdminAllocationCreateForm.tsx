@@ -1,5 +1,15 @@
+import { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSave, faBuildingColumns, faTimes, faUserGroup, faHandHoldingHeart, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSave,
+  faBuildingColumns,
+  faTimes,
+  faUserGroup,
+  faHandHoldingHeart,
+  faMagnifyingGlass,
+  faChevronDown,
+  faCheck,
+} from "@fortawesome/free-solid-svg-icons";
 import type { UserOption, AllocatableProgram, AllocatablePublicDonation, AllocationFormData } from "@/types/allocation";
 
 type AdminAllocationCreateFormProps = {
@@ -47,6 +57,69 @@ export default function AdminAllocationCreateForm({
 }: AdminAllocationCreateFormProps) {
   const isMitra = formData.source_type === "mitra";
 
+  // State for Searchable Comboboxes
+  const [mitraSearch, setMitraSearch] = useState("");
+  const [isMitraOpen, setIsMitraOpen] = useState(false);
+  const mitraRef = useRef<HTMLDivElement>(null);
+
+  const [donationSearch, setDonationSearch] = useState("");
+  const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const donationRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mitraRef.current && !mitraRef.current.contains(event.target as Node)) {
+        setIsMitraOpen(false);
+      }
+      if (donationRef.current && !donationRef.current.contains(event.target as Node)) {
+        setIsDonationOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Update search query when selection changes externally
+  useEffect(() => {
+    if (formData.user_id) {
+      const selected = users.find((u) => String(u.id) === String(formData.user_id));
+      if (selected) {
+        setMitraSearch(`${selected.name} (${selected.email})`);
+      }
+    } else {
+      setMitraSearch("");
+    }
+  }, [formData.user_id, users]);
+
+  useEffect(() => {
+    if (formData.donation_id) {
+      const selected = publicDonations.find((d) => String(d.id) === String(formData.donation_id));
+      if (selected) {
+        setDonationSearch(`[${selected.donation_code}] ${selected.donor_name} - ${selected.program_title}`);
+      }
+    } else {
+      setDonationSearch("");
+    }
+  }, [formData.donation_id, publicDonations]);
+
+  // Filtered lists
+  const filteredUsers = users.filter((u) => {
+    const q = mitraSearch.toLowerCase();
+    return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+  });
+
+  const filteredDonations = publicDonations.filter((d) => {
+    const q = donationSearch.toLowerCase();
+    return (
+      d.donation_code.toLowerCase().includes(q) ||
+      d.donor_name.toLowerCase().includes(q) ||
+      d.program_title.toLowerCase().includes(q) ||
+      (d.donor_phone && d.donor_phone.toLowerCase().includes(q)) ||
+      (d.donor_email && d.donor_email.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-12">
       <div className="space-y-6 lg:col-span-8">
@@ -91,21 +164,80 @@ export default function AdminAllocationCreateForm({
               <>
                 <div className="space-y-1">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Pilih Mitra <span className="text-red-500">*</span>
+                    Cari & Pilih Mitra Terdaftar <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    required
-                    className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition"
-                    value={formData.user_id}
-                    onChange={(e) => handleUserChange(e.target.value)}
-                  >
-                    <option value="">-- Pilih Mitra Terdaftar --</option>
-                    {users?.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} ({u.email})
-                      </option>
-                    ))}
-                  </select>
+
+                  <div className="relative" ref={mitraRef}>
+                    <div className="relative flex items-center">
+                      <FontAwesomeIcon icon={faMagnifyingGlass} className="absolute left-4 text-slate-400 text-sm pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Ketik nama atau email mitra untuk mencari..."
+                        value={mitraSearch}
+                        onFocus={() => setIsMitraOpen(true)}
+                        onChange={(e) => {
+                          setMitraSearch(e.target.value);
+                          setIsMitraOpen(true);
+                          if (formData.user_id) {
+                            handleUserChange("");
+                          }
+                        }}
+                        className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-10 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition"
+                      />
+                      {formData.user_id || mitraSearch ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMitraSearch("");
+                            handleUserChange("");
+                            setIsMitraOpen(false);
+                          }}
+                          className="absolute right-3 p-1.5 text-slate-400 hover:text-red-500 transition"
+                        >
+                          <FontAwesomeIcon icon={faTimes} className="text-xs" />
+                        </button>
+                      ) : (
+                        <FontAwesomeIcon icon={faChevronDown} className="absolute right-4 text-slate-400 text-xs pointer-events-none" />
+                      )}
+                    </div>
+
+                    {/* Dropdown list */}
+                    {isMitraOpen && (
+                      <div className="absolute z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl space-y-1">
+                        {filteredUsers.length === 0 ? (
+                          <div className="p-4 text-center text-xs font-bold text-slate-400">
+                            Tidak ada mitra cocok dengan kata kunci "{mitraSearch}"
+                          </div>
+                        ) : (
+                          filteredUsers.map((u) => {
+                            const isSelected = String(u.id) === String(formData.user_id);
+                            return (
+                              <button
+                                key={u.id}
+                                type="button"
+                                onClick={() => {
+                                  handleUserChange(String(u.id));
+                                  setMitraSearch(`${u.name} (${u.email})`);
+                                  setIsMitraOpen(false);
+                                }}
+                                className={`w-full text-left rounded-xl p-3 text-xs font-bold transition flex items-center justify-between ${
+                                  isSelected
+                                    ? "bg-emerald-50 border border-emerald-300 text-emerald-950"
+                                    : "hover:bg-slate-50 text-slate-800"
+                                }`}
+                              >
+                                <div>
+                                  <p className="text-slate-900 font-bold">{u.name}</p>
+                                  <p className="text-xs font-normal text-slate-500">{u.email}</p>
+                                </div>
+                                {isSelected && <FontAwesomeIcon icon={faCheck} className="text-emerald-600" />}
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-1">
@@ -136,9 +268,9 @@ export default function AdminAllocationCreateForm({
               /* Opsi Donatur Publik */
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-1">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                      Pilih Transaksi Donasi Publik (Lunas) <span className="text-red-500">*</span>
+                      Cari & Pilih Donasi Publik (Lunas) <span className="text-red-500">*</span>
                     </label>
 
                     <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-600">
@@ -152,27 +284,94 @@ export default function AdminAllocationCreateForm({
                     </label>
                   </div>
 
-                  <select
-                    required
-                    className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition"
-                    value={formData.donation_id}
-                    onChange={(e) => handleDonationChange(e.target.value)}
-                  >
-                    <option value="">-- Pilih Donasi Publik (Lunas) --</option>
-                    {publicDonations.map((d) => {
-                      const labelText = `[${d.donation_code}] ${d.donor_name} - ${d.program_title} (Sisa: ${formatRupiah(d.remaining_balance)} / Total: ${formatRupiah(d.amount)})`;
-                      return (
-                        <option
-                          key={d.id}
-                          value={d.id}
-                          disabled={d.is_depleted}
-                          className={d.is_depleted ? "text-slate-400 bg-slate-100" : "text-slate-900"}
+                  <div className="relative" ref={donationRef}>
+                    <div className="relative flex items-center">
+                      <FontAwesomeIcon icon={faMagnifyingGlass} className="absolute left-4 text-slate-400 text-sm pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Ketik Kode Donasi, Nama Donatur, Program, atau No. WA..."
+                        value={donationSearch}
+                        onFocus={() => setIsDonationOpen(true)}
+                        onChange={(e) => {
+                          setDonationSearch(e.target.value);
+                          setIsDonationOpen(true);
+                          if (formData.donation_id) {
+                            handleDonationChange("");
+                          }
+                        }}
+                        className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-10 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition"
+                      />
+                      {formData.donation_id || donationSearch ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDonationSearch("");
+                            handleDonationChange("");
+                            setIsDonationOpen(false);
+                          }}
+                          className="absolute right-3 p-1.5 text-slate-400 hover:text-red-500 transition"
                         >
-                          {d.is_depleted ? `[SELESAI 100% - SALDO RP 0] ${labelText}` : labelText}
-                        </option>
-                      );
-                    })}
-                  </select>
+                          <FontAwesomeIcon icon={faTimes} className="text-xs" />
+                        </button>
+                      ) : (
+                        <FontAwesomeIcon icon={faChevronDown} className="absolute right-4 text-slate-400 text-xs pointer-events-none" />
+                      )}
+                    </div>
+
+                    {/* Dropdown Options List */}
+                    {isDonationOpen && (
+                      <div className="absolute z-30 mt-2 max-h-72 w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl space-y-1">
+                        {filteredDonations.length === 0 ? (
+                          <div className="p-4 text-center text-xs font-bold text-slate-400">
+                            Tidak ada donasi publik cocok dengan kata kunci "{donationSearch}"
+                          </div>
+                        ) : (
+                          filteredDonations.map((d) => {
+                            const isSelected = String(d.id) === String(formData.donation_id);
+                            return (
+                              <button
+                                key={d.id}
+                                type="button"
+                                disabled={d.is_depleted}
+                                onClick={() => {
+                                  handleDonationChange(String(d.id));
+                                  setDonationSearch(`[${d.donation_code}] ${d.donor_name} - ${d.program_title}`);
+                                  setIsDonationOpen(false);
+                                }}
+                                className={`w-full text-left rounded-xl p-3 text-xs transition flex items-start justify-between gap-3 ${
+                                  d.is_depleted
+                                    ? "opacity-50 cursor-not-allowed bg-slate-50"
+                                    : isSelected
+                                    ? "bg-emerald-50 border border-emerald-300 text-emerald-950 font-bold"
+                                    : "hover:bg-slate-50 text-slate-800"
+                                }`}
+                              >
+                                <div className="space-y-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-mono font-black text-emerald-700 bg-emerald-100/80 px-1.5 py-0.5 rounded text-[10px]">
+                                      {d.donation_code}
+                                    </span>
+                                    {d.is_depleted && (
+                                      <span className="bg-red-500 text-white font-black px-1.5 py-0.5 rounded text-[9px] uppercase">
+                                        Lunas 100% (Saldo Rp 0)
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="font-bold truncate text-slate-900">{d.donor_name} <span className="text-slate-500 font-normal">({d.donor_phone || "Tanpa No. WA"})</span></p>
+                                  <p className="text-slate-600 truncate">{d.program_title}</p>
+                                </div>
+
+                                <div className="text-right shrink-0">
+                                  <p className="font-bold text-emerald-600">Sisa: {formatRupiah(d.remaining_balance)}</p>
+                                  <p className="text-[10px] text-slate-400">Total: {formatRupiah(d.amount)}</p>
+                                </div>
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {formData.donation_id && (
