@@ -143,11 +143,22 @@ export default function EditorProgramFormSidebar({
                     </div>
 
                     <label className="block">
-                        <FormLabel label="Slug / URL" optional subLabel="Biarkan kosong untuk generate otomatis." />
+                        <FormLabel label="Slug / URL (Bahasa Indonesia)" optional subLabel="Biarkan kosong untuk generate otomatis dari judul." />
                         <input
                             value={form.slug}
                             onChange={(e) => onChange({ slug: e.target.value })}
-                            placeholder="judul-program-anda"
+                            placeholder="judul-program-id"
+                            className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+                            disabled={disabled}
+                        />
+                    </label>
+
+                    <label className="block">
+                        <FormLabel label="Slug / URL (English)" optional subLabel="Biarkan kosong untuk generate otomatis dari Judul Inggris." />
+                        <input
+                            value={form.slug_en}
+                            onChange={(e) => onChange({ slug_en: e.target.value })}
+                            placeholder="program-title-en"
                             className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                             disabled={disabled}
                         />

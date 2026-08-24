@@ -51,7 +51,9 @@ class ProgramController extends Controller
         $cacheKey = "frontend_program_show_{$slug}";
 
         $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () use ($slug) {
-            $program = Program::where('slug', $slug)
+            $program = Program::where(function ($q) use ($slug) {
+                    $q->where('slug', $slug)->orWhere('slug_en', $slug);
+                })
                 ->whereIn('status', ['active', 'draft', 'completed'])
                 ->firstOrFail();
 

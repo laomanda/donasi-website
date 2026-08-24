@@ -28,6 +28,7 @@ export type EditorProgram = {
     title: string;
     title_en?: string | null;
     slug: string;
+    slug_en?: string | null;
     category: string;
     category_en?: string | null;
     short_description: string;
@@ -51,6 +52,7 @@ export type ProgramFormState = {
     title: string;
     title_en: string;
     slug: string;
+    slug_en: string;
     category: string;
     category_en: string;
     short_description: string;

@@ -14,6 +14,7 @@ class Program extends Model
         'title',
         'title_en',
         'slug',
+        'slug_en',
         'category',
         'category_en',
         'short_description',
@@ -50,6 +51,18 @@ class Program extends Model
         static::creating(function ($program) {
             if (empty($program->slug) && ! empty($program->title)) {
                 $program->slug = Str::slug($program->title);
+            }
+            if (empty($program->slug_en) && ! empty($program->title_en)) {
+                $program->slug_en = Str::slug($program->title_en);
+            }
+        });
+
+        static::updating(function ($program) {
+            if (empty($program->slug) && ! empty($program->title)) {
+                $program->slug = Str::slug($program->title);
+            }
+            if (empty($program->slug_en) && ! empty($program->title_en)) {
+                $program->slug_en = Str::slug($program->title_en);
             }
         });
 

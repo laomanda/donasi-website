@@ -39,7 +39,12 @@ class ArticleController extends Controller
         $cacheKey = "frontend_article_show_{$slug}";
 
         $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 600, function () use ($slug) {
-            $article = Article::published()->with('program:id,title,slug')->where('slug', $slug)->firstOrFail();
+            $article = Article::published()
+                ->with('program:id,title,slug,slug_en')
+                ->where(function ($q) use ($slug) {
+                    $q->where('slug', $slug)->orWhere('slug_en', $slug);
+                })
+                ->firstOrFail();
 
             $related = Article::published()
                 ->with('program:id,title,slug')

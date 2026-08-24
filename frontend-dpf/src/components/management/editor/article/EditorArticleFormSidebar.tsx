@@ -172,15 +172,26 @@ export default function EditorArticleFormSidebar({
           </div>
 
           <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Slug (URL)</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Slug / URL (Bahasa Indonesia)</span>
             <input
               value={form.slug}
               onChange={(e) => setForm((s) => ({ ...s, slug: e.target.value }))}
-              placeholder="Otomatis-dari-judul"
+              placeholder="judul-artikel-id"
               className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
               disabled={disabled}
             />
-            <p className="mt-2 text-[10px] font-semibold text-slate-500">Gunakan (-) sebagai pemisah. Biarkan kosong untuk generate otomatis.</p>
+          </label>
+
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Slug / URL (English)</span>
+            <input
+              value={form.slug_en}
+              onChange={(e) => setForm((s) => ({ ...s, slug_en: e.target.value }))}
+              placeholder="article-title-en"
+              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+              disabled={disabled}
+            />
+            <p className="mt-2 text-[10px] font-semibold text-slate-500">Biarkan kosong jika ingin otomatis di-generate dari Judul.</p>
           </label>
 
           <div className="space-y-3 rounded-2xl bg-slate-50 p-4">

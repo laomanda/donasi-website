@@ -4,6 +4,7 @@ export type Article = {
   id: number;
   title: string;
   slug: string;
+  slug_en?: string | null;
   category: string;
   excerpt: string;
   status: ArticleStatus;
@@ -28,6 +29,7 @@ export type EditorArticle = {
   title: string;
   title_en?: string | null;
   slug: string;
+  slug_en?: string | null;
   program_id?: number | null;
   category: string;
   category_en?: string | null;
@@ -48,6 +50,7 @@ export type ArticleFormState = {
   title: string;
   title_en: string;
   slug: string;
+  slug_en: string;
   category: string;
   category_en: string;
   author_name: string;
@@ -66,6 +69,7 @@ export const emptyArticleForm: ArticleFormState = {
   title: "",
   title_en: "",
   slug: "",
+  slug_en: "",
   category: "",
   category_en: "",
   author_name: "",

@@ -16,6 +16,7 @@ class ArticleService
     public function storeArticle(array $data): Article
     {
         $data['slug'] = $this->generateUniqueSlug($data['title'] ?? '', $data['slug'] ?? '');
+        $data['slug_en'] = $this->generateUniqueSlugEn($data['title_en'] ?? '', $data['slug_en'] ?? '');
         return Article::create($data);
     }
 
@@ -29,6 +30,7 @@ class ArticleService
     public function updateArticle(Article $article, array $data): Article
     {
         $data['slug'] = $this->generateUniqueSlug($data['title'] ?? '', $data['slug'] ?? '', $article);
+        $data['slug_en'] = $this->generateUniqueSlugEn($data['title_en'] ?? '', $data['slug_en'] ?? '', $article);
         $article->update($data);
         return $article->refresh();
     }
@@ -79,6 +81,36 @@ class ArticleService
 
         while (
             Article::query()->where('slug', $finalSlug)
+                ->when($article, function ($q) use ($article) {
+                    return $q->where('id', '!=', $article->id);
+                })
+                ->exists()
+        ) {
+            $finalSlug = "{$baseSlug}-{$counter}";
+            $counter++;
+        }
+
+        return $finalSlug;
+    }
+
+    private function generateUniqueSlugEn(?string $titleEn, ?string $slugEn, ?Article $article = null): ?string
+    {
+        $parsedSlug = Str::slug(trim((string) $slugEn));
+
+        if ($parsedSlug !== '') {
+            return $parsedSlug;
+        }
+
+        if (trim((string) $titleEn) === '') {
+            return null;
+        }
+
+        $baseSlug = Str::slug($titleEn);
+        $finalSlug = $baseSlug;
+        $counter = 1;
+
+        while (
+            Article::query()->where('slug_en', $finalSlug)
                 ->when($article, function ($q) use ($article) {
                     return $q->where('id', '!=', $article->id);
                 })

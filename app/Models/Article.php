@@ -13,6 +13,7 @@ class Article extends Model
         'title',
         'title_en',
         'slug',
+        'slug_en',
         'program_id',
         'category',
         'category_en',
@@ -66,6 +67,24 @@ class Article extends Model
 
     protected static function booted()
     {
+        static::creating(function ($article) {
+            if (empty($article->slug) && ! empty($article->title)) {
+                $article->slug = \Illuminate\Support\Str::slug($article->title);
+            }
+            if (empty($article->slug_en) && ! empty($article->title_en)) {
+                $article->slug_en = \Illuminate\Support\Str::slug($article->title_en);
+            }
+        });
+
+        static::updating(function ($article) {
+            if (empty($article->slug) && ! empty($article->title)) {
+                $article->slug = \Illuminate\Support\Str::slug($article->title);
+            }
+            if (empty($article->slug_en) && ! empty($article->title_en)) {
+                $article->slug_en = \Illuminate\Support\Str::slug($article->title_en);
+            }
+        });
+
         static::saved(function ($article) {
             self::clearArticlesCache();
         });

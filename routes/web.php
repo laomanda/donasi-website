@@ -134,7 +134,9 @@ Route::get('/{path?}', function (?string $path = null) {
                 $slug = $segments[1] ?? null;
 
                 if ($slug && in_array($firstSegment, ['literasi', 'articles', 'article'])) {
-                    $article = Article::published()->firstWhere('slug', $slug);
+                    $article = Article::published()->where(function ($q) use ($slug) {
+                        $q->where('slug', $slug)->orWhere('slug_en', $slug);
+                    })->first();
                     if ($article) {
                         $metaTitle = e($article->title);
                         $metaDescription = e(Str::limit(trim(strip_tags($article->excerpt ?: $article->body)), 160));
@@ -146,7 +148,9 @@ Route::get('/{path?}', function (?string $path = null) {
                         }
                     }
                 } elseif ($slug && in_array($firstSegment, ['program', 'programs', 'donasi'])) {
-                    $program = Program::firstWhere('slug', $slug);
+                    $program = Program::where(function ($q) use ($slug) {
+                        $q->where('slug', $slug)->orWhere('slug_en', $slug);
+                    })->first();
                     if ($program) {
                         $metaTitle = e($program->title);
                         $metaDescription = e(Str::limit(trim(strip_tags($program->short_description ?: $program->description)), 160));

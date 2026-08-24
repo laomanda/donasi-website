@@ -27,7 +27,8 @@ class ArticleRequest extends FormRequest
         return [
             'title'          => ['required', 'string', 'max:255'],
             'title_en'       => ['nullable', 'string', 'max:255'],
-            'slug'           => ['required', 'string', 'max:255', 'unique:articles,slug,' . $articleId],
+            'slug'           => ['nullable', 'string', 'max:255', 'unique:articles,slug,' . $articleId],
+            'slug_en'        => ['nullable', 'string', 'max:255', 'unique:articles,slug_en,' . $articleId],
             'program_id'     => ['nullable', 'exists:programs,id'],
             'category'       => ['required', 'string', 'max:100'],
             'category_en'    => ['nullable', 'string', 'max:100'],

@@ -21,6 +21,7 @@ class ProgramRequest extends FormRequest
             'title'             => [$required, 'string', 'max:255'],
             'title_en'          => ['nullable', 'string', 'max:255'],
             'slug'              => ['nullable', 'string', 'max:255', "unique:programs,slug,{$programId}"],
+            'slug_en'           => ['nullable', 'string', 'max:255', "unique:programs,slug_en,{$programId}"],
             'category'          => [$required, 'string', 'max:100'],
             'category_en'       => ['nullable', 'string', 'max:100'],
             'short_description' => [$required, 'string'],
