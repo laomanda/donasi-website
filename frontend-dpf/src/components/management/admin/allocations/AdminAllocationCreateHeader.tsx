@@ -19,10 +19,10 @@ export default function AdminAllocationCreateHeader({ submitting }: AdminAllocat
         <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
           <div className="space-y-4">
             <h1 className="font-heading text-3xl font-black tracking-tight text-white md:text-6xl text-shadow-sm">
-              Buat Alokasi Baru
+              Buat Penyaluran Baru
             </h1>
             <p className="max-w-2xl text-lg font-medium text-white">
-              Alokasikan dana untuk Mitra dengan mudah dan transparan.
+              Salurkan dana untuk Mitra dengan mudah dan transparan.
             </p>
           </div>
 

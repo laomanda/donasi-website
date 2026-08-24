@@ -41,7 +41,6 @@ const CustomDashboardPage = lazy(() => import('../pages/management/custom/Custom
 const PreviewPage = lazy(() => import('../pages/management/editor/PreviewPage').then(m => ({ default: m.PreviewPage })))
 const SettingsPage = lazy(() => import('../pages/management/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const SearchPage = lazy(() => import('../pages/management/shared/SearchPage').then(m => ({ default: m.SearchPage })))
-const GuidancePage = lazy(() => import('../pages/management/shared/GuidancePage').then(m => ({ default: m.GuidancePage })))
 
 // Mitra Pages
 const MitraDashboardPage = lazy(() => import('../pages/management/mitra/MitraDashboardPage').then(m => ({ default: m.MitraDashboardPage })))
@@ -186,7 +185,6 @@ export const router = createBrowserRouter([
           { path: 'bank-accounts', element: withSuspense(EditorBanksPage) },
           { path: 'bank-accounts/create', element: withSuspense(EditorBankCreatePage) },
           { path: 'bank-accounts/:id/edit', element: withSuspense(EditorBankEditPage) },
-          { path: 'guidance', element: withSuspense(GuidancePage) },
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="editor" /></Suspense> },
         ],
       },
@@ -216,7 +214,6 @@ export const router = createBrowserRouter([
           { path: 'allocations', element: withSuspense(AdminAllocationsPage) },
           { path: 'allocations/create', element: withSuspense(AdminAllocationCreatePage) },
           { path: 'search', element: <Suspense fallback={<PageLoader />}><SearchPage role="admin" /></Suspense> },
-          { path: 'guidance', element: withSuspense(GuidancePage) },
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="admin" /></Suspense> },
         ],
       },
@@ -243,7 +240,6 @@ export const router = createBrowserRouter([
             path: 'search',
             element: <Suspense fallback={<PageLoader />}><SearchPage role="superadmin" /></Suspense>,
           },
-          { path: 'guidance', element: withSuspense(GuidancePage) },
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="superadmin" /></Suspense> },
         ],
       },
@@ -256,7 +252,6 @@ export const router = createBrowserRouter([
           { path: 'allocations', element: withSuspense(MitraAllocationsPage) },
           { path: 'donations', element: withSuspense(MitraDonationsPage) },
           { path: 'saved-items', element: withSuspense(SavedItemsPage) },
-          { path: 'guidance', element: withSuspense(GuidancePage) },
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="mitra" /></Suspense> },
         ],
       },
@@ -267,7 +262,6 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', element: withSuspense(CustomDashboardPage) },
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="custom" /></Suspense> },
-          { path: 'guidance', element: withSuspense(GuidancePage) },
         ],
       },
       { path: 'error/400', element: withSuspense(Error400) },

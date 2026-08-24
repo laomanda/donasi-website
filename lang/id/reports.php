@@ -2,7 +2,7 @@
 
 return [
     'donation_report_title' => 'LAPORAN DONASI',
-    'allocation_report_title' => 'LAPORAN ALOKASI DANA',
+    'allocation_report_title' => 'LAPORAN PENYALURAN DANA',
     'receipt_title' => 'KUINTANSI',
     'document_id' => 'ID Dokumen',
     'period' => 'Periode',
@@ -32,8 +32,8 @@ return [
     'mitra_id' => 'ID Mitra',
     'verified' => 'Terverifikasi',
     'date' => 'Tanggal',
-    'description_program' => 'Keterangan & Program Alokasi',
-    'total_allocated' => 'Total Teralokasi',
+    'description_program' => 'Keterangan & Program Penyaluran',
+    'total_allocated' => 'Total Disalurkan',
     'received_from' => 'Diterima Dari',
     'donation_date' => 'Tanggal Donasi',
     'paid_status' => 'LUNAS',

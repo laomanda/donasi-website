@@ -55,7 +55,7 @@ export function AdminAllocationsPage() {
       setLastPage(data.data.last_page);
     } catch (err) {
       console.error(err);
-      toast.error("Gagal memuat data alokasi.", { title: "Gagal" });
+      toast.error("Gagal memuat data penyaluran.", { title: "Gagal" });
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ export function AdminAllocationsPage() {
     setPage(1);
   }, [q]);
 
-  const pageLabel = `Halaman ${page} dari ${lastPage} (Total ${total} Alokasi)`;
+  const pageLabel = `Halaman ${page} dari ${lastPage} (Total ${total} Penyaluran)`;
 
   return (
     <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 pb-10">

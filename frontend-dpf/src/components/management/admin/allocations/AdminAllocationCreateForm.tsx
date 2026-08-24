@@ -78,14 +78,14 @@ export default function AdminAllocationCreateForm({
               </select>
               {formData.user_id && allocatablePrograms.length === 0 && (
                 <p className="text-xs text-red-500 mt-1 italic">
-                  *Mitra ini belum memiliki donasi terkonfirmasi (paid) yang bisa dialokasikan.
+                  *Mitra ini belum memiliki donasi terkonfirmasi (paid) yang bisa disalurkan.
                 </p>
               )}
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Nominal Alokasi <span className="text-red-500">*</span>
+                Nominal Penyaluran <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-3 text-slate-400 font-bold">Rp</span>
@@ -109,7 +109,7 @@ export default function AdminAllocationCreateForm({
                 maxAmount > 0 && (
                   <div className="mt-1 flex justify-between text-xs">
                     <span className="text-slate-500">
-                      {formData.amount ? "Sisa saldo setelah alokasi:" : "Maksimal tersedia:"}
+                      {formData.amount ? "Sisa saldo setelah penyaluran:" : "Maksimal tersedia:"}
                     </span>
                     <span className={`font-bold ${formData.amount ? "text-blue-600" : "text-emerald-600"}`}>
                       {formatRupiah(maxAmount - Number(formData.amount))}
@@ -145,7 +145,7 @@ export default function AdminAllocationCreateForm({
             <div>
               <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Informasi</p>
               <p className="mt-2 text-sm text-slate-700 font-medium">
-                Pastikan nominal dan mitra sudah sesuai sebelum menyimpan. Dana yang dialokasikan akan langsung mengurangi
+                Pastikan nominal dan mitra sudah sesuai sebelum menyimpan. Dana yang disalurkan akan langsung mengurangi
                 saldo Dompet Mitra.
               </p>
             </div>
@@ -196,7 +196,7 @@ export default function AdminAllocationCreateForm({
               className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FontAwesomeIcon icon={faSave} />
-              {submitting ? "Memproses..." : "Simpan Alokasi"}
+              {submitting ? "Memproses..." : "Simpan Penyaluran"}
             </button>
           </div>
         </div>

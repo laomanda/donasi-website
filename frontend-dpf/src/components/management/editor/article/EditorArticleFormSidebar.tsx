@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrash, faImage, faChevronDown, faVideo, faFilm } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTrash, faImage, faChevronDown, faVideo} from "@fortawesome/free-solid-svg-icons";
 import type { ArticleFormState } from "../../../../types/article";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { resolveStorageUrl } from "../../../../utils/management/editorArticleUtils";

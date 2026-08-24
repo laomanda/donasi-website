@@ -10,18 +10,18 @@ export const mitraDict: Dict = {
 
     // Dashboard Header
     "dashboard.title": { id: "Ringkasan Mitra", en: "Partner Overview" },
-    "dashboard.subtitle": { id: "Pantau donasi dan alokasi dana secara real-time.", en: "Monitor donations and fund allocations in real-time." },
+    "dashboard.subtitle": { id: "Pantau donasi dan penyaluran dana secara real-time.", en: "Monitor donations and fund distribution in real-time." },
     "dashboard.donate_button": { id: "Donasi Sekarang", en: "Donate Now" },
 
     // Stats Cards
     "stats.total_donations": { id: "Total Donasi", en: "Total Donations" },
-    "stats.total_allocations": { id: "Total Alokasi", en: "Total Allocations" },
+    "stats.total_allocations": { id: "Total Penyaluran", en: "Total Distribution" },
     "stats.remaining_balance": { id: "Sisa Saldo", en: "Remaining Balance" },
     "stats.donation_count": { id: "Jumlah Donasi", en: "Donation Count" },
 
     // Legacy Stats (unused, kept for reference)
     "mitra.available_balance": { id: "Saldo Tersedia", en: "Available Balance" },
-    "mitra.available_balance_desc": { id: "Belum dialokasikan", en: "Not yet allocated" },
+    "mitra.available_balance_desc": { id: "Belum disalurkan", en: "Not yet distributed" },
     "mitra.total_contribution": { id: "Total Kontribusi", en: "Total Contribution" },
     "mitra.total_contribution_desc": { id: "Dana yang sudah lunas", en: "Paid funds" },
     "mitra.programs_supported": { id: "Program Didukung", en: "Programs Supported" },
@@ -30,10 +30,10 @@ export const mitraDict: Dict = {
     "mitra.pending_donations_desc": { id: "Menunggu pembayaran", en: "Awaiting payment" },
 
     // Allocation Table
-    "mitra.allocation_transparency": { id: "Transparansi Penyaluran Dana", en: "Fund Allocation Transparency" },
+    "mitra.allocation_transparency": { id: "Transparansi Penyaluran Dana", en: "Fund Distribution Transparency" },
     "mitra.view_all": { id: "Lihat Semua", en: "View All" },
     "mitra.date": { id: "Tanggal", en: "Date" },
-    "mitra.program_allocation": { id: "Alokasi / Program", en: "Allocation / Program" },
+    "mitra.program_allocation": { id: "Penyaluran / Program", en: "Distribution / Program" },
     "mitra.nominal": { id: "Nominal", en: "Amount" },
     "mitra.proof": { id: "Bukti", en: "Proof" },
     "mitra.no_allocation": { id: "Belum ada dana yang digunakan oleh Admin.", en: "No funds have been used by Admin yet." },
@@ -58,7 +58,7 @@ export const mitraDict: Dict = {
 
     // Navigation Items
     "nav.item.Dashboard": { id: "Dashboard", en: "Dashboard" },
-    "nav.item.Bukti Alokasi": { id: "Bukti Alokasi", en: "Allocation Proof" },
+    "nav.item.Bukti Alokasi": { id: "Bukti Penyaluran", en: "Distribution Proof" },
     "nav.item.Riwayat Donasi": { id: "Riwayat Donasi", en: "Donation History" },
     "nav.item.Item Tersimpan": { id: "Item Tersimpan", en: "Saved Items" },
     "nav.item.Pengaturan": { id: "Pengaturan", en: "Settings" },
@@ -92,7 +92,7 @@ export const mitraDict: Dict = {
     "chart.trend_subtitle": { id: "Statistik 6 bulan terakhir", en: "Statistics for the last 6 months" },
     "chart.trend_subtitle_monthly": { id: "Statistik 6 bulan terakhir", en: "Statistics for the last 6 months" },
     "chart.trend_subtitle_weekly": { id: "Statistik 4 minggu terakhir", en: "Statistics for the last 4 weeks" },
-    "chart.distribution_title": { id: "Alokasi Dana", en: "Fund Allocation" },
+    "chart.distribution_title": { id: "Penyaluran Dana", en: "Fund Distribution" },
     "chart.distribution_subtitle": { id: "Distribusi berdasarkan kategori", en: "Distribution by category" },
     "chart.monthly": { id: "Bulanan", en: "Monthly" },
     "chart.weekly": { id: "Mingguan", en: "Weekly" },
@@ -105,7 +105,7 @@ export const mitraDict: Dict = {
     // Tables Extensions
     "table.recent_donations": { id: "Donasi Terbaru", en: "Recent Donations" },
     "table.recent_donations_desc": { id: "Data transaksi masuk terakhir", en: "Last incoming transaction data" },
-    "table.recent_allocations": { id: "Alokasi Pembiayaan", en: "Financing Allocation" },
+    "table.recent_allocations": { id: "Penyaluran Pembiayaan", en: "Financing Distribution" },
     "table.recent_allocations_desc": { id: "Penyaluran dana terakhir", en: "Last fund distribution" },
     "table.donatur": { id: "Donatur", en: "Donor" },
     "table.amount": { id: "Nominal", en: "Amount" },
@@ -123,15 +123,15 @@ export const mitraDict: Dict = {
 
     "mitra.download_report": { id: "Download Laporan PDF", en: "Download PDF Report" },
     "mitra.filter_search": { id: "Filter & Pencarian", en: "Filter & Search" },
-    "mitra.search_label": { id: "Cari Program atau Alokasi", en: "Search Program or Allocation" },
+    "mitra.search_label": { id: "Cari Program atau Penyaluran", en: "Search Program or Distribution" },
     "mitra.search_placeholder": { id: "Cari Sekarang", en: "Search Now" },
     "mitra.date_from": { id: "Dari Tanggal", en: "Date From" },
     "mitra.date_to": { id: "Sampai", en: "To" },
-    "mitra.allocation_unit": { id: "Alokasi Dana", en: "Fund Allocation" },
-    "mitra.allocation_nominal": { id: "Nominal Alokasi", en: "Allocation Amount" },
-    "mitra.allocation_program": { id: "Program Alokasi", en: "Allocation Program" },
+    "mitra.allocation_unit": { id: "Penyaluran Dana", en: "Fund Distribution" },
+    "mitra.allocation_nominal": { id: "Nominal Penyaluran", en: "Distribution Amount" },
+    "mitra.allocation_program": { id: "Program Penyaluran", en: "Distribution Program" },
     "mitra.purpose": { id: "Keterangan / Tujuan", en: "Purpose / Description" },
-    "mitra.allocation_date": { id: "Tanggal Alokasi", en: "Allocation Date" },
+    "mitra.allocation_date": { id: "Tanggal Penyaluran", en: "Distribution Date" },
     "mitra.transaction_status": { id: "Status Transaksi", en: "Transaction Status" },
     "mitra.verified_success": { id: "Berhasil Terverifikasi", en: "Successfully Verified" },
     "mitra.proof_usage": { id: "Bukti Penggunaan", en: "Proof of Usage" },

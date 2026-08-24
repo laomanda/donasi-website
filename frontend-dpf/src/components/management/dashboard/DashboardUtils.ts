@@ -20,7 +20,6 @@ import {
   faChartLine,
   faGears,
   faUserGroup,
-  faCircleInfo,
   faShieldHalved,
   faBookmark,
 } from "@fortawesome/free-solid-svg-icons";
@@ -332,7 +331,6 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Alat",
       items: [
-        { label: "Panduan", href: "/editor/guidance", icon: faCircleInfo },
         { label: "Pengaturan", href: "/editor/settings", icon: faGear },
       ],
     },
@@ -356,13 +354,12 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       title: "Keuangan",
       items: [
         { label: "Laporan Donasi", href: "/admin/reports/donations", icon: faChartLine, permission: "view reports" },
-        { label: "Alokasi", href: "/admin/allocations", icon: faHandshake, permission: "manage allocations" },
+        { label: "Penyaluran", href: "/admin/allocations", icon: faHandshake, permission: "manage allocations" },
       ],
     },
     {
       title: "Sistem",
       items: [
-        { label: "Panduan", href: "/admin/guidance", icon: faCircleInfo },
         { label: "Pengaturan", href: "/admin/settings", icon: faGears },
       ],
     },
@@ -386,7 +383,6 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Sistem",
       items: [
-        { label: "Panduan", href: "/superadmin/guidance", icon: faCircleInfo },
         { label: "Pengaturan", href: "/superadmin/settings", icon: faGear },
       ],
     },
@@ -430,7 +426,7 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       title: "Keuangan",
       items: [
         { label: "Laporan Donasi", href: "/admin/reports/donations", icon: faChartLine, permission: "view reports" },
-        { label: "Alokasi", href: "/admin/allocations", icon: faHandshake, permission: "manage allocations" },
+        { label: "Penyaluran", href: "/admin/allocations", icon: faHandshake, permission: "manage allocations" },
       ],
     },
     {
@@ -443,7 +439,6 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Sistem",
       items: [
-        { label: "Panduan", href: "/admin/guidance", icon: faCircleInfo },
         { label: "Pengaturan", href: "/admin/settings", icon: faGear },
       ],
     },
@@ -457,14 +452,13 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       title: "Transparansi",
       items: [
         { label: "Item Tersimpan", href: "/mitra/saved-items", icon: faBookmark },
-        { label: "Bukti Alokasi", href: "/mitra/allocations", icon: faHandshake },
+        { label: "Bukti Penyaluran", href: "/mitra/allocations", icon: faHandshake },
         { label: "Riwayat Donasi", href: "/mitra/donations", icon: faReceipt },
       ],
     },
     {
       title: "Dukungan",
       items: [
-        { label: "Panduan", href: "/mitra/guidance", icon: faCircleInfo },
         { label: "Pengaturan", href: "/mitra/settings", icon: faGear },
       ],
     },

@@ -267,7 +267,7 @@
                 <div class="catatan-box">
                     <strong>{{ __('reports.notes') }}:</strong><br>
                     1. Dokumen ini sah dan diterbitkan secara komputerisasi oleh sistem DPF.<br>
-                    2. Alokasi dana di atas telah disetujui sesuai dengan ketentuan yayasan.<br>
+                    2. Penyaluran dana di atas telah disetujui sesuai dengan ketentuan yayasan.<br>
                     3. Simpan laporan ini sebagai bukti pertanggungjawaban program.
                 </div>
             </td>

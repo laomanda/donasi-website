@@ -22,7 +22,7 @@ export default function AdminAllocationHeader({ total }: AdminAllocationHeaderPr
                 Layanan Kemitraan
               </span>
               <h1 className="mt-3 font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
-                Alokasi Mitra
+                Penyaluran Mitra
               </h1>
               <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
                 Monitoring penggunaan dana dompet mitra secara transparan.
@@ -32,7 +32,7 @@ export default function AdminAllocationHeader({ total }: AdminAllocationHeaderPr
 
           <div className="flex flex-col gap-4 items-start md:items-end lg:flex-col">
             <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-emerald-50 backdrop-blur-sm">
-              Total Alokasi
+              Total Penyaluran
               <span className="font-bold text-white">{new Intl.NumberFormat("id-ID").format(total)}</span>
             </span>
 
@@ -41,7 +41,7 @@ export default function AdminAllocationHeader({ total }: AdminAllocationHeaderPr
               className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-emerald-600 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
             >
               <FontAwesomeIcon icon={faPlus} className="bg-emerald-100/50 p-1.5 rounded-full text-xs" />
-              Buat Alokasi Baru
+              Buat Penyaluran Baru
             </Link>
           </div>
         </div>
