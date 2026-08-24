@@ -90,9 +90,30 @@ export function LoginPage() {
 
       // Gunakan raw agar custom roles terbaca dengan benar saat redirect
       navigate(getRedirectPath(res.data?.user), { replace: true });
-    } catch (err: unknown) {
-      toast.error(t("login.error_subtitle"), { 
-        title: t("login.error_title") 
+    } catch (err: any) {
+      const emailError = err?.response?.data?.errors?.email?.[0];
+      const passwordError = err?.response?.data?.errors?.password?.[0];
+      const serverMessage = emailError || passwordError || err?.response?.data?.message;
+
+      const isDeactivated = 
+        (typeof serverMessage === "string" && (
+          serverMessage.toLowerCase().includes("dinonaktifkan") || 
+          serverMessage.toLowerCase().includes("deactivated") ||
+          serverMessage.toLowerCase().includes("nonaktif")
+        )) || 
+        err?.response?.status === 403;
+
+      const title = isDeactivated 
+        ? t("login.deactivated_title") 
+        : t("login.error_title");
+
+      const description = isDeactivated 
+        ? t("login.deactivated_subtitle") 
+        : (serverMessage || t("login.error_subtitle"));
+
+      toast.error(description, { 
+        title,
+        durationMs: isDeactivated ? 7000 : 4000,
       });
     } finally {
       setSubmitting(false);

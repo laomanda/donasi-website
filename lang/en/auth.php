@@ -4,18 +4,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Authentication Language Lines
+    | Authentication Language Lines (English)
     |--------------------------------------------------------------------------
-    |
-    | The following language lines are used during authentication for various
-    | messages that we need to display to the user. You are free to modify
-    | these language lines according to your application's requirements.
-    |
     */
 
-    'failed' => 'Email atau kata sandi tidak sesuai.',
-    'password' => 'Kata sandi yang diberikan salah.',
-    'throttle' => 'Terlalu banyak percobaan masuk. Silakan coba lagi dalam :seconds detik.',
+    'failed' => 'These credentials do not match our records.',
+    'password' => 'The provided password is incorrect.',
+    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'account_inactive' => 'Your account has been deactivated. Please contact the administrator for further assistance.',
 
 ];
-

@@ -47,6 +47,7 @@ export function LoginForm({
 }: LoginFormProps) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+
       <AuthField label={labels.email} required>
         <div className="relative">
           <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">

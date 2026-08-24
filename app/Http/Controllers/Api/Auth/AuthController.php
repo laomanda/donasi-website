@@ -32,7 +32,25 @@ class AuthController extends Controller
             ]);
         }
 
-        $user = $request->user()->load('roles.permissions', 'permissions');
+        $user = $request->user();
+
+        // Check if user account has been deactivated
+        if (isset($user->is_active) && ! $user->is_active) {
+            if ($request->hasSession()) {
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            } else {
+                $user->tokens()->delete();
+                Auth::guard('web')->logout();
+            }
+
+            throw ValidationException::withMessages([
+                'email' => __('auth.account_inactive'),
+            ]);
+        }
+
+        $user->load('roles.permissions', 'permissions');
 
         return response()->json([
             'token'      => $user->createToken('spa')->plainTextToken,

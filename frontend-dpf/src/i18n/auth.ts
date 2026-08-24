@@ -21,8 +21,10 @@ export const authDict: Dict = {
     "login.google_connection_error": { id: "Gagal terhubung dengan layanan Google.", en: "Failed to connect with Google services." },
     "login.mitra_interest": { id: "Tertarik menjadi mitra?", en: "Interested in becoming a partner?" },
     "login.register_mitra": { id: "Daftar Sekarang", en: "Register Now" },
-    "login.error_title": { id: "Password Salah", en: "Invalid Password" },
+    "login.error_title": { id: "Login Gagal", en: "Login Failed" },
     "login.error_subtitle": { id: "Email atau kata sandi tidak sesuai.", en: "Invalid email or password." },
+    "login.deactivated_title": { id: "Akun Dinonaktifkan", en: "Account Deactivated" },
+    "login.deactivated_subtitle": { id: "Akun Anda telah dinonaktifkan. Silakan hubungi administrator untuk informasi lebih lanjut.", en: "Your account has been deactivated. Please contact the administrator for further assistance." },
 
     // Register Page
     "register.badge": { id: "Registrasi Mitra", en: "Partner Registration" },
