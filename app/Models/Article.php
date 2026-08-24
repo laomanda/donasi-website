@@ -121,9 +121,9 @@ class Article extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function scopePublished($query)
+    public function scopePublished(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
-        return $query->where('status', 'published')
+        return $query->where('status', '=', 'published')
             ->whereNotNull('published_at')
             ->orderByDesc('published_at');
     }

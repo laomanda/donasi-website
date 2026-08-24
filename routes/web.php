@@ -148,8 +148,8 @@ Route::get('/{path?}', function (?string $path = null) {
                         }
                     }
                 } elseif ($slug && in_array($firstSegment, ['program', 'programs', 'donasi'])) {
-                    $program = Program::where(function ($q) use ($slug) {
-                        $q->where('slug', $slug)->orWhere('slug_en', $slug);
+                    $program = Program::query()->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($slug) {
+                        $q->where('slug', '=', $slug)->orWhere('slug_en', '=', $slug);
                     })->first();
                     if ($program) {
                         $metaTitle = e($program->title);

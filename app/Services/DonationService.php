@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Donation;
 use App\Models\Program;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class DonationService
 {
@@ -16,7 +18,7 @@ class DonationService
         $data['donation_code'] = $this->generateDonationCode();
 
         return DB::transaction(function () use ($data) {
-            $created = Donation::create($data);
+            $created = Donation::query()->create($data);
             $this->syncProgramAmount($created, null, 'paid');
 
             return $created->load('program');
@@ -27,9 +29,10 @@ class DonationService
     {
         $orderId = $this->generateMidtransOrderId();
         $programId = $data['program_id'] ?? null;
+        $userId = Auth::guard('sanctum')->id();
 
-        return DB::transaction(function () use ($data, $orderId, $programId) {
-            return Donation::create([
+        return DB::transaction(function () use ($data, $orderId, $programId, $userId) {
+            return Donation::query()->create([
                 'program_id'            => $programId,
                 'donation_code'         => $this->generateDonationCode(),
                 'donor_name'            => $data['donor_name'],
@@ -43,7 +46,7 @@ class DonationService
                 'paid_at'               => null,
                 'notes'                 => $data['notes'] ?? null,
                 'midtrans_order_id'     => $orderId,
-                'user_id'               => auth('sanctum')->id(),
+                'user_id'               => $userId,
             ]);
         });
     }
@@ -57,7 +60,7 @@ class DonationService
         }
 
         return DB::transaction(function () use ($data, $combinedNotes, $proofPath) {
-            return Donation::create([
+            return Donation::query()->create([
                 'program_id'            => $data['program_id'] ?? null,
                 'donation_code'         => $this->generateDonationCode(),
                 'donor_name'            => $data['donor_name'],
@@ -88,10 +91,18 @@ class DonationService
     public function deleteDonation(Donation $donation): void
     {
         $previousStatus = $donation->status;
-        $donation->delete();
+        $programId = $donation->program_id;
+        $amount = (float) $donation->amount;
 
-        if ($previousStatus === 'paid' && $donation->program_id) {
-            $donation->program()->decrement('collected_amount', $donation->amount);
+        Donation::destroy($donation->id);
+
+        if ($previousStatus === 'paid' && $programId) {
+            /** @var Program|null $program */
+            $program = Program::query()->find($programId);
+            if ($program) {
+                $program->collected_amount = max(0, (float) $program->collected_amount - $amount);
+                $program->save();
+            }
         }
     }
 
@@ -104,19 +115,25 @@ class DonationService
     {
         $prefix = 'DPF-' . now()->format('Ymd');
         
-        $lastCode = Donation::where('donation_code', 'like', "{$prefix}%")
+        $lastCode = Donation::query()
+            ->where('donation_code', 'like', "{$prefix}%")
             ->orderByDesc('donation_code')
             ->value('donation_code');
 
-        $sequence = $lastCode ? (int) substr($lastCode, -4) : 0;
+        $sequence = 0;
+        if (! empty($lastCode)) {
+            $parts = explode('-', (string) $lastCode);
+            $sequence = (int) end($parts);
+        }
         $sequence++;
 
-        return sprintf('%s-%04d', $prefix, $sequence);
+        $sequencePadded = str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
+        return "{$prefix}-{$sequencePadded}";
     }
 
     private function generateMidtransOrderId(): string
     {
-        return 'DPF-' . now()->format('YmdHis') . '-' . \Illuminate\Support\Str::random(5);
+        return 'DPF-' . now()->format('YmdHis') . '-' . Str::random(5);
     }
 
     public function syncProgramAmount(Donation $donation, ?string $oldStatus, string $newStatus): void
@@ -125,16 +142,19 @@ class DonationService
             return;
         }
 
-        $program = Program::find($donation->program_id);
+        /** @var Program|null $program */
+        $program = Program::query()->find($donation->program_id);
 
         if (! $program) {
             return;
         }
 
         if ($oldStatus !== 'paid' && $newStatus === 'paid') {
-            $program->increment('collected_amount', $donation->amount);
+            $program->collected_amount = (float) $program->collected_amount + (float) $donation->amount;
+            $program->save();
         } elseif ($oldStatus === 'paid' && $newStatus !== 'paid') {
-            $program->decrement('collected_amount', $donation->amount);
+            $program->collected_amount = max(0, (float) $program->collected_amount - (float) $donation->amount);
+            $program->save();
         }
     }
 }

@@ -67,21 +67,19 @@ class Program extends Model
         });
 
         static::saved(function ($program) {
-            self::clearProgramsCache();
+            self::clearProgramsCache($program);
         });
 
         static::deleted(function ($program) {
-            self::clearProgramsCache();
+            self::clearProgramsCache($program);
         });
     }
 
-    private static function clearProgramsCache()
+    public static function clearProgramsCache(?Program $program = null)
     {
-        \Illuminate\Support\Facades\Cache::forget('frontend.home');
-        
         try {
-            \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Cache::flush();
+        } catch (\Throwable $e) {
             // ignore
         }
     }
@@ -110,14 +108,14 @@ class Program extends Model
     */
 
     // Hanya program yang aktif
-    public function scopeActive($query)
+    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
-        return $query->where('status', 'active');
+        return $query->where('status', '=', 'active');
     }
 
     // Program yang ditandai highlight
-    public function scopeHighlight($query)
+    public function scopeHighlight(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
-        return $query->where('is_highlight', true);
+        return $query->where('is_highlight', '=', true);
     }
 }

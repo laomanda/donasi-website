@@ -28,6 +28,7 @@ class Donation extends Model
         'midtrans_raw_response',
         'manual_proof_path',
         'paid_at',
+        'whatsapp_sent_at',
         'notes',
     ];
 
@@ -37,6 +38,7 @@ class Donation extends Model
         'midtrans_va_numbers'   => 'array',
         'midtrans_raw_response' => 'array',
         'paid_at'               => 'datetime',
+        'whatsapp_sent_at'      => 'datetime',
     ];
 
     /*
@@ -79,15 +81,15 @@ class Donation extends Model
     */
 
     // Hanya donasi yang sudah paid
-    public function scopePaid($query)
+    public function scopePaid(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
-        return $query->where('status', 'paid');
+        return $query->where('status', '=', 'paid');
     }
 
     // Donasi pending (buat list validasi)
-    public function scopePending($query)
+    public function scopePending(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
-        return $query->where('status', 'pending');
+        return $query->where('status', '=', 'pending');
     }
 
     /*
@@ -110,8 +112,9 @@ class Donation extends Model
 
         if (! isset(self::$donorStatsCache[$key])) {
             // Hitung donasi sukses berdasarkan nomor telepon yang sama
-            $count = self::where('status', 'paid')
-                ->where('donor_phone', $key)
+            $count = self::query()
+                ->where('status', '=', 'paid')
+                ->where('donor_phone', '=', $key)
                 ->count();
             
             self::$donorStatsCache[$key] = $count;

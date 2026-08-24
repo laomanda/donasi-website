@@ -64,7 +64,7 @@ class ArticleController extends Controller
 
     public function destroy(Article $article)
     {
-        $article->delete();
+        Article::destroy($article->id);
         return response()->json(['message' => 'Article deleted.']);
     }
 
@@ -77,7 +77,7 @@ class ArticleController extends Controller
     public function categories()
     {
         $categories = Article::query()
-            ->select('category', 'category_en')
+            ->select(['category', 'category_en'])
             ->distinct()
             ->whereNotNull('category')
             ->orderBy('category')
@@ -89,8 +89,8 @@ class ArticleController extends Controller
     public function authors()
     {
         $authors = Article::query()
-            ->whereNotNull('author_name')
-            ->where('author_name', '!=', '')
+            ->where('author_name', '<>', '')
+            ->where('author_name', '!=', null)
             ->distinct()
             ->orderBy('author_name')
             ->pluck('author_name');

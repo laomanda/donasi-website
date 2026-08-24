@@ -5155,7 +5155,7 @@ namespace Illuminate\Support\Facades {
          */
         public static function lock($name, $seconds = 0, $owner = null)
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
+            /** @var \Illuminate\Cache\FileStore $instance */
             return $instance->lock($name, $seconds, $owner);
         }
 
@@ -5169,21 +5169,8 @@ namespace Illuminate\Support\Facades {
          */
         public static function restoreLock($name, $owner)
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
+            /** @var \Illuminate\Cache\FileStore $instance */
             return $instance->restoreLock($name, $owner);
-        }
-
-        /**
-         * Remove an item from the cache if it is expired.
-         *
-         * @param string $key
-         * @return bool
-         * @static
-         */
-        public static function forgetIfExpired($key)
-        {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
-            return $instance->forgetIfExpired($key);
         }
 
         /**
@@ -5194,58 +5181,71 @@ namespace Illuminate\Support\Facades {
          */
         public static function flush()
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
+            /** @var \Illuminate\Cache\FileStore $instance */
             return $instance->flush();
         }
 
         /**
-         * Get the underlying database connection.
+         * Get the full path for the given cache key.
          *
-         * @return \Illuminate\Database\MySqlConnection
+         * @param string $key
+         * @return string
          * @static
          */
-        public static function getConnection()
+        public static function path($key)
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
-            return $instance->getConnection();
+            /** @var \Illuminate\Cache\FileStore $instance */
+            return $instance->path($key);
         }
 
         /**
-         * Set the underlying database connection.
+         * Get the Filesystem instance.
          *
-         * @param \Illuminate\Database\ConnectionInterface $connection
-         * @return \Illuminate\Cache\DatabaseStore
+         * @return \Illuminate\Filesystem\Filesystem
          * @static
          */
-        public static function setConnection($connection)
+        public static function getFilesystem()
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
-            return $instance->setConnection($connection);
+            /** @var \Illuminate\Cache\FileStore $instance */
+            return $instance->getFilesystem();
         }
 
         /**
-         * Get the connection used to manage locks.
+         * Get the working directory of the cache.
          *
-         * @return \Illuminate\Database\MySqlConnection
+         * @return string
          * @static
          */
-        public static function getLockConnection()
+        public static function getDirectory()
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
-            return $instance->getLockConnection();
+            /** @var \Illuminate\Cache\FileStore $instance */
+            return $instance->getDirectory();
         }
 
         /**
-         * Specify the connection that should be used to manage locks.
+         * Set the working directory of the cache.
          *
-         * @param \Illuminate\Database\ConnectionInterface $connection
-         * @return \Illuminate\Cache\DatabaseStore
+         * @param string $directory
+         * @return \Illuminate\Cache\FileStore
          * @static
          */
-        public static function setLockConnection($connection)
+        public static function setDirectory($directory)
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
-            return $instance->setLockConnection($connection);
+            /** @var \Illuminate\Cache\FileStore $instance */
+            return $instance->setDirectory($directory);
+        }
+
+        /**
+         * Set the cache directory where locks should be stored.
+         *
+         * @param string|null $lockDirectory
+         * @return \Illuminate\Cache\FileStore
+         * @static
+         */
+        public static function setLockDirectory($lockDirectory)
+        {
+            /** @var \Illuminate\Cache\FileStore $instance */
+            return $instance->setLockDirectory($lockDirectory);
         }
 
         /**
@@ -5256,21 +5256,8 @@ namespace Illuminate\Support\Facades {
          */
         public static function getPrefix()
         {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
+            /** @var \Illuminate\Cache\FileStore $instance */
             return $instance->getPrefix();
-        }
-
-        /**
-         * Set the cache key prefix.
-         *
-         * @param string $prefix
-         * @return void
-         * @static
-         */
-        public static function setPrefix($prefix)
-        {
-            /** @var \Illuminate\Cache\DatabaseStore $instance */
-            $instance->setPrefix($prefix);
         }
 
             }
@@ -23922,193 +23909,8 @@ namespace Barryvdh\DomPDF\Facade {
             /** @var \Barryvdh\DomPDF\PDF $instance */
             return $instance->setEncryption($password, $ownerpassword, $pc);
         }
-
-            }
-    /**
-     * @method static BasePDF setBaseHost(string $baseHost)
-     * @method static BasePDF setBasePath(string $basePath)
-     * @method static BasePDF setCanvas(\Dompdf\Canvas $canvas)
-     * @method static BasePDF setCallbacks(array<string, mixed> $callbacks)
-     * @method static BasePDF setCss(\Dompdf\Css\Stylesheet $css)
-     * @method static BasePDF setDefaultView(string $defaultView, array<string, mixed> $options)
-     * @method static BasePDF setDom(\DOMDocument $dom)
-     * @method static BasePDF setFontMetrics(\Dompdf\FontMetrics $fontMetrics)
-     * @method static BasePDF setHttpContext(resource|array<string, mixed> $httpContext)
-     * @method static BasePDF setPaper(string|float[] $paper, string $orientation = 'portrait')
-     * @method static BasePDF setProtocol(string $protocol)
-     * @method static BasePDF setTree(\Dompdf\Frame\FrameTree $tree)
-     */
-    class Pdf {
-        /**
-         * Get the DomPDF instance
-         *
-         * @static
-         */
-        public static function getDomPDF()
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->getDomPDF();
-        }
-
-        /**
-         * Show or hide warnings
-         *
-         * @static
-         */
-        public static function setWarnings($warnings)
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->setWarnings($warnings);
-        }
-
-        /**
-         * Load a HTML string
-         *
-         * @param string|null $encoding Not used yet
-         * @static
-         */
-        public static function loadHTML($string, $encoding = null)
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->loadHTML($string, $encoding);
-        }
-
-        /**
-         * Load a HTML file
-         *
-         * @static
-         */
-        public static function loadFile($file)
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->loadFile($file);
-        }
-
-        /**
-         * Add metadata info
-         *
-         * @param array<string, string> $info
-         * @static
-         */
-        public static function addInfo($info)
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->addInfo($info);
-        }
-
-        /**
-         * Load a View and convert to HTML
-         *
-         * @param array<string, mixed> $data
-         * @param array<string, mixed> $mergeData
-         * @param string|null $encoding Not used yet
-         * @static
-         */
-        public static function loadView($view, $data = [], $mergeData = [], $encoding = null)
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->loadView($view, $data, $mergeData, $encoding);
-        }
-
-        /**
-         * Set/Change an option (or array of options) in Dompdf
-         *
-         * @param array<string, mixed>|string $attribute
-         * @param null|mixed $value
-         * @static
-         */
-        public static function setOption($attribute, $value = null)
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->setOption($attribute, $value);
-        }
-
-        /**
-         * Replace all the Options from DomPDF
-         *
-         * @param array<string, mixed> $options
-         * @static
-         */
-        public static function setOptions($options, $mergeWithDefaults = false)
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->setOptions($options, $mergeWithDefaults);
-        }
-
-        /**
-         * Output the PDF as a string.
-         * 
-         * The options parameter controls the output. Accepted options are:
-         * 
-         * 'compress' = > 1 or 0 - apply content stream compression, this is
-         *    on (1) by default
-         *
-         * @param array<string, int> $options
-         * @return string The rendered PDF as string
-         * @static
-         */
-        public static function output($options = [])
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->output($options);
-        }
-
-        /**
-         * Save the PDF to a file
-         *
-         * @static
-         */
-        public static function save($filename, $disk = null)
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->save($filename, $disk);
-        }
-
-        /**
-         * Make the PDF downloadable by the user
-         *
-         * @static
-         */
-        public static function download($filename = 'document.pdf')
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->download($filename);
-        }
-
-        /**
-         * Return a response with the PDF to show in the browser
-         *
-         * @static
-         */
-        public static function stream($filename = 'document.pdf')
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->stream($filename);
-        }
-
-        /**
-         * Render the PDF
-         *
-         * @static
-         */
-        public static function render()
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->render();
-        }
-
-        /**
-         * @param array<string> $pc
-         * @static
-         */
-        public static function setEncryption($password, $ownerpassword = '', $pc = [])
-        {
-            /** @var \Barryvdh\DomPDF\PDF $instance */
-            return $instance->setEncryption($password, $ownerpassword, $pc);
-        }
-
-            }
     }
+}
 
 namespace Maatwebsite\Excel\Facades {
     /**
@@ -29458,7 +29260,6 @@ namespace  {
     class Vite extends \Illuminate\Support\Facades\Vite {}
     class Debugbar extends \Barryvdh\Debugbar\Facades\Debugbar {}
     class PDF extends \Barryvdh\DomPDF\Facade\Pdf {}
-    class Pdf extends \Barryvdh\DomPDF\Facade\Pdf {}
     class Excel extends \Maatwebsite\Excel\Facades\Excel {}
 }
 
