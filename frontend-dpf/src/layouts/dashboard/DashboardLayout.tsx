@@ -22,10 +22,11 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { locale, setLocale } = useLang();
+  const effectiveLocale = role === "mitra" ? locale : "id";
   const t = (key: string, fallback?: string) => {
     // Search in global first, then mitra
     const mergedDict = { ...globalDict, ...mitraDict };
-    return translate(mergedDict, locale, key, fallback);
+    return translate(mergedDict, effectiveLocale, key, fallback);
   };
 
   const theme = Utils.ROLE_THEME[role];
@@ -36,7 +37,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const navSections = useMemo(() => {
     const roles = userRoles.length ? userRoles : [role];
     return Utils.buildNavSections(roles, userPermissions, t);
-  }, [role, userRoles, userPermissions, locale]);
+  }, [role, userRoles, userPermissions, effectiveLocale]);
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -207,7 +208,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
             onSearchSubmit={onSearchSubmit}
             showClock={showClock}
             now={now}
-            locale={locale}
+            locale={effectiveLocale}
             setLocale={setLocale}
             langOpen={langOpen}
             setLangOpen={setLangOpen}

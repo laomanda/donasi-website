@@ -14,7 +14,8 @@ interface SettingsHeroProps {
 
 export function SettingsHero({ role, displayName, displayEmail, roleLabel }: SettingsHeroProps) {
   const navigate = useNavigate();
-  const { locale } = useLang();
+  const { locale: rawLocale } = useLang();
+  const locale = role === "mitra" ? rawLocale : "id";
   const t = (key: string, fallback?: string) => translate(settingsDict, locale, key, fallback);
 
   return (

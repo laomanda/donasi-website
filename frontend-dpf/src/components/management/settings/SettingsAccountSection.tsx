@@ -21,7 +21,8 @@ export function SettingsAccountSection({
   roleLabel,
   onCopy,
 }: SettingsAccountSectionProps) {
-  const { locale } = useLang();
+  const { locale: rawLocale } = useLang();
+  const locale = role === "mitra" ? rawLocale : "id";
   const t = (key: string, fallback?: string) => translate(settingsDict, locale, key, fallback);
 
   return (

@@ -1,9 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faCircleInfo, faEye, faEyeSlash, faLock } from "@fortawesome/free-solid-svg-icons";
+import type { DashboardRole } from "../../../components/management/dashboard/DashboardUtils";
 import { useLang } from "../../../lib/i18n";
 import { settingsDict, translate } from "../../../i18n/settings";
 
 interface SettingsSecuritySectionProps {
+  role?: DashboardRole;
   passwordForm: any;
   setPasswordForm: (cb: (prev: any) => any) => void;
   showPassword: any;
@@ -15,6 +17,7 @@ interface SettingsSecuritySectionProps {
 }
 
 export function SettingsSecuritySection({
+  role,
   passwordForm,
   setPasswordForm,
   showPassword,
@@ -24,7 +27,8 @@ export function SettingsSecuritySection({
   onChangePassword,
   onReset,
 }: SettingsSecuritySectionProps) {
-  const { locale } = useLang();
+  const { locale: rawLocale } = useLang();
+  const locale = role === "mitra" ? rawLocale : "id";
   const t = (key: string, fallback?: string) => translate(settingsDict, locale, key, fallback);
 
   return (

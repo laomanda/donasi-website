@@ -1,14 +1,17 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
+import type { DashboardRole } from "../../../components/management/dashboard/DashboardUtils";
 import { useLang } from "../../../lib/i18n";
 import { settingsDict, translate } from "../../../i18n/settings";
 
 type SettingsSidebarProps = {
+  role?: DashboardRole;
   showSocialSettings?: boolean;
 };
 
-export function SettingsSidebar({ showSocialSettings = false }: SettingsSidebarProps) {
-  const { locale } = useLang();
+export function SettingsSidebar({ role, showSocialSettings = false }: SettingsSidebarProps) {
+  const { locale: rawLocale } = useLang();
+  const locale = role === "mitra" ? rawLocale : "id";
   const t = (key: string, fallback?: string) => translate(settingsDict, locale, key, fallback);
 
   return (

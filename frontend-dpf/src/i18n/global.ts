@@ -27,7 +27,14 @@ export const globalDict: Dict = {
     "nav.item.Pengaturan": { id: "Pengaturan", en: "Settings" },
     "nav.item.Roles": { id: "Roles", en: "Roles" },
     "nav.item.Permissions": { id: "Permissions", en: "Permissions" },
-    "nav.item.Pengguna": { id: "Pengguna", en: "Users" },
+    // Account User Menu
+    "account.title": { id: "AKUN", en: "ACCOUNT" },
+    "account.settings": { id: "Pengaturan", en: "Settings" },
+    "account.settings_desc": { id: "Pengaturan akun.", en: "Account settings." },
+    "account.refresh": { id: "Muat Ulang", en: "Refresh page" },
+    "account.refresh_desc": { id: "Muat data terbaru.", en: "Reload latest data." },
+    "account.logout": { id: "Keluar", en: "Logout" },
+    "account.logout_desc": { id: "Keluar dari dashboard.", en: "Sign out from dashboard." },
 
     // Footer
     "footer.explore": { id: "Jelajahi", en: "Explore" },

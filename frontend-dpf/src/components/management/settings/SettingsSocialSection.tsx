@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInstagram, faYoutube } from "@fortawesome/free-brands-svg-icons";
 import { faCircleCheck, faCircleInfo, faGears } from "@fortawesome/free-solid-svg-icons";
+import type { DashboardRole } from "../../../components/management/dashboard/DashboardUtils";
 import { useLang } from "../../../lib/i18n";
 import { settingsDict, translate } from "../../../i18n/settings";
 
@@ -10,6 +11,7 @@ type SocialSettingsState = {
 };
 
 type SettingsSocialSectionProps = {
+  role?: DashboardRole;
   value: SocialSettingsState;
   loading: boolean;
   saving: boolean;
@@ -18,13 +20,15 @@ type SettingsSocialSectionProps = {
 };
 
 export function SettingsSocialSection({
+  role,
   value,
   loading,
   saving,
   onToggle,
   onSave,
 }: SettingsSocialSectionProps) {
-  const { locale } = useLang();
+  const { locale: rawLocale } = useLang();
+  const locale = role === "mitra" ? rawLocale : "id";
   const t = (key: string, fallback?: string) => translate(settingsDict, locale, key, fallback);
   const disabled = loading || saving;
 

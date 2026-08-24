@@ -26,7 +26,8 @@ const SOCIAL_SETTING_KEYS = {
 export function SettingsPage({ role }: { role: DashboardRole }) {
   const toast = useToast();
   const { locale } = useLang();
-  const t = useCallback((key: string, fallback?: string) => translate(settingsDict, locale, key, fallback), [locale]);
+  const effectiveLocale = role === "mitra" ? locale : "id";
+  const t = useCallback((key: string, fallback?: string) => translate(settingsDict, effectiveLocale, key, fallback), [effectiveLocale]);
 
   const user = useMemo(() => getAuthUser(), []);
   const tokenExists = useMemo(() => Boolean(getAuthToken()), []);
@@ -228,7 +229,7 @@ export function SettingsPage({ role }: { role: DashboardRole }) {
       />
 
       <div className="grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <SettingsSidebar showSocialSettings={canManageSocialSettings} />
+        <SettingsSidebar role={role} showSocialSettings={canManageSocialSettings} />
 
         <div className="space-y-8">
           <SettingsAccountSection 
@@ -241,6 +242,7 @@ export function SettingsPage({ role }: { role: DashboardRole }) {
           />
 
           <SettingsSecuritySection 
+            role={role}
             passwordForm={passwordForm}
             setPasswordForm={setPasswordForm}
             showPassword={showPassword}
@@ -256,6 +258,7 @@ export function SettingsPage({ role }: { role: DashboardRole }) {
 
           {canManageSocialSettings && (
             <SettingsSocialSection
+              role={role}
               value={socialForm}
               loading={socialLoading}
               saving={socialSaving}
