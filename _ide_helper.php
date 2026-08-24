@@ -23147,7 +23147,7 @@ namespace Barryvdh\Debugbar\Facades {
      * @method static void warning(mixed $message)
      * @see \Barryvdh\Debugbar\LaravelDebugbar
      */
-    class Debugbar extends \DebugBar\DebugBar {
+    class Debugbar {
         /**
          * Returns the HTTP driver
          * 
@@ -28795,7 +28795,7 @@ namespace  {
         /**
          * Merge an array of bindings into our bindings.
          *
-         * @param self $query
+         * @param \Illuminate\Database\Query\Builder|self $query
          * @return \Illuminate\Database\Eloquent\Builder<static>
          * @static
          */
