@@ -5,28 +5,39 @@ export type ApiErrorData = {
   errors?: unknown;
 };
 
-export type DashboardRole = "superadmin" | "admin" | "editor" | "mitra" | "custom";
+export type DashboardRole = "superadmin" | "admin" | "editor" | "keuangan" | "mitra" | "custom";
+
+export interface FormattedError {
+  title: string;
+  description: string;
+}
 
 /**
- * Mengekstrak pesan error dari respons API.
+ * Normalisasi error API menjadi string yang mudah dibaca.
  */
-export const extractApiErrorMessage = (err: unknown): string | null => {
-  if (!err || typeof err !== "object") return null;
+export const normalizeErrorMessage = (err: unknown): string => {
+  if (!err) return "Terjadi kesalahan yang tidak diketahui.";
 
-  const response = (err as { response?: unknown }).response;
-  if (!response || typeof response !== "object") return null;
+  let messageString = "Terjadi kesalahan pada sistem.";
 
-  const data = (response as { data?: unknown }).data;
-  if (!data || typeof data !== "object") return null;
-
-  const { message, errors } = data as ApiErrorData;
-
-  const messageString = typeof message === "string" ? message : null;
-
-  if (errors && typeof errors === "object") {
-    const firstValue = Object.values(errors as ValidationErrorBag)[0];
-    if (Array.isArray(firstValue) && typeof firstValue[0] === "string") {
-      return firstValue[0];
+  if (typeof err === "string") {
+    messageString = err;
+  } else if (typeof err === "object") {
+    const errorObj = err as any;
+    
+    // Cek error dari response Axios Laravel
+    if (errorObj.response?.data) {
+      const data = errorObj.response.data;
+      if (typeof data.message === "string") {
+        messageString = data.message;
+      } else if (data.errors && typeof data.errors === "object") {
+        const firstKey = Object.keys(data.errors)[0];
+        if (firstKey && Array.isArray(data.errors[firstKey]) && data.errors[firstKey].length > 0) {
+          messageString = data.errors[firstKey][0];
+        }
+      }
+    } else if (typeof errorObj.message === "string") {
+      messageString = errorObj.message;
     }
   }
 
@@ -60,6 +71,7 @@ export const resolveDashboardRole = (user: unknown): DashboardRole | null => {
   if (normalized.has("superadmin")) return "superadmin";
   if (normalized.has("admin")) return "admin";
   if (normalized.has("editor")) return "editor";
+  if (normalized.has("keuangan")) return "keuangan";
   if (normalized.has("mitra")) return "mitra";
   
   // Jika punya role tapi tidak termasuk 4 role utama, berarti custom
