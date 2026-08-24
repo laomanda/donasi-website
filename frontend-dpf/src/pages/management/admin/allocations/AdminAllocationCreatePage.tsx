@@ -8,17 +8,21 @@ import AdminAllocationCreateHeader from "@/components/management/admin/allocatio
 import AdminAllocationCreateForm from "@/components/management/admin/allocations/AdminAllocationCreateForm";
 
 // Types
-import type { UserOption, AllocatableProgram, AllocationFormData } from "@/types/allocation";
+import type { UserOption, AllocatableProgram, AllocatablePublicDonation, AllocationFormData } from "@/types/allocation";
 
 export function AdminAllocationCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
   const [users, setUsers] = useState<UserOption[]>([]);
   const [allocatablePrograms, setAllocatablePrograms] = useState<AllocatableProgram[]>([]);
+  const [publicDonations, setPublicDonations] = useState<AllocatablePublicDonation[]>([]);
+  const [includeDepleted, setIncludeDepleted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState<AllocationFormData>({
+    source_type: "mitra",
     user_id: "",
+    donation_id: "",
     program_id: "",
     amount: "",
     description: "",
@@ -28,7 +32,7 @@ export function AdminAllocationCreatePage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUsers = async () => {
       try {
         const { data } = await http.get("/admin/users", { params: { role: "mitra", per_page: 100 } });
         setUsers(data.data?.data || []);
@@ -37,8 +41,39 @@ export function AdminAllocationCreatePage() {
         toast.error("Gagal memuat data mitra.", { title: "Gagal" });
       }
     };
-    void fetchData();
+
+    void fetchUsers();
   }, []);
+
+  const fetchPublicDonations = async (showDepleted = includeDepleted) => {
+    try {
+      const { data } = await http.get("/admin/allocations/allocatable-public-donations", {
+        params: { include_depleted: showDepleted ? 1 : 0 }
+      });
+      setPublicDonations(data.data || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal memuat data donasi publik.", { title: "Gagal" });
+    }
+  };
+
+  useEffect(() => {
+    if (formData.source_type === "public_donor") {
+      void fetchPublicDonations(includeDepleted);
+    }
+  }, [formData.source_type, includeDepleted]);
+
+  const handleSourceTypeChange = (type: "mitra" | "public_donor") => {
+    setFormData((prev) => ({
+      ...prev,
+      source_type: type,
+      user_id: "",
+      donation_id: "",
+      program_id: "",
+      amount: "",
+    }));
+    setAllocatablePrograms([]);
+  };
 
   const handleUserChange = async (userId: string) => {
     setFormData((prev) => ({ ...prev, user_id: userId, program_id: "", amount: "" }));
@@ -55,7 +90,7 @@ export function AdminAllocationCreatePage() {
       toast.dismiss(loadingToastId);
 
       if (data.data.length === 0) {
-        toast.error("Mitra ini belum memiliki saldo donasi yang bisa dialokasikan.", {
+        toast.error("Mitra ini belum memiliki saldo donasi yang bisa disalurkan.", {
             title: "Gagal",
             durationMs: 5000 });
       } else {
@@ -68,13 +103,32 @@ export function AdminAllocationCreatePage() {
     }
   };
 
-  const getSelectedProgramBalance = () => {
-    if (!formData.program_id && formData.program_id !== "") return 0;
-    const prog = allocatablePrograms.find((p) => String(p.program_id ?? "") === String(formData.program_id));
-    return prog ? prog.remaining_balance : 0;
+  const handleDonationChange = (donationId: string) => {
+    const selected = publicDonations.find((d) => String(d.id) === String(donationId));
+    if (selected) {
+      setFormData((prev) => ({
+        ...prev,
+        donation_id: donationId,
+        program_id: selected.program_id ? String(selected.program_id) : "",
+        amount: String(selected.remaining_balance),
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, donation_id: "", program_id: "", amount: "" }));
+    }
   };
 
-  const maxAmount = getSelectedProgramBalance();
+  const getSelectedBalance = () => {
+    if (formData.source_type === "mitra") {
+      if (!formData.program_id && formData.program_id !== "") return 0;
+      const prog = allocatablePrograms.find((p) => String(p.program_id ?? "") === String(formData.program_id));
+      return prog ? prog.remaining_balance : 0;
+    } else {
+      const donation = publicDonations.find((d) => String(d.id) === String(formData.donation_id));
+      return donation ? donation.remaining_balance : 0;
+    }
+  };
+
+  const maxAmount = getSelectedBalance();
 
   const handleAmountChange = (val: string) => {
     const rawVal = val.replace(/\D/g, "");
@@ -102,6 +156,21 @@ export function AdminAllocationCreatePage() {
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
+    if (formData.source_type === "mitra" && !formData.user_id) {
+      toast.error("Pilih mitra terdaftar terlebih dahulu.", { title: "Gagal" });
+      return;
+    }
+
+    if (formData.source_type === "public_donor" && !formData.donation_id) {
+      toast.error("Pilih transaksi donasi publik terlebih dahulu.", { title: "Gagal" });
+      return;
+    }
+
+    if (Number(formData.amount) <= 0) {
+      toast.error("Nominal penyaluran harus lebih dari 0.", { title: "Gagal" });
+      return;
+    }
+
     if (Number(formData.amount) > maxAmount) {
       toast.error(`Nominal melebihi saldo tersedia (Maks: ${formatRupiah(maxAmount)})`, { title: "Gagal" });
       return;
@@ -115,7 +184,12 @@ export function AdminAllocationCreatePage() {
     setSubmitting(true);
 
     const data = new FormData();
-    data.append("user_id", formData.user_id);
+    if (formData.source_type === "mitra") {
+      data.append("user_id", formData.user_id);
+    } else {
+      data.append("donation_id", formData.donation_id);
+    }
+
     if (formData.program_id) {
       data.append("program_id", formData.program_id);
     }
@@ -129,10 +203,10 @@ export function AdminAllocationCreatePage() {
       await http.post("/admin/allocations", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      toast.success("Dana berhasil dialokasikan.", { title: "Berhasil" });
+      toast.success("Penyaluran dana berhasil disimpan.", { title: "Berhasil" });
       navigate("/admin/allocations");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Gagal mengalokasikan dana.", { title: "Gagal" });
+      toast.error(err.response?.data?.message || "Gagal menyalurkan dana.", { title: "Gagal" });
     } finally {
       setSubmitting(false);
     }
@@ -149,11 +223,16 @@ export function AdminAllocationCreatePage() {
       <AdminAllocationCreateForm
         users={users}
         allocatablePrograms={allocatablePrograms}
+        publicDonations={publicDonations}
+        includeDepleted={includeDepleted}
+        setIncludeDepleted={setIncludeDepleted}
         formData={formData}
         submitting={submitting}
         previewUrl={previewUrl}
         maxAmount={maxAmount}
+        handleSourceTypeChange={handleSourceTypeChange}
         handleUserChange={handleUserChange}
+        handleDonationChange={handleDonationChange}
         handleAmountChange={handleAmountChange}
         handleFileChange={handleFileChange}
         handleProgramChange={handleProgramChange}

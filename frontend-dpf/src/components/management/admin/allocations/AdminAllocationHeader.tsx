@@ -30,15 +30,15 @@ export default function AdminAllocationHeader({ total }: AdminAllocationHeaderPr
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 items-start md:items-end lg:flex-col">
-            <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-emerald-50 backdrop-blur-sm">
+          <div className="flex flex-col gap-5 items-start md:items-end">
+            <span className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-emerald-50 backdrop-blur-sm shadow-sm ring-1 ring-white/15">
               Total Penyaluran
-              <span className="font-bold text-white">{new Intl.NumberFormat("id-ID").format(total)}</span>
+              <span className="font-bold text-white ml-1">{new Intl.NumberFormat("id-ID").format(total)}</span>
             </span>
 
             <Link
               to="/admin/allocations/create"
-              className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-emerald-600 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+              className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-emerald-600 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-2xl"
             >
               <FontAwesomeIcon icon={faPlus} className="bg-emerald-100/50 p-1.5 rounded-full text-xs" />
               Buat Penyaluran Baru

@@ -8,6 +8,7 @@ class Allocation extends Model
 {
     protected $fillable = [
         'user_id',
+        'donation_id',
         'program_id',
         'amount',
         'description',
@@ -21,6 +22,11 @@ class Allocation extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function donation()
+    {
+        return $this->belongsTo(Donation::class);
     }
 
     public function program()

@@ -1,15 +1,20 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSave, faBuildingColumns, faTimes } from "@fortawesome/free-solid-svg-icons";
-import type { UserOption, AllocatableProgram, AllocationFormData } from "@/types/allocation";
+import { faSave, faBuildingColumns, faTimes, faUserGroup, faHandHoldingHeart, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import type { UserOption, AllocatableProgram, AllocatablePublicDonation, AllocationFormData } from "@/types/allocation";
 
 type AdminAllocationCreateFormProps = {
   users: UserOption[];
   allocatablePrograms: AllocatableProgram[];
+  publicDonations: AllocatablePublicDonation[];
+  includeDepleted: boolean;
+  setIncludeDepleted: React.Dispatch<React.SetStateAction<boolean>>;
   formData: AllocationFormData;
   submitting: boolean;
   previewUrl: string | null;
   maxAmount: number;
+  handleSourceTypeChange: (type: "mitra" | "public_donor") => void;
   handleUserChange: (userId: string) => void;
+  handleDonationChange: (donationId: string) => void;
   handleAmountChange: (val: string) => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleProgramChange: (selectedProgId: string) => void;
@@ -22,11 +27,16 @@ type AdminAllocationCreateFormProps = {
 export default function AdminAllocationCreateForm({
   users,
   allocatablePrograms,
+  publicDonations,
+  includeDepleted,
+  setIncludeDepleted,
   formData,
   submitting,
   previewUrl,
   maxAmount,
+  handleSourceTypeChange,
   handleUserChange,
+  handleDonationChange,
   handleAmountChange,
   handleFileChange,
   handleProgramChange,
@@ -35,54 +45,164 @@ export default function AdminAllocationCreateForm({
   handleSubmit,
   formatRupiah,
 }: AdminAllocationCreateFormProps) {
+  const isMitra = formData.source_type === "mitra";
+
   return (
     <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-12">
       <div className="space-y-6 lg:col-span-8">
         <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="space-y-6">
-            <div className="space-y-1">
+            {/* Tipe Sumber Penyaluran */}
+            <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Pilih Mitra <span className="text-red-500">*</span>
+                Tipe Sumber Donasi / Penyaluran <span className="text-red-500">*</span>
               </label>
-              <select
-                required
-                className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition"
-                value={formData.user_id}
-                onChange={(e) => handleUserChange(e.target.value)}
-              >
-                <option value="">-- Pilih Mitra --</option>
-                {users?.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name} ({u.email})
-                  </option>
-                ))}
-              </select>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleSourceTypeChange("mitra")}
+                  className={`flex items-center justify-center gap-2 rounded-2xl border p-4 text-xs font-bold transition shadow-sm ${
+                    isMitra
+                      ? "border-emerald-600 bg-emerald-50/70 text-emerald-800 ring-2 ring-emerald-500/20"
+                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faUserGroup} className={isMitra ? "text-emerald-600" : "text-slate-400"} />
+                  <span>Mitra Terdaftar</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSourceTypeChange("public_donor")}
+                  className={`flex items-center justify-center gap-2 rounded-2xl border p-4 text-xs font-bold transition shadow-sm ${
+                    !isMitra
+                      ? "border-emerald-600 bg-emerald-50/70 text-emerald-800 ring-2 ring-emerald-500/20"
+                      : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faHandHoldingHeart} className={!isMitra ? "text-emerald-600" : "text-slate-400"} />
+                  <span>Donatur Publik (Non-Akun)</span>
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Program (Sumber Dana)
-              </label>
-              <select
-                className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
-                value={formData.program_id}
-                onChange={(e) => handleProgramChange(e.target.value)}
-                disabled={!formData.user_id || allocatablePrograms.length === 0}
-              >
-                <option value="">-- Pilih Sumber Dana --</option>
-                {allocatablePrograms.map((p) => (
-                  <option key={p.program_id ?? "general"} value={p.program_id ?? ""}>
-                    {p.program_title} (Sisa: {formatRupiah(p.remaining_balance)})
-                  </option>
-                ))}
-              </select>
-              {formData.user_id && allocatablePrograms.length === 0 && (
-                <p className="text-xs text-red-500 mt-1 italic">
-                  *Mitra ini belum memiliki donasi terkonfirmasi (paid) yang bisa disalurkan.
-                </p>
-              )}
-            </div>
+            {/* Opsi Mitra Terdaftar */}
+            {isMitra ? (
+              <>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Pilih Mitra <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition"
+                    value={formData.user_id}
+                    onChange={(e) => handleUserChange(e.target.value)}
+                  >
+                    <option value="">-- Pilih Mitra Terdaftar --</option>
+                    {users?.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name} ({u.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
+                <div className="space-y-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Program (Sumber Dana)
+                  </label>
+                  <select
+                    className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    value={formData.program_id}
+                    onChange={(e) => handleProgramChange(e.target.value)}
+                    disabled={!formData.user_id || allocatablePrograms.length === 0}
+                  >
+                    <option value="">-- Pilih Sumber Dana --</option>
+                    {allocatablePrograms.map((p) => (
+                      <option key={p.program_id ?? "general"} value={p.program_id ?? ""}>
+                        {p.program_title} (Sisa: {formatRupiah(p.remaining_balance)})
+                      </option>
+                    ))}
+                  </select>
+                  {formData.user_id && allocatablePrograms.length === 0 && (
+                    <p className="text-xs text-red-500 mt-1 italic font-medium">
+                      *Mitra ini belum memiliki donasi terkonfirmasi (paid) yang bisa disalurkan.
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              /* Opsi Donatur Publik */
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Pilih Transaksi Donasi Publik (Lunas) <span className="text-red-500">*</span>
+                    </label>
+
+                    <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={includeDepleted}
+                        onChange={(e) => setIncludeDepleted(e.target.checked)}
+                        className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span>Tampilkan yang saldo Rp 0</span>
+                    </label>
+                  </div>
+
+                  <select
+                    required
+                    className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition"
+                    value={formData.donation_id}
+                    onChange={(e) => handleDonationChange(e.target.value)}
+                  >
+                    <option value="">-- Pilih Donasi Publik (Lunas) --</option>
+                    {publicDonations.map((d) => {
+                      const labelText = `[${d.donation_code}] ${d.donor_name} - ${d.program_title} (Sisa: ${formatRupiah(d.remaining_balance)} / Total: ${formatRupiah(d.amount)})`;
+                      return (
+                        <option
+                          key={d.id}
+                          value={d.id}
+                          disabled={d.is_depleted}
+                          className={d.is_depleted ? "text-slate-400 bg-slate-100" : "text-slate-900"}
+                        >
+                          {d.is_depleted ? `[SELESAI 100% - SALDO RP 0] ${labelText}` : labelText}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+
+                {formData.donation_id && (
+                  (() => {
+                    const sel = publicDonations.find((d) => String(d.id) === String(formData.donation_id));
+                    if (!sel) return null;
+                    return (
+                      <div className={`rounded-2xl border p-4 text-xs space-y-1.5 transition ${
+                        sel.is_depleted ? "border-amber-200 bg-amber-50/70 text-amber-900" : "border-emerald-200 bg-emerald-50/60 text-emerald-900"
+                      }`}>
+                        <div className="flex items-center justify-between font-bold">
+                          <span>Kode: {sel.donation_code}</span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                            sel.is_depleted ? "bg-amber-200 text-amber-900" : "bg-emerald-200 text-emerald-900"
+                          }`}>
+                            {sel.is_depleted ? "Lunas 100% Selesai Disalurkan" : "Tersedia Disalurkan"}
+                          </span>
+                        </div>
+                        <p className="font-semibold">Donatur: <span className="font-bold">{sel.donor_name}</span> {sel.donor_phone ? `(${sel.donor_phone})` : ""}</p>
+                        <p className="font-semibold">Program: <span className="font-bold">{sel.program_title}</span></p>
+                        <p className="font-semibold">Total Donasi Masuk: <span className="font-bold">{formatRupiah(sel.amount)}</span> | Sudah Disalurkan: <span className="font-bold">{formatRupiah(sel.total_allocated)}</span></p>
+                        <p className="font-bold text-sm pt-1">Sisa Dana Tersedia: <span className={sel.remaining_balance > 0 ? "text-emerald-700 font-black" : "text-red-600"}>{formatRupiah(sel.remaining_balance)}</span></p>
+                      </div>
+                    );
+                  })()
+                )}
+              </div>
+            )}
+
+            {/* Input Nominal */}
             <div className="space-y-1">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Nominal Penyaluran <span className="text-red-500">*</span>
@@ -93,7 +213,7 @@ export default function AdminAllocationCreateForm({
                   type="text"
                   required
                   placeholder="0"
-                  disabled={!formData.program_id && formData.program_id !== ""}
+                  disabled={(isMitra && !formData.program_id && formData.program_id !== "") || (!isMitra && !formData.donation_id)}
                   className={`block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition ${
                     Number(formData.amount) > maxAmount ? "border-red-500 ring-4 ring-red-500/10" : ""
                   }`}
@@ -103,13 +223,13 @@ export default function AdminAllocationCreateForm({
               </div>
               {Number(formData.amount) > maxAmount && maxAmount > 0 ? (
                 <p className="mt-1 text-xs font-bold text-red-500 animate-pulse">
-                  ⚠️ Nominal melebihi saldo tersedia (Maks: {formatRupiah(maxAmount)})
+                  ⚠️ Nominal melebihi sisa dana tersedia (Maksimal: {formatRupiah(maxAmount)})
                 </p>
               ) : (
                 maxAmount > 0 && (
-                  <div className="mt-1 flex justify-between text-xs">
+                  <div className="mt-1 flex justify-between text-xs font-medium">
                     <span className="text-slate-500">
-                      {formData.amount ? "Sisa saldo setelah penyaluran:" : "Maksimal tersedia:"}
+                      {formData.amount ? "Sisa dana setelah penyaluran:" : "Maksimal tersedia:"}
                     </span>
                     <span className={`font-bold ${formData.amount ? "text-blue-600" : "text-emerald-600"}`}>
                       {formatRupiah(maxAmount - Number(formData.amount))}
@@ -121,12 +241,12 @@ export default function AdminAllocationCreateForm({
 
             <div className="space-y-1">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Keterangan / Tujuan <span className="text-red-500">*</span>
+                Keterangan / Tujuan Penyaluran <span className="text-red-500">*</span>
               </label>
               <textarea
                 required
                 rows={4}
-                placeholder="Contoh: Operasional Program A"
+                placeholder="Contoh: Bantuan operasional paket pangan & beasiswa santri..."
                 className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -143,10 +263,9 @@ export default function AdminAllocationCreateForm({
               <FontAwesomeIcon icon={faBuildingColumns} />
             </span>
             <div>
-              <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Informasi</p>
+              <p className="text-[11px] font-bold tracking-wide text-slate-400 uppercase">Informasi Penyaluran</p>
               <p className="mt-2 text-sm text-slate-700 font-medium">
-                Pastikan nominal dan mitra sudah sesuai sebelum menyimpan. Dana yang disalurkan akan langsung mengurangi
-                saldo Dompet Mitra.
+                Pastikan nominal dan donatur/mitra sudah sesuai sebelum menyimpan. Dana yang disalurkan akan langsung mengurangi sisa dana donatur.
               </p>
             </div>
           </div>

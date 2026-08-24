@@ -56,6 +56,22 @@ class Donation extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function allocations()
+    {
+        return $this->hasMany(Allocation::class);
+    }
+
+    public function getAllocatedAmountAttribute(): float
+    {
+        return (float) $this->allocations()->sum('amount');
+    }
+
+    public function getRemainingBalanceAttribute(): float
+    {
+        $allocated = $this->allocated_amount;
+        return max(0, (float) $this->amount - $allocated);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | SCOPES SEDERHANA

@@ -16,22 +16,33 @@ class AllocationController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Allocation::with(['user', 'program']);
+        $query = Allocation::with(['user', 'donation.program', 'program']);
 
-        if ($request->has('q')) {
+        if ($request->has('q') && !empty($request->q)) {
             $q = $request->q;
             $query->where(function($sub) use ($q) {
                 $sub->whereHas('user', function($u) use ($q) {
                         $u->where('name', 'like', "%{$q}%");
                     })
+                    ->orWhereHas('donation', function($d) use ($q) {
+                        $d->where('donor_name', 'like', "%{$q}%")
+                          ->orWhere('donor_email', 'like', "%{$q}%")
+                          ->orWhere('donor_phone', 'like', "%{$q}%")
+                          ->orWhere('donation_code', 'like', "%{$q}%");
+                    })
                     ->orWhereHas('program', function($p) use ($q) {
                         $p->where('title', 'like', "%{$q}%");
-                    });
+                    })
+                    ->orWhere('description', 'like', "%{$q}%");
             });
         }
 
         if ($request->has('user_id')) {
             $query->where('user_id', $request->user_id);
+        }
+
+        if ($request->has('donation_id')) {
+            $query->where('donation_id', $request->donation_id);
         }
 
         if ($request->has('program_id')) {
@@ -51,14 +62,40 @@ class AllocationController extends Controller
     {
         $data = $request->validated();
 
+        if (empty($data['user_id']) && empty($data['donation_id'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Harus memilih Mitra Terdaftar atau Donatur Publik.'
+            ], 422);
+        }
+
         // Upload proof if exists
         if ($request->hasFile('proof')) {
             $data['proof_path'] = $request->file('proof')->store('allocations/proofs', 'public');
         }
 
+        // If donation_id is provided, auto-set program_id from donation if missing
+        if (!empty($data['donation_id'])) {
+            $donation = \App\Models\Donation::findOrFail($data['donation_id']);
+            if (empty($data['program_id'])) {
+                $data['program_id'] = $donation->program_id;
+            }
+
+            // Check remaining balance
+            $totalAllocated = Allocation::where('donation_id', $donation->id)->sum('amount');
+            $remaining = max(0, (float) $donation->amount - $totalAllocated);
+            if ((float) $data['amount'] > $remaining + 0.01) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Nominal penyaluran melebihi sisa dana donasi ini (Maksimal: Rp ' . number_format($remaining, 0, ',', '.') . ').'
+                ], 422);
+            }
+        }
+
         $allocation = Allocation::create([
-            'user_id'     => $data['user_id'],
-            'program_id'  => $data['program_id'],
+            'user_id'     => $data['user_id'] ?? null,
+            'donation_id' => $data['donation_id'] ?? null,
+            'program_id'  => $data['program_id'] ?? null,
             'amount'      => $data['amount'],
             'description' => $data['description'],
             'proof_path'  => $data['proof_path'] ?? null,
@@ -66,8 +103,8 @@ class AllocationController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Dana berhasil dialokasikan.',
-            'data' => $allocation->load(['user', 'program'])
+            'message' => 'Penyaluran dana berhasil disimpan.',
+            'data' => $allocation->load(['user', 'donation.program', 'program'])
         ], 201);
     }
 
@@ -84,7 +121,7 @@ class AllocationController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Alokasi berhasil dihapus.'
+            'message' => 'Penyaluran berhasil dihapus.'
         ]);
     }
 
@@ -134,6 +171,47 @@ class AllocationController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $allocatable
+        ]);
+    }
+
+    /**
+     * Get public (paid) donations that can be allocated
+     */
+    public function getAllocatablePublicDonations(Request $request)
+    {
+        $includeDepleted = $request->boolean('include_depleted', false);
+
+        $donations = \App\Models\Donation::with(['program', 'allocations'])
+            ->where('status', 'paid')
+            ->latest('paid_at')
+            ->get();
+
+        $result = [];
+        foreach ($donations as $donation) {
+            $totalAllocated = $donation->allocations->sum('amount');
+            $remaining = max(0, (float) $donation->amount - $totalAllocated);
+
+            if ($remaining > 0 || $includeDepleted) {
+                $result[] = [
+                    'id' => $donation->id,
+                    'donation_code' => $donation->donation_code,
+                    'donor_name' => $donation->donor_name ?: 'Hamba Allah (Anonim)',
+                    'donor_email' => $donation->donor_email,
+                    'donor_phone' => $donation->donor_phone,
+                    'program_id' => $donation->program_id,
+                    'program_title' => $donation->program ? $donation->program->title : 'Dana Umum / Wakaf Terbuka',
+                    'amount' => (float) $donation->amount,
+                    'total_allocated' => $totalAllocated,
+                    'remaining_balance' => $remaining,
+                    'is_depleted' => $remaining <= 0,
+                    'paid_at' => $donation->paid_at?->toIso8601String(),
+                ];
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $result
         ]);
     }
 }

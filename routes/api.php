@@ -222,9 +222,10 @@ Route::prefix('v1')->group(function () {
                 Route::put('settings', [AdminSettingController::class, 'update']);
                 Route::apiResource('banners', AdminBannerController::class)->except(['index', 'show']);
 
-                // Allocations (Mitra Wallet)
+                // Allocations (Mitra Wallet & Public Donations)
                 Route::get('users/{user}/allocatable-programs', [AdminAllocationController::class, 'getAllocatablePrograms']);
-                Route::apiResource('allocations', AdminAllocationController::class)->only(['store']);
+                Route::get('allocations/allocatable-public-donations', [AdminAllocationController::class, 'getAllocatablePublicDonations']);
+                Route::apiResource('allocations', AdminAllocationController::class)->only(['store', 'destroy']);
 
                 // Users (for dropdowns etc)
                 Route::get('users', [AdminUserController::class, 'index']);
