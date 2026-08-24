@@ -15,6 +15,7 @@ class RolePermissionSeeder extends Seeder
             'superadmin',
             'admin',
             'editor',
+            'keuangan',
             'mitra',
         ];
 
@@ -65,6 +66,16 @@ class RolePermissionSeeder extends Seeder
             $editorRole->givePermissionTo('manage gallery dpf');
             $editorRole->givePermissionTo('manage gallery mitra');
             $editorRole->givePermissionTo('manage produk mitra');
+        }
+
+        $keuanganRole = Role::where('name', 'keuangan')->first();
+        if ($keuanganRole) {
+            $keuanganRole->syncPermissions([
+                'manage donations',
+                'manage allocations',
+                'view reports',
+                'manage bank_accounts',
+            ]);
         }
     }
 }

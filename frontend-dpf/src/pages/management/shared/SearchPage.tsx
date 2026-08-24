@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import http from "../../../lib/http";
 import { readSearchLimit, SETTINGS_EVENT } from "../../../lib/settings";
@@ -46,6 +46,11 @@ const headerCopy: Record<SearchRole, { title: string; description: string; tagTo
   superadmin: {
     title: "Cari data SuperAdmin",
     description: "Temukan pengguna dan peran. Gunakan kolom pencarian di bilah atas untuk mengganti kata kunci.",
+    tagTone: "green",
+  },
+  keuangan: {
+    title: "Pencarian Keuangan",
+    description: "Temukan transaksi donasi dan konfirmasi donasi. Gunakan kolom pencarian di bilah atas untuk mengganti kata kunci.",
     tagTone: "green",
   },
 };
@@ -391,7 +396,7 @@ export function SearchPage({ role }: { role: SearchRole }) {
         </div>
       ) : (
         <div className={role === "superadmin" ? "grid gap-6" : "grid gap-6 lg:grid-cols-2"}>
-          {role === "admin" && (
+          {(role === "admin" || role === "keuangan") && (
             <AdminSearchResults 
               donationsState={donationsState}
               donationConfirmationsState={donationConfirmationsState}

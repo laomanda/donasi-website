@@ -1,7 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
     faCreditCard,
-    faHandHoldingHeart,
     faExclamationTriangle,
     faLock,
     faArrowRight

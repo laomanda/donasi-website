@@ -73,6 +73,10 @@ export function SuperAdminShell() {
   return <RequireDashboardRole role="superadmin" />;
 }
 
+export function KeuanganShell() {
+  return <RequireDashboardRole role="keuangan" />;
+}
+
 export function MitraShell() {
   return <RequireDashboardRole role="mitra" />;
 }

@@ -1,8 +1,13 @@
 export type AdminDashboardStats = {
   programs?: number;
+  active_programs?: number;
   articles_total?: number;
   donations_paid?: number;
   monthly_donations?: number;
+  allocations_total?: number;
+  available_balance?: number;
+  donations_pending_count?: number;
+  donations_pending_amount?: number;
   pickup_pending?: number;
   pickup_success?: number;
   consultation_new?: number;
@@ -25,6 +30,16 @@ export type AdminDonationItem = {
   program?: { title?: string | null } | null;
 };
 
+export type AdminAllocationItem = {
+  id?: number;
+  amount?: number | string | null;
+  description?: string | null;
+  created_at?: string | null;
+  program?: { id?: number; title?: string | null } | null;
+  user?: { id?: number; name?: string | null } | null;
+  donation?: { id?: number; donor_name?: string | null } | null;
+};
+
 export type PickupRequestItem = {
   id: number;
   donor_name?: string;
@@ -44,8 +59,10 @@ export type ConsultationItem = {
 export type AdminDashboardPayload = {
   stats?: AdminDashboardStats;
   recent_donations?: AdminDonationItem[];
+  recent_allocations?: AdminAllocationItem[];
   upcoming_pickups?: PickupRequestItem[];
   urgent_consultations?: ConsultationItem[];
+  highlight_programs?: unknown[];
 };
 
 export type SuperAdminStats = {

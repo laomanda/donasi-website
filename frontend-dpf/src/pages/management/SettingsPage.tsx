@@ -35,6 +35,7 @@ export function SettingsPage({ role }: { role: DashboardRole }) {
     if (role === "superadmin") return t("role.superadmin");
     if (role === "admin") return t("role.admin");
     if (role === "editor") return t("role.editor");
+    if (role === "keuangan") return "Keuangan";
     return t("role.mitra");
   }, [t]);
 

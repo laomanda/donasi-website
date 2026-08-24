@@ -32,12 +32,14 @@ const MitraRegisterPage = lazy(() => import('../pages/auth/MitraRegisterPage').t
 // Dashboard Shells
 const EditorShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.EditorShell })))
 const AdminShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.AdminShell })))
+const KeuanganShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.KeuanganShell })))
 const SuperAdminShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.SuperAdminShell })))
 const MitraShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.MitraShell })))
 const ManagementShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.ManagementShell })))
 
 // Shared & Management Pages
 const CustomDashboardPage = lazy(() => import('../pages/management/custom/CustomDashboardPage').then(m => ({ default: m.CustomDashboardPage })))
+const KeuanganDashboardPage = lazy(() => import('../pages/management/keuangan/KeuanganDashboardPage').then(m => ({ default: m.KeuanganDashboardPage })))
 const PreviewPage = lazy(() => import('../pages/management/editor/PreviewPage').then(m => ({ default: m.PreviewPage })))
 const SettingsPage = lazy(() => import('../pages/management/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const SearchPage = lazy(() => import('../pages/management/shared/SearchPage').then(m => ({ default: m.SearchPage })))
@@ -215,6 +217,26 @@ export const router = createBrowserRouter([
           { path: 'allocations/create', element: withSuspense(AdminAllocationCreatePage) },
           { path: 'search', element: <Suspense fallback={<PageLoader />}><SearchPage role="admin" /></Suspense> },
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="admin" /></Suspense> },
+        ],
+      },
+      {
+        path: 'keuangan',
+        element: withSuspense(KeuanganShell),
+        children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          { path: 'dashboard', element: withSuspense(KeuanganDashboardPage) },
+          { path: 'donations', element: withSuspense(AdminDonationsPage) },
+          { path: 'donations/manual', element: withSuspense(AdminDonationManualCreatePage) },
+          { path: 'donations/:id', element: withSuspense(AdminDonationShowPage) },
+          { path: 'donation-confirmations', element: withSuspense(AdminDonationConfirmationsPage) },
+          { path: 'allocations', element: withSuspense(AdminAllocationsPage) },
+          { path: 'allocations/create', element: withSuspense(AdminAllocationCreatePage) },
+          { path: 'bank-accounts', element: withSuspense(EditorBanksPage) },
+          { path: 'bank-accounts/create', element: withSuspense(EditorBankCreatePage) },
+          { path: 'bank-accounts/:id/edit', element: withSuspense(EditorBankEditPage) },
+          { path: 'reports/donations', element: withSuspense(DonationReportPage) },
+          { path: 'search', element: <Suspense fallback={<PageLoader />}><SearchPage role="keuangan" /></Suspense> },
+          { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="keuangan" /></Suspense> },
         ],
       },
       {

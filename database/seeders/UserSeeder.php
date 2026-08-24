@@ -24,6 +24,10 @@ class UserSeeder extends Seeder
             'name' => 'editor',
             'guard_name' => 'sanctum',
         ]);
+        $keuanganRole   = Role::firstOrCreate([
+            'name' => 'keuangan',
+            'guard_name' => 'sanctum',
+        ]);
 
         /*
          * 1) SUPERADMIN
@@ -77,6 +81,24 @@ class UserSeeder extends Seeder
 
         if (! $editor->hasRole('editor')) {
             $editor->assignRole($editorRole);
+        }
+
+        /*
+         * 4) KEUANGAN
+         */
+        $keuangan = User::firstOrCreate(
+            ['email' => 'keuangan@dpf.test'],
+            [
+                'name'       => 'Staf Keuangan DPF',
+                'password'   => Hash::make('password123'), // GANTI di production
+                'phone'      => '081255566677',
+                'is_active'  => true,
+                'role_label' => 'Keuangan',
+            ]
+        );
+
+        if (! $keuangan->hasRole('keuangan')) {
+            $keuangan->assignRole($keuanganRole);
         }
     }
 }

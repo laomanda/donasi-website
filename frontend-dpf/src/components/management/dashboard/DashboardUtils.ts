@@ -26,7 +26,7 @@ import {
 
 import type { ToneKey } from "../StatCard";
 
-export type DashboardRole = "superadmin" | "admin" | "editor" | "mitra" | "custom";
+export type DashboardRole = "superadmin" | "admin" | "editor" | "keuangan" | "mitra" | "custom";
 
 export type RoleTheme = {
   appName: string;
@@ -67,6 +67,7 @@ export const ROLE_LABEL: Record<DashboardRole, string> = {
   superadmin: "SuperAdmin",
   admin: "Admin",
   editor: "Editor",
+  keuangan: "Keuangan",
   mitra: "Mitra",
   custom: "Staff",
 };
@@ -99,6 +100,15 @@ export const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
     pillBg: "bg-slate-900",
     pillText: "text-slate-100",
   },
+  keuangan: {
+    appName: "Keuangan DPF",
+    accentRing: "focus-visible:ring-emerald-400",
+    navActiveBg: "bg-slate-900",
+    navActiveText: "text-white",
+    navActiveIcon: "text-emerald-400",
+    pillBg: "bg-slate-900",
+    pillText: "text-slate-100",
+  },
   mitra: {
     appName: "Dashboard Mitra",
     accentRing: "focus-visible:ring-brandGreen-400",
@@ -125,6 +135,12 @@ export const PERMISSION_TEMPLATES: Record<string, string[]> = {
     "manage pickup_requests",
     "manage consultations",
     "manage suggestions",
+    "manage allocations",
+    "view reports",
+    "manage bank_accounts",
+  ],
+  keuangan: [
+    "manage donations",
     "manage allocations",
     "view reports",
     "manage bank_accounts",
@@ -387,6 +403,43 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       ],
     },
   ],
+  keuangan: [
+    {
+      title: "Ringkasan",
+      items: [{ label: "Dashboard", href: "/keuangan/dashboard", icon: faGaugeHigh }],
+    },
+    {
+      title: "Kas Masuk",
+      items: [
+        { label: "Donasi", href: "/keuangan/donations", icon: faReceipt, permission: "manage donations" },
+        { label: "Konfirmasi Donasi", href: "/keuangan/donation-confirmations", icon: faCheckCircle, permission: "manage donations" },
+      ],
+    },
+    {
+      title: "Kas Keluar",
+      items: [
+        { label: "Penyaluran", href: "/keuangan/allocations", icon: faHandshake, permission: "manage allocations" },
+      ],
+    },
+    {
+      title: "Rekening",
+      items: [
+        { label: "Rekening Bank", href: "/keuangan/bank-accounts", icon: faBuildingColumns, permission: "manage bank_accounts" },
+      ],
+    },
+    {
+      title: "Laporan",
+      items: [
+        { label: "Laporan Donasi", href: "/keuangan/reports/donations", icon: faChartLine, permission: "view reports" },
+      ],
+    },
+    {
+      title: "Sistem",
+      items: [
+        { label: "Pengaturan", href: "/keuangan/settings", icon: faGear },
+      ],
+    },
+  ],
   custom: [
     {
       title: "Ringkasan",
@@ -488,6 +541,7 @@ export const resolveUserRoles = (user: StoredUser | null): DashboardRole[] => {
   if (normalized.has("superadmin")) roles.push("superadmin");
   if (normalized.has("admin")) roles.push("admin");
   if (normalized.has("editor")) roles.push("editor");
+  if (normalized.has("keuangan")) roles.push("keuangan");
   if (normalized.has("mitra")) roles.push("mitra");
 
   if (roles.length === 0 && candidates.length > 0) {

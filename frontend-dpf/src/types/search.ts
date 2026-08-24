@@ -1,4 +1,4 @@
-export type SearchRole = "editor" | "admin" | "superadmin";
+export type SearchRole = "editor" | "admin" | "superadmin" | "keuangan";
 
 export type PaginationPayload<T> = {
   data: T[];
