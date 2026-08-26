@@ -52,15 +52,15 @@ export const resolveDashboardRole = (user: unknown): DashboardRole | null => {
 
   const candidates: string[] = [];
   const roles = (user as any).roles;
-  if (Array.isArray(roles)) {
+  if (Array.isArray(roles) && roles.length > 0) {
     roles.forEach((r: any) => {
       if (r && typeof r === "object" && typeof r.name === "string") {
         candidates.push(r.name);
+      } else if (typeof r === "string") {
+        candidates.push(r);
       }
     });
-  }
-
-  if (typeof (user as any).role_label === "string") {
+  } else if (typeof (user as any).role_label === "string" && (user as any).role_label.trim() !== "") {
     candidates.push((user as any).role_label);
   }
 
@@ -74,7 +74,7 @@ export const resolveDashboardRole = (user: unknown): DashboardRole | null => {
   if (normalized.has("keuangan")) return "keuangan";
   if (normalized.has("mitra")) return "mitra";
   
-  // Jika punya role tapi tidak termasuk 4 role utama, berarti custom
+  // Jika punya role tapi tidak termasuk role utama, berarti custom
   if (candidates.length > 0) {
     return "custom";
   }

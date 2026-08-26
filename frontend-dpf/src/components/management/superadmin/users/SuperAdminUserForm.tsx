@@ -153,15 +153,21 @@ export function SuperAdminUserForm({ mode, userId }: { mode: Mode; userId?: numb
     setForm((prev) => {
       const nextPermissions = roleObj?.permissions?.map((p) => p.name) || [];
 
+      // Check if previous role_label was an auto-generated label from any role or empty
+      const prevRoleNames = roles.map((r) => r.name.toLowerCase());
+      const prevRoleLabels = roles.map((r) => r.name.charAt(0).toUpperCase() + r.name.slice(1));
+      const wasAutoOrEmpty =
+        prev.role_label.trim() === "" ||
+        prevRoleNames.includes(prev.role_label.trim().toLowerCase()) ||
+        prevRoleLabels.includes(prev.role_label.trim());
+
+      const newDefaultLabel = name.charAt(0).toUpperCase() + name.slice(1);
+
       return {
         ...prev,
         roles: [name],
         permissions: nextPermissions,
-        // Auto-fill role_label if empty
-        role_label:
-          prev.role_label.trim() === ""
-            ? name.charAt(0).toUpperCase() + name.slice(1)
-            : prev.role_label,
+        role_label: wasAutoOrEmpty ? newDefaultLabel : prev.role_label,
       };
     });
   };

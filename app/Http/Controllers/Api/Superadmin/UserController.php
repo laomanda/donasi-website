@@ -40,6 +40,8 @@ class UserController extends Controller
     public function store(UserRequest $request)
     {
         $data = $request->validated();
+        $primaryRole = ! empty($data['roles']) ? $data['roles'][0] : null;
+        $roleLabel = ! empty($data['role_label']) ? $data['role_label'] : ($primaryRole ? ucfirst($primaryRole) : null);
 
         $user = User::create([
             'name'      => $data['name'],
@@ -47,7 +49,7 @@ class UserController extends Controller
             'phone'     => $data['phone'] ?? null,
             'password'  => Hash::make($data['password']),
             'is_active' => $data['is_active'],
-            'role_label'=> $data['role_label'] ?? null,
+            'role_label'=> $roleLabel,
         ]);
 
         if (! empty($data['roles'])) {
@@ -69,13 +71,15 @@ class UserController extends Controller
     public function update(UserRequest $request, User $user)
     {
         $data = $request->validated();
+        $primaryRole = ! empty($data['roles']) ? $data['roles'][0] : null;
+        $roleLabel = ! empty($data['role_label']) ? $data['role_label'] : ($primaryRole ? ucfirst($primaryRole) : null);
 
         $payload = [
             'name'      => $data['name'],
             'email'     => $data['email'],
             'phone'     => $data['phone'] ?? null,
             'is_active' => $data['is_active'],
-            'role_label'=> $data['role_label'] ?? null,
+            'role_label'=> $roleLabel,
         ];
 
         if (! empty($data['password'])) {

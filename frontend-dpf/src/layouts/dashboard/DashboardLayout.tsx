@@ -35,8 +35,11 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const userRoles = useMemo(() => Utils.resolveUserRoles(storedUser), [storedUser]);
   const userPermissions = useMemo(() => Utils.resolveUserPermissions(storedUser), [storedUser]);
   const navSections = useMemo(() => {
-    const roles = userRoles.length ? userRoles : [role];
-    return Utils.buildNavSections(roles, userPermissions, t);
+    // When inside a specific role shell (e.g. admin, editor, keuangan, superadmin, mitra),
+    // only render the navigation sections for that active role shell.
+    // For custom role shell, use all resolved custom roles.
+    const activeRoles = role === "custom" ? (userRoles.length ? userRoles : [role]) : [role];
+    return Utils.buildNavSections(activeRoles, userPermissions, t);
   }, [role, userRoles, userPermissions, effectiveLocale]);
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);

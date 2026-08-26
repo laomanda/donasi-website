@@ -529,15 +529,17 @@ export const resolveUserRoles = (user: StoredUser | null): DashboardRole[] => {
   if (!user) return [];
   const candidates: string[] = [];
 
-  if (Array.isArray(user.roles)) {
+  // 1. Spatie Roles are the primary single source of truth
+  if (Array.isArray(user.roles) && user.roles.length > 0) {
     user.roles.forEach((role) => {
       if (role && typeof role === "object" && typeof role.name === "string") {
         candidates.push(role.name);
+      } else if (typeof role === "string") {
+        candidates.push(role);
       }
     });
-  }
-
-  if (typeof user.role_label === "string") {
+  } else if (typeof user.role_label === "string" && user.role_label.trim() !== "") {
+    // 2. Only fallback to role_label if user.roles is completely empty
     candidates.push(user.role_label);
   }
 

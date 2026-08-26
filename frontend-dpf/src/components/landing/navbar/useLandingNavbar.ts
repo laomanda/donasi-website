@@ -14,12 +14,14 @@ export const resolveUserDashboard = (): string | null => {
     if (!user) return null;
 
     const candidates: string[] = [];
-    if (Array.isArray(user.roles)) {
+    if (Array.isArray(user.roles) && user.roles.length > 0) {
         user.roles.forEach((r: any) => {
             if (r && typeof r.name === "string") candidates.push(r.name);
+            else if (typeof r === "string") candidates.push(r);
         });
+    } else if (typeof user.role_label === "string" && user.role_label.trim() !== "") {
+        candidates.push(user.role_label);
     }
-    if (typeof user.role_label === "string") candidates.push(user.role_label);
 
     const normalized = new Set(
         candidates.map((v) => v.toLowerCase().replace(/[^a-z]/g, ""))
@@ -28,6 +30,7 @@ export const resolveUserDashboard = (): string | null => {
     if (normalized.has("superadmin")) return "/superadmin/dashboard";
     if (normalized.has("admin")) return "/admin/dashboard";
     if (normalized.has("editor")) return "/editor/dashboard";
+    if (normalized.has("keuangan")) return "/keuangan/dashboard";
     if (normalized.has("mitra")) return "/mitra/dashboard";
     return "/editor/dashboard";
 };
