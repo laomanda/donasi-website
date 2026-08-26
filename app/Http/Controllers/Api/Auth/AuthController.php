@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterMitraRequest;
+use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -28,7 +30,7 @@ class AuthController extends Controller
         $email = $credentials['email'] ?? null;
 
         // 1. Cek apakah user dengan email ini terdaftar di database
-        $userExists = \App\Models\User::where('email', $email)->exists();
+        $userExists = User::query()->where('email', $email)->exists();
         if (! $userExists) {
             throw ValidationException::withMessages([
                 'email' => __('auth.account_not_found'),
@@ -82,7 +84,11 @@ class AuthController extends Controller
     {
         /** @var \App\Models\User|null $user */
         $user = $request->user();
-        $user?->currentAccessToken()?->delete();
+        $token = $user?->currentAccessToken();
+
+        if ($token instanceof PersonalAccessToken) {
+            $token->delete();
+        }
 
         return response()->json([
             'message' => 'Logged out.',
