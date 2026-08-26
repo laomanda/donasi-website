@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Superadmin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -43,6 +44,7 @@ class UserController extends Controller
         $primaryRole = ! empty($data['roles']) ? $data['roles'][0] : null;
         $roleLabel = ! empty($data['role_label']) ? $data['role_label'] : ($primaryRole ? ucfirst($primaryRole) : null);
 
+        /** @var User $user */
         $user = User::create([
             'name'      => $data['name'],
             'email'     => $data['email'],
@@ -101,11 +103,11 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        if ($user->id === auth()->id()) {
+        if ($user->id === (int) Auth::id()) {
             return response()->json(['message' => 'Tidak dapat menghapus akun sendiri.'], 422);
         }
 
-        $user->delete();
+        User::destroy($user->id);
 
         return response()->json(['message' => 'User deleted.']);
     }
