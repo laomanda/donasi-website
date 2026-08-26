@@ -61,6 +61,11 @@ class AuthController extends Controller
         }
 
         $user->load('roles.permissions', 'permissions');
+        $primaryRole = $user->roles->first()?->name;
+        if ($primaryRole && (empty($user->role_label) || in_array(strtolower((string) $user->role_label), ['admin', 'editor', 'keuangan', 'superadmin', 'mitra', 'pelihat']))) {
+            $user->role_label = ucfirst($primaryRole);
+            $user->save();
+        }
 
         return response()->json([
             'token'      => $user->createToken('spa')->plainTextToken,
@@ -86,8 +91,18 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
+        $user = $request->user();
+        if ($user) {
+            $user->load('roles.permissions', 'permissions');
+            $primaryRole = $user->roles->first()?->name;
+            if ($primaryRole && (empty($user->role_label) || in_array(strtolower((string) $user->role_label), ['admin', 'editor', 'keuangan', 'superadmin', 'mitra', 'pelihat']))) {
+                $user->role_label = ucfirst($primaryRole);
+                $user->save();
+            }
+        }
+
         return response()->json([
-            'user' => $request->user()->load('roles.permissions', 'permissions'),
+            'user' => $user,
         ]);
     }
 

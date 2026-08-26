@@ -1,0 +1,1 @@
+import{j as r}from"./vendor-fontawesome-s8nIl5UG.js";import{E as o}from"./EditorProgramForm-D2FXwvQs.js";import"./vendor-react-0fmdHqY3.js";import"./index-B3ycqw8r.js";import"./EditorProgramUtils-Cipwl_hD.js";import"./EditorProgramUI-DF5e45NX.js";function s(){return r.jsx(o,{mode:"create"})}export{s as EditorProgramCreatePage,s as default};

@@ -52,7 +52,15 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
 
   const userName = typeof storedUser?.name === "string" ? storedUser.name : null;
   const userEmail = typeof storedUser?.email === "string" ? storedUser.email : null;
-  const userRoleLabel = typeof storedUser?.role_label === "string" ? storedUser.role_label : null;
+  const userRoleLabel = useMemo(() => {
+    const primaryRole = userRoles[0] || role;
+    const rawLabel = typeof storedUser?.role_label === "string" ? storedUser.role_label.trim() : "";
+    const knownRoles = ["admin", "editor", "keuangan", "superadmin", "mitra", "pelihat"];
+    if (!rawLabel || (knownRoles.includes(rawLabel.toLowerCase()) && rawLabel.toLowerCase() !== primaryRole.toLowerCase())) {
+      return Utils.ROLE_LABEL[primaryRole] ?? Utils.ROLE_LABEL[role];
+    }
+    return rawLabel;
+  }, [storedUser, userRoles, role]);
 
   useEffect(() => {
     setMobileSidebarOpen(false);
