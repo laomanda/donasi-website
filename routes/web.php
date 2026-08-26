@@ -63,7 +63,9 @@ Route::get('/sitemap.xml', function () {
 
 Route::get('/{path?}', function (?string $path = null) {
     $distPath = base_path('frontend-dpf/dist');
-    $indexPath = $distPath . DIRECTORY_SEPARATOR . 'index.html';
+    $indexPath = is_file($distPath . DIRECTORY_SEPARATOR . 'index.html')
+        ? $distPath . DIRECTORY_SEPARATOR . 'index.html'
+        : $distPath . DIRECTORY_SEPARATOR . 'app.html';
 
     if ($path) {
         $publicPath = public_path($path);
