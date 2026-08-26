@@ -12,6 +12,7 @@ import {
   faEnvelope,
   faCreditCard,
   faAlignLeft,
+  faCalendarDays,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
@@ -43,6 +44,12 @@ type ManualDonationFormState = {
   payment_method: string;
   payment_channel: string;
   notes: string;
+  paid_at: string;
+};
+
+const getLocalDatetimeString = (date = new Date()) => {
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 };
 
 const emptyForm: ManualDonationFormState = {
@@ -55,6 +62,7 @@ const emptyForm: ManualDonationFormState = {
   payment_method: "Transfer Bank",
   payment_channel: "",
   notes: "",
+  paid_at: getLocalDatetimeString(),
 };
 
 const normalizeErrors = (error: any): string[] => {
@@ -136,6 +144,7 @@ export function AdminDonationManualCreatePage() {
       payment_method: state.payment_method.trim(),
       payment_channel: state.payment_channel.trim() || null,
       notes: state.notes.trim() || null,
+      paid_at: state.paid_at ? new Date(state.paid_at).toISOString() : null,
     };
   };
 
@@ -215,14 +224,38 @@ export function AdminDonationManualCreatePage() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-slate-900">Detail Transaksi</h2>
-                <p className="text-sm text-slate-500 font-medium">Informasi program dan nominal donasi</p>
+                <p className="text-sm text-slate-500 font-medium">Informasi program, tanggal, dan nominal donasi</p>
               </div>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label className="block">
-                  <span className={labelClass}>Program Donasi</span>
+                  <span className={labelClass}>Tanggal & Waktu Donasi</span>
+                  <div className="relative">
+                    <input
+                      type="datetime-local"
+                      value={form.paid_at}
+                      onChange={(e) => setForm((s) => ({ ...s, paid_at: e.target.value }))}
+                      className={`${inputClass} pl-10`}
+                      disabled={!canSubmit}
+                    />
+                    <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <FontAwesomeIcon icon={faCalendarDays} />
+                    </div>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400 font-medium">
+                    Bisa diubah ke tanggal lampau jika mencatat data donatur yang sudah lama/berlalu.
+                  </p>
+                </label>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={labelClass}>Program Donasi</span>
+                    <span className="text-[11px] font-semibold text-slate-400 normal-case">(Opsional)</span>
+                  </div>
                   <div className="relative">
                     <select
                       value={form.program_id}
@@ -230,7 +263,7 @@ export function AdminDonationManualCreatePage() {
                       className={`${inputClass} appearance-none`}
                       disabled={programLoading || !canSubmit}
                     >
-                      <option value="">{programLoading ? "Memuat data program..." : "Pilih Program (Opsional)"}</option>
+                      <option value="">{programLoading ? "Memuat data program..." : "Pilih Program (Opsional / Donasi Umum)"}</option>
                       {programOptions.map((p) => (
                         <option key={p.id} value={String(p.id)}>
                           {p.title}
@@ -291,7 +324,10 @@ export function AdminDonationManualCreatePage() {
 
               <div>
                 <label className="block">
-                  <span className={labelClass}>Channel / Bank</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={labelClass}>Channel / Bank</span>
+                    <span className="text-[11px] font-semibold text-slate-400 normal-case">(Opsional)</span>
+                  </div>
                   <div className="relative">
                     <select
                       value={form.payment_channel}
@@ -299,7 +335,7 @@ export function AdminDonationManualCreatePage() {
                       className={`${inputClass} pl-10 appearance-none`}
                       disabled={!canSubmit}
                     >
-                      <option value="">Pilih Rekening Tujuan</option>
+                      <option value="">Pilih Rekening Tujuan (Opsional)</option>
                       {bankAccounts.map((acc) => (
                         <option key={acc.id} value={`${acc.bank_name} - ${acc.account_number}`}>
                           {acc.bank_name} - {acc.account_number} a.n {acc.account_name}
@@ -315,7 +351,10 @@ export function AdminDonationManualCreatePage() {
 
               <div className="sm:col-span-2">
                 <label className="block">
-                  <span className={labelClass}>Catatan Tambahan</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={labelClass}>Catatan Tambahan</span>
+                    <span className="text-[11px] font-semibold text-slate-400 normal-case">(Opsional)</span>
+                  </div>
                   <div className="relative">
                     <textarea
                       value={form.notes}
@@ -367,7 +406,10 @@ export function AdminDonationManualCreatePage() {
 
               <div>
                 <label className="block">
-                  <span className={labelClass}>Email</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={labelClass}>Email</span>
+                    <span className="text-[11px] font-semibold text-slate-400 normal-case">(Opsional)</span>
+                  </div>
                   <div className="relative">
                     <input
                       value={form.donor_email}
@@ -380,19 +422,28 @@ export function AdminDonationManualCreatePage() {
                       <FontAwesomeIcon icon={faEnvelope} />
                     </div>
                   </div>
+                  <p className="mt-1 text-[11px] text-slate-400 font-medium">
+                    Tidak wajib diisi jika donatur tidak memiliki email.
+                  </p>
                 </label>
               </div>
 
               <div>
                 <label className="block">
-                  <span className={labelClass}>Nomor Telepon</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={labelClass}>Nomor Telepon</span>
+                    <span className="text-[11px] font-semibold text-slate-400 normal-case">(Opsional)</span>
+                  </div>
                   <div className="relative">
                     <PhoneInput
-                        value={form.donor_phone}
-                        onChange={(val) => setForm((s) => ({ ...s, donor_phone: val || "" }))}
-                        disabled={!canSubmit}
+                      value={form.donor_phone}
+                      onChange={(val) => setForm((s) => ({ ...s, donor_phone: val || "" }))}
+                      disabled={!canSubmit}
                     />
                   </div>
+                  <p className="mt-1 text-[11px] text-slate-400 font-medium">
+                    Tidak wajib diisi jika nomor tidak diketahui.
+                  </p>
                 </label>
               </div>
 

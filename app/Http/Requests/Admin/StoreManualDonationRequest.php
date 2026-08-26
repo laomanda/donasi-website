@@ -24,6 +24,7 @@ class StoreManualDonationRequest extends FormRequest
             'payment_channel' => ['nullable', 'string', 'max:255'],
             'notes'           => ['nullable', 'string'],
             'manual_proof_path' => ['nullable', 'string', 'max:255'],
+            'paid_at'         => ['nullable', 'date'],
         ];
     }
 }

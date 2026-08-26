@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Donation;
 use App\Models\Program;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -12,14 +14,27 @@ class DonationService
 {
     public function storeManualDonation(array $data): Donation
     {
+        $paidAt = !empty($data['paid_at']) ? Carbon::parse($data['paid_at']) : now();
         $data['payment_source'] = 'manual';
         $data['status'] = 'paid';
-        $data['paid_at'] = now();
-        $data['donation_code'] = $this->generateDonationCode();
+        $data['paid_at'] = $paidAt;
+        $data['created_at'] = $paidAt;
+        $data['donation_code'] = $this->generateDonationCode($paidAt);
 
         return DB::transaction(function () use ($data) {
             $created = Donation::query()->create($data);
             $this->syncProgramAmount($created, null, 'paid');
+
+            if (!empty($created->program_id)) {
+                /** @var Program|null $program */
+                $program = Program::query()->find($created->program_id);
+                if ($program) {
+                    Cache::forget("frontend_program_show_{$program->slug}");
+                    if ($program->slug_en) {
+                        Cache::forget("frontend_program_show_{$program->slug_en}");
+                    }
+                }
+            }
 
             return $created->load('program');
         });
@@ -111,9 +126,10 @@ class DonationService
         $donation->update(['whatsapp_sent_at' => now()]);
     }
 
-    private function generateDonationCode(): string
+    private function generateDonationCode(?\DateTimeInterface $date = null): string
     {
-        $prefix = 'DPF-' . now()->format('Ymd');
+        $dateObj = $date ? Carbon::parse($date) : now();
+        $prefix = 'DPF-' . $dateObj->format('Ymd');
         
         $lastCode = Donation::query()
             ->where('donation_code', 'like', "{$prefix}%")

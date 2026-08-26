@@ -95,20 +95,26 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
           <FontAwesomeIcon icon={faCheckCircle} className="text-blue-500 text-xs" />
         </div>
 
-        <div className="mt-1 relative h-5 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200/50">
-          <div
-            className="h-full rounded-full bg-brandGreen-600 transition-[width] duration-700 ease-out"
-            style={{ width: `${Math.min(progress, 100)}%` }}
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className={`text-[10px] font-bold transition-colors duration-300 ${progress >= 55 ? 'text-white' : 'text-brandGreen-800'}`}>
+        <div className="mt-1 space-y-2">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200/50">
+            <div
+              className="h-full rounded-full bg-brandGreen-600 transition-[width] duration-700 ease-out"
+              style={{ width: `${Math.min(progress, 100)}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <div className="font-semibold text-slate-700">
+              <span className="text-slate-500 font-normal">{t("program.collected")} </span>
+              <span className="font-bold text-slate-900">{formatCurrency(program.collected_amount, locale)}</span>
+            </div>
+            <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200/60 shrink-0">
               {progress}%
             </span>
           </div>
-        </div>
-        <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-          <span>{t("program.collected")} {formatCurrency(program.collected_amount, locale)}</span>
-          <span>{t("program.target")} {formatCurrency(program.target_amount, locale)}</span>
+          <div className="flex items-center justify-between text-[11px] font-medium text-slate-500">
+            <span>{t("program.target")}</span>
+            <span className="font-semibold text-slate-700">{formatCurrency(program.target_amount, locale)}</span>
+          </div>
         </div>
         <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
           <span>{t("program.deadline")}</span>
