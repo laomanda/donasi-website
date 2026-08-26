@@ -34,6 +34,7 @@ class TagController extends Controller
 
     public function destroy(Tag $tag)
     {
+        /** @disregard P1005 */
         $tag->delete();
         return response()->json(null, 204);
     }
