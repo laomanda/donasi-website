@@ -1,0 +1,1 @@
+import{j as r}from"./vendor-fontawesome-s8nIl5UG.js";import{R as t}from"./RoleForm-C44eAMiY.js";import{f as e}from"./vendor-react-0fmdHqY3.js";import"./index-CGjMAp0i.js";function d(){const{id:o}=e();return r.jsx(t,{mode:"edit",roleId:o?parseInt(o):void 0})}export{d as RoleEditPage,d as default};

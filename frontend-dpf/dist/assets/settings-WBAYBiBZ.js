@@ -1,0 +1,1 @@
+const a="dpf:settings-updated",n="dpf_search_limit",r="dpf_show_clock",i=()=>{if(typeof window>"u")return 5;const t=window.localStorage.getItem(n),e=Number(t);return Number.isFinite(e)?Math.max(3,Math.min(20,Math.floor(e))):5},c=()=>{if(typeof window>"u")return!0;const t=window.localStorage.getItem(r);return t===null?!0:t==="1"};export{a as S,i as a,c as r};
