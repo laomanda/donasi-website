@@ -42,6 +42,7 @@ class AuthController extends Controller
             ]);
         }
 
+        /** @var \App\Models\User $user */
         $user = $request->user();
 
         // 3. Cek apakah akun dinonaktifkan
@@ -79,7 +80,9 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()?->currentAccessToken()?->delete();
+        /** @var \App\Models\User|null $user */
+        $user = $request->user();
+        $user?->currentAccessToken()?->delete();
 
         return response()->json([
             'message' => 'Logged out.',
@@ -91,6 +94,7 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
+        /** @var \App\Models\User|null $user */
         $user = $request->user();
         if ($user) {
             $user->load('roles.permissions', 'permissions');
