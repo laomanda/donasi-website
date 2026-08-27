@@ -18,7 +18,7 @@ class Authenticate extends Middleware
             return null;
         }
 
-        // Untuk web (kalau nanti ada halaman login Blade)
-        return route('login');
+        // Untuk web (SPA login page)
+        return url('/login');
     }
 }

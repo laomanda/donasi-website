@@ -25,8 +25,8 @@ class RedirectIfAuthenticated
                     ], 403);
                 }
 
-                // Kalau web: redirect ke dashboard / home
-                return redirect()->route('dashboard'); // nanti kita bikin route dashboard
+                // Kalau web: redirect ke root / SPA
+                return redirect('/');
             }
         }
 
