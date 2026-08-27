@@ -1,1 +1,0 @@
-import{r as a,i as t}from"./index-Gxyrcrp3.js";const o={slug:"",nama_mitra:"",title_id:"",title_en:"",description_id:"",description_en:"",whatsapp_number:"",status:"draft",images:[]},s="uploads/mitra-products",i=r=>a(r,t)??t;export{o as e,s as m,i as r};

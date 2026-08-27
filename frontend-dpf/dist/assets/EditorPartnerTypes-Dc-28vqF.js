@@ -1,1 +1,0 @@
-import{r as l,i as n}from"./index-Gxyrcrp3.js";const d={name:"",logo_path:null,url:"",description:"",is_active:!0,order:"0",_previewUrl:null},c=(e,s)=>{const t=new Set;e.forEach(o=>{const a=Number(o.order);Number.isFinite(a)&&t.add(Math.max(0,Math.floor(a)))});let r=0;for(;t.has(r);)r+=1;return r},u=e=>l(e)||n,m="partners";export{d as e,c as g,m as p,u as r};

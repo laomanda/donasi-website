@@ -301,6 +301,7 @@ export const router = createBrowserRouter([
       { path: 'error/429', element: withSuspense(Error429) },
       { path: 'error/500', element: withSuspense(Error500) },
       { path: 'error/503', element: withSuspense(Error503) },
+      { path: 'maintenance', element: withSuspense(Error503) },
       { path: '*', element: withSuspense(Error404) },
     ],
   },
