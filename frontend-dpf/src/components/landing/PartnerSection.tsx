@@ -145,7 +145,7 @@ export function PartnerSection({
 
           <div className="relative z-10 flex flex-col items-center gap-6">
             <a
-              href="https://wa.me/6281311768254?text=Assalamu%27alaikum%2C%20saya%20tertarik%20untuk%20mendiskusikan%20program%20kemitraan%2FCSR%20dengan%20Djalaludin%20Pane%20Foundation."
+              href="https://wa.me/6285195542022?text=Assalamu%27alaikum%2C%20saya%20tertarik%20untuk%20mendiskusikan%20program%20kemitraan%2FCSR%20dengan%20Djalaludin%20Pane%20Foundation."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-bold text-primary-600 shadow-lg transition-transform hover:bg-slate-200"

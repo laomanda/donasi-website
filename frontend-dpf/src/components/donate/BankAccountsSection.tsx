@@ -123,7 +123,7 @@ export const BankAccountsSection = ({
                             {t("donate.accounts.note.link")}
                         </a>{" "}
                         {t("donate.accounts.note.suffix")}{" "}
-                        <a href="tel:081311768254" className="text-brandGreen-700 hover:text-brandGreen-800 whitespace-nowrap">
+                        <a href="tel:085195542022" className="text-brandGreen-700 hover:text-brandGreen-800 whitespace-nowrap">
                             {t("donate.accounts.phone")}
                         </a>
                     </p>

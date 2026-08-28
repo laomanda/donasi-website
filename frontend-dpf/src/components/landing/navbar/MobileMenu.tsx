@@ -4,7 +4,6 @@ import {
     faPhone, 
     faEnvelope, 
     faHandHoldingHeart, 
-    faMagnifyingGlass, 
     faGlobe, 
     faGaugeHigh, 
     faRightToBracket 
@@ -22,10 +21,6 @@ interface MobileMenuProps {
     phoneNumber: string;
     emailLink: string;
     emailText: string;
-    searchQuery: string;
-    handleSearchChange: (val: string) => void;
-    handleSearch: (e: React.FormEvent) => void;
-    searchFeedback: string | null;
     locale: "id" | "en";
     setLocale: (l: "id" | "en") => void;
     items: { label: string; href: string; icon: IconProp }[];
@@ -42,10 +37,6 @@ export function MobileMenu({
     phoneNumber,
     emailLink,
     emailText,
-    searchQuery,
-    handleSearchChange,
-    handleSearch,
-    searchFeedback,
     locale,
     setLocale,
     items,
@@ -106,41 +97,7 @@ export function MobileMenu({
                                     {emailText}
                                 </a>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setOpen(false);
-                                    navigate("/donate#rekening-resmi");
-                                }}
-                                className="inline-flex items-center gap-2 font-semibold text-brandGreen-700"
-                            >
-                                <FontAwesomeIcon icon={faHandHoldingHeart} />
-                                {t("nav.donationAccount")}
-                            </button>
                         </div>
-
-                        <form onSubmit={handleSearch} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 mb-2">
-                            <FontAwesomeIcon icon={faMagnifyingGlass} className="text-slate-400" />
-                            <input
-                                value={searchQuery}
-                                onChange={(e) => handleSearchChange(e.target.value)}
-                                placeholder={t("nav.search.placeholder")}
-                                list="landing-search-keywords"
-                                className="w-full bg-transparent text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:outline-none"
-                            />
-                            <button
-                                type="submit"
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brandGreen-600 text-white transition hover:bg-brandGreen-700"
-                                aria-label={t("nav.search.submit")}
-                            >
-                                <FontAwesomeIcon icon={faMagnifyingGlass} />
-                            </button>
-                        </form>
-                        {searchFeedback && (
-                            <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700 mb-3">
-                                {searchFeedback}
-                            </div>
-                        )}
 
                         <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-xs font-semibold text-slate-500 mb-3">
                             <div className="flex items-center gap-2">
@@ -221,3 +178,5 @@ export function MobileMenu({
         </>
     );
 }
+
+

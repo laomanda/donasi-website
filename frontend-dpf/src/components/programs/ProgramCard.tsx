@@ -7,7 +7,7 @@ import type {
   Program, 
 } from "./ProgramShared";
 import { getProgress, getStatusLabel, getProgramStatusTone, getImageUrl, canonicalStatus, formatCurrency, formatDate, getRemainingDays, pickLocale } from "./ProgramShared";
-import { dpfIcon } from "@/assets/brand";
+import { dpfWakaf } from "@/assets/brand";
 import { useSavedItems } from "@/lib/SavedItemsContext";
 
 interface ProgramCardProps {
@@ -84,7 +84,7 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
         <p className="text-sm text-slate-600 line-clamp-3 min-h-[60px]">{pickLocale(program.short_description, program.short_description_en, locale)}</p>
         <div className="flex items-center gap-2">
           <img
-            src={dpfIcon}
+            src={dpfWakaf}
             alt={brandName}
             width="24"
             height="24"

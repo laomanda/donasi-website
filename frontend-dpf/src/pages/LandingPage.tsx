@@ -111,7 +111,7 @@ function LandingPage() {
   );
 
   return (
-    <LandingLayout whatsappPhone="6281311768254" footerWaveBgClassName="bg-slate-50">
+    <LandingLayout whatsappPhone="6285195542022" footerWaveBgClassName="bg-slate-50">
       <BannerSection banners={banners} />
       <HeroSection error={error} t={t} />
       <PromiseStrip t={t} />

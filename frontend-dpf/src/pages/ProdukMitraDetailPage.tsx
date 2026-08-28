@@ -8,7 +8,7 @@ import { useLang } from "@/lib/i18n";
 import { translate } from "@/lib/i18n-utils";
 import http from "@/lib/http";
 import { resolveApiBaseUrl } from "@/lib/urls";
-import { dpfIcon } from "@/assets/brand";
+import { dpfWakaf } from "@/assets/brand";
 import MitraProductGallery from "@/components/mitra-products/MitraProductGallery";
 import { mitraProductDict } from "@/components/mitra-products/MitraProductI18n";
 
@@ -126,7 +126,7 @@ export default function ProdukMitraDetailPage() {
                   </span>
 
                   <div className="inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-1 ring-1 ring-slate-200/80">
-                    <img src={dpfIcon} alt="DPF" className="h-4 w-auto object-contain shrink-0" />
+                    <img src={dpfWakaf} alt="DPF" className="h-4 w-auto object-contain shrink-0" />
                     <span className="text-xs font-bold text-slate-900">Djalaludin Pane Foundation</span>
                     <FontAwesomeIcon icon={faCheckCircle} className="text-blue-500 text-xs shrink-0" />
                   </div>

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { dpfIcon } from "@/assets/brand";
+import { dpfWakaf } from "@/assets/brand";
 
 interface ProgramShowcaseProps {
     isGeneralDonation: boolean;
@@ -38,7 +38,7 @@ export const ProgramShowcase = ({
         <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_-45px_rgba(15,23,42,0.35)]">
             <div className="relative">
                 <img
-                    src={selectedProgramImage || dpfIcon}
+                    src={selectedProgramImage || dpfWakaf}
                     alt={selectedProgramTitle}
                     className="h-56 w-full bg-slate-100 object-contain sm:h-60"
                 />

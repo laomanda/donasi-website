@@ -213,12 +213,12 @@ export function JemputWakafForm({ translate: t, locale }: JemputWakafFormProps) 
           <p className="leading-relaxed">
             Untuk layanan jemput wakaf di luar wilayah Jabodetabek, kami dengan senang hati melayani melalui nomor{" "}
             <a
-              href="https://wa.me/6281311768254?text=Halo%20DPF%2C%20saya%20ingin%20bertanya%20mengenai%20layanan%20jemput%20wakaf%20di%20luar%20Jabodetabek."
+              href="https://wa.me/6285195542022?text=Halo%20DPF%2C%20saya%20ingin%20bertanya%20mengenai%20layanan%20jemput%20wakaf%20di%20luar%20Jabodetabek."
               target="_blank"
               rel="noreferrer"
               className="font-semibold text-emerald-700 hover:text-emerald-800"
             >
-              081311768254
+              +62 851-9554-2022
             </a>
             .
           </p>

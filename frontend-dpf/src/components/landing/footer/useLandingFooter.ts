@@ -43,10 +43,10 @@ export function useLandingFooter() {
 
   const addressText = publicSettings['landing.contact_address']?.trim() || t('footer.address')
   const addressLines = addressText.split('\n').filter(Boolean)
-  const phoneNumber = publicSettings['landing.contact_phone']?.trim() || '0813-1176-8254'
+  const phoneNumber = publicSettings['landing.contact_phone']?.trim() || '+62 851-9554-2022'
   const phoneDisplay =
     publicSettings['landing.contact_phone_display']?.trim() || `${phoneNumber} (DPF Official)`
-  const phoneLink = publicSettings['landing.contact_phone_link']?.trim() || 'https://wa.me/6281311768254'
+  const phoneLink = publicSettings['landing.contact_phone_link']?.trim() || 'https://wa.me/6285195542022'
   const emailText = publicSettings['landing.contact_email']?.trim() || 'layanan@dpf.or.id'
   const emailLink =
     publicSettings['landing.contact_email_link']?.trim() || `https://mail.google.com/mail/?view=cm&fs=1&to=${emailText}`

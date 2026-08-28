@@ -31,7 +31,7 @@ export function AboutLegal({ t, legalItems }: AboutLegalProps) {
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <a
-              href="https://wa.me/6281311768254"
+              href="https://wa.me/6285195542022"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-brandGreen-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brandGreen-500/25 transition hover:-translate-y-0.5 hover:bg-brandGreen-700"

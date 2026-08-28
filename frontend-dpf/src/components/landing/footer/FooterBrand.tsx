@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHandHoldingHeart } from '@fortawesome/free-solid-svg-icons'
 import { faFacebookF, faInstagram, faTiktok, faYoutube, faWhatsapp } from '@fortawesome/free-brands-svg-icons'
-import { dpfIcon } from "@/assets/brand";
+import { dpfWakaf } from "@/assets/brand";
 import { SocialIcon } from './FooterUI'
 
 type FooterBrandProps = {
@@ -17,7 +17,7 @@ export function FooterBrand({ t, whatsappLink }: FooterBrandProps) {
       <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center">
           <img
-            src={dpfIcon}
+            src={dpfWakaf}
             alt="DPF Logo"
             width="48"
             height="48"

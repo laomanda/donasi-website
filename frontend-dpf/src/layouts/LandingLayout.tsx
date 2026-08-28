@@ -30,7 +30,7 @@ const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" |
 
 export function LandingLayout({
   children,
-  whatsappPhone = "6281311768254",
+  whatsappPhone = "6285195542022",
   footerWaveBgClassName = "bg-slate-50",
 }: LandingLayoutProps) {
   const [programs, setPrograms] = useState<ProgramSummary[]>([]);

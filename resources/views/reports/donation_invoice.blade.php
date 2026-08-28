@@ -184,7 +184,7 @@
             <td class="kop-detail">
                 <h1>Djalaludin Pane Foundation</h1>
                 <p>Signature Park Grande, Jl. Letjen M.T. Haryono No.Kav. 20, Jakarta Timur.</p>
-                <p>Telp: 0813-1176-8254 | Email: layanan@dpf.or.id | Website: www.dpf.or.id</p>
+                <p>Telp: 0851-9554-2022 | Email: layanan@dpf.or.id | Website: www.dpf.or.id</p>
             </td>
             <td class="kop-document">
                 <h2>{{ __('reports.receipt_title') }}</h2>

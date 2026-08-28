@@ -96,7 +96,7 @@ export const donateDict: Dict = {
     "donate.accounts.note": { id: "Pastikan tujuan transfer sesuai nama & nomor rekening di atas. Setelah transfer, kirim konfirmasi via halaman", en: "Ensure the transfer destination matches the name & account number above. After transferring, send confirmation via the" },
     "donate.accounts.note.link": { id: "Konfirmasi Donasi", en: "Donation Confirmation" },
     "donate.accounts.note.suffix": { id: "atau nomor telepon", en: "or phone number" },
-    "donate.accounts.phone": { id: "0813-1176-8254", en: "0813-1176-8254" },
+    "donate.accounts.phone": { id: "0851-9554-2022", en: "0851-9554-2022" },
     "donate.accounts.badge": { id: "Rekening Resmi", en: "Official Accounts" },
     "donate.accounts.heading": { id: "Salurkan Kebaikan Anda", en: "Channel Your Kindness" },
     "donate.accounts.empty": { id: "Belum ada data rekening.", en: "No account data available." },

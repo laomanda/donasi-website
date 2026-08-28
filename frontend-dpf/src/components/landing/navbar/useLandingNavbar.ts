@@ -5,7 +5,6 @@ import { translate } from "../../../lib/i18n-utils";
 import { globalDict } from "../../../i18n/global";
 import { fetchPublicSettings } from "../../../lib/publicSettings";
 import { getAuthToken, getAuthUser } from "../../../lib/auth";
-import { SEARCH_ITEMS, SEARCH_INDEX } from "./LandingNavbarShared";
 
 export const resolveUserDashboard = (): string | null => {
     const token = getAuthToken();
@@ -39,14 +38,10 @@ export function useLandingNavbar() {
     const [open, setOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const { locale, setLocale } = useLang();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchOpen, setSearchOpen] = useState(false);
-    const [searchFeedback, setSearchFeedback] = useState<string | null>(null);
     const [langOpen, setLangOpen] = useState(false);
     const [publicSettings, setPublicSettings] = useState<Record<string, string>>({});
     
     const langRef = useRef<HTMLDivElement | null>(null);
-    const searchInputRef = useRef<HTMLInputElement | null>(null);
     
     const navigate = useNavigate();
     const location = useLocation();
@@ -59,8 +54,8 @@ export function useLandingNavbar() {
     const t = useCallback((key: string, fallback?: string) => 
         translate(globalDict, locale, key, fallback), [locale]);
 
-    const phoneNumber = publicSettings["landing.contact_phone"]?.trim() || "0813-1176-8254";
-    const phoneLink = publicSettings["landing.contact_phone_link"]?.trim() || "https://wa.me/6281311768254";
+    const phoneNumber = publicSettings["landing.contact_phone"]?.trim() || "+62 851-9554-2022";
+    const phoneLink = publicSettings["landing.contact_phone_link"]?.trim() || "https://wa.me/6285195542022";
     const emailText = publicSettings["landing.contact_email"]?.trim() || "info@dpf.or.id";
     const emailLink = publicSettings["landing.contact_email_link"]?.trim() || `https://mail.google.com/mail/?view=cm&fs=1&to=${emailText}`;
 
@@ -100,13 +95,6 @@ export function useLandingNavbar() {
         };
     }, [open]);
 
-    // Search Input Focus
-    useEffect(() => {
-        if (!searchOpen) return;
-        const id = window.setTimeout(() => searchInputRef.current?.focus(), 60);
-        return () => window.clearTimeout(id);
-    }, [searchOpen]);
-
     // Language Outside Click
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -118,48 +106,12 @@ export function useLandingNavbar() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleSearchChange = (value: string) => {
-        setSearchQuery(value);
-        if (searchFeedback) setSearchFeedback(null);
-    };
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        const term = searchQuery.trim().toLowerCase();
-        if (!term) return;
-
-        const matchItem = SEARCH_ITEMS.find((item) => {
-            const label = item.labels[locale as "id" | "en"].toLowerCase();
-            const matchLabel = label.includes(term);
-            const matchKeyword = item.keywords.some((keyword) => keyword.toLowerCase().includes(term));
-            return matchLabel || matchKeyword;
-        });
-
-        const matchCorpus = SEARCH_INDEX.find((entry) => entry.corpus.toLowerCase().includes(term));
-        const targetHref = matchItem?.href || matchCorpus?.href;
-
-        if (!targetHref) {
-            setSearchFeedback(t("nav.search.notFound"));
-            setSearchQuery(t("nav.search.notFound"));
-            return;
-        }
-
-        navigate(targetHref);
-        setOpen(false);
-        setSearchOpen(false);
-        setSearchFeedback(null);
-    };
-
     return {
         open, setOpen,
         scrolled,
         locale, setLocale,
-        searchQuery, setSearchQuery,
-        searchOpen, setSearchOpen,
-        searchFeedback, setSearchFeedback,
         langOpen, setLangOpen,
         langRef,
-        searchInputRef,
         navigate,
         location,
         heroMode,
@@ -168,8 +120,7 @@ export function useLandingNavbar() {
         t,
         phoneNumber, phoneLink,
         emailText, emailLink,
-        handleSearchChange,
-        handleSearch,
         resolveUserDashboard
     };
 }
+

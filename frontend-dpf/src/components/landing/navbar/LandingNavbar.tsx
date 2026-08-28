@@ -9,24 +9,18 @@ import {
     faXmark
 } from "@fortawesome/free-solid-svg-icons";
 
-import { dpfIcon } from "@/assets/brand";
+import { dpfWakaf } from "@/assets/brand";
 import { useLandingNavbar } from "./useLandingNavbar";
-import { NAV_ITEMS, SEARCH_ITEMS } from "./LandingNavbarShared";
+import { NAV_ITEMS } from "./LandingNavbarShared";
 import { TopBar } from "./TopBar";
-import { LanguageSwitch } from "./LanguageSwitch";
-import { MusicToggle } from "./MusicToggle";
 import { MobileMenu } from "./MobileMenu";
 
 export function LandingNavbar() {
     const {
         open, setOpen,
         locale, setLocale,
-        searchQuery,
-        searchOpen, setSearchOpen,
-        searchFeedback, setSearchFeedback,
         langOpen, setLangOpen,
         langRef,
-        searchInputRef,
         navigate,
         location,
         heroMode,
@@ -35,8 +29,6 @@ export function LandingNavbar() {
         t,
         phoneNumber, phoneLink,
         emailText, emailLink,
-        handleSearchChange,
-        handleSearch,
         resolveUserDashboard
     } = useLandingNavbar();
 
@@ -48,26 +40,6 @@ export function LandingNavbar() {
     const topbarLinkClass = topbarDark ? "font-semibold text-white" : "font-semibold text-slate-900 hover:text-primary-700";
     const topbarTextClass = topbarDark ? "text-white" : "text-slate-900";
     const topbarMutedClass = topbarDark ? "text-white/70" : "text-slate-700";
-    
-    const searchToggleClass = topbarDark
-        ? "inline-flex h-10 w-10 items-center justify-center rounded-full text-white bg-white/15 ring-1 ring-white/20 hover:bg-white/25 transition"
-        : "inline-flex h-10 w-10 items-center justify-center rounded-full text-white bg-brandGreen-600 hover:bg-brandGreen-700 transition";
-    
-    const searchFormClass = topbarDark
-        ? "flex h-10 w-[280px] xl:w-[320px] items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4"
-        : "flex h-10 w-[280px] xl:w-[320px] items-center gap-2 rounded-full border border-slate-200/60 bg-white/70 px-4";
-    
-    const searchInputClass = topbarDark
-        ? "w-full bg-transparent text-sm font-semibold text-white placeholder:text-white/60 focus:outline-none pl-1"
-        : "w-full bg-transparent text-sm font-semibold text-slate-800 placeholder:text-slate-500 focus:outline-none pl-1";
-    
-    const searchSubmitClass = topbarDark
-        ? "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors"
-        : "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brandGreen-600/10 text-brandGreen-700 hover:bg-brandGreen-600/20 transition-colors";
-    
-    const searchCloseClass = topbarDark
-        ? "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-        : "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors";
     
     const navShellClass = heroMode
         ? "border-b border-white/10 shadow-none"
@@ -129,24 +101,23 @@ export function LandingNavbar() {
                     topbarLinkClass={topbarLinkClass}
                     topbarMutedClass={topbarMutedClass}
                     topbarDark={topbarDark}
+                    heroMode={heroMode}
                     t={t}
                     phoneLink={phoneLink}
                     phoneNumber={phoneNumber}
                     emailLink={emailLink}
                     emailText={emailText}
-                    searchOpen={searchOpen}
-                    setSearchOpen={setSearchOpen}
-                    searchQuery={searchQuery}
-                    handleSearchChange={handleSearchChange}
-                    handleSearch={handleSearch}
-                    searchFeedback={searchFeedback}
-                    setSearchFeedback={setSearchFeedback}
-                    searchInputRef={searchInputRef}
-                    searchToggleClass={searchToggleClass}
-                    searchFormClass={searchFormClass}
-                    searchInputClass={searchInputClass}
-                    searchSubmitClass={searchSubmitClass}
-                    searchCloseClass={searchCloseClass}
+                    langRef={langRef}
+                    langOpen={langOpen}
+                    setLangOpen={setLangOpen}
+                    locale={locale}
+                    setLocale={setLocale}
+                    langButtonClass={langButtonClass}
+                    langIconClass={langIconClass}
+                    langDropdownClass={langDropdownClass}
+                    langOptionClass={langOptionClass}
+                    langOptionActiveClass={langOptionActiveClass}
+                    langOptionHoverClass={langOptionHoverClass}
                 />
 
                 <div className="relative">
@@ -155,7 +126,7 @@ export function LandingNavbar() {
                             <Link to="/" className="flex items-center gap-2.5 group">
                                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white border border-slate-200 shadow-sm transition-transform group-hover:scale-105">
                                     <img
-                                        src={dpfIcon}
+                                        src={dpfWakaf}
                                         alt="DPF"
                                         className="h-full w-full object-contain p-1.5"
                                     />
@@ -193,27 +164,7 @@ export function LandingNavbar() {
                                 ))}
                             </nav>
 
-                            <div className="hidden lg:flex items-center gap-2 overflow-visible">
-                                <MusicToggle 
-                                    className={heroMode 
-                                        ? "text-white/80 hover:text-white hover:bg-white/10" 
-                                        : "text-slate-500 hover:text-primary-700 hover:bg-slate-50"} 
-                                />
-
-                                <LanguageSwitch 
-                                    langRef={langRef}
-                                    langOpen={langOpen}
-                                    setLangOpen={setLangOpen}
-                                    locale={locale}
-                                    setLocale={setLocale}
-                                    langButtonClass={langButtonClass}
-                                    langIconClass={langIconClass}
-                                    langDropdownClass={langDropdownClass}
-                                    langOptionClass={langOptionClass}
-                                    langOptionActiveClass={langOptionActiveClass}
-                                    langOptionHoverClass={langOptionHoverClass}
-                                />
-
+                            <div className="hidden lg:flex items-center gap-2.5 overflow-visible">
                                 {(() => {
                                     const dashPath = resolveUserDashboard();
                                     if (dashPath) {
@@ -286,10 +237,6 @@ export function LandingNavbar() {
                 phoneNumber={phoneNumber}
                 emailLink={emailLink}
                 emailText={emailText}
-                searchQuery={searchQuery}
-                handleSearchChange={handleSearchChange}
-                handleSearch={handleSearch}
-                searchFeedback={searchFeedback}
                 locale={locale}
                 setLocale={setLocale}
                 items={items}
@@ -297,12 +244,6 @@ export function LandingNavbar() {
                 navigate={navigate}
                 resolveUserDashboard={resolveUserDashboard}
             />
-
-            <datalist id="landing-search-keywords">
-                {SEARCH_ITEMS.map((item) => (
-                    <option key={item.labels[locale as "id" | "en"]} value={item.labels[locale as "id" | "en"]} />
-                ))}
-            </datalist>
         </header>
     );
 }

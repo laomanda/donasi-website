@@ -1,4 +1,4 @@
-﻿// PERBAIKAN: Gunakan 'import type' untuk tipe data
+// PERBAIKAN: Gunakan 'import type' untuk tipe data
 import type { CSSProperties, ReactNode } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Link } from 'react-router-dom'
@@ -8,7 +8,7 @@ import {
   faArrowLeft,
   faHouse,
 } from '@fortawesome/free-solid-svg-icons'
-import { dpfIcon } from "@/assets/brand";
+import { dpfWakaf } from "@/assets/brand";
 
 const customScrollbarStyle: CSSProperties = {
   scrollbarWidth: 'thin',
@@ -112,7 +112,7 @@ const ErrorLayout = ({
               </div>
               <div className="h-8 w-auto">
                 <img
-                  src={dpfIcon}
+                  src={dpfWakaf}
                   alt="Logo DPF"
                   className="h-full w-full object-contain drop-shadow-sm"
                   onError={(event) => {

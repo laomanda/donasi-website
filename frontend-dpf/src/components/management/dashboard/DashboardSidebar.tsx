@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { dpfIcon } from "@/assets/brand";
+import { dpfWakaf } from "@/assets/brand";
 import type { DashboardRole, RoleTheme, NavSection } from "./DashboardUtils";
 
 interface SidebarContentProps {
@@ -28,7 +28,7 @@ export function SidebarContent({
       <div className="flex items-center justify-between gap-3 px-6 py-5">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900">
-            <img src={dpfIcon} alt="DPF" className="h-7 w-7 rounded-full border border-slate-400/80 object-contain" />
+            <img src={dpfWakaf} alt="DPF" className="h-7 w-7 rounded-full border border-slate-400/80 object-contain" />
           </span>
           <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">DPF</p>

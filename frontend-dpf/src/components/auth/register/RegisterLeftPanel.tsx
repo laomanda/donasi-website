@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { dpfIcon } from "@/assets/brand";
+import { dpfWakaf } from "@/assets/brand";
 
 interface RegisterLeftPanelProps {
   title: string;
@@ -25,7 +25,7 @@ export function RegisterLeftPanel({
         <div>
           <Link to="/" className="inline-flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-full object-cover">
-              <img src={dpfIcon} alt="DPF" className="h-7 w-7 object-contain rounded-lg" />
+              <img src={dpfWakaf} alt="DPF" className="h-7 w-7 object-contain rounded-lg" />
             </span>
             <div className="leading-tight">
               <p className="font-heading text-sm font-bold tracking-tight text-white">DPF WAKAF</p>
