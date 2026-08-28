@@ -76,7 +76,7 @@ export function BannerSection({ banners }: { banners: Banner[] }) {
                   loading="eager"
                   fetchPriority="high"
                   decoding="async"
-                  className="h-full w-full object-cover relative z-10 animate-banner-pan motion-reduce:animate-none"
+                  className="h-full w-full object-cover relative z-10"
                 />
                 <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-r from-slate-900/80 via-slate-900/40 to-transparent" />
                 <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-b from-slate-900/50 via-transparent to-transparent" />

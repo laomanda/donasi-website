@@ -60,7 +60,7 @@ export function TopBar({
 }: TopBarProps) {
     return (
         <div className={`relative z-[80] overflow-visible ${topbarClass}`}>
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-10 xl:px-12">
                 <div className={`hidden lg:flex items-center justify-between py-2 text-xs ${topbarTextClass}`}>
                     {/* Left: Phone, Email, Time */}
                     <div className="flex min-w-0 flex-wrap items-center gap-5">
