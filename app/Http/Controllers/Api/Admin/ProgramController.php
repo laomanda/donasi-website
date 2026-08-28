@@ -41,7 +41,8 @@ class ProgramController extends Controller
             $query->where('category', $category);
         }
 
-        $programs = $query->orderByDesc(DB::raw('COALESCE(published_at, created_at)'))
+        $programs = $query->orderByDesc('is_highlight')
+            ->orderByDesc(DB::raw('COALESCE(published_at, created_at)'))
             ->paginate($request->integer('per_page', 15));
 
         return response()->json($programs);
@@ -84,7 +85,7 @@ class ProgramController extends Controller
             ], 422);
         }
 
-        $program->delete();
+        Program::destroy($program->id);
 
         return response()->json([
             'message' => 'Program dihapus.',

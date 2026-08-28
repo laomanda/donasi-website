@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrash, faImage, faChevronDown, faVideo, faXmark, faHandHoldingHeart } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTrash, faImage, faChevronDown, faVideo, faXmark, faHandHoldingHeart, faThumbtack } from "@fortawesome/free-solid-svg-icons";
 import type { ArticleFormState } from "../../../../types/article";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { resolveStorageUrl } from "../../../../utils/management/editorArticleUtils";
@@ -171,6 +171,25 @@ export default function EditorArticleFormSidebar({
               disabled={disabled}
             />
             <p className="mt-2 text-[10px] font-semibold text-slate-500">Jika kosong, akan mengikut saat tombol Terbit ditekan.</p>
+          </label>
+
+          <label className="flex items-center gap-3 cursor-pointer group rounded-2xl bg-slate-50 p-4 border border-slate-200 hover:border-brandGreen-400 transition">
+            <input
+              type="checkbox"
+              checked={form.is_pinned}
+              onChange={(e) => setForm((s) => ({ ...s, is_pinned: e.target.checked }))}
+              className="h-5 w-5 rounded-lg border-slate-300 text-brandGreen-600 focus:ring-brandGreen-400 transition accent-brandGreen-600"
+              disabled={disabled}
+            />
+            <div className="flex-1">
+              <span className="text-sm font-bold text-slate-800 group-hover:text-slate-900 transition flex items-center gap-2">
+                <FontAwesomeIcon icon={faThumbtack} className="text-amber-500 text-xs" />
+                Sematkan Artikel (Pin)
+              </span>
+              <p className="text-[11px] font-medium text-slate-500 mt-0.5">
+                Artikel akan selalu tampil di posisi teratas daftar literasi.
+              </p>
+            </div>
           </label>
 
           <div className="relative" ref={authorDropdownRef}>

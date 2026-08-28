@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faPenToSquare, faThumbtack } from "@fortawesome/free-solid-svg-icons";
 import { formatDate, getStatusTone, formatStatusLabel } from "../../../../utils/management/editorArticleUtils";
 import type { Article } from "../../../../types/article";
 
@@ -70,6 +70,12 @@ export default function EditorArticleList({
               <span className="inline-flex max-w-[14rem] truncate rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
                 {article.category}
               </span>
+              {article.is_pinned && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 ring-1 ring-amber-300">
+                  <FontAwesomeIcon icon={faThumbtack} className="text-[9px]" />
+                  Disematkan
+                </span>
+              )}
             </div>
             <button
               type="button"

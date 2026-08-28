@@ -43,6 +43,7 @@ class ArticleRequest extends FormRequest
             'author_name'    => ['nullable', 'string', 'max:255'],
             'published_at'   => ['nullable', 'date'],
             'status'         => ['required', 'in:draft,review,published'],
+            'is_pinned'      => ['sometimes', 'boolean'],
         ];
     }
 }

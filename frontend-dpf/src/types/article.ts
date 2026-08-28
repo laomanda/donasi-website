@@ -12,6 +12,7 @@ export type Article = {
   thumbnail_url?: string | null;
   video_path?: string | null;
   video_url?: string | null;
+  is_pinned?: boolean | null;
   updated_at?: string | null;
   created_at?: string | null;
 };
@@ -53,6 +54,7 @@ export type EditorArticle = {
   thumbnail_url?: string | null;
   video_path?: string | null;
   video_url?: string | null;
+  is_pinned?: boolean | null;
   published_at?: string | null;
 };
 
@@ -73,6 +75,7 @@ export type ArticleFormState = {
   body: string;
   body_en: string;
   status: "draft" | "review" | "published";
+  is_pinned: boolean;
   published_at: string;
 };
 
@@ -93,5 +96,6 @@ export const emptyArticleForm: ArticleFormState = {
   body: "",
   body_en: "",
   status: "draft",
+  is_pinned: false,
   published_at: "",
 };

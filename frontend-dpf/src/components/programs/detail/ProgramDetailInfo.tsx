@@ -1,7 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faLayerGroup, 
-  faArrowRight 
+  faArrowRight,
+  faThumbtack
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import type { 
@@ -68,8 +69,9 @@ export function ProgramDetailInfo({
             {getStatusLabel(program?.status, t, program?.published_at, program?.deadline_days)}
           </span>
           {program?.is_highlight ? (
-            <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-100">
-              Highlight
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 ring-1 ring-amber-300 shadow-sm">
+              <FontAwesomeIcon icon={faThumbtack} className="text-[10px]" />
+              {locale === "en" ? "Pinned" : "Disematkan"}
             </span>
           ) : null}
         </div>

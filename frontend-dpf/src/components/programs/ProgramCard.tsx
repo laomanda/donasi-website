@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHandHoldingHeart, faCheckCircle, faBookmark as faBookmarkSolid, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faHandHoldingHeart, faCheckCircle, faBookmark as faBookmarkSolid, faTrash, faThumbtack } from "@fortawesome/free-solid-svg-icons";
 import { faBookmark as faBookmarkRegular } from "@fortawesome/free-regular-svg-icons";
 import { imagePlaceholder } from "@/lib/placeholder";
 import type { 
@@ -54,6 +54,12 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
           <span className="rounded-full uppercase font-heading bg-primary-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm">
             {pickLocale(program.category, program.category_en, locale) || t("program.defaultCategory")}
           </span>
+          {program.is_highlight && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm ring-1 ring-amber-400">
+              <FontAwesomeIcon icon={faThumbtack} className="text-[9px]" />
+              {locale === "en" ? "Pinned" : "Disematkan"}
+            </span>
+          )}
         </div>
 
         <button

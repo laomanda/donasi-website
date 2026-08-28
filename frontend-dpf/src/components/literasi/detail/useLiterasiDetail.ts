@@ -31,6 +31,7 @@ export type LiterasiDetail = {
   video_path?: string | null;
   video_url?: string | null;
   author_name?: string | null;
+  is_pinned?: boolean | null;
   program?: RelatedProgram | null;
   programs?: RelatedProgram[];
 };

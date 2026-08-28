@@ -26,6 +26,7 @@ class Article extends Model
         'author_name',
         'published_at',
         'status',
+        'is_pinned',
     ];
 
     protected $appends = [
@@ -35,6 +36,7 @@ class Article extends Model
 
     protected $casts = [
         'published_at' => 'datetime',
+        'is_pinned'    => 'boolean',
     ];
 
     public function getVideoUrlAttribute(): ?string
@@ -130,6 +132,7 @@ class Article extends Model
     {
         return $query->where('status', '=', 'published')
             ->whereNotNull('published_at')
+            ->orderByDesc('is_pinned')
             ->orderByDesc('published_at');
     }
 }

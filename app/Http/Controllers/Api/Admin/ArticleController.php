@@ -38,8 +38,9 @@ class ArticleController extends Controller
             });
         }
 
-        // Untuk management UI: tampilkan yang terbaru diubah/dibuat dulu
-        $articles = $query->orderByDesc('updated_at')
+        // Untuk management UI: tampilkan yang disematkan (pinned) dan terbaru diubah/dibuat dulu
+        $articles = $query->orderByDesc('is_pinned')
+            ->orderByDesc('updated_at')
             ->paginate($request->integer('per_page', 15));
 
         return response()->json($articles);

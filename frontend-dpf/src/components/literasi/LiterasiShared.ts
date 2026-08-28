@@ -16,6 +16,7 @@ export type Literasi = {
   category?: string | null;
   category_en?: string | null;
   author_name?: string | null;
+  is_pinned?: boolean | null;
 };
 
 export const getImageUrl = (path?: string | null) => {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClock, faTag, faUser, faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faTag, faUser, faChevronLeft, faChevronRight, faThumbtack } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { getImageUrl, formatDate } from "../LiterasiShared.ts";
 import { imagePlaceholder } from "@/lib/placeholder";
@@ -152,6 +152,12 @@ export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroPro
               value={article.author_name} 
               tone="green" 
             />
+          ) : null}
+          {article.is_pinned ? (
+            <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 font-heading text-xs font-bold text-amber-700 ring-1 ring-amber-300 shadow-sm">
+              <FontAwesomeIcon icon={faThumbtack} className="text-[10px]" />
+              {locale === "en" ? "Pinned" : "Disematkan"}
+            </span>
           ) : null}
         </div>
 

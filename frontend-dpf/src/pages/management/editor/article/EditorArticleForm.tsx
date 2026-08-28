@@ -107,6 +107,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
           body: a.body ?? "",
           body_en: a.body_en ?? "",
           status: (String(a.status ?? "draft").toLowerCase() as any) ?? "draft",
+          is_pinned: Boolean(a.is_pinned),
           published_at: a.published_at ? toLocalDateTimeInput(a.published_at) : "",
         });
       })
@@ -342,6 +343,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
       body_en: state.body_en.trim() || null,
       author_name: state.author_name.trim() || null,
       status: state.status,
+      is_pinned: Boolean(state.is_pinned),
       published_at: state.published_at ? new Date(state.published_at).toISOString() : null,
     };
     if (payload.status === "published" && !payload.published_at) {

@@ -29,24 +29,68 @@ type RoleFormProps = {
   roleId?: number;
 };
 
-const PERMISSION_LABELS: Record<string, string> = {
-  "manage allocations": "Kelola Alokasi",
-  "manage articles": "Kelola Artikel",
-  "manage bank_accounts": "Kelola Rekening Bank",
-  "manage banners": "Kelola Banner",
-  "manage consultations": "Kelola Konsultasi",
-  "manage donations": "Kelola Donasi",
-  "manage organization": "Kelola Organisasi",
-  "manage partners": "Kelola Mitra",
-  "manage pickup_requests": "Kelola Jemput Wakaf",
-  "manage programs": "Kelola Program",
-  "manage role permissions": "Konfigurasi Hak Akses",
-  "manage suggestions": "Kelola Saran",
-  "manage tags": "Kelola Tag",
-  "manage tasks": "Kelola Tugas",
-  "manage users": "Kelola Pengguna",
-  "view reports": "Lihat Laporan",
+const PERMISSION_DETAILS: Record<string, { label: string; desc: string }> = {
+  "manage allocations": { label: "Kelola Alokasi", desc: "Penyaluran dana & alokasi ke mitra" },
+  "manage_allocations": { label: "Kelola Alokasi", desc: "Penyaluran dana & alokasi ke mitra" },
+  "manage articles": { label: "Kelola Artikel", desc: "Edukasi & artikel literasi wakaf" },
+  "manage_articles": { label: "Kelola Artikel", desc: "Edukasi & artikel literasi wakaf" },
+  "manage bank_accounts": { label: "Kelola Rekening Bank", desc: "Rekening bank resmi donasi & wakaf" },
+  "manage bank accounts": { label: "Kelola Rekening Bank", desc: "Rekening bank resmi donasi & wakaf" },
+  "manage banners": { label: "Kelola Banner", desc: "Banner promosi & slideshow beranda" },
+  "manage_banners": { label: "Kelola Banner", desc: "Banner promosi & slideshow beranda" },
+  "manage consultations": { label: "Kelola Konsultasi", desc: "Layanan konsultasi wakaf masuk" },
+  "manage_consultations": { label: "Kelola Konsultasi", desc: "Layanan konsultasi wakaf masuk" },
+  "manage donations": { label: "Kelola Donasi", desc: "Data transaksi donasi & konfirmasi" },
+  "manage_donations": { label: "Kelola Donasi", desc: "Data transaksi donasi & konfirmasi" },
+  "manage gallery dpf": { label: "Kelola Galeri DPF", desc: "Dokumentasi foto kegiatan DPF" },
+  "manage gallery_dpf": { label: "Kelola Galeri DPF", desc: "Dokumentasi foto kegiatan DPF" },
+  "manage gallery mitra": { label: "Kelola Galeri Mitra", desc: "Dokumentasi foto kegiatan mitra" },
+  "manage gallery_mitra": { label: "Kelola Galeri Mitra", desc: "Dokumentasi foto kegiatan mitra" },
+  "manage organization": { label: "Kelola Organisasi", desc: "Struktur kepengurusan & anggota" },
+  "manage_organization": { label: "Kelola Organisasi", desc: "Struktur kepengurusan & anggota" },
+  "manage partners": { label: "Kelola Mitra", desc: "Pendaftaran, verifikasi, & data mitra" },
+  "manage_partners": { label: "Kelola Mitra", desc: "Pendaftaran, verifikasi, & data mitra" },
+  "manage pickup_requests": { label: "Kelola Jemput Wakaf", desc: "Permintaan layanan jemput wakaf" },
+  "manage pickup requests": { label: "Kelola Jemput Wakaf", desc: "Permintaan layanan jemput wakaf" },
+  "manage produk mitra": { label: "Kelola Produk Mitra", desc: "Katalog & etalase produk mitra" },
+  "manage produk_mitra": { label: "Kelola Produk Mitra", desc: "Katalog & etalase produk mitra" },
+  "manage mitra_products": { label: "Kelola Produk Mitra", desc: "Katalog & etalase produk mitra" },
+  "manage programs": { label: "Kelola Program", desc: "Program, campaign, & target wakaf" },
+  "manage_programs": { label: "Kelola Program", desc: "Program, campaign, & target wakaf" },
+  "manage role permissions": { label: "Konfigurasi Hak Akses", desc: "Pengaturan role & hak akses pengguna" },
+  "manage_role_permissions": { label: "Konfigurasi Hak Akses", desc: "Pengaturan role & hak akses pengguna" },
+  "manage suggestions": { label: "Kelola Saran", desc: "Kotak saran & aspirasi publik" },
+  "manage_suggestions": { label: "Kelola Saran", desc: "Kotak saran & aspirasi publik" },
+  "manage tags": { label: "Kelola Tag", desc: "Tagar footer & filter kategori" },
+  "manage_tags": { label: "Kelola Tag", desc: "Tagar footer & filter kategori" },
+  "manage tasks": { label: "Kelola Tugas", desc: "Pencatatan tugas & operasional" },
+  "manage_tasks": { label: "Kelola Tugas", desc: "Pencatatan tugas & operasional" },
+  "manage users": { label: "Kelola Pengguna", desc: "Akun pengurus & manajemen user" },
+  "manage_users": { label: "Kelola Pengguna", desc: "Akun pengurus & manajemen user" },
+  "view reports": { label: "Lihat Laporan", desc: "Laporan donasi, kas, & keuangan" },
+  "view_reports": { label: "Lihat Laporan", desc: "Laporan donasi, kas, & keuangan" },
 };
+
+function getPermissionMeta(name: string): { label: string; desc: string } {
+  const normalized = name.toLowerCase().trim();
+  if (PERMISSION_DETAILS[normalized]) {
+    return PERMISSION_DETAILS[normalized];
+  }
+  const cleanWithSpaces = normalized.replace(/_/g, " ");
+  if (PERMISSION_DETAILS[cleanWithSpaces]) {
+    return PERMISSION_DETAILS[cleanWithSpaces];
+  }
+  // Fallback formatting
+  let label = cleanWithSpaces;
+  if (cleanWithSpaces.startsWith("manage ")) {
+    label = "Kelola " + cleanWithSpaces.slice(7).replace(/\b\w/g, (c) => c.toUpperCase());
+  } else if (cleanWithSpaces.startsWith("view ")) {
+    label = "Lihat " + cleanWithSpaces.slice(5).replace(/\b\w/g, (c) => c.toUpperCase());
+  } else {
+    label = cleanWithSpaces.replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+  return { label, desc: "Akses penuh modul " + label.toLowerCase() };
+}
 
 export default function RoleForm({ mode, roleId }: RoleFormProps) {
   const navigate = useNavigate();
@@ -126,7 +170,7 @@ export default function RoleForm({ mode, roleId }: RoleFormProps) {
                 <h1 className="font-heading text-3xl font-bold text-white md:text-5xl text-shadow-sm">
                   {mode === "create" ? "Tambah Role" : "Ubah Role"}
                 </h1>
-                <p className="mt-2 max-w-2xl text-lg font-medium text-emerald-100/90">
+                <p className="mt-2 max-w-2xl text-base sm:text-lg font-medium text-emerald-100/90">
                   {mode === "create" 
                     ? "Tentukan nama role dan pilih izin akses yang sesuai untuk jabatan baru." 
                     : "Sesuaikan hak akses dan identitas untuk jabatan yang sudah terdaftar."}
@@ -182,54 +226,55 @@ export default function RoleForm({ mode, roleId }: RoleFormProps) {
           {/* Permissions Selection Card */}
           <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 sm:p-10">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-8 mb-8">
-                <h3 className="font-heading text-xl font-bold text-slate-900 flex items-center gap-3">
+              <h3 className="font-heading text-xl font-bold text-slate-900 flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 transition-transform group-hover:rotate-12">
-                    <FontAwesomeIcon icon={faShieldHalved} />
+                  <FontAwesomeIcon icon={faShieldHalved} />
                 </div>
                 Hak Akses (Permissions)
-                </h3>
-                <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-                        Total {allPermissions.length} Modul
-                    </span>
-                </div>
+              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-black uppercase tracking-widest text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                  Total {allPermissions.filter((p) => p.name !== "manage settings").length} Modul
+                </span>
+              </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {allPermissions
-              .filter((p) => p.name !== "manage settings")
-              .map((p) => {
-                const isSelected = selectedPermissions.includes(p.name);
-                const label = PERMISSION_LABELS[p.name] || p.name;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => togglePermission(p.name)}
-                    disabled={saving}
-                    className={`group flex items-center gap-4 p-5 rounded-2xl border transition-all text-left relative overflow-hidden ${
-                      isSelected
-                        ? "bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-500/5 shadow-md shadow-emerald-500/5"
-                        : "bg-white border-slate-200 text-slate-600 hover:border-emerald-300 hover:bg-emerald-50/10 hover:shadow-lg hover:shadow-slate-200/50"
-                    }`}
-                  >
-                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all ${
-                      isSelected ? "bg-emerald-600 text-white shadow-lg shadow-emerald-500/20" : "bg-slate-100 text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600"
-                    }`}>
-                      <FontAwesomeIcon icon={isSelected ? faCircleCheck : faCheck} className={isSelected ? "text-lg" : "text-sm"} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <span className="block text-sm font-bold capitalize truncate leading-tight mb-1">{label}</span>
-                        <span className="text-[10px] text-slate-500 font-medium line-clamp-1 italic text-emerald-700/60 font-semibold uppercase tracking-wider">Akses Penuh Modul</span>
-                    </div>
-                    {isSelected && (
-                        <div className="absolute top-0 right-0 p-1 opacity-10">
-                            <FontAwesomeIcon icon={faShieldHalved} className="text-4xl -rotate-12" />
-                        </div>
-                    )}
-                  </button>
-                );
-              })}
+            <div className="grid gap-3.5 sm:grid-cols-2">
+              {allPermissions
+                .filter((p) => p.name !== "manage settings")
+                .map((p) => {
+                  const isSelected = selectedPermissions.includes(p.name);
+                  const meta = getPermissionMeta(p.name);
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => togglePermission(p.name)}
+                      disabled={saving}
+                      className={`group flex items-start gap-3.5 p-4 sm:p-5 rounded-2xl border transition-all text-left relative overflow-hidden ${
+                        isSelected
+                          ? "bg-emerald-50/90 border-emerald-500 text-emerald-950 ring-2 ring-emerald-500/20 shadow-sm"
+                          : "bg-white border-slate-200 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50/20 hover:shadow-md"
+                      }`}
+                    >
+                      <div className={`mt-0.5 h-9 w-9 shrink-0 rounded-xl flex items-center justify-center transition-all ${
+                        isSelected
+                          ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
+                          : "bg-slate-100 text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-700"
+                      }`}>
+                        <FontAwesomeIcon icon={isSelected ? faCircleCheck : faCheck} className={isSelected ? "text-base" : "text-xs"} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-900 leading-snug">
+                          {meta.label}
+                        </p>
+                        <p className="mt-1 text-xs font-medium text-slate-500 leading-relaxed">
+                          {meta.desc}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
             </div>
           </div>
         </div>
@@ -240,71 +285,71 @@ export default function RoleForm({ mode, roleId }: RoleFormProps) {
             <h3 className="font-heading text-lg font-bold text-slate-900 mb-6">Status & Konfigurasi</h3>
             
             <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 divide-y divide-slate-200">
-                <div className="pb-4">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[2px] mb-4 text-center">Rekapibilitas Akses</h4>
-                    <div className="flex flex-col items-center justify-center gap-1">
-                        <span className="text-5xl font-black text-emerald-600 tabular-nums">{selectedPermissions.length}</span>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Izin Terpilih</span>
-                    </div>
+              <div className="pb-4">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[2px] mb-4 text-center">Rekapitulasi Akses</h4>
+                <div className="flex flex-col items-center justify-center gap-1">
+                  <span className="text-5xl font-black text-emerald-600 tabular-nums">{selectedPermissions.length}</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Izin Terpilih</span>
                 </div>
-                <div className="pt-4">
-                     <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden shadow-inner">
-                        <div
-                            className="bg-emerald-500 h-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(16,185,129,0.5)]"
-                            style={{ width: `${(selectedPermissions.length / (allPermissions.length || 1)) * 100}%` }}
-                        />
-                    </div>
+              </div>
+              <div className="pt-4">
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden shadow-inner">
+                  <div
+                    className="bg-emerald-500 h-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                    style={{ width: `${(selectedPermissions.length / (allPermissions.length || 1)) * 100}%` }}
+                  />
                 </div>
+              </div>
             </div>
 
             <div className="mt-8 space-y-4">
-               <button
-                  type="submit"
-                  disabled={saving}
-                  className="group w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-emerald-600 px-8 py-5 text-base font-bold text-white shadow-xl shadow-emerald-600/30 transition-all hover:bg-emerald-700 hover:shadow-emerald-600/40 hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
-               >
-                  {saving ? (
-                      <>
-                      <FontAwesomeIcon icon={faSpinner} className="animate-spin text-lg" />
-                      Memproses...
-                      </>
-                  ) : (
-                      <>
-                      <FontAwesomeIcon icon={faFloppyDisk} className="text-lg transition-transform group-hover:scale-110" />
-                      {mode === "create" ? "Tambah Role" : "Simpan Perubahan"}
-                      </>
-                  )}
-               </button>
-               <button
-                  type="button"
-                  onClick={() => navigate("/superadmin/roles")}
-                  disabled={saving}
-                  className="w-full inline-flex items-center justify-center rounded-2xl bg-slate-100 px-8 py-4 text-sm font-bold text-slate-600 transition-all hover:bg-slate-200 active:scale-95"
-               >
-                  Batal
-               </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="group w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-emerald-600 px-8 py-5 text-base font-bold text-white shadow-xl shadow-emerald-600/30 transition-all hover:bg-emerald-700 hover:shadow-emerald-600/40 hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} className="animate-spin text-lg" />
+                    Memproses...
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faFloppyDisk} className="text-lg transition-transform group-hover:scale-110" />
+                    {mode === "create" ? "Tambah Role" : "Simpan Perubahan"}
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/superadmin/roles")}
+                disabled={saving}
+                className="w-full inline-flex items-center justify-center rounded-2xl bg-slate-100 px-8 py-4 text-sm font-bold text-slate-600 transition-all hover:bg-slate-200 active:scale-95"
+              >
+                Batal
+              </button>
             </div>
 
             <div className="mt-10 pt-8 border-t border-slate-100">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Informasi Penting</p>
-                <div className="space-y-4">
-                    <div className="flex gap-4 group">
-                        <div className="mt-1 h-5 w-5 shrink-0 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 transition-colors group-hover:bg-emerald-500 group-hover:text-white shadow-sm">
-                            <FontAwesomeIcon icon={faCheck} className="text-[8px]" />
-                        </div>
-                        <p className="text-xs font-semibold text-slate-500 leading-relaxed group-hover:text-slate-700 transition-colors">
-                            Setiap role baru akan secara otomatis memiliki akses dasar ke dashboard.
-                        </p>
-                    </div>
-                    <div className="flex gap-4 group">
-                        <div className="mt-1 h-5 w-5 shrink-0 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 transition-colors group-hover:bg-emerald-500 group-hover:text-white shadow-sm">
-                            <FontAwesomeIcon icon={faCheck} className="text-[8px]" />
-                        </div>
-                        <p className="text-xs font-semibold text-slate-500 leading-relaxed group-hover:text-slate-700 transition-colors">
-                            Perubahan pada role yang sedang digunakan akan berdampak langsung pada user terkait.
-                        </p>
-                    </div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Informasi Penting</p>
+              <div className="space-y-4">
+                <div className="flex gap-4 group">
+                  <div className="mt-1 h-5 w-5 shrink-0 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 transition-colors group-hover:bg-emerald-500 group-hover:text-white shadow-sm">
+                    <FontAwesomeIcon icon={faCheck} className="text-[8px]" />
+                  </div>
+                  <p className="text-xs font-semibold text-slate-500 leading-relaxed group-hover:text-slate-700 transition-colors">
+                    Setiap role baru akan secara otomatis memiliki akses dasar ke dashboard.
+                  </p>
                 </div>
+                <div className="flex gap-4 group">
+                  <div className="mt-1 h-5 w-5 shrink-0 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 transition-colors group-hover:bg-emerald-500 group-hover:text-white shadow-sm">
+                    <FontAwesomeIcon icon={faCheck} className="text-[8px]" />
+                  </div>
+                  <p className="text-xs font-semibold text-slate-500 leading-relaxed group-hover:text-slate-700 transition-colors">
+                    Perubahan pada role yang sedang digunakan akan berdampak langsung pada user terkait.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faPenToSquare, faThumbtack } from "@fortawesome/free-solid-svg-icons";
 import { type Program } from "./EditorProgramTypes";
 import { formatDate, formatCurrency, getStatusTone, formatStatusLabel, getRemainingDays } from "./EditorProgramUtils";
 
@@ -38,8 +38,9 @@ export default function EditorProgramCard({ program, isSelected, onToggle, onEdi
                             {program.category}
                         </span>
                         {program.is_highlight ? (
-                            <span className="inline-flex items-center rounded-full bg-violet-600 px-3 py-1 text-xs font-bold text-white ring-1 ring-violet-700/70">
-                                Highlight
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-700 ring-1 ring-amber-300">
+                                <FontAwesomeIcon icon={faThumbtack} className="text-[9px]" />
+                                Disematkan
                             </span>
                         ) : null}
                     </div>
