@@ -154,9 +154,11 @@ export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroPro
             />
           ) : null}
           {article.is_pinned ? (
-            <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 font-heading text-xs font-bold text-amber-700 ring-1 ring-amber-300 shadow-sm">
-              <FontAwesomeIcon icon={faThumbtack} className="text-[10px]" />
-              {locale === "en" ? "Pinned" : "Disematkan"}
+            <span 
+              title={locale === "en" ? "Pinned" : "Disematkan"}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-300 shadow-sm"
+            >
+              <FontAwesomeIcon icon={faThumbtack} className="text-xs" />
             </span>
           ) : null}
         </div>

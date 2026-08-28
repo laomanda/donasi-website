@@ -55,9 +55,11 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
             {pickLocale(program.category, program.category_en, locale) || t("program.defaultCategory")}
           </span>
           {program.is_highlight && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm ring-1 ring-amber-400">
-              <FontAwesomeIcon icon={faThumbtack} className="text-[9px]" />
-              {locale === "en" ? "Pinned" : "Disematkan"}
+            <span 
+              title={locale === "en" ? "Pinned" : "Disematkan"}
+              className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white shadow-sm ring-1 ring-amber-400"
+            >
+              <FontAwesomeIcon icon={faThumbtack} className="text-[10px]" />
             </span>
           )}
         </div>

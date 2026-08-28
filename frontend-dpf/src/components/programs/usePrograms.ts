@@ -54,6 +54,12 @@ export function usePrograms(locale: "id" | "en", t: (key: string, fallback?: str
     });
 
     const sorted = [...filteredDrafts].sort((a, b) => {
+      const aHighlight = a.is_highlight ? 1 : 0;
+      const bHighlight = b.is_highlight ? 1 : 0;
+      if (bHighlight !== aHighlight) {
+        return bHighlight - aHighlight;
+      }
+
       const aDate = new Date(a.published_at ?? a.created_at ?? 0).getTime();
       const bDate = new Date(b.published_at ?? b.created_at ?? 0).getTime();
       return bDate - aDate;
