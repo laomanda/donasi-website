@@ -123,12 +123,12 @@ export function LandingNavbar() {
                 <div className="relative">
                     <div className={`relative z-[20] ${navShellClass}`}>
                         <div className="mx-auto flex h-20 w-full max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12">
-                            <Link to="/" className="flex items-center gap-3 group">
-                                <span className="flex h-13 w-13 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-sm transition-transform group-hover:scale-105">
+                            <Link to="/" className="flex items-center gap-3 group shrink-0">
+                                <span className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-sm transition-transform group-hover:scale-105 overflow-hidden">
                                     <img
                                         src={dpfWakaf}
                                         alt="DPF"
-                                        className="h-full w-full object-contain p-1"
+                                        className="h-9 w-9 sm:h-10 sm:w-10 object-contain p-0.5"
                                     />
                                 </span>
                                 <div className="leading-tight">
