@@ -287,6 +287,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', element: withSuspense(CustomDashboardPage) },
+          { path: 'search', element: <Suspense fallback={<PageLoader />}><SearchPage role="custom" /></Suspense> },
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="custom" /></Suspense> },
         ],
       },

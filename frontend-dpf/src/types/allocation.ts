@@ -3,6 +3,7 @@ export type Allocation = {
   amount: number;
   description: string;
   proof_path: string | null;
+  allocated_at?: string | null;
   created_at: string;
   user_id?: number | null;
   donation_id?: number | null;
@@ -54,5 +55,6 @@ export type AllocationFormData = {
   program_id: string;
   amount: string;
   description: string;
+  allocated_at: string;
   proof: File | null;
 };

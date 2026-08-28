@@ -44,11 +44,22 @@ export type ProgramUpdate = {
   published_at?: string | null;
 };
 
+export type ProgramAllocation = {
+  id: number;
+  amount: number | string;
+  description: string;
+  proof_path?: string | null;
+  allocated_at?: string | null;
+  created_at?: string | null;
+};
+
 export type ProgramShowResponse = {
   program: Program;
   progress_percent?: number;
   recent_donations?: Donation[];
   latest_updates?: ProgramUpdate[];
+  allocations?: ProgramAllocation[];
+  total_allocated?: number;
 };
 
 export const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" | "en" = "id") => {

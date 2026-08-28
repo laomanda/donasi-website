@@ -113,7 +113,7 @@ function LandingPage() {
   return (
     <LandingLayout whatsappPhone="6285195542022" footerWaveBgClassName="bg-slate-50">
       <BannerSection banners={banners} />
-      <HeroSection error={error} t={t} />
+      <HeroSection error={error} t={t} stats={data?.stats} locale={locale as any} />
       <PromiseStrip t={t} />
       <ProgramsSection highlights={localizedHighlights} loading={loading} t={t} locale={locale as any} />
       <ArticlesSection articles={localizedArticles} loading={loading} t={t} locale={locale as any} />

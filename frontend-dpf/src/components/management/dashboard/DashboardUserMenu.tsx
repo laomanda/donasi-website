@@ -82,7 +82,7 @@ export function DashboardUserMenu({
           <div className="divide-y divide-slate-100 border-t border-slate-100">
             <button
               type="button"
-              onClick={() => navigate(`/${role}/settings`)}
+              onClick={() => navigate(role === "custom" ? "/management/settings" : `/${role}/settings`)}
               className="group flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-slate-50"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition group-hover:bg-white group-hover:ring-slate-300">

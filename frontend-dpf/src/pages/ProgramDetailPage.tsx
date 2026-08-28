@@ -34,6 +34,11 @@ export function ProgramDetailPage() {
     recentDonations,
     filteredDonations,
     latestUpdates,
+    allocations,
+    filteredAllocations,
+    totalAllocated,
+    allocationQuery,
+    setAllocationQuery,
     progressPercent
   } = useProgramDetail(locale, t);
 
@@ -81,8 +86,13 @@ export function ProgramDetailPage() {
                   recentDonations={recentDonations}
                   filteredDonations={filteredDonations}
                   latestUpdates={latestUpdates}
+                  allocations={allocations}
+                  filteredAllocations={filteredAllocations}
+                  totalAllocated={totalAllocated}
                   donorQuery={donorQuery}
                   setDonorQuery={setDonorQuery}
+                  allocationQuery={allocationQuery}
+                  setAllocationQuery={setAllocationQuery}
                 />
               </div>
 

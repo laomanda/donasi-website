@@ -29,18 +29,20 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     return translate(mergedDict, effectiveLocale, key, fallback);
   };
 
-  const theme = Utils.ROLE_THEME[role];
-  const isSearchEnabled = role === "editor" || role === "superadmin" || role === "admin";
   const storedUser = useMemo(() => getAuthUser() as Utils.StoredUser | null, []);
   const userRoles = useMemo(() => Utils.resolveUserRoles(storedUser), [storedUser]);
   const userPermissions = useMemo(() => Utils.resolveUserPermissions(storedUser), [storedUser]);
+
+  const isCustomUser = userRoles.includes("custom");
+  const displayRole: Utils.DashboardRole = isCustomUser ? "custom" : role;
+  const theme = Utils.ROLE_THEME[displayRole] ?? Utils.ROLE_THEME[role];
+  const isSearchEnabled = displayRole === "editor" || displayRole === "superadmin" || displayRole === "admin" || displayRole === "custom";
+
   const navSections = useMemo(() => {
-    // When inside a specific role shell (e.g. admin, editor, keuangan, superadmin, mitra),
-    // only render the navigation sections for that active role shell.
-    // For custom role shell, use all resolved custom roles.
-    const activeRoles = role === "custom" ? (userRoles.length ? userRoles : [role]) : [role];
+    // When the user has a custom role, ALWAYS retain all permitted sections across all modules
+    const activeRoles: Utils.DashboardRole[] = isCustomUser ? ["custom"] : [role];
     return Utils.buildNavSections(activeRoles, userPermissions, t);
-  }, [role, userRoles, userPermissions, effectiveLocale]);
+  }, [isCustomUser, role, userPermissions, effectiveLocale]);
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -53,13 +55,13 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const userName = typeof storedUser?.name === "string" ? storedUser.name : null;
   const userEmail = typeof storedUser?.email === "string" ? storedUser.email : null;
   const userRoleLabel = useMemo(() => {
-    const primaryRole = userRoles[0] || role;
     const rawLabel = typeof storedUser?.role_label === "string" ? storedUser.role_label.trim() : "";
     const knownRoles = ["admin", "editor", "keuangan", "superadmin", "mitra", "pelihat"];
-    if (!rawLabel || (knownRoles.includes(rawLabel.toLowerCase()) && rawLabel.toLowerCase() !== primaryRole.toLowerCase())) {
-      return Utils.ROLE_LABEL[primaryRole] ?? Utils.ROLE_LABEL[role];
+    if (rawLabel && !knownRoles.includes(rawLabel.toLowerCase())) {
+      return rawLabel;
     }
-    return rawLabel;
+    const primaryRole = userRoles[0] || role;
+    return Utils.ROLE_LABEL[primaryRole] ?? Utils.ROLE_LABEL[role];
   }, [storedUser, userRoles, role]);
 
   useEffect(() => {
@@ -177,7 +179,8 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     if (!isSearchEnabled) return;
     const value = query.trim();
     if (!value) return;
-    navigate(`/${role}/search?q=${encodeURIComponent(value)}`);
+    const searchBase = displayRole === "custom" ? "management" : displayRole;
+    navigate(`/${searchBase}/search?q=${encodeURIComponent(value)}`);
   };
 
   const routeSearchQuery = useMemo(() => {
@@ -201,7 +204,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
         <DashboardSidebar
           mobileOpen={mobileSidebarOpen}
           setMobileOpen={setMobileSidebarOpen}
-          role={role}
+          role={displayRole}
           theme={theme}
           navSections={navSections}
           badgeCounts={currentBadgeCounts}
@@ -210,7 +213,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <DashboardHeader
-            role={role}
+            role={displayRole}
             theme={theme}
             onOpenSidebar={() => setMobileSidebarOpen(true)}
             isSearchEnabled={isSearchEnabled}

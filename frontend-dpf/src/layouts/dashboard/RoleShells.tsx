@@ -35,12 +35,17 @@ function RequireDashboardRole({ role }: { role: Utils.DashboardRole }) {
 
   if (!isAuthorizedRole && !isCustomRole) {
     const home = roles[0];
-    const redirectPath = `/${home}/dashboard`;
+    const redirectPath = home === "custom" ? "/management/dashboard" : `/${home}/dashboard`;
     return <Navigate to={redirectPath} replace />;
   }
 
+  // Redirect custom role users trying to access standard shell dashboards
+  if (isCustomRole && role !== "custom" && (location.pathname === `/${role}/dashboard` || location.pathname === `/${role}` || location.pathname === `/${role}/`)) {
+    return <Navigate to="/management/dashboard" replace />;
+  }
+
   // Final check: Granular access control for current path
-  const sections = Utils.NAV_SECTIONS_BY_ROLE[role];
+  const sections = Utils.NAV_SECTIONS_BY_ROLE[role] || [];
   const allItems = sections.flatMap((s) => s.items);
   const currentItem = allItems.find((item) => {
     // Exact match or sub-path match (e.g. /admin/users matches /admin/users/create)

@@ -5,6 +5,7 @@ import type {
   Program, 
   Donation, 
   ProgramUpdate, 
+  ProgramAllocation,
   ProgramShowResponse 
 } from "../ProgramShared";
 import { 
@@ -22,12 +23,15 @@ export function useProgramDetail(locale: "id" | "en", t: (key: string, fallback?
   const [program, setProgram] = useState<Program | null>(null);
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [latestUpdates, setLatestUpdates] = useState<ProgramUpdate[]>([]);
+  const [allocations, setAllocations] = useState<ProgramAllocation[]>([]);
+  const [totalAllocated, setTotalAllocated] = useState<number>(0);
   const [progressPercent, setProgressPercent] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [errorKey, setErrorKey] = useState<"not_found" | "load_failed" | null>(null);
   const [shareStatus, setShareStatus] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"detail" | "updates" | "donors">("detail");
+  const [activeTab, setActiveTab] = useState<"detail" | "updates" | "donors" | "allocations">("detail");
   const [donorQuery, setDonorQuery] = useState("");
+  const [allocationQuery, setAllocationQuery] = useState("");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // Fetch program data
@@ -49,6 +53,8 @@ export function useProgramDetail(locale: "id" | "en", t: (key: string, fallback?
         setProgressPercent(Number.isFinite(rawProgress) ? Math.max(rawProgress, 0) : 0);
         setRecentDonations(res.data.recent_donations ?? []);
         setLatestUpdates(res.data.latest_updates ?? []);
+        setAllocations(res.data.allocations ?? []);
+        setTotalAllocated(Number(res.data.total_allocated ?? 0));
         setErrorKey(null);
       })
       .catch(() => {
@@ -160,6 +166,16 @@ export function useProgramDetail(locale: "id" | "en", t: (key: string, fallback?
     });
   }, [donorQuery, recentDonations]);
 
+  // Allocation filtering
+  const filteredAllocations = useMemo(() => {
+    const term = allocationQuery.trim().toLowerCase();
+    if (!term) return allocations;
+    return allocations.filter((alloc) => {
+      const desc = String(alloc.description ?? "").trim().toLowerCase();
+      return desc.includes(term);
+    });
+  }, [allocationQuery, allocations]);
+
   return {
     slug,
     navigate,
@@ -168,6 +184,9 @@ export function useProgramDetail(locale: "id" | "en", t: (key: string, fallback?
     recentDonations,
     filteredDonations,
     latestUpdates,
+    allocations,
+    filteredAllocations,
+    totalAllocated,
     progressPercent,
     loading,
     errorKey,
@@ -176,6 +195,8 @@ export function useProgramDetail(locale: "id" | "en", t: (key: string, fallback?
     setActiveTab,
     donorQuery,
     setDonorQuery,
+    allocationQuery,
+    setAllocationQuery,
     activeImageIndex,
     setActiveImageIndex,
     galleryUrls,

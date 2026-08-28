@@ -37,8 +37,9 @@ export function SettingsPage({ role }: { role: DashboardRole }) {
     if (role === "admin") return t("role.admin");
     if (role === "editor") return t("role.editor");
     if (role === "keuangan") return "Keuangan";
+    if (role === "custom") return (user as any)?.role_label || "Staff";
     return t("role.mitra");
-  }, [t]);
+  }, [t, user]);
 
   const displayName = useMemo(() => {
     const value = String(user?.name ?? roleLabel(role)).trim();

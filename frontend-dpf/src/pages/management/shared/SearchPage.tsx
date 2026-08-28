@@ -53,6 +53,11 @@ const headerCopy: Record<SearchRole, { title: string; description: string; tagTo
     description: "Temukan transaksi donasi dan konfirmasi donasi. Gunakan kolom pencarian di bilah atas untuk mengganti kata kunci.",
     tagTone: "green",
   },
+  custom: {
+    title: "Pencarian Data",
+    description: "Menampilkan hasil pencarian di seluruh modul yang Anda miliki hak aksesnya.",
+    tagTone: "primary",
+  },
 };
 
 export function SearchPage({ role }: { role: SearchRole }) {
@@ -310,7 +315,8 @@ export function SearchPage({ role }: { role: SearchRole }) {
       }
     };
 
-    if (role === "admin") {
+    const isCustom = role === "custom";
+    if (role === "admin" || isCustom) {
       void loadDonations();
       void loadDonationConfirmations();
       void loadEditorTasks();
@@ -318,14 +324,14 @@ export function SearchPage({ role }: { role: SearchRole }) {
       void loadConsultations();
     }
 
-    if (role === "editor") {
+    if (role === "editor" || isCustom) {
       void loadArticles();
       void loadPrograms();
       void loadPartners();
       void loadMembers();
     }
 
-    if (role === "superadmin") {
+    if (role === "superadmin" || isCustom) {
       void loadUsers();
     }
 
@@ -348,6 +354,21 @@ export function SearchPage({ role }: { role: SearchRole }) {
     if (role === "superadmin") {
       return usersState.total;
     }
+    if (role === "custom") {
+      return (
+        donationsState.total +
+        donationConfirmationsState.total +
+        editorTasksState.total +
+        pickupRequestsState.total +
+        consultationsState.total +
+        bankAccountsState.total +
+        articlesState.total +
+        programsState.total +
+        partnersState.total +
+        membersState.total +
+        usersState.total
+      );
+    }
     return articlesState.total + programsState.total + partnersState.total + membersState.total;
   }, [
     role,
@@ -364,7 +385,7 @@ export function SearchPage({ role }: { role: SearchRole }) {
     usersState.total,
   ]);
 
-  const header = headerCopy[role];
+  const header = headerCopy[role] || headerCopy.custom;
   const tagToneClass = sectionBadgeTone(header.tagTone);
 
   return (
@@ -396,7 +417,7 @@ export function SearchPage({ role }: { role: SearchRole }) {
         </div>
       ) : (
         <div className={role === "superadmin" ? "grid gap-6" : "grid gap-6 lg:grid-cols-2"}>
-          {(role === "admin" || role === "keuangan") && (
+          {(role === "admin" || role === "keuangan" || role === "custom") && (
             <AdminSearchResults 
               donationsState={donationsState}
               donationConfirmationsState={donationConfirmationsState}
@@ -406,7 +427,7 @@ export function SearchPage({ role }: { role: SearchRole }) {
             />
           )}
 
-          {role === "editor" && (
+          {(role === "editor" || role === "custom") && (
             <EditorSearchResults 
               articlesState={articlesState}
               programsState={programsState}
@@ -415,7 +436,7 @@ export function SearchPage({ role }: { role: SearchRole }) {
             />
           )}
 
-          {role === "superadmin" && (
+          {(role === "superadmin" || role === "custom") && (
             <SuperAdminSearchResults 
               usersState={usersState}
             />

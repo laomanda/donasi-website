@@ -401,41 +401,60 @@ export default function AdminAllocationCreateForm({
               </div>
             )}
 
-            {/* Input Nominal */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Nominal Penyaluran <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-3 text-slate-400 font-bold">Rp</span>
-                <input
-                  type="text"
-                  required
-                  placeholder="0"
-                  disabled={(isMitra && !formData.program_id && formData.program_id !== "") || (!isMitra && !formData.donation_id)}
-                  className={`block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition ${
-                    Number(formData.amount) > maxAmount ? "border-red-500 ring-4 ring-red-500/10" : ""
-                  }`}
-                  value={formData.amount ? new Intl.NumberFormat("id-ID").format(Number(formData.amount)) : ""}
-                  onChange={(e) => handleAmountChange(e.target.value)}
-                />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {/* Input Nominal */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Nominal Penyaluran <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-3 text-slate-400 font-bold">Rp</span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="0"
+                    disabled={(isMitra && !formData.program_id && formData.program_id !== "") || (!isMitra && !formData.donation_id)}
+                    className={`block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition ${
+                      Number(formData.amount) > maxAmount ? "border-red-500 ring-4 ring-red-500/10" : ""
+                    }`}
+                    value={formData.amount ? new Intl.NumberFormat("id-ID").format(Number(formData.amount)) : ""}
+                    onChange={(e) => handleAmountChange(e.target.value)}
+                  />
+                </div>
+                {Number(formData.amount) > maxAmount && maxAmount > 0 ? (
+                  <p className="mt-1 text-xs font-bold text-red-500 animate-pulse">
+                    ⚠️ Nominal melebihi sisa dana tersedia (Maksimal: {formatRupiah(maxAmount)})
+                  </p>
+                ) : (
+                  maxAmount > 0 && (
+                    <div className="mt-1 flex justify-between text-xs font-medium">
+                      <span className="text-slate-500">
+                        {formData.amount ? "Sisa dana:" : "Maksimal:"}
+                      </span>
+                      <span className={`font-bold ${formData.amount ? "text-blue-600" : "text-emerald-600"}`}>
+                        {formatRupiah(maxAmount - Number(formData.amount))}
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
-              {Number(formData.amount) > maxAmount && maxAmount > 0 ? (
-                <p className="mt-1 text-xs font-bold text-red-500 animate-pulse">
-                  ⚠️ Nominal melebihi sisa dana tersedia (Maksimal: {formatRupiah(maxAmount)})
+
+              {/* Input Tanggal Penyaluran */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Tanggal Penyaluran <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={formData.allocated_at || new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setFormData({ ...formData, allocated_at: e.target.value })}
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-3 px-4 text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition"
+                />
+                <p className="mt-1 text-[11px] font-semibold text-slate-400">
+                  Tanggal realisasi penyaluran.
                 </p>
-              ) : (
-                maxAmount > 0 && (
-                  <div className="mt-1 flex justify-between text-xs font-medium">
-                    <span className="text-slate-500">
-                      {formData.amount ? "Sisa dana setelah penyaluran:" : "Maksimal tersedia:"}
-                    </span>
-                    <span className={`font-bold ${formData.amount ? "text-blue-600" : "text-emerald-600"}`}>
-                      {formatRupiah(maxAmount - Number(formData.amount))}
-                    </span>
-                  </div>
-                )
-              )}
+              </div>
             </div>
 
             <div className="space-y-1">

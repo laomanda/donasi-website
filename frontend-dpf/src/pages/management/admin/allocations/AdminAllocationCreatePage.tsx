@@ -26,6 +26,7 @@ export function AdminAllocationCreatePage() {
     program_id: "",
     amount: "",
     description: "",
+    allocated_at: new Date().toISOString().split("T")[0],
     proof: null,
   });
 
@@ -195,6 +196,9 @@ export function AdminAllocationCreatePage() {
     }
     data.append("amount", formData.amount);
     data.append("description", formData.description);
+    if (formData.allocated_at) {
+      data.append("allocated_at", formData.allocated_at);
+    }
     if (formData.proof) {
       data.append("proof", formData.proof);
     }

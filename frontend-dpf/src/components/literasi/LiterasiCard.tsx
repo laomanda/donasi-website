@@ -56,7 +56,7 @@ export function LiterasiCard({ article, locale, t, variant = "save" }: LiterasiC
           {article.is_pinned && (
             <span 
               title={locale === "en" ? "Pinned" : "Disematkan"}
-              className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white shadow-sm ring-1 ring-amber-400"
+              className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white shadow-sm"
             >
               <FontAwesomeIcon icon={faThumbtack} className="text-[10px]" />
             </span>

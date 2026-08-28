@@ -194,7 +194,7 @@ Route::prefix('v1')->group(function () {
     | ADMIN (Role: admin atau superadmin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:admin|superadmin|view reports|manage donations|manage pickup_requests|manage consultations|manage suggestions|manage allocations'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:admin|superadmin|view reports|manage donations|manage pickup_requests|manage consultations|manage suggestions|manage allocations|manage bank_accounts|manage organization|manage partners|manage banners|manage users|manage roles'])
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {

@@ -1,20 +1,24 @@
+import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faLayerGroup, 
   faArrowRight,
-  faThumbtack
+  faThumbtack,
+  faImage
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import type { 
   Program, 
   Donation, 
-  ProgramUpdate 
+  ProgramUpdate,
+  ProgramAllocation 
 } from "../ProgramShared";
 import { 
   getStatusLabel, 
   formatDate, 
   getExcerptParagraph, 
-  formatCurrency 
+  formatCurrency,
+  getImageUrl
 } from "../ProgramShared";
 import { sanitizeHtml } from "../../../lib/sanitize";
 
@@ -23,13 +27,18 @@ interface ProgramDetailInfoProps {
   localizedProgram: any;
   locale: "id" | "en";
   t: (key: string, fallback?: string) => string;
-  activeTab: "detail" | "updates" | "donors";
-  setActiveTab: (tab: "detail" | "updates" | "donors") => void;
+  activeTab: "detail" | "updates" | "donors" | "allocations";
+  setActiveTab: (tab: "detail" | "updates" | "donors" | "allocations") => void;
   recentDonations: Donation[];
   filteredDonations: Donation[];
   latestUpdates: ProgramUpdate[];
+  allocations: ProgramAllocation[];
+  filteredAllocations: ProgramAllocation[];
+  totalAllocated: number;
   donorQuery: string;
   setDonorQuery: (query: string) => void;
+  allocationQuery: string;
+  setAllocationQuery: (query: string) => void;
 }
 
 export function ProgramDetailInfo({
@@ -42,9 +51,23 @@ export function ProgramDetailInfo({
   recentDonations,
   filteredDonations,
   latestUpdates,
+  allocations,
+  filteredAllocations,
   donorQuery,
-  setDonorQuery
+  setDonorQuery,
+  allocationQuery,
+  setAllocationQuery
 }: ProgramDetailInfoProps) {
+  const [donorLimit, setDonorLimit] = useState(10);
+  const [allocationLimit, setAllocationLimit] = useState(10);
+
+  useEffect(() => {
+    setDonorLimit(10);
+  }, [donorQuery]);
+
+  useEffect(() => {
+    setAllocationLimit(10);
+  }, [allocationQuery]);
   
   const benefits = (localizedProgram?.benefits ?? "")
     .split(/\r?\n/)
@@ -123,6 +146,16 @@ export function ProgramDetailInfo({
             Donatur
             <span className="ml-2 inline-flex min-w-[26px] items-center justify-center rounded-full bg-brandGreen-600 px-2 py-0.5 text-[10px] font-bold text-white">
               {recentDonations?.length ?? 0}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("allocations")}
+            className={`relative pb-2 transition ${activeTab === "allocations" ? "text-brandGreen-700 border-b-2 border-brandGreen-600" : "text-slate-500"}`}
+          >
+            {locale === "en" ? "Disbursements" : "Penyaluran"}
+            <span className="ml-2 inline-flex min-w-[26px] items-center justify-center rounded-full bg-brandGreen-600 px-2 py-0.5 text-[10px] font-bold text-white">
+              {allocations?.length ?? 0}
             </span>
           </button>
         </div>
@@ -220,26 +253,116 @@ export function ProgramDetailInfo({
               </div>
             </div>
             {filteredDonations && filteredDonations.length > 0 ? (
-              filteredDonations.map((don) => (
-                <div
-                  key={don.id}
-                  className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
-                >
-                  <div>
-                    <p className="text-sm font-bold text-slate-800">{don.donor_name || "Hamba Allah"}</p>
-                    <p className="text-[11px] font-semibold text-slate-500">{formatDate(don.paid_at, locale)}</p>
+              <>
+                {filteredDonations.slice(0, donorLimit).map((don) => (
+                  <div
+                    key={don.id}
+                    className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">{don.donor_name || "Hamba Allah"}</p>
+                      <p className="text-[11px] font-semibold text-slate-500">{formatDate(don.paid_at, locale)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[11px] font-semibold text-slate-500">Donasi</p>
+                      <p className="text-base font-bold text-slate-900">{formatCurrency(don.amount, locale)}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[11px] font-semibold text-slate-500">Donasi</p>
-                    <p className="text-base font-bold text-slate-900">{formatCurrency(don.amount, locale)}</p>
+                ))}
+
+                {filteredDonations.length > donorLimit && (
+                  <div className="pt-2 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setDonorLimit((prev) => prev + 10)}
+                      className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-brandGreen-500 hover:text-brandGreen-700 active:scale-[0.98]"
+                    >
+                      <span>{locale === "en" ? "Load More" : "Lebih Banyak"}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                        +{Math.min(10, filteredDonations.length - donorLimit)}
+                      </span>
+                    </button>
                   </div>
-                </div>
-              ))
+                )}
+              </>
             ) : (
               <div className="rounded-2xl border border-slate-100 bg-white p-4 text-sm font-semibold text-slate-500">
                 {recentDonations.length === 0
                   ? "Belum ada donatur untuk program ini."
                   : "Tidak ada donatur yang cocok."}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "allocations" && (
+          <div className="mt-5 space-y-3">
+            <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-3">
+                <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-slate-500">
+                  {locale === "en" ? "Search" : "Cari Penyaluran"}
+                </span>
+                <input
+                  value={allocationQuery}
+                  onChange={(e) => setAllocationQuery(e.target.value)}
+                  placeholder={locale === "en" ? "Search distribution activities..." : "Ketik kegiatan / peruntukan penyaluran..."}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition focus:border-brandGreen-200 focus:outline-none focus:ring-2 focus:ring-brandGreen-100"
+                />
+              </div>
+            </div>
+            {filteredAllocations && filteredAllocations.length > 0 ? (
+              <>
+                {filteredAllocations.slice(0, allocationLimit).map((alloc) => (
+                  <div
+                    key={alloc.id}
+                    className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
+                  >
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-slate-800">{alloc.description}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-[11px] font-semibold text-slate-500">
+                          {formatDate(alloc.allocated_at ?? alloc.created_at, locale)}
+                        </p>
+                        {alloc.proof_path && (
+                          <a
+                            href={getImageUrl(alloc.proof_path)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100 transition ring-1 ring-emerald-200/60"
+                          >
+                            <FontAwesomeIcon icon={faImage} className="text-[9px]" />
+                            {locale === "en" ? "View Proof" : "Bukti Penyaluran"}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-[11px] font-semibold text-emerald-600">Disalurkan</p>
+                      <p className="text-base font-bold text-slate-900">{formatCurrency(alloc.amount, locale)}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {filteredAllocations.length > allocationLimit && (
+                  <div className="pt-2 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setAllocationLimit((prev) => prev + 10)}
+                      className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-brandGreen-500 hover:text-brandGreen-700 active:scale-[0.98]"
+                    >
+                      <span>{locale === "en" ? "Load More" : "Lebih Banyak"}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                        +{Math.min(10, filteredAllocations.length - allocationLimit)}
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="rounded-2xl border border-slate-100 bg-white p-4 text-sm font-semibold text-slate-500">
+                {allocations.length === 0
+                  ? (locale === "en" ? "No distribution records yet for this program." : "Belum ada riwayat penyaluran untuk program ini.")
+                  : (locale === "en" ? "No matching distribution records found." : "Tidak ada penyaluran yang cocok.")}
               </div>
             )}
           </div>

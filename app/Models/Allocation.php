@@ -13,10 +13,12 @@ class Allocation extends Model
         'amount',
         'description',
         'proof_path',
+        'allocated_at',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'allocated_at' => 'date',
     ];
 
     public function user()

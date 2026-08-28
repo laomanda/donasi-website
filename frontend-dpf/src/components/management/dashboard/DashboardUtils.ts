@@ -364,6 +364,7 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Keuangan",
       items: [
+        { label: "Laporan Arus Kas", href: "/admin/reports/cashflow", icon: faCoins, permission: "view reports" },
         { label: "Laporan Donasi", href: "/admin/reports/donations", icon: faChartLine, permission: "view reports" },
         { label: "Penyaluran", href: "/admin/allocations", icon: faHandshake, permission: "manage allocations" },
       ],
@@ -475,8 +476,9 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       ],
     },
     {
-      title: "Keuangan",
+      title: "Keuangan & Laporan",
       items: [
+        { label: "Laporan Arus Kas", href: "/admin/reports/cashflow", icon: faCoins, permission: "view reports" },
         { label: "Laporan Donasi", href: "/admin/reports/donations", icon: faChartLine, permission: "view reports" },
         { label: "Penyaluran", href: "/admin/allocations", icon: faHandshake, permission: "manage allocations" },
       ],
@@ -491,7 +493,7 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Sistem",
       items: [
-        { label: "Pengaturan", href: "/admin/settings", icon: faGear },
+        { label: "Pengaturan", href: "/management/settings", icon: faGear },
       ],
     },
   ],
@@ -563,24 +565,28 @@ export const resolveUserPermissions = (user: StoredUser | null): string[] => {
   if (!user) return [];
   const permissions: string[] = [];
 
+  const addPerm = (p: any) => {
+    if (typeof p === "string" && p.trim()) {
+      const val = p.trim().toLowerCase();
+      permissions.push(val);
+      permissions.push(val.replace(/_/g, " "));
+      permissions.push(val.replace(/ /g, "_"));
+    } else if (p && typeof p === "object" && typeof p.name === "string" && p.name.trim()) {
+      const val = p.name.trim().toLowerCase();
+      permissions.push(val);
+      permissions.push(val.replace(/_/g, " "));
+      permissions.push(val.replace(/ /g, "_"));
+    }
+  };
+
   if (Array.isArray(user.permissions)) {
-    user.permissions.forEach((p: any) => {
-      if (typeof p === "string") permissions.push(p);
-      else if (p && typeof p === "object" && typeof p.name === "string") {
-        permissions.push(p.name);
-      }
-    });
+    user.permissions.forEach(addPerm);
   }
 
   if (Array.isArray(user.roles)) {
     user.roles.forEach((role: any) => {
       if (role && typeof role === "object" && Array.isArray(role.permissions)) {
-        role.permissions.forEach((p: any) => {
-          if (typeof p === "string") permissions.push(p);
-          else if (p && typeof p === "object" && typeof p.name === "string") {
-            permissions.push(p.name);
-          }
-        });
+        role.permissions.forEach(addPerm);
       }
     });
   }

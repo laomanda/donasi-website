@@ -141,14 +141,14 @@ export default function AdminAllocationTable({
                                         <p className="text-xs font-semibold text-slate-800">
                                             {
                                                 formatDate(
-                                                    alloc.created_at,
+                                                    alloc.allocated_at || alloc.created_at,
                                                 ).split(",")[0]
                                             }
                                         </p>
                                         <p className="text-[11px] text-slate-400 mt-0.5">
                                             {
                                                 formatDate(
-                                                    alloc.created_at,
+                                                    alloc.allocated_at || alloc.created_at,
                                                 ).split(",")[1]
                                             }
                                         </p>

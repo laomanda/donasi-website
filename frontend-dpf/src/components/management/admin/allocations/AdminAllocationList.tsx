@@ -98,7 +98,7 @@ export default function AdminAllocationList({
                                         Waktu Transaksi
                                     </p>
                                     <p className="text-sm font-bold text-slate-700">
-                                        {formatDate(alloc.created_at)}
+                                        {formatDate(alloc.allocated_at || alloc.created_at)}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">

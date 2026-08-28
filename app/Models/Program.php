@@ -99,6 +99,12 @@ class Program extends Model
         return $this->hasMany(Donation::class);
     }
 
+    // 1 Program punya banyak Penyaluran (1-to-many)
+    public function allocations()
+    {
+        return $this->hasMany(Allocation::class);
+    }
+
     public function savedByUsers()
     {
         return $this->morphMany(SavedItem::class, 'saveable');

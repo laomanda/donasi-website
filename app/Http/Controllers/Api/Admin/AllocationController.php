@@ -93,12 +93,13 @@ class AllocationController extends Controller
         }
 
         $allocation = Allocation::create([
-            'user_id'     => $data['user_id'] ?? null,
-            'donation_id' => $data['donation_id'] ?? null,
-            'program_id'  => $data['program_id'] ?? null,
-            'amount'      => $data['amount'],
-            'description' => $data['description'],
-            'proof_path'  => $data['proof_path'] ?? null,
+            'user_id'      => $data['user_id'] ?? null,
+            'donation_id'  => $data['donation_id'] ?? null,
+            'program_id'   => $data['program_id'] ?? null,
+            'amount'       => $data['amount'],
+            'description'  => $data['description'],
+            'proof_path'   => $data['proof_path'] ?? null,
+            'allocated_at' => !empty($data['allocated_at']) ? $data['allocated_at'] : now()->toDateString(),
         ]);
 
         return response()->json([

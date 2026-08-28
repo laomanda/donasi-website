@@ -60,7 +60,7 @@ class ProgramController extends Controller
             $recentDonations = $program->donations()->paid()
                 ->select(['id', 'donor_name', 'amount', 'is_anonymous', 'paid_at'])
                 ->latest('paid_at')
-                ->limit(20)
+                ->limit(500)
                 ->get()
                 ->map(function ($donation) {
                     if ($donation->is_anonymous) {
@@ -80,11 +80,20 @@ class ProgramController extends Controller
                 ->limit(10)
                 ->get(['id', 'slug', 'title', 'excerpt', 'published_at']);
 
+            $allocations = $program->allocations()
+                ->orderByDesc(DB::raw('COALESCE(allocated_at, created_at)'))
+                ->limit(500)
+                ->get(['id', 'amount', 'description', 'proof_path', 'allocated_at', 'created_at']);
+
+            $totalAllocated = (float) $program->allocations()->sum('amount');
+
             return [
                 'program'          => $program->toArray(),
                 'progress_percent' => $progress,
                 'recent_donations' => $recentDonations->toArray(),
                 'latest_updates'   => $latestUpdates->toArray(),
+                'allocations'      => $allocations->toArray(),
+                'total_allocated'  => $totalAllocated,
             ];
         });
 
