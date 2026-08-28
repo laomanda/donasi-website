@@ -5,16 +5,27 @@ namespace App\Services;
 use App\Models\Allocation;
 use App\Models\Donation;
 use App\Models\Program;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 class CashFlowReportService
 {
+    /**
+     * Get compiled cash flow data with summaries, breakdowns, and mutations.
+     *
+     * @return array{
+     *     summary: array<string, mixed>,
+     *     program_breakdowns: array<int, array<string, mixed>>,
+     *     mutations: Collection<int, array<string, mixed>>,
+     *     filters: array<string, mixed>
+     * }
+     */
     public function getCashFlowData(Request $request): array
     {
-        $dateFrom = $request->date('date_from');
-        $dateTo = $request->date('date_to');
-        $programId = $request->input('program_id');
+        $dateFrom = $request->filled('date_from') ? Carbon::parse($request->input('date_from')) : null;
+        $dateTo = $request->filled('date_to') ? Carbon::parse($request->input('date_to')) : null;
+        $programId = $request->filled('program_id') ? (int) $request->input('program_id') : null;
         $search = trim((string) $request->input('q', ''));
 
         // 1. Inflow Query (Paid Donations)
@@ -77,13 +88,15 @@ class CashFlowReportService
 
         $programBreakdowns = [];
         foreach ($programs as $prog) {
-            $progInflow = (float) Donation::where('program_id', $prog->id)
+            $progInflow = (float) Donation::query()
+                ->where('program_id', $prog->id)
                 ->where('status', 'paid')
                 ->when($dateFrom, fn ($q) => $q->whereDate('created_at', '>=', $dateFrom))
                 ->when($dateTo, fn ($q) => $q->whereDate('created_at', '<=', $dateTo))
                 ->sum('amount');
 
-            $progOutflow = (float) Allocation::where('program_id', $prog->id)
+            $progOutflow = (float) Allocation::query()
+                ->where('program_id', $prog->id)
                 ->when($dateFrom, fn ($q) => $q->whereDate('created_at', '>=', $dateFrom))
                 ->when($dateTo, fn ($q) => $q->whereDate('created_at', '<=', $dateTo))
                 ->sum('amount');
@@ -96,7 +109,7 @@ class CashFlowReportService
                     'program_id' => $prog->id,
                     'program_title' => $prog->title,
                     'category' => $prog->category,
-                    'target_amount' => (float) $prog->target_amount,
+                    'target_amount' => (float) ($prog->target_amount ?? 0),
                     'inflow_amount' => $progInflow,
                     'outflow_amount' => $progOutflow,
                     'remaining_balance' => $balance,
@@ -110,33 +123,41 @@ class CashFlowReportService
         $donations = (clone $inflowQuery)->orderByDesc('created_at')->get();
         $allocations = (clone $outflowQuery)->orderByDesc('created_at')->get();
 
-        $mutations = new Collection();
+        $mutations = [];
 
         foreach ($donations as $don) {
-            $mutations->push([
+            $dateString = $don->created_at instanceof Carbon 
+                ? $don->created_at->toIso8601String() 
+                : ($don->created_at ? Carbon::parse($don->created_at)->toIso8601String() : now()->toIso8601String());
+
+            $mutations[] = [
                 'id' => 'IN-' . $don->id,
                 'raw_id' => $don->id,
                 'type' => 'inflow',
-                'date' => $don->created_at->toIso8601String(),
+                'date' => $dateString,
                 'code' => $don->donation_code ?: '#' . $don->id,
                 'title' => $don->donor_name ?: 'Hamba Allah (Anonim)',
                 'subtitle' => $don->payment_source ? ucfirst($don->payment_source) : 'Transfer',
                 'program_id' => $don->program_id,
                 'program_title' => $don->program?->title ?: 'Program Umum',
                 'amount' => (float) $don->amount,
-                'proof_path' => $don->proof_path,
-            ]);
+                'proof_path' => $don->manual_proof_path,
+            ];
         }
 
         foreach ($allocations as $alloc) {
             $actorName = $alloc->donation?->donor_name 
                 ?: ($alloc->user?->name ?: 'Penyaluran Program');
 
-            $mutations->push([
+            $dateString = $alloc->created_at instanceof Carbon 
+                ? $alloc->created_at->toIso8601String() 
+                : ($alloc->created_at ? Carbon::parse($alloc->created_at)->toIso8601String() : now()->toIso8601String());
+
+            $mutations[] = [
                 'id' => 'OUT-' . $alloc->id,
                 'raw_id' => $alloc->id,
                 'type' => 'outflow',
-                'date' => $alloc->created_at->toIso8601String(),
+                'date' => $dateString,
                 'code' => 'ALC-' . str_pad((string) $alloc->id, 5, '0', STR_PAD_LEFT),
                 'title' => $alloc->description ?: 'Penyaluran Manfaat',
                 'subtitle' => $actorName,
@@ -144,11 +165,11 @@ class CashFlowReportService
                 'program_title' => $alloc->program?->title ?: ($alloc->donation?->program?->title ?: 'Program Umum'),
                 'amount' => (float) $alloc->amount,
                 'proof_path' => $alloc->proof_path,
-            ]);
+            ];
         }
 
         // Sort descending by date
-        $sortedMutations = $mutations->sortByDesc('date')->values();
+        $sortedMutations = collect($mutations)->sortByDesc('date')->values();
 
         return [
             'summary' => [
