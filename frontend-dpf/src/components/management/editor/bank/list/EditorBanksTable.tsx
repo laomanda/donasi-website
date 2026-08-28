@@ -1,3 +1,5 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import type { BankAccount } from "../EditorBankTypes";
 import { getStatusTone } from "../EditorBankTypes";
 
@@ -21,26 +23,38 @@ export function EditorBanksTable({
   onEdit,
 }: EditorBanksTableProps) {
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
+    <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm overflow-hidden">
       <div className="hidden overflow-x-auto md:block">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50">
+        <table className="w-full text-left table-fixed">
+          <thead className="border-b border-slate-200 bg-slate-100">
             <tr>
-              <th className="w-[6%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+              <th className="w-[5%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                 <input
                   type="checkbox"
                   checked={allSelected}
                   onChange={onToggleAll}
                   aria-label="Pilih semua rekening"
-                  className="h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500"
+                  className="h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500 accent-brandGreen-600"
                 />
               </th>
-              <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Urutan</th>
-              <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Bank</th>
-              <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Nomor</th>
-              <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Atas nama</th>
-              <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Kategori</th>
-              <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status</th>
+              <th className="w-[10%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                Urutan
+              </th>
+              <th className="w-[28%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                Bank
+              </th>
+              <th className="w-[22%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                Nomor Rekening
+              </th>
+              <th className="w-[15%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                Kategori
+              </th>
+              <th className="w-[12%] px-6 py-4 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                Status
+              </th>
+              <th className="w-[8%] px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                Aksi
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -60,13 +74,13 @@ export function EditorBanksTable({
                     <div className="h-4 w-36 rounded bg-slate-100" />
                   </td>
                   <td className="px-6 py-5">
-                    <div className="h-4 w-32 rounded bg-slate-100" />
-                  </td>
-                  <td className="px-6 py-5">
                     <div className="h-6 w-24 rounded-full bg-slate-100" />
                   </td>
                   <td className="px-6 py-5">
                     <div className="h-4 w-24 rounded bg-slate-100" />
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="ml-auto h-10 w-10 rounded-2xl bg-slate-100" />
                   </td>
                 </tr>
               ))
@@ -83,8 +97,7 @@ export function EditorBanksTable({
                 return (
                   <tr
                     key={acc.id}
-                    className={`cursor-pointer transition hover:bg-slate-50 border-l-4 ${barColor}`}
-                    onClick={() => onEdit(acc.id)}
+                    className={`transition hover:bg-slate-50 border-l-4 ${barColor}`}
                   >
                     <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -96,18 +109,23 @@ export function EditorBanksTable({
                       />
                     </td>
                     <td className="px-6 py-5">
-                      <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
+                      <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
                         #{acc.order ?? 0}
                       </span>
                     </td>
                     <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <span className="line-clamp-1 text-sm font-bold text-slate-900">{acc.bank_name}</span>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => onEdit(acc.id)}
+                        className="group block w-full text-left"
+                      >
+                        <p className="line-clamp-1 text-sm font-bold text-slate-900 group-hover:text-brandGreen-700 transition-colors">
+                          {acc.bank_name}
+                        </p>
+                      </button>
                     </td>
-                    <td className="px-6 py-5 text-sm font-bold text-slate-900">{acc.account_number}</td>
-                    <td className="px-6 py-5">
-                      <p className="line-clamp-1 text-sm font-semibold text-slate-700">{acc.account_name}</p>
+                    <td className="px-6 py-5 text-sm font-bold text-slate-900 font-mono">
+                      {acc.account_number}
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex flex-col items-start gap-1.5">
@@ -136,6 +154,18 @@ export function EditorBanksTable({
                         {acc.is_visible_public ? "Tampil" : "Disembunyikan"}
                       </span>
                     </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={() => onEdit(acc.id)}
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-300 bg-white text-slate-700 shadow-sm transition hover:border-brandGreen-500 hover:text-brandGreen-700"
+                          title="Ubah Rekening"
+                        >
+                          <FontAwesomeIcon icon={faPenToSquare} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })
@@ -162,11 +192,9 @@ export function EditorBanksTable({
             const barColor = acc.is_visible_public ? "border-l-brandGreen-500" : "border-l-slate-300";
 
             return (
-              <button
+              <div
                 key={acc.id}
-                type="button"
-                onClick={() => onEdit(acc.id)}
-                className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor} `}
+                className={`w-full p-5 text-left transition hover:bg-slate-50 border-l-4 ${barColor}`}
               >
                 <div className="flex items-start gap-3">
                   <span onClick={(e) => e.stopPropagation()}>
@@ -180,8 +208,7 @@ export function EditorBanksTable({
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-base font-bold text-slate-900">{acc.bank_name}</p>
-                    <p className="mt-1 text-sm text-slate-600">{acc.account_number}</p>
-                    <p className="mt-1 text-xs text-slate-500">Atas nama: {acc.account_name}</p>
+                    <p className="mt-1 text-sm text-slate-600 font-mono">{acc.account_number}</p>
                     <div className="mt-2 flex items-center gap-2">
                       <span
                         className={`whitespace-nowrap inline-flex items-center rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
@@ -199,18 +226,29 @@ export function EditorBanksTable({
                   </div>
                 </div>
                 <div className="mt-4 flex items-center justify-between gap-2 pl-7">
-                  <span className="inline-flex items-center rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700">
-                    #{acc.order ?? 0}
-                  </span>
-                  <span
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(
-                      Boolean(acc.is_visible_public)
-                    )}`}
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">
+                      #{acc.order ?? 0}
+                    </span>
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${getStatusTone(
+                        Boolean(acc.is_visible_public)
+                      )}`}
+                    >
+                      {acc.is_visible_public ? "Tampil" : "Disembunyikan"}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onEdit(acc.id)}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-300 bg-white text-slate-700 shadow-sm transition hover:border-brandGreen-500 hover:text-brandGreen-700"
+                    title="Ubah Rekening"
                   >
-                    {acc.is_visible_public ? "Tampil" : "Disembunyikan"}
-                  </span>
+                    <FontAwesomeIcon icon={faPenToSquare} />
+                  </button>
                 </div>
-              </button>
+              </div>
             );
           })
         )}

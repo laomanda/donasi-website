@@ -76,7 +76,7 @@ export function ProgramDetailInfo({
         <div className="mt-4 inline-flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white/90 px-4 py-2 shadow-sm">
           <span className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-slate-900 to-slate-700 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.3em] text-white">
             <span className="h-2 w-2 rounded-full bg-emerald-300" aria-hidden="true" />
-            {locale === "en" ? "Program date" : "Tanggal program"}
+            {locale === "en" ? "Published" : "Diterbitkan"}
           </span>
           <span className="text-sm font-semibold text-slate-900">
             {formatDate(program?.published_at ?? program?.created_at, locale)}

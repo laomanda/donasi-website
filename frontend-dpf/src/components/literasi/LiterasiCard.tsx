@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBookmark as faBookmarkSolid, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faBookmark as faBookmarkRegular } from "@fortawesome/free-regular-svg-icons";
@@ -15,6 +15,7 @@ interface LiterasiCardProps {
 }
 
 export function LiterasiCard({ article, locale, t, variant = "save" }: LiterasiCardProps) {
+  const navigate = useNavigate();
   const { toggleSave, isSaved } = useSavedItems();
   const saved = isSaved(Number(article.id), 'Article');
 
@@ -31,53 +32,52 @@ export function LiterasiCard({ article, locale, t, variant = "save" }: LiterasiC
 
   return (
     <article 
-      className="group relative flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
+      onClick={() => navigate(`/literasi/${article.slug}`)}
+      className="group relative flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-md cursor-pointer"
       style={{ minHeight: "480px" }}
     >
-      <Link to={`/literasi/${article.slug}`} className="block">
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
-          <img
-            src={getImageUrl(article.thumbnail_path)}
-            alt={article.title}
-            width="400"
-            height="225"
-            loading="lazy"
-            className="h-full w-full object-cover"
-            onError={(evt) => {
-              const target = evt.target as HTMLImageElement;
-              if (target.src !== imagePlaceholder) target.src = imagePlaceholder;
-            }}
-          />
-          <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-semibold text-white">
-            <span className="rounded-full uppercase font-heading bg-primary-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm">
-              {pickLocale(article.category, article.category_en, locale) || t("literasi.articles.category.default", "Literasi")}
-            </span>
-          </div>
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
+        <img
+          src={getImageUrl(article.thumbnail_path)}
+          alt={article.title}
+          width="400"
+          height="225"
+          loading="lazy"
+          className="h-full w-full object-cover"
+          onError={(evt) => {
+            const target = evt.target as HTMLImageElement;
+            if (target.src !== imagePlaceholder) target.src = imagePlaceholder;
+          }}
+        />
+        <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-semibold text-white">
+          <span className="rounded-full uppercase font-heading bg-primary-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm">
+            {pickLocale(article.category, article.category_en, locale) || t("literasi.articles.category.default", "Literasi")}
+          </span>
         </div>
-      </Link>
 
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          toggleSave(Number(article.id), 'Article');
-        }}
-        className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-md transition-all active:scale-90 ${
-          variant === "remove"
-            ? "bg-red-50 text-red-500 hover:bg-red-100 shadow-sm border border-red-100"
-            : saved 
-              ? "bg-primary-600 text-white shadow-lg" 
-              : "bg-white/70 text-slate-700 hover:bg-white hover:text-primary-600"
-        }`}
-        title={variant === "remove" ? "Hapus dari simpanan" : (saved ? "Hapus dari simpanan" : "Simpan artikel")}
-      >
-        <FontAwesomeIcon icon={variant === "remove" ? faTrash : (saved ? faBookmarkSolid : faBookmarkRegular)} className="text-sm" />
-      </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleSave(Number(article.id), 'Article');
+          }}
+          className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-md transition-all active:scale-90 ${
+            variant === "remove"
+              ? "bg-red-50 text-red-500 hover:bg-red-100 shadow-sm border border-red-100"
+              : saved 
+                ? "bg-primary-600 text-white shadow-lg" 
+                : "bg-white/70 text-slate-700 hover:bg-white hover:text-primary-600"
+          }`}
+          title={variant === "remove" ? "Hapus dari simpanan" : (saved ? "Hapus dari simpanan" : "Simpan artikel")}
+        >
+          <FontAwesomeIcon icon={variant === "remove" ? faTrash : (saved ? faBookmarkSolid : faBookmarkRegular)} className="text-sm" />
+        </button>
+      </div>
 
       <div className="flex flex-1 flex-col p-5">
-        {/* The old category span is removed as it's replaced by the absolute positioned one */}
-        <h3 className="mt-4 h-[56px] overflow-hidden font-heading text-lg font-semibold leading-snug text-slate-900">
-          <Link to={`/literasi/${article.slug}`} className="line-clamp-2 overflow-hidden">{pickLocale(article.title, article.title_en, locale)}</Link>
+        <h3 className="mt-2 h-[56px] overflow-hidden font-heading text-lg font-semibold leading-snug text-slate-900 line-clamp-2 transition-colors group-hover:text-brandGreen-700">
+          {pickLocale(article.title, article.title_en, locale)}
         </h3>
 
         <p className="mt-3 line-clamp-3 overflow-hidden h-[72px] text-sm leading-relaxed text-slate-600">

@@ -40,14 +40,17 @@ class ArticleController extends Controller
 
         $data = \Illuminate\Support\Facades\Cache::remember($cacheKey, 600, function () use ($slug) {
             $article = Article::published()
-                ->with('program:id,title,slug,slug_en')
+                ->with([
+                    'program:id,title,slug,slug_en,thumbnail_path,category,status',
+                    'programs:id,title,slug,slug_en,thumbnail_path,category,status',
+                ])
                 ->where(function ($q) use ($slug) {
                     $q->where('slug', $slug)->orWhere('slug_en', $slug);
                 })
                 ->firstOrFail();
 
             $related = Article::published()
-                ->with('program:id,title,slug')
+                ->with(['program:id,title,slug', 'programs:id,title,slug'])
                 ->where('category', $article->category)
                 ->where('id', '!=', $article->id)
                 ->limit(3)

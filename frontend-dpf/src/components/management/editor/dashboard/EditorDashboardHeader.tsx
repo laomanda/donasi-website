@@ -23,10 +23,6 @@ export default function EditorDashboardHeader({ displayName }: Props) {
     <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
       <header className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
-          <span className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white">
-            <span className="h-2 w-2 rounded-full bg-brandGreen-400" />
-            Ruang Kerja Editor
-          </span>
           <h1 className="font-heading text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
             {getGreeting(today)}, <span className="text-brandGreen-600">{displayName}</span>
           </h1>

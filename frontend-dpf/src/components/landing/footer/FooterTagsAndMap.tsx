@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleCheck, faMapLocationDot } from '@fortawesome/free-solid-svg-icons'
+import { faMapLocationDot } from '@fortawesome/free-solid-svg-icons'
 import { FooterHeading } from './FooterUI'
 import type { Tag } from '../../../services/TagService'
 
@@ -16,16 +16,15 @@ export function FooterTagsAndMap({ tags, jakartaMapEmbed, jakartaMapLink }: Foot
       {tags.length > 0 && (
         <div className="flex-1 min-w-0">
           <FooterHeading>Tag Populer</FooterHeading>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 pt-1">
             {tags.map((tag) => (
               <a
                 key={tag.id}
                 href={tag.url || "#"}
                 target={tag.open_in_new_tab && tag.url ? "_blank" : "_self"}
                 rel={tag.open_in_new_tab && tag.url ? "noreferrer" : undefined}
-                className="group inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-[13px] font-semibold text-slate-200 backdrop-blur-sm transition-colors duration-200 hover:bg-emerald-600 hover:text-white hover:ring-emerald-400"
+                className="inline-flex items-center rounded-md bg-white/10 px-2.5 py-1 text-xs text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
               >
-                <FontAwesomeIcon icon={faCircleCheck} className="h-3.5 w-3.5 text-emerald-400 transition-colors duration-200 group-hover:text-white" />
                 {tag.name}
               </a>
             ))}

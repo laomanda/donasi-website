@@ -9,10 +9,6 @@ export function AdminDashboardHeader() {
     <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-3">
-          <span className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white">
-            <span className="h-2 w-2 rounded-full bg-brandGreen-400" />
-            Dashboard Admin
-          </span>
           <div className="space-y-2">
             <h1 className="font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
               Ringkasan Operasional

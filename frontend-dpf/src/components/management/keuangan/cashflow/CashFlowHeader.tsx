@@ -22,11 +22,6 @@ export function CashFlowHeader({
     <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600">
-              PSAK Nirlaba & Syariah
-            </span>
-          </div>
           <div>
             <h1 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
               Laporan Arus Kas & Pembukuan Yayasan

@@ -10,7 +10,7 @@ export const landingDict: Dict = {
         id: "DPF Wakaf mengundang Anda dalam sebuah ekspedisi kebaikan. Dari ketenangan 'Bekal Akhirat' bagi para mujahid senior, hingga 'Investasi Dampak' bagi kaum produktif, dan 'Eksplorasi Digital' bagi Gen Z. Mari berpetualang menembus batas, memberdayakan UMKM dan pendidikan di pelosok negeri. Inilah misi di mana jejak Anda tidak akan pernah terhapus waktu.", 
         en: "DPF Wakaf invites you on a goodness expedition. From the peace of 'Afterlife Provisions' for seniors, to 'Impact Investment' for professionals, and 'Digital Exploration' for Gen Z. Let's venture beyond limits, empowering MSMEs and education across the nation. This is a mission where your footprint will never be erased by time." 
     },
-    "landing.hero.ctaDonate": { id: "Mulai Donasi", en: "Start Donating" },
+    "landing.hero.ctaDonate": { id: "Salurkan Wakaf", en: "Distribute Waqf" },
     "landing.hero.ctaProgram": { id: "Lihat Program", en: "View Programs" },
     "landing.hero.imageAlt": { id: "Tim DPF WAKAF", en: "DPF WAKAF Team" },
     "landing.error": { id: "Kami tidak bisa memuat data terbaru. Menampilkan data placeholder.", en: "Unable to load latest data. Showing placeholder." },
@@ -38,7 +38,7 @@ export const landingDict: Dict = {
     "landing.programs.deadline": { id: "Batas hari", en: "Day limit" },
     "landing.programs.deadline.unlimited": { id: "Tanpa batas hari", en: "No day limit" },
     "landing.programs.detail": { id: "Lihat detail", en: "View details" },
-    "landing.programs.donate": { id: "Donasi", en: "Donate" },
+    "landing.programs.donate": { id: "Salurkan Wakaf", en: "Donate Waqf" },
     "landing.programs.defaultCategory": { id: "Program", en: "Program" },
     "landing.programs.status.archived": { id: "Arsip", en: "Archived" },
 
@@ -49,7 +49,7 @@ export const landingDict: Dict = {
     "program.deadline": { id: "Batas hari", en: "Day limit" },
     "program.deadline.unlimited": { id: "Tanpa batas hari", en: "No day limit" },
     "program.detail": { id: "Lihat detail", en: "View details" },
-    "program.donate": { id: "Donasi", en: "Donate" },
+    "program.donate": { id: "Salurkan Wakaf", en: "Donate Waqf" },
     "program.defaultCategory": { id: "Umum", en: "General" },
     "program.status.ongoing": { id: "Berjalan", en: "Ongoing" },
     "program.status.completed": { id: "Tersalurkan", en: "Distributed" },

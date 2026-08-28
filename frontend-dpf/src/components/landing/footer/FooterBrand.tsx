@@ -46,7 +46,7 @@ export function FooterBrand({ t, whatsappLink }: FooterBrandProps) {
           className="inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm ring-1 ring-white/20 transition-all hover:bg-emerald-600 hover:ring-emerald-600 hover:shadow-lg hover:-translate-y-0.5"
         >
           <FontAwesomeIcon icon={faHandHoldingHeart} />
-          <span>Salurkan Donasi</span>
+          <span>Salurkan Wakaf</span>
         </Link>
         <div className="flex items-center gap-3">
           <SocialIcon href={whatsappLink} icon={faWhatsapp} variant="wa" />

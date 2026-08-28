@@ -18,7 +18,7 @@ class ArticleController extends Controller
     public function index(Request $request)
     {
         $query = Article::query();
-        $query->with('program:id,title,slug');
+        $query->with(['program:id,title,slug', 'programs:id,title,slug']);
 
         $status = $request->string('status')->trim()->toString();
         if ($status !== '') {
@@ -53,7 +53,7 @@ class ArticleController extends Controller
 
     public function show(Article $article)
     {
-        return response()->json($article);
+        return response()->json($article->load(['programs:id,title,slug,slug_en', 'program:id,title,slug,slug_en']));
     }
 
     public function update(ArticleRequest $request, Article $article)

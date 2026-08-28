@@ -36,7 +36,7 @@ export function ProgramDetailSidebar({
   return (
     <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
       <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-xs font-semibold text-slate-500">{locale === "en" ? "Donation summary" : "Ringkasan donasi"}</p>
+        <p className="text-xs font-semibold text-slate-500">{locale === "en" ? "Waqf summary" : "Ringkasan penyaluran wakaf"}</p>
 
         <div className="mt-3 flex flex-wrap gap-2">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-semibold text-primary-700 ring-1 ring-primary-100">
@@ -101,13 +101,13 @@ export function ProgramDetailSidebar({
           }}
         >
           <FontAwesomeIcon icon={faHandHoldingHeart} />
-          {locale === "en" ? "Donate now" : "Donasi sekarang"}
+          {locale === "en" ? "Donate now" : "Salurkan wakaf sekarang"}
         </Link>
 
         <p className="mt-3 text-xs text-slate-500">
           {locale === "en"
-            ? "Donation is made through the donate page. Make sure the amount and data are correct."
-            : "Donasi dilakukan melalui halaman donate. Pastikan nominal dan data sudah benar."}
+            ? "Waqf distribution is made through the donate page. Make sure the amount and data are correct."
+            : "Penyaluran wakaf dilakukan melalui halaman salurkan wakaf. Pastikan nominal dan data sudah benar."}
         </p>
       </div>
 

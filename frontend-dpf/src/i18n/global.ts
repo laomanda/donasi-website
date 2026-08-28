@@ -8,11 +8,11 @@ export const globalDict: Dict = {
     "nav.literacy": { id: "Literasi", en: "Literacy" },
     "nav.about": { id: "Tentang Kami", en: "About Us" },
     "nav.login": { id: "Masuk", en: "Login" },
-    "nav.donate": { id: "Donasi", en: "Donate" },
+    "nav.donate": { id: "Salurkan Wakaf", en: "Donate Waqf" },
     "nav.search.placeholder": { id: "Cari program, layanan", en: "Search programs and services" },
     "nav.search.notFound": { id: "Penelusuran tidak ditemukan.", en: "Search not found." },
     "nav.language": { id: "Bahasa", en: "Language" },
-    "nav.donationAccount": { id: "Rekening Donasi", en: "Donation Account" },
+    "nav.donationAccount": { id: "Rekening Penyaluran Wakaf", en: "Waqf Account" },
     "nav.tagline": { id: "Amanah | Profesional", en: "Trustworthy | Professional" },
     "nav.dashboard": { id: "Dashboard", en: "Dashboard" },
     "nav.menuTitle": { id: "Menu", en: "Menu" },
@@ -44,7 +44,7 @@ export const globalDict: Dict = {
         id: "Lembaga Wakaf DPF berfokus pada pemberdayaan ummat melalui pengelolaan wakaf yang profesional dan transparan.",
         en: "DPF Waqf Foundation focuses on empowering the community through professional and transparent waqf management."
     },
-    "footer.cta.donate": { id: "Salurkan Donasi", en: "Give Donation" },
+    "footer.cta.donate": { id: "Salurkan Wakaf", en: "Distribute Waqf" },
     "footer.address": { 
         id: "Signature Park Grande\nJl. Letjen M.T. Haryono No.Kav. 20, Cawang, Jakarta Timur 13630", 
         en: "Signature Park Grande\nJl. Letjen M.T. Haryono No.Kav. 20, Cawang, East Jakarta 13630" 
@@ -63,6 +63,6 @@ export const globalDict: Dict = {
     // Floating WhatsApp
     "whatsapp.label": { id: "Butuh Bantuan?", en: "Need Help?" },
     "whatsapp.cta": { id: "Hubungi Kami", en: "Contact Us" },
-    "whatsapp.desc1": { id: "Konsultasi wakaf, infak, sedekah, wakaf, atau donasi.", en: "Consult about wakaf, infaq, sadaqah, waqf, or donations." },
+    "whatsapp.desc1": { id: "Konsultasi penyaluran wakaf, infak, sedekah, dan program kebaikan.", en: "Consult about waqf distribution, infaq, sadaqah, and charity programs." },
     "whatsapp.desc2": { id: "Tim DPF siap bantu.", en: "DPF team is ready to help." },
 };

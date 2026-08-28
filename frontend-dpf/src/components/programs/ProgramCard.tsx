@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHandHoldingHeart, faCheckCircle, faArrowRight, faBookmark as faBookmarkSolid, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faHandHoldingHeart, faCheckCircle, faBookmark as faBookmarkSolid, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faBookmark as faBookmarkRegular } from "@fortawesome/free-regular-svg-icons";
 import { imagePlaceholder } from "@/lib/placeholder";
 import type { 
@@ -18,6 +18,7 @@ interface ProgramCardProps {
 }
 
 export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCardProps) {
+  const navigate = useNavigate();
   const { toggleSave, isSaved } = useSavedItems();
   const saved = isSaved(Number(program.id), 'Program');
 
@@ -35,8 +36,9 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
 
   return (
     <article
-      className="flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-100 bg-white shadow-sm ring-1 ring-slate-200 transition hover:shadow-lg hover:shadow-slate-200/50"
-      style={{ minHeight: "540px" }}
+      onClick={() => navigate(`/program/${program.slug}`)}
+      className="group relative flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-100 bg-white shadow-sm ring-1 ring-slate-200 transition duration-200 hover:shadow-md cursor-pointer"
+      style={{ minHeight: "520px" }}
     >
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
         <img
@@ -49,12 +51,13 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
           onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
         />
         <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-semibold text-white">
-          <span className="rounded-full uppercase font-heading bg-primary-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm">
+          <span className="rounded-full uppercase font-heading bg-primary-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm">
             {pickLocale(program.category, program.category_en, locale) || t("program.defaultCategory")}
           </span>
         </div>
 
         <button
+          type="button"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -80,7 +83,9 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
           </span>
         </div>
 
-        <h3 className="text-lg font-heading font-semibold text-slate-900 leading-snug">{pickLocale(program.title, program.title_en, locale)}</h3>
+        <h3 className="text-lg font-heading font-semibold text-slate-900 leading-snug transition-colors group-hover:text-brandGreen-700">
+          {pickLocale(program.title, program.title_en, locale)}
+        </h3>
         <p className="text-sm text-slate-600 line-clamp-3 min-h-[60px]">{pickLocale(program.short_description, program.short_description_en, locale)}</p>
         <div className="flex items-center gap-2">
           <img
@@ -125,33 +130,26 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
              <span>{formatDate(program.published_at ?? program.created_at, locale)}</span>
         </div>
 
-        <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
-          <Link
-            to={`/program/${program.slug}`}
-            className="text-sm font-semibold text-brandGreen-600 hover:text-brandGreen-700 transition-colors"
-          >
-            {t("program.detail")}
-            <FontAwesomeIcon icon={faArrowRight} className="ml-2 text-xs" />
-          </Link>
-          <Link
-            to={`/donate?program_id=${program.id}`}
-            className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-[0.99] ${
+        <div className="mt-auto border-t border-slate-100 pt-4">
+          <button
+            type="button"
+            className={`inline-flex w-full items-center justify-center gap-2 rounded-full py-2.5 px-5 text-sm font-bold text-white shadow-sm transition active:scale-[0.99] ${
               isCompleted
                 ? "bg-slate-300 cursor-not-allowed"
-                : "bg-brandGreen-600 hover:bg-brandGreen-700"
+                : "bg-brandGreen-600 hover:bg-brandGreen-700 shadow-brandGreen-600/20"
             }`}
-            aria-disabled={isCompleted}
-            tabIndex={isCompleted ? -1 : undefined}
+            disabled={isCompleted}
             onClick={(e) => {
-              if (isCompleted) {
-                e.preventDefault();
-                e.stopPropagation();
+              e.preventDefault();
+              e.stopPropagation();
+              if (!isCompleted) {
+                navigate(`/donate?program_id=${program.id}`);
               }
             }}
           >
             <FontAwesomeIcon icon={faHandHoldingHeart} />
-            {t("program.donate")}
-          </Link>
+            <span>{t("program.donate")}</span>
+          </button>
         </div>
       </div>
     </article>

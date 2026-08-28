@@ -15,6 +15,7 @@ import { LiterasiDetailContent } from "../components/literasi/detail/LiterasiDet
 import { LiterasiDetailShare } from "../components/literasi/detail/LiterasiDetailShare.tsx";
 import { LiterasiDetailRelated } from "../components/literasi/detail/LiterasiDetailRelated.tsx";
 import { LiterasiDetailSkeleton } from "../components/literasi/detail/LiterasiDetailSkeleton.tsx";
+import { LiterasiDetailPrograms } from "../components/literasi/detail/LiterasiDetailPrograms.tsx";
 
 export function LiterasiDetailPage() {
   const navigate = useNavigate();
@@ -104,6 +105,11 @@ export function LiterasiDetailPage() {
                     locale={locale}
                   />
                 </div>
+
+                <LiterasiDetailPrograms
+                  programs={localizedArticle.programs}
+                  locale={locale}
+                />
               </article>
 
               <LiterasiDetailRelated 

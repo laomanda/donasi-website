@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrash, faImage, faChevronDown, faVideo} from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTrash, faImage, faChevronDown, faVideo, faXmark, faHandHoldingHeart } from "@fortawesome/free-solid-svg-icons";
 import type { ArticleFormState } from "../../../../types/article";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { resolveStorageUrl } from "../../../../utils/management/editorArticleUtils";
@@ -52,6 +52,49 @@ export default function EditorArticleFormSidebar({
   const disabled = loading || saving || deleting;
   const currentThumbnail = thumbnailPreviewUrl || savedThumbnailUrl;
   const currentVideo = useMemo(() => resolveStorageUrl(form.video_path) ?? null, [form.video_path]);
+
+  const selectedProgramIds = useMemo(() => {
+    if (Array.isArray(form.program_ids) && form.program_ids.length > 0) {
+      return form.program_ids;
+    }
+    if (form.program_id && form.program_id.trim() !== "") {
+      const parsed = Number(form.program_id);
+      return isNaN(parsed) ? [] : [parsed];
+    }
+    return [];
+  }, [form.program_ids, form.program_id]);
+
+  const handleAddProgram = (programIdStr: string) => {
+    const id = Number(programIdStr);
+    if (!id || selectedProgramIds.includes(id)) return;
+    const next = [...selectedProgramIds, id];
+    setForm((s) => ({
+      ...s,
+      program_ids: next,
+      program_id: next.length > 0 ? String(next[0]) : "",
+    }));
+  };
+
+  const handleRemoveProgram = (idToRemove: number) => {
+    const next = selectedProgramIds.filter((id) => id !== idToRemove);
+    setForm((s) => ({
+      ...s,
+      program_ids: next,
+      program_id: next.length > 0 ? String(next[0]) : "",
+    }));
+  };
+
+  const handleClearAllPrograms = () => {
+    setForm((s) => ({
+      ...s,
+      program_ids: [],
+      program_id: "",
+    }));
+  };
+
+  const unselectedPrograms = useMemo(() => {
+    return programOptions.filter((p) => !selectedProgramIds.includes(p.id));
+  }, [programOptions, selectedProgramIds]);
 
   const filteredCategories = availableCategories.filter((cat) =>
     cat.category.toLowerCase().includes(form.category.toLowerCase())
@@ -251,22 +294,85 @@ export default function EditorArticleFormSidebar({
             </label>
           </div>
 
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Program Terkait</span>
-            <select
-              value={form.program_id}
-              onChange={(e) => setForm((s) => ({ ...s, program_id: e.target.value }))}
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-              disabled={disabled}
-            >
-              <option value="">Tidak ada program</option>
-              {programOptions.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.title}
+          {/* Program Terkait Multi-Select */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                Program Terkait
+              </span>
+              {selectedProgramIds.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearAllPrograms}
+                  disabled={disabled}
+                  className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 transition"
+                >
+                  Hapus Semua
+                </button>
+              )}
+            </div>
+
+            {/* Selected Programs List */}
+            {selectedProgramIds.length > 0 ? (
+              <div className="space-y-1.5">
+                {selectedProgramIds.map((pId) => {
+                  const programObj = programOptions.find((p) => p.id === pId);
+                  const title = programObj?.title ?? `Program #${pId}`;
+                  return (
+                    <div
+                      key={pId}
+                      className="flex items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-xs font-semibold text-emerald-950 shadow-xs"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-emerald-600 text-white text-[10px]">
+                          <FontAwesomeIcon icon={faHandHoldingHeart} />
+                        </span>
+                        <span className="truncate">{title}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveProgram(pId)}
+                        disabled={disabled}
+                        title="Hapus program ini"
+                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-emerald-200/70 hover:text-emerald-900 transition"
+                      >
+                        <FontAwesomeIcon icon={faXmark} className="text-xs" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+
+            {/* Dropdown to add more */}
+            <div>
+              <select
+                value=""
+                onChange={(e) => handleAddProgram(e.target.value)}
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400 disabled:opacity-50"
+                disabled={disabled || unselectedPrograms.length === 0}
+              >
+                <option value="" disabled>
+                  {unselectedPrograms.length === 0
+                    ? "Semua program telah terpilih"
+                    : selectedProgramIds.length === 0
+                    ? "+ Hubungkan Program Terkait..."
+                    : "+ Hubungkan Program Lainnya..."}
                 </option>
-              ))}
-            </select>
-          </label>
+                {unselectedPrograms.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <p className="text-[10px] text-slate-500">
+              {selectedProgramIds.length === 0
+                ? "Opsional. Anda dapat menghubungkan satu atau beberapa program wakaf ke artikel ini."
+                : `${selectedProgramIds.length} program wakaf terhubung dengan artikel ini.`}
+            </p>
+          </div>
         </div>
       </div>
 

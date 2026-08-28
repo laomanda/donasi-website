@@ -30,6 +30,8 @@ class ArticleRequest extends FormRequest
             'slug'           => ['nullable', 'string', 'max:255', 'unique:articles,slug,' . $articleId],
             'slug_en'        => ['nullable', 'string', 'max:255', 'unique:articles,slug_en,' . $articleId],
             'program_id'     => ['nullable', 'exists:programs,id'],
+            'program_ids'    => ['nullable', 'array'],
+            'program_ids.*'  => ['integer', 'exists:programs,id'],
             'category'       => ['required', 'string', 'max:100'],
             'category_en'    => ['nullable', 'string', 'max:100'],
             'thumbnail_path' => ['nullable', 'string', 'max:255'],

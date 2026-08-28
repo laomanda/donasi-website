@@ -31,7 +31,7 @@ export const programDict: Dict = {
     "program.deadline": { id: "Batas hari", en: "Day limit" },
     "program.deadline.unlimited": { id: "Tanpa batas hari", en: "No day limit" },
     "program.detail": { id: "Lihat detail", en: "View details" },
-    "program.donate": { id: "Donasi", en: "Donate" },
+    "program.donate": { id: "Salurkan Wakaf", en: "Donate Waqf" },
     "program.status.ongoing": { id: "Berjalan", en: "Ongoing" },
     "program.status.completed": { id: "Tersalurkan", en: "Distributed" },
     "program.status.upcoming": { id: "Segera", en: "Upcoming" },

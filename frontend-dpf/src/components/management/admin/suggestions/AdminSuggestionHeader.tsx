@@ -1,6 +1,3 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
-
 interface AdminSuggestionHeaderProps {
   total: number;
 }
@@ -15,11 +12,7 @@ export const AdminSuggestionHeader = ({ total }: AdminSuggestionHeaderProps) => 
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-4">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/20">
-                <FontAwesomeIcon icon={faCommentDots} />
-                Feedback
-              </span>
-              <h1 className="mt-3 font-heading text-2xl font-bold text-white sm:text-3xl md:text-5xl text-shadow-sm">
+              <h1 className="font-heading text-2xl font-bold text-white sm:text-3xl md:text-5xl text-shadow-sm">
                 Saran Wakaf
               </h1>
               <p className="mt-2 max-w-2xl text-sm font-medium text-emerald-100/90 sm:text-lg">

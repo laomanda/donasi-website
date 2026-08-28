@@ -30,7 +30,7 @@ import type { ToneKey } from "../StatCard";
 export type DashboardRole = "superadmin" | "admin" | "editor" | "keuangan" | "mitra" | "custom";
 
 export type RoleTheme = {
-  appName: string;
+  appName?: string;
   accentRing: string;
   navActiveBg: string;
   navActiveText: string;
@@ -75,7 +75,6 @@ export const ROLE_LABEL: Record<DashboardRole, string> = {
 
 export const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
   superadmin: {
-    appName: "Manajemen DPF",
     accentRing: "focus-visible:ring-brandGreen-400",
     navActiveBg: "bg-slate-900",
     navActiveText: "text-white",
@@ -84,7 +83,6 @@ export const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
     pillText: "text-slate-100",
   },
   admin: {
-    appName: "Manajemen DPF",
     accentRing: "focus-visible:ring-brandGreen-400",
     navActiveBg: "bg-slate-900",
     navActiveText: "text-white",
@@ -93,7 +91,6 @@ export const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
     pillText: "text-slate-100",
   },
   editor: {
-    appName: "Manajemen DPF",
     accentRing: "focus-visible:ring-brandGreen-400",
     navActiveBg: "bg-slate-900",
     navActiveText: "text-white",
@@ -102,7 +99,6 @@ export const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
     pillText: "text-slate-100",
   },
   keuangan: {
-    appName: "Keuangan DPF",
     accentRing: "focus-visible:ring-emerald-400",
     navActiveBg: "bg-slate-900",
     navActiveText: "text-white",
@@ -111,7 +107,6 @@ export const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
     pillText: "text-slate-100",
   },
   mitra: {
-    appName: "Dashboard Mitra",
     accentRing: "focus-visible:ring-brandGreen-400",
     navActiveBg: "bg-slate-900",
     navActiveText: "text-white",
@@ -120,7 +115,6 @@ export const ROLE_THEME: Record<DashboardRole, RoleTheme> = {
     pillText: "text-slate-100",
   },
   custom: {
-    appName: "Manajemen DPF",
     accentRing: "focus-visible:ring-slate-400",
     navActiveBg: "bg-slate-900",
     navActiveText: "text-white",

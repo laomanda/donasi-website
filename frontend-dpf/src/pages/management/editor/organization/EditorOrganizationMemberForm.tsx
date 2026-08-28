@@ -342,11 +342,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
       <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
-            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-700">
-              <span className="h-2 w-2 rounded-full bg-brandGreen-500" />
-              Organisasi
-            </span>
-            <h1 className="mt-2 font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">{title}</h1>
+            <h1 className="font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">{title}</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
               {mode === "create"
                 ? "Tambahkan anggota struktur dengan jabatan dan grup yang jelas."

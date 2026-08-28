@@ -17,7 +17,23 @@ class ArticleService
     {
         $data['slug'] = $this->generateUniqueSlug($data['title'] ?? '', $data['slug'] ?? '');
         $data['slug_en'] = $this->generateUniqueSlugEn($data['title_en'] ?? '', $data['slug_en'] ?? '');
-        return Article::create($data);
+
+        $programIds = $data['program_ids'] ?? null;
+        if ($programIds === null && array_key_exists('program_id', $data)) {
+            $programIds = $data['program_id'] ? [(int) $data['program_id']] : [];
+        }
+
+        if (is_array($programIds)) {
+            $data['program_id'] = $programIds[0] ?? null;
+        }
+
+        $article = Article::create($data);
+
+        if (is_array($programIds)) {
+            $article->programs()->sync($programIds);
+        }
+
+        return $article->load(['programs', 'program']);
     }
 
     /**
@@ -31,8 +47,23 @@ class ArticleService
     {
         $data['slug'] = $this->generateUniqueSlug($data['title'] ?? '', $data['slug'] ?? '', $article);
         $data['slug_en'] = $this->generateUniqueSlugEn($data['title_en'] ?? '', $data['slug_en'] ?? '', $article);
+
+        $programIds = $data['program_ids'] ?? null;
+        if ($programIds === null && array_key_exists('program_id', $data)) {
+            $programIds = $data['program_id'] ? [(int) $data['program_id']] : [];
+        }
+
+        if (is_array($programIds)) {
+            $data['program_id'] = $programIds[0] ?? null;
+        }
+
         $article->update($data);
-        return $article->refresh();
+
+        if (is_array($programIds)) {
+            $article->programs()->sync($programIds);
+        }
+
+        return $article->load(['programs', 'program'])->refresh();
     }
 
     /**

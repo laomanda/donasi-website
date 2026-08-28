@@ -60,6 +60,11 @@ class Article extends Model
         return $this->belongsTo(Program::class);
     }
 
+    public function programs()
+    {
+        return $this->belongsToMany(Program::class, 'article_program');
+    }
+
     public function savedByUsers()
     {
         return $this->morphMany(SavedItem::class, 'saveable');

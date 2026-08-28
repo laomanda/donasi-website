@@ -3,6 +3,18 @@ import { useParams } from "react-router-dom";
 import http from "../../../lib/http";
 import { pickLocale } from "../LiterasiShared.ts";
 
+export type RelatedProgram = {
+  id: number;
+  slug: string;
+  slug_en?: string | null;
+  title: string;
+  title_en?: string | null;
+  thumbnail_path?: string | null;
+  category?: string | null;
+  category_en?: string | null;
+  status?: string | null;
+};
+
 export type LiterasiDetail = {
   id: number;
   slug: string;
@@ -19,6 +31,8 @@ export type LiterasiDetail = {
   video_path?: string | null;
   video_url?: string | null;
   author_name?: string | null;
+  program?: RelatedProgram | null;
+  programs?: RelatedProgram[];
 };
 
 export type LiterasiDetailResponse = {
@@ -36,12 +50,24 @@ export function useLiterasiDetail(locale: "id" | "en") {
 
   const localizedArticle = useMemo(() => {
     if (!article) return null;
+    const rawPrograms = (Array.isArray(article.programs) && article.programs.length > 0)
+      ? article.programs
+      : (article.program ? [article.program] : []);
+
+    const localizedPrograms = rawPrograms.map((p) => ({
+      ...p,
+      title: pickLocale(p.title, p.title_en, locale),
+      category: pickLocale(p.category, p.category_en, locale),
+      slug: pickLocale(p.slug, p.slug_en, locale),
+    }));
+
     return {
       ...article,
       title: pickLocale(article.title, article.title_en, locale),
       excerpt: pickLocale(article.excerpt, article.excerpt_en, locale),
       body: pickLocale(article.body, article.body_en, locale),
       category: pickLocale(article.category, article.category_en, locale),
+      programs: localizedPrograms,
     };
   }, [article, locale]);
 

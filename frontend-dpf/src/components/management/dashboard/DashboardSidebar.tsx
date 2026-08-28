@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { dpfWakaf } from "@/assets/brand";
 import type { DashboardRole, RoleTheme, NavSection } from "./DashboardUtils";
+import { ROLE_LABEL } from "./DashboardUtils";
 
 interface SidebarContentProps {
   role: DashboardRole;
@@ -27,12 +28,14 @@ export function SidebarContent({
     <div className="flex h-full flex-col bg-slate-950 text-slate-100">
       <div className="flex items-center justify-between gap-3 px-6 py-5">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900">
-            <img src={dpfWakaf} alt="DPF" className="h-7 w-7 rounded-full border border-slate-400/80 object-contain" />
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white p-1 shadow-sm">
+            <img src={dpfWakaf} alt="DPF" className="h-full w-full object-contain" />
           </span>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">DPF</p>
-            <p className="truncate font-heading text-base font-semibold text-white">{t(`role.${role}`, role)}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em]">DPF</p>
+            <p className="truncate font-heading text-base font-semibold capitalize text-white">
+              {ROLE_LABEL[role] || (role.charAt(0).toUpperCase() + role.slice(1))}
+            </p>
           </div>
         </div>
 
@@ -46,14 +49,6 @@ export function SidebarContent({
             <FontAwesomeIcon icon={faXmark} />
           </button>
         ) : null}
-      </div>
-
-      <div className="px-6 pb-3">
-        <div
-          className={`inline-flex items-center rounded-full border border-slate-800 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${theme.pillBg} ${theme.pillText}`}
-        >
-          {t(`app.${role}`, theme.appName)}
-        </div>
       </div>
 
       <nav className="sidebar-scroll flex-1 overflow-y-auto px-4 pb-6">

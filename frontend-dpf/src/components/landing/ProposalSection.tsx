@@ -42,7 +42,7 @@ export function ProposalSection() {
                   className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/30 bg-white/10 px-8 py-3.5 text-sm font-bold text-white transition-all hover:bg-white/20 hover:border-white/50"
                 >
                   <FontAwesomeIcon icon={faHandHoldingHeart} className="text-lg" />
-                  {locale === "id" ? "Donasi Sekarang" : "Donate Now"}
+                  {locale === "id" ? "Salurkan Wakaf Sekarang" : "Donate Waqf Now"}
                 </Link>
               </div>
             </div>

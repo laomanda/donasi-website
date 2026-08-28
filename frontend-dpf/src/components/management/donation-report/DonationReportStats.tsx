@@ -1,4 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faReceipt,
   faCoins,
@@ -34,108 +35,182 @@ type DonationReportStatsProps = {
   formatCount: (value: number | undefined) => string;
 };
 
-function InternalStatCard({
+type StatTheme = {
+  accentBar: string;
+  iconBg: string;
+  iconColor: string;
+  iconBorder: string;
+};
+
+function ExecutiveStatCard({
   title,
   value,
   subValue,
   icon,
-  bgColor,
+  theme,
   loading,
-  iconBg,
+  isTextValue = false,
 }: {
   title: string;
   value: string;
   subValue: string;
-  icon: any;
-  bgColor: string;
+  icon: IconDefinition;
+  theme: StatTheme;
   loading: boolean;
-  iconBg?: string;
+  isTextValue?: boolean;
 }) {
-  const getFontSize = (text: string) => {
-    if (text.length > 20) return "text-xl md:text-2xl"; 
-    if (text.length > 13) return "text-2xl md:text-3xl";
-    return "text-3xl md:text-4xl";
+  // Adaptive font size so numbers up to billions and long titles always fit neatly
+  const getFontSize = (text: string, isText: boolean) => {
+    if (isText) {
+      if (text.length > 28) return "text-base sm:text-lg";
+      return "text-lg sm:text-xl";
+    }
+    if (text.length > 18) return "text-xl sm:text-2xl";
+    if (text.length > 13) return "text-2xl sm:text-[28px]";
+    return "text-3xl sm:text-4xl";
   };
 
-  const fontSizeClass = getFontSize(value);
+  const fontSizeClass = getFontSize(value, isTextValue);
 
   return (
-    <div className={`relative overflow-hidden rounded-[32px] ${bgColor} p-6 shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl`}>
-      <div className="absolute right-0 top-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-      <div className="absolute bottom-0 left-0 -mb-8 -ml-8 h-24 w-24 rounded-full bg-black/5 blur-xl" />
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-[24px] border border-slate-200/90 bg-white p-6 shadow-sm transition-all duration-200 hover:border-slate-300 hover:shadow-md">
+      {/* Top subtle accent bar */}
+      <div className={`absolute left-0 top-0 h-1 w-full ${theme.accentBar}`} />
 
-      <div className="relative z-10 flex items-center justify-between gap-4">
-        <div className="min-w-0 flex-1 space-y-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-white/80">{title}</p>
-          <div className={`font-heading font-bold text-white shadow-sm ${fontSizeClass}`}>
-            {loading ? <div className="h-8 w-24 animate-pulse rounded-lg bg-white/20" /> : value}
-          </div>
-          <p className="text-sm font-medium text-white/80">{subValue}</p>
+      {/* Top Row: Title Label + Icon */}
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          {title}
+        </span>
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border shadow-xs transition-transform duration-200 group-hover:scale-105 ${theme.iconBg} ${theme.iconColor} ${theme.iconBorder}`}
+        >
+          <FontAwesomeIcon icon={icon} className="text-base" />
         </div>
-        
-        <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white backdrop-blur-sm shadow-inner ring-1 ring-white/30 ${iconBg || "bg-white/20"}`}>
-          <FontAwesomeIcon icon={icon} className="text-2xl" />
-        </div>
+      </div>
+
+      {/* Main Metric Value (Full Width available!) */}
+      <div className="mt-3.5 min-w-0">
+        {loading ? (
+          <div className="h-9 w-3/4 animate-pulse rounded-lg bg-slate-100" />
+        ) : (
+          <p
+            className={`font-heading font-extrabold tracking-tight text-slate-900 ${
+              isTextValue ? "line-clamp-2 leading-snug" : "truncate tabular-nums"
+            } ${fontSizeClass}`}
+            title={value}
+          >
+            {value}
+          </p>
+        )}
+      </div>
+
+      {/* Bottom SubValue / Context Details */}
+      <div className="mt-3 flex items-center gap-1.5 border-t border-slate-100 pt-3">
+        {loading ? (
+          <div className="h-4 w-1/2 animate-pulse rounded bg-slate-100" />
+        ) : (
+          <p className="truncate text-xs font-medium text-slate-500">
+            {subValue}
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
-export function DonationReportStats({ summary, loading, formatCurrency, formatCount }: DonationReportStatsProps) {
+export function DonationReportStats({
+  summary,
+  loading,
+  formatCurrency,
+  formatCount,
+}: DonationReportStatsProps) {
   return (
-    <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <InternalStatCard
+    <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <ExecutiveStatCard
         title="Total Transaksi"
         value={loading ? "-" : formatCount(summary?.total_count)}
-        subValue="Semua donasi berhasil"
+        subValue="Semua donasi terverifikasi"
         icon={faReceipt}
-        bgColor="bg-emerald-600"
+        theme={{
+          accentBar: "bg-emerald-500",
+          iconBg: "bg-emerald-50",
+          iconColor: "text-emerald-600",
+          iconBorder: "border-emerald-100",
+        }}
         loading={loading}
       />
 
-      <InternalStatCard
+      <ExecutiveStatCard
         title="Total Nominal"
         value={loading ? "-" : formatCurrency(summary?.total_amount ?? 0)}
         subValue="Akumulasi dana terkumpul"
         icon={faCoins}
-        bgColor="bg-brandBlueTeal-500"
+        theme={{
+          accentBar: "bg-teal-500",
+          iconBg: "bg-teal-50",
+          iconColor: "text-teal-600",
+          iconBorder: "border-teal-100",
+        }}
         loading={loading}
       />
 
-      <InternalStatCard
+      <ExecutiveStatCard
         title="Total Donasi Manual"
         value={loading ? "-" : formatCurrency(summary?.manual_amount ?? 0)}
-        subValue={loading ? "-" : `${formatCount(summary?.manual_count)} transaksi`}
+        subValue={loading ? "-" : `${formatCount(summary?.manual_count)} transaksi manual`}
         icon={faHandHoldingDollar}
-        bgColor="bg-brandWarmOrange-500"
+        theme={{
+          accentBar: "bg-amber-500",
+          iconBg: "bg-amber-50",
+          iconColor: "text-amber-600",
+          iconBorder: "border-amber-100",
+        }}
         loading={loading}
       />
 
-      <InternalStatCard
+      <ExecutiveStatCard
         title="Midtrans (Auto)"
         value={loading ? "-" : formatCurrency(summary?.midtrans_amount ?? 0)}
-        subValue={loading ? "-" : `${formatCount(summary?.midtrans_count)} transaksi`}
+        subValue={loading ? "-" : `${formatCount(summary?.midtrans_count)} transaksi otomatis`}
         icon={faCreditCard}
-        bgColor="bg-indigo-600"
+        theme={{
+          accentBar: "bg-indigo-500",
+          iconBg: "bg-indigo-50",
+          iconColor: "text-indigo-600",
+          iconBorder: "border-indigo-100",
+        }}
         loading={loading}
       />
 
-      <InternalStatCard
+      <ExecutiveStatCard
         title="Top Donatur"
         value={loading ? "-" : (summary?.top_donor?.donor_name || "-")}
-        subValue={loading ? "-" : `Total: ${formatCurrency(summary?.top_donor?.total_amount)}`}
+        subValue={loading ? "-" : `Total: ${formatCurrency(summary?.top_donor?.total_amount)} (${formatCount(summary?.top_donor?.donation_count)}x donasi)`}
         icon={faCrown}
-        bgColor="bg-primary-600"
+        theme={{
+          accentBar: "bg-purple-500",
+          iconBg: "bg-purple-50",
+          iconColor: "text-purple-600",
+          iconBorder: "border-purple-100",
+        }}
         loading={loading}
+        isTextValue={true}
       />
 
-      <InternalStatCard
+      <ExecutiveStatCard
         title="Program Unggulan"
         value={loading ? "-" : (summary?.top_program?.program_title || "-")}
-        subValue={loading ? "-" : `Terkumpul: ${formatCurrency(summary?.top_program?.total_amount)}`}
+        subValue={loading ? "-" : `Terkumpul: ${formatCurrency(summary?.top_program?.total_amount)} (${formatCount(summary?.top_program?.donation_count)}x donasi)`}
         icon={faStar}
-        bgColor="bg-rose-600"
+        theme={{
+          accentBar: "bg-rose-500",
+          iconBg: "bg-rose-50",
+          iconColor: "text-rose-600",
+          iconBorder: "border-rose-100",
+        }}
         loading={loading}
+        isTextValue={true}
       />
     </section>
   );

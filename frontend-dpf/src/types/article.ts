@@ -31,6 +31,16 @@ export type EditorArticle = {
   slug: string;
   slug_en?: string | null;
   program_id?: number | null;
+  program_ids?: number[];
+  programs?: Array<{
+    id: number;
+    title: string;
+    slug: string;
+    slug_en?: string | null;
+    thumbnail_path?: string | null;
+    category?: string;
+    status?: string;
+  }>;
   category: string;
   category_en?: string | null;
   excerpt: string;
@@ -55,6 +65,7 @@ export type ArticleFormState = {
   category_en: string;
   author_name: string;
   program_id: string;
+  program_ids: number[];
   thumbnail_path: string;
   video_path: string;
   excerpt: string;
@@ -74,6 +85,7 @@ export const emptyArticleForm: ArticleFormState = {
   category_en: "",
   author_name: "",
   program_id: "",
+  program_ids: [],
   thumbnail_path: "",
   video_path: "",
   excerpt: "",

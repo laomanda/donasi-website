@@ -94,6 +94,9 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
           slug: a.slug ?? "",
           slug_en: a.slug_en ?? "",
           program_id: a.program_id ? String(a.program_id) : "",
+          program_ids: Array.isArray(a.programs) && a.programs.length > 0
+            ? a.programs.map((p) => Number(p.id))
+            : (a.program_id ? [Number(a.program_id)] : (a.program_ids ?? [])),
           category: a.category ?? "",
           category_en: a.category_en ?? "",
           author_name: a.author_name ?? "",
@@ -325,7 +328,10 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
       title_en: state.title_en.trim() || null,
       slug: state.slug.trim() || null,
       slug_en: state.slug_en.trim() || null,
-      program_id: state.program_id.trim() === "" ? null : Number(state.program_id.trim()),
+      program_ids: state.program_ids ?? [],
+      program_id: (state.program_ids && state.program_ids.length > 0)
+        ? state.program_ids[0]
+        : (state.program_id.trim() === "" ? null : Number(state.program_id.trim())),
       category: state.category.trim(),
       category_en: state.category_en.trim() || null,
       thumbnail_path: state.thumbnail_path.trim() || null,

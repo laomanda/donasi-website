@@ -105,7 +105,7 @@ export default function EditorTagEditPage() {
   const isBusy = saving || deleting;
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="mx-auto w-full max-w-6xl space-y-6 pb-20">
       <EditorTagFormHeader
         mode="edit"
         saving={saving}
@@ -113,10 +113,11 @@ export default function EditorTagEditPage() {
         canSubmit={isFormValid}
         onSubmit={handleSubmit}
         onBack={() => navigate("/editor/tags")}
+        onDelete={handleDelete}
       />
 
       {error && (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700 animate-in fade-in slide-in-from-top-2">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700 animate-in fade-in slide-in-from-top-2">
           {error}
         </div>
       )}

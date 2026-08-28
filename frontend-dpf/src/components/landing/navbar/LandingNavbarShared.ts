@@ -38,8 +38,8 @@ export const SEARCH_ITEMS = [
     },
     {
         href: "/donate",
-        labels: { id: "Donasi", en: "Donate" },
-        keywords: ["donasi", "donate", "donation"],
+        labels: { id: "Salurkan Wakaf", en: "Donate Waqf" },
+        keywords: ["wakaf", "salurkan", "donate", "donation", "penyaluran"],
     },
     {
         href: "/literasi",
@@ -68,8 +68,8 @@ export const SEARCH_ITEMS = [
     },
     {
         href: "/konfirmasi-donasi",
-        labels: { id: "Konfirmasi Donasi", en: "Donation Confirmation" },
-        keywords: ["konfirmasi", "confirmation", "transfer"],
+        labels: { id: "Konfirmasi Penyaluran Wakaf", en: "Waqf Confirmation" },
+        keywords: ["konfirmasi", "confirmation", "transfer", "penyaluran"],
     },
 ];
 
