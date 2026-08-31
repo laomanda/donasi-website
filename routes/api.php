@@ -225,10 +225,12 @@ Route::prefix('v1')->group(function () {
                 Route::put('settings', [AdminSettingController::class, 'update']);
                 Route::apiResource('banners', AdminBannerController::class)->except(['index', 'show']);
 
-                // Allocations (Mitra Wallet & Public Donations)
+                // Allocations (Program Balance & Disbursements)
+                Route::get('allocations/allocatable-programs', [AdminAllocationController::class, 'getAllocatablePrograms']);
                 Route::get('users/{user}/allocatable-programs', [AdminAllocationController::class, 'getAllocatablePrograms']);
                 Route::get('allocations/allocatable-public-donations', [AdminAllocationController::class, 'getAllocatablePublicDonations']);
-                Route::apiResource('allocations', AdminAllocationController::class)->only(['store', 'destroy']);
+                Route::post('allocations/{allocation}', [AdminAllocationController::class, 'update']);
+                Route::apiResource('allocations', AdminAllocationController::class)->except(['index', 'show']);
 
                 // Users (for dropdowns etc)
                 Route::get('users', [AdminUserController::class, 'index']);
@@ -255,7 +257,9 @@ Route::prefix('v1')->group(function () {
                 ->only(['index', 'show']);
 
             Route::get('settings', [AdminSettingController::class, 'index']);
+            Route::get('allocations/export', [AdminAllocationController::class, 'export']);
             Route::get('allocations', [AdminAllocationController::class, 'index']);
+            Route::get('allocations/{allocation}', [AdminAllocationController::class, 'show']);
         });
 
     /*

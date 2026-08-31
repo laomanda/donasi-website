@@ -1,0 +1,1 @@
+const l=async(n,a,c)=>{const s=Math.max(1,Math.floor(a)),r=[...n],e=[],o=[],h=async()=>{for(;r.length;){const t=r.shift();try{await c(t),e.push(t)}catch(i){o.push({id:t,error:i})}}};return await Promise.all(Array.from({length:Math.min(s,n.length)},()=>h())),{succeeded:e,failed:o}};export{l as r};

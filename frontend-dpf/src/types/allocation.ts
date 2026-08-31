@@ -1,10 +1,12 @@
 export type Allocation = {
   id: number;
+  program_id?: number | null;
   amount: number;
   description: string;
   proof_path: string | null;
   allocated_at?: string | null;
   created_at: string;
+  updated_at?: string | null;
   user_id?: number | null;
   donation_id?: number | null;
   user?: { name: string; email: string; phone?: string | null } | null;
@@ -17,7 +19,7 @@ export type Allocation = {
     amount: number;
     program?: { title: string } | null;
   } | null;
-  program?: { title: string } | null;
+  program?: { id: number; title: string; category?: string | null; slug?: string | null } | null;
 };
 
 export type UserOption = {
@@ -30,6 +32,9 @@ export type UserOption = {
 export type AllocatableProgram = {
   program_id: number | null;
   program_title: string;
+  category?: string | null;
+  collected_amount: number;
+  total_allocated: number;
   remaining_balance: number;
 };
 
@@ -49,9 +54,6 @@ export type AllocatablePublicDonation = {
 };
 
 export type AllocationFormData = {
-  source_type: "mitra" | "public_donor";
-  user_id: string;
-  donation_id: string;
   program_id: string;
   amount: string;
   description: string;

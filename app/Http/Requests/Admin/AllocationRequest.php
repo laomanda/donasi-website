@@ -14,12 +14,12 @@ class AllocationRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'program_id'   => ['nullable', 'exists:programs,id'],
             'user_id'      => ['nullable', 'exists:users,id'],
             'donation_id'  => ['nullable', 'exists:donations,id'],
-            'program_id'   => ['nullable', 'exists:programs,id'],
             'amount'       => ['required', 'numeric', 'min:1'],
-            'description'  => ['required', 'string'],
-            'proof'        => ['nullable', 'image', 'max:2048'],
+            'description'  => ['nullable', 'string', 'max:1000'],
+            'proof'        => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
             'allocated_at' => ['nullable', 'date'],
         ];
     }

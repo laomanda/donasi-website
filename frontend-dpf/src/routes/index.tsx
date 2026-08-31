@@ -98,6 +98,8 @@ const AdminPickupRequestsPage = lazy(() => import('../pages/management/admin/pic
 const AdminPickupRequestShowPage = lazy(() => import('../pages/management/admin/pickup/AdminPickupRequestShowPage').then(m => ({ default: m.AdminPickupRequestShowPage })))
 const AdminAllocationsPage = lazy(() => import('../pages/management/admin/allocations/AdminAllocationsPage').then(m => ({ default: m.AdminAllocationsPage })))
 const AdminAllocationCreatePage = lazy(() => import('../pages/management/admin/allocations/AdminAllocationCreatePage').then(m => ({ default: m.AdminAllocationCreatePage })))
+const AdminAllocationEditPage = lazy(() => import('../pages/management/admin/allocations/AdminAllocationEditPage').then(m => ({ default: m.AdminAllocationEditPage })))
+const AdminAllocationShowPage = lazy(() => import('../pages/management/admin/allocations/AdminAllocationShowPage').then(m => ({ default: m.AdminAllocationShowPage })))
 const AdminSuggestionsPage = lazy(() => import('../pages/management/admin/suggestion/AdminSuggestionsPage').then(m => ({ default: m.AdminSuggestionsPage })))
 const AdminSuggestionShowPage = lazy(() => import('../pages/management/admin/suggestion/AdminSuggestionShowPage').then(m => ({ default: m.AdminSuggestionShowPage })))
 
@@ -219,6 +221,8 @@ export const router = createBrowserRouter([
           { path: 'pickup-requests/:id', element: withSuspense(AdminPickupRequestShowPage) },
           { path: 'allocations', element: withSuspense(AdminAllocationsPage) },
           { path: 'allocations/create', element: withSuspense(AdminAllocationCreatePage) },
+          { path: 'allocations/:id/edit', element: withSuspense(AdminAllocationEditPage) },
+          { path: 'allocations/:id', element: withSuspense(AdminAllocationShowPage) },
           { path: 'search', element: <Suspense fallback={<PageLoader />}><SearchPage role="admin" /></Suspense> },
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="admin" /></Suspense> },
         ],
@@ -236,6 +240,8 @@ export const router = createBrowserRouter([
           { path: 'donation-confirmations', element: withSuspense(AdminDonationConfirmationsPage) },
           { path: 'allocations', element: withSuspense(AdminAllocationsPage) },
           { path: 'allocations/create', element: withSuspense(AdminAllocationCreatePage) },
+          { path: 'allocations/:id/edit', element: withSuspense(AdminAllocationEditPage) },
+          { path: 'allocations/:id', element: withSuspense(AdminAllocationShowPage) },
           { path: 'bank-accounts', element: withSuspense(EditorBanksPage) },
           { path: 'bank-accounts/create', element: withSuspense(EditorBankCreatePage) },
           { path: 'bank-accounts/:id/edit', element: withSuspense(EditorBankEditPage) },
