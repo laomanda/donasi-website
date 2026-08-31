@@ -14,7 +14,7 @@ class StoreManualDonationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'program_id'      => ['nullable', 'exists:programs,id'],
+            'program_id'      => ['required', 'exists:programs,id'],
             'donor_name'      => ['required', 'string', 'max:255'],
             'donor_email'     => ['nullable', 'email'],
             'donor_phone'     => ['nullable', 'string', 'max:50'],
@@ -25,6 +25,14 @@ class StoreManualDonationRequest extends FormRequest
             'notes'           => ['nullable', 'string'],
             'manual_proof_path' => ['nullable', 'string', 'max:255'],
             'paid_at'         => ['nullable', 'date'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'program_id.required' => 'Program donasi wajib dipilih.',
+            'program_id.exists'   => 'Program donasi yang dipilih tidak valid.',
         ];
     }
 }

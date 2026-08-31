@@ -183,6 +183,11 @@ export function AdminDonationManualCreatePage() {
 
   const onSubmit = async () => {
     setErrors([]);
+    if (!form.program_id.trim()) {
+      setErrors(["Program donasi wajib dipilih."]);
+      toast.error("Silakan pilih program donasi terlebih dahulu.", { title: "Validasi Gagal" });
+      return;
+    }
     setSaving(true);
     try {
       const payload = payloadForRequest(form);
@@ -286,19 +291,22 @@ export function AdminDonationManualCreatePage() {
               <div className="sm:col-span-2">
                 <label className="block">
                   <div className="flex items-center justify-between mb-1">
-                    <span className={labelClass}>Program Donasi</span>
-                    <span className="text-[11px] font-semibold text-slate-400 normal-case">(Opsional)</span>
+                    <span className={labelClass}>
+                      Program Donasi <span className="text-rose-500">*</span>
+                    </span>
+                    <span className="text-[11px] font-bold text-rose-500 normal-case">(Wajib)</span>
                   </div>
                   <div className="relative">
                     <select
                       value={form.program_id}
                       onChange={(e) => setForm((s) => ({ ...s, program_id: e.target.value }))}
-                      className={`${inputClass} appearance-none`}
+                      className={`${inputClass} appearance-none ${!form.program_id ? 'text-slate-400' : 'text-slate-900'}`}
                       disabled={programLoading || !canSubmit}
+                      required
                     >
-                      <option value="">{programLoading ? "Memuat data program..." : "Pilih Program (Opsional / Donasi Umum)"}</option>
+                      <option value="">{programLoading ? "Memuat data program..." : "-- Pilih Program Donasi (Wajib) --"}</option>
                       {programOptions.map((p) => (
-                        <option key={p.id} value={String(p.id)}>
+                        <option key={p.id} value={String(p.id)} className="text-slate-900 font-semibold">
                           {p.title}
                         </option>
                       ))}
