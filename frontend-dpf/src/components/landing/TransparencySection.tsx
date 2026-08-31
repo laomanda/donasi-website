@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -39,13 +39,8 @@ export function TransparencySection({ stats, locale = "id", t }: TransparencySec
   const availableBalance = Math.max(0, totalCollected - totalAllocated);
   const distributionRatio = totalCollected > 0 ? (totalAllocated / totalCollected) * 100 : 0;
 
-  const programAllocations = stats?.program_allocations ?? [];
-  const monthlyTrends = stats?.monthly_trends ?? [];
-
-  // Reset page when filter or search changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, categoryFilter]);
+  const programAllocations = useMemo(() => stats?.program_allocations ?? [], [stats?.program_allocations]);
+  const monthlyTrends = useMemo(() => stats?.monthly_trends ?? [], [stats?.monthly_trends]);
 
   // Extract unique categories
   const categories = useMemo(() => {
@@ -228,7 +223,10 @@ export function TransparencySection({ stats, locale = "id", t }: TransparencySec
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   placeholder={t("landing.transparency.searchPlaceholder")}
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 py-2.5 text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-brandGreen-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brandGreen-500/15"
                 />
@@ -238,7 +236,10 @@ export function TransparencySection({ stats, locale = "id", t }: TransparencySec
                 <div className="flex items-center gap-2">
                   <select
                     value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    onChange={(e) => {
+                      setCategoryFilter(e.target.value);
+                      setCurrentPage(1);
+                    }}
                     className="w-full sm:w-56 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs sm:text-sm font-medium text-slate-700 focus:border-brandGreen-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brandGreen-500/15 cursor-pointer"
                   >
                     <option value="all">{t("landing.transparency.allCategories")}</option>
@@ -264,6 +265,7 @@ export function TransparencySection({ stats, locale = "id", t }: TransparencySec
                     onClick={() => {
                       setSearchQuery("");
                       setCategoryFilter("all");
+                      setCurrentPage(1);
                     }}
                     className="mt-3 text-xs font-semibold text-brandGreen-600 hover:text-brandGreen-700"
                   >

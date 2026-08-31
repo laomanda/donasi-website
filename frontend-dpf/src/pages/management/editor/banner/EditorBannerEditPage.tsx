@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { isAxiosError } from "axios";
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
 
@@ -88,7 +89,7 @@ export default function EditorBannerEditPage() {
         } else {
           setErrors(["Banner tidak ditemukan."]);
         }
-      } catch (err) {
+      } catch {
         if (active) setErrors(["Gagal memuat data banner."]);
       } finally {
         if (active) {
@@ -145,14 +146,18 @@ export default function EditorBannerEditPage() {
       });
       toast.success("Perubahan banner berhasil disimpan.", { title: "Berhasil" });
       navigate("/editor/banners", { replace: true });
-    } catch (err: any) {
-      const errs = err.response?.data?.errors;
-      if (errs && typeof errs === "object") {
-        const msgs = Object.values(errs).flat().map(String);
-        setErrors(msgs.length ? msgs : ["Validasi gagal."]);
+    } catch (err: unknown) {
+      if (isAxiosError<{ message?: string; errors?: Record<string, unknown> }>(err)) {
+        const errs = err.response?.data?.errors;
+        if (errs && typeof errs === "object") {
+          const msgs = Object.values(errs).flat().map(String);
+          setErrors(msgs.length ? msgs : ["Validasi gagal."]);
+        } else {
+          const msg = err.response?.data?.message ?? "Gagal menyimpan perubahan.";
+          setErrors([msg]);
+        }
       } else {
-        const msg = err.response?.data?.message ?? "Gagal menyimpan perubahan.";
-        setErrors([msg]);
+        setErrors(["Gagal menyimpan perubahan."]);
       }
     } finally {
       setSaving(false);

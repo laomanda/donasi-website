@@ -112,7 +112,7 @@ export function TransparansiPage() {
                     {loading ? "..." : (
                       <AnimatedCounter
                         value={totalCollected}
-                        formatter={(val) => formatCurrency(val, locale as any)}
+                        formatter={(val) => formatCurrency(val, locale)}
                       />
                     )}
                   </p>
@@ -134,7 +134,7 @@ export function TransparansiPage() {
                     {loading ? "..." : (
                       <AnimatedCounter
                         value={totalAllocated}
-                        formatter={(val) => formatCurrency(val, locale as any)}
+                        formatter={(val) => formatCurrency(val, locale)}
                       />
                     )}
                   </p>
@@ -190,7 +190,7 @@ export function TransparansiPage() {
       </section>
 
       {/* Main Interactive Transparency Section */}
-      <TransparencySection stats={data?.stats} locale={locale as any} t={t} />
+      <TransparencySection stats={data?.stats} locale={locale} t={t} />
 
       {/* Governance & Pillars Section */}
       <section className="bg-slate-50 pb-20 sm:pb-28">

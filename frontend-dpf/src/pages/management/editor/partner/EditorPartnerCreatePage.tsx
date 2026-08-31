@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { isAxiosError } from "axios";
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
 import {
@@ -76,13 +77,17 @@ export default function EditorPartnerCreatePage() {
 
       toast.success("Mitra berhasil ditambahkan.", { title: "Berhasil" });
       navigate("/editor/partners");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      const errs = err.response?.data?.errors;
-      let msg = err.response?.data?.message || "Gagal menyimpan mitra.";
-      if (errs && typeof errs === "object") {
-        const firstErr = Object.values(errs).flat()[0];
-        if (firstErr) msg = String(firstErr);
+      let msg = "Gagal menyimpan mitra.";
+      if (isAxiosError<{ message?: string; errors?: Record<string, unknown> }>(err)) {
+        const errs = err.response?.data?.errors;
+        if (errs && typeof errs === "object") {
+          const firstErr = Object.values(errs).flat()[0];
+          if (firstErr) msg = String(firstErr);
+        } else if (err.response?.data?.message) {
+          msg = err.response.data.message;
+        }
       }
       setError(msg);
     } finally {

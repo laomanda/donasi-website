@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { isAxiosError } from "axios";
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
 import {
@@ -47,7 +48,7 @@ export default function EditorPartnerEditPage() {
           is_active: data.is_active ?? true,
           order: String(data.order ?? 0),
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Gagal memuat mitra:", err);
         setError("Gagal memuat data mitra. Terjadi kesalahan pada server.");
       } finally {
@@ -93,13 +94,17 @@ export default function EditorPartnerEditPage() {
 
       toast.success("Mitra berhasil diperbarui.", { title: "Berhasil" });
       navigate("/editor/partners");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      const errs = err.response?.data?.errors;
-      let msg = err.response?.data?.message || "Gagal menyimpan mitra.";
-      if (errs && typeof errs === "object") {
-        const firstErr = Object.values(errs).flat()[0];
-        if (firstErr) msg = String(firstErr);
+      let msg = "Gagal menyimpan mitra.";
+      if (isAxiosError<{ message?: string; errors?: Record<string, unknown> }>(err)) {
+        const errs = err.response?.data?.errors;
+        if (errs && typeof errs === "object") {
+          const firstErr = Object.values(errs).flat()[0];
+          if (firstErr) msg = String(firstErr);
+        } else if (err.response?.data?.message) {
+          msg = err.response.data.message;
+        }
       }
       setError(msg);
     } finally {
@@ -115,7 +120,7 @@ export default function EditorPartnerEditPage() {
       await http.delete(`/editor/partners/${partner.id}`);
       toast.success("Mitra berhasil dihapus.", { title: "Berhasil" });
       navigate("/editor/partners");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError("Gagal menghapus mitra.");
       setDeleting(false);

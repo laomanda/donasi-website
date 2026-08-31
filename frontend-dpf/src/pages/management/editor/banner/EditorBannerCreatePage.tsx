@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isAxiosError } from "axios";
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
 
@@ -105,14 +106,18 @@ export default function EditorBannerCreatePage() {
       });
       toast.success("Banner berhasil dibuat.", { title: "Berhasil" });
       navigate("/editor/banners", { replace: true });
-    } catch (err: any) {
-      const errs = err.response?.data?.errors;
-      if (errs && typeof errs === "object") {
-        const msgs = Object.values(errs).flat().map(String);
-        setErrors(msgs.length ? msgs : ["Validasi gagal."]);
+    } catch (err: unknown) {
+      if (isAxiosError<{ message?: string; errors?: Record<string, unknown> }>(err)) {
+        const errs = err.response?.data?.errors;
+        if (errs && typeof errs === "object") {
+          const msgs = Object.values(errs).flat().map(String);
+          setErrors(msgs.length ? msgs : ["Validasi gagal."]);
+        } else {
+          const msg = err.response?.data?.message ?? "Gagal membuat banner.";
+          setErrors([msg]);
+        }
       } else {
-        const msg = err.response?.data?.message ?? "Gagal membuat banner.";
-        setErrors([msg]);
+        setErrors(["Gagal membuat banner."]);
       }
     } finally {
       setSaving(false);
