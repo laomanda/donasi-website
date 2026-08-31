@@ -33,6 +33,8 @@ export function ProgramDetailSidebar({
   const brandName = "Djalalaludin Pane Foundation";
   const statusTone = getProgramStatusTone(program?.status, program?.published_at, program?.deadline_days);
   const isUnlimited = isUnlimitedTarget(program?.target_amount);
+  const collectedNum = Number(program?.collected_amount ?? 0);
+  const progressWidth = collectedNum < 1000 ? 0 : (isUnlimited ? 100 : Math.min(progressPercent, 100));
 
   return (
     <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
@@ -82,7 +84,7 @@ export function ProgramDetailSidebar({
         <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-100">
           <div
             className="h-full rounded-full bg-brandGreen-600 transition-[width] duration-700 ease-out"
-            style={{ width: `${isUnlimited ? 100 : Math.min(progressPercent, 100)}%` }}
+            style={{ width: `${progressWidth}%` }}
           />
         </div>
 
@@ -93,7 +95,7 @@ export function ProgramDetailSidebar({
                 <InfinityIcon className="w-4 h-4" />
               </span>
             ) : (
-              `${Math.round(progressPercent)}% ${locale === "en" ? "Achieved" : "Tercapai"}`
+              `${collectedNum < 1000 ? 0 : Math.round(progressPercent)}% ${locale === "en" ? "Achieved" : "Tercapai"}`
             )}
           </span>
           <span className="inline-flex items-center gap-1.5">

@@ -1,0 +1,1 @@
+import{j as r}from"./vendor-fontawesome-YDwqu9rJ.js";import{E as t}from"./EditorOrganizationMemberForm-DdtvasH9.js";import"./vendor-react-0fmdHqY3.js";import"./index-DZZmUNxu.js";import"./PhoneInput-krDJ2_0y.js";function n(){return r.jsx(t,{mode:"create"})}export{n as EditorOrganizationMemberCreatePage,n as default};

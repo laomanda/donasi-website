@@ -117,9 +117,11 @@ export const formatDate = (value?: string | null, locale: "id" | "en" = "id") =>
 };
 
 export const getProgress = (collected: number | string | undefined, target: number | string | undefined | null) => {
+  const collectedNum = Number(collected ?? 0);
+  if (collectedNum < 1000) return 0;
   if (isUnlimitedTarget(target)) return null;
   const safeTarget = Math.max(Number(target ?? 0), 1);
-  const value = Math.round((Number(collected ?? 0) / safeTarget) * 100);
+  const value = Math.round((collectedNum / safeTarget) * 100);
   return Number.isNaN(value) ? 0 : value;
 };
 

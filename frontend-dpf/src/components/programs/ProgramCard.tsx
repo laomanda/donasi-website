@@ -23,7 +23,9 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
   const saved = isSaved(Number(program.id), 'Program');
 
   const isUnlimited = isUnlimitedTarget(program.target_amount);
+  const collectedNum = Number(program.collected_amount ?? 0);
   const progress = getProgress(program.collected_amount, program.target_amount);
+  const progressWidth = collectedNum < 1000 ? 0 : (isUnlimited ? 100 : Math.min(progress ?? 0, 100));
   const statusLabel = getStatusLabel(program.status, t, program.published_at, program.deadline_days);
   const statusTone = getProgramStatusTone(program.status, program.published_at, program.deadline_days);
 
@@ -113,7 +115,7 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200/50">
             <div
               className="h-full rounded-full bg-brandGreen-600 transition-[width] duration-700 ease-out"
-              style={{ width: `${isUnlimited ? 100 : Math.min(progress ?? 0, 100)}%` }}
+              style={{ width: `${progressWidth}%` }}
             />
           </div>
           <div className="flex items-center justify-between text-xs">

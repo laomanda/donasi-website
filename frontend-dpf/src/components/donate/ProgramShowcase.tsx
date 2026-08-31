@@ -36,6 +36,8 @@ export const ProgramShowcase = ({
     t
 }: ProgramShowcaseProps) => {
     const isUnlimited = displayTarget === null || displayTarget === undefined || Number(displayTarget) <= 0;
+    const collectedNum = Number(displayCollected ?? 0);
+    const progressWidth = collectedNum < 1000 ? 0 : (hasProgramProgress ? (isUnlimited ? 100 : Math.min(displayProgress, 100)) : 0);
 
     return (
         <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_-45px_rgba(15,23,42,0.35)]">
@@ -65,8 +67,8 @@ export const ProgramShowcase = ({
                         {!isGeneralDonation && (
                             <div className="h-2 w-full rounded-full bg-slate-100">
                                 <div
-                                    className="h-full rounded-full bg-brandGreen-600"
-                                    style={{ width: `${hasProgramProgress ? (isUnlimited ? 100 : Math.min(displayProgress, 100)) : 0}%` }}
+                                    className="h-full rounded-full bg-brandGreen-600 transition-[width] duration-700 ease-out"
+                                    style={{ width: `${progressWidth}%` }}
                                 />
                             </div>
                         )}
