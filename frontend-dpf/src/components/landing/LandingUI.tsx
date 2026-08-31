@@ -11,7 +11,7 @@ export type Program = {
   short_description: string;
   short_description_en?: string | null;
   thumbnail_path: string | null;
-  target_amount: string | number;
+  target_amount?: string | number | null;
   collected_amount: string | number;
   status: string;
   category?: string | null;

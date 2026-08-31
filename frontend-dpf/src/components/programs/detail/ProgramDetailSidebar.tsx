@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import type { Program } from "../ProgramShared";
-import { getStatusLabel, getProgramStatusTone, formatCurrency } from "../ProgramShared";
+import { getStatusLabel, getProgramStatusTone, formatCurrency, isUnlimitedTarget, InfinityIcon } from "../ProgramShared";
 import { dpfWakaf } from "@/assets/brand";
 
 interface ProgramDetailSidebarProps {
@@ -32,6 +32,7 @@ export function ProgramDetailSidebar({
 }: ProgramDetailSidebarProps) {
   const brandName = "Djalalaludin Pane Foundation";
   const statusTone = getProgramStatusTone(program?.status, program?.published_at, program?.deadline_days);
+  const isUnlimited = isUnlimitedTarget(program?.target_amount);
 
   return (
     <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
@@ -66,20 +67,35 @@ export function ProgramDetailSidebar({
           <p className="font-heading text-3xl font-semibold text-slate-900">
             {formatCurrency(program?.collected_amount, locale)}
           </p>
-          <p className="text-sm font-semibold text-slate-500">
-            {locale === "en" ? "Of" : "Dari"} {formatCurrency(program?.target_amount, locale)}
-          </p>
+          <div className="text-sm font-semibold text-slate-500">
+            {isUnlimited ? (
+              <span className="inline-flex items-center gap-1.5 font-bold text-slate-700">
+                <span className="font-normal text-slate-500">{locale === "en" ? "Of" : "Dari"}</span>
+                <InfinityIcon className="w-5 h-5 text-brandGreen-600" />
+              </span>
+            ) : (
+              <span>{locale === "en" ? "Of" : "Dari"} {formatCurrency(program?.target_amount, locale)}</span>
+            )}
+          </div>
         </div>
 
         <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-100">
           <div
-            className="h-full rounded-full bg-brandGreen-600"
-            style={{ width: `${Math.min(progressPercent, 100)}%` }}
+            className="h-full rounded-full bg-brandGreen-600 transition-[width] duration-700 ease-out"
+            style={{ width: `${isUnlimited ? 100 : Math.min(progressPercent, 100)}%` }}
           />
         </div>
 
         <div className="mt-3 flex items-center justify-between text-xs font-semibold text-slate-500">
-          <span>{Math.round(progressPercent)}% {locale === "en" ? "Achieved" : "Tercapai"}</span>
+          <span>
+            {isUnlimited ? (
+              <span className="inline-flex items-center font-bold text-brandGreen-700">
+                <InfinityIcon className="w-4 h-4" />
+              </span>
+            ) : (
+              `${Math.round(progressPercent)}% ${locale === "en" ? "Achieved" : "Tercapai"}`
+            )}
+          </span>
           <span className="inline-flex items-center gap-1.5">
             <FontAwesomeIcon icon={faCheckCircle} className="text-brandGreen-600" />
             {getStatusLabel(program?.status, t, program?.published_at, program?.deadline_days)}

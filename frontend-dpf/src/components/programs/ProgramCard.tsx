@@ -6,7 +6,7 @@ import { imagePlaceholder } from "@/lib/placeholder";
 import type { 
   Program, 
 } from "./ProgramShared";
-import { getProgress, getStatusLabel, getProgramStatusTone, getImageUrl, canonicalStatus, formatCurrency, formatDate, getRemainingDays, pickLocale } from "./ProgramShared";
+import { getProgress, getStatusLabel, getProgramStatusTone, getImageUrl, canonicalStatus, formatCurrency, formatDate, getRemainingDays, pickLocale, isUnlimitedTarget, InfinityIcon } from "./ProgramShared";
 import { dpfWakaf } from "@/assets/brand";
 import { useSavedItems } from "@/lib/SavedItemsContext";
 
@@ -22,6 +22,7 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
   const { toggleSave, isSaved } = useSavedItems();
   const saved = isSaved(Number(program.id), 'Program');
 
+  const isUnlimited = isUnlimitedTarget(program.target_amount);
   const progress = getProgress(program.collected_amount, program.target_amount);
   const statusLabel = getStatusLabel(program.status, t, program.published_at, program.deadline_days);
   const statusTone = getProgramStatusTone(program.status, program.published_at, program.deadline_days);
@@ -112,7 +113,7 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200/50">
             <div
               className="h-full rounded-full bg-brandGreen-600 transition-[width] duration-700 ease-out"
-              style={{ width: `${Math.min(progress, 100)}%` }}
+              style={{ width: `${isUnlimited ? 100 : Math.min(progress ?? 0, 100)}%` }}
             />
           </div>
           <div className="flex items-center justify-between text-xs">
@@ -120,13 +121,28 @@ export function ProgramCard({ program, locale, t, variant = "save" }: ProgramCar
               <span className="text-slate-500 font-normal">{t("program.collected")} </span>
               <span className="font-bold text-slate-900">{formatCurrency(program.collected_amount, locale)}</span>
             </div>
-            <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200/60 shrink-0">
-              {progress}%
-            </span>
+            {isUnlimited ? (
+              <span 
+                title={locale === "en" ? "Unlimited Target" : "Target Tak Terbatas"}
+                className="inline-flex items-center justify-center rounded-md bg-emerald-50 px-2 py-0.5 text-emerald-700 ring-1 ring-emerald-200/60 shrink-0"
+              >
+                <InfinityIcon className="w-3.5 h-3.5" />
+              </span>
+            ) : (
+              <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200/60 shrink-0">
+                {progress}%
+              </span>
+            )}
           </div>
           <div className="flex items-center justify-between text-[11px] font-medium text-slate-500">
             <span>{t("program.target")}</span>
-            <span className="font-semibold text-slate-700">{formatCurrency(program.target_amount, locale)}</span>
+            {isUnlimited ? (
+              <span className="inline-flex items-center font-bold text-slate-700" title={locale === "en" ? "Unlimited Target" : "Target Tak Terbatas"}>
+                <InfinityIcon className="w-4 h-4 text-brandGreen-600" />
+              </span>
+            ) : (
+              <span className="font-semibold text-slate-700">{formatCurrency(program.target_amount, locale)}</span>
+            )}
           </div>
         </div>
         <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">

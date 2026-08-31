@@ -27,6 +27,7 @@ export const programDict: Dict = {
     "program.badge": { id: "Program Unggulan", en: "Featured Programs" },
     "program.collected": { id: "Terkumpul", en: "Collected" },
     "program.target": { id: "Target", en: "Target" },
+    "program.target.unlimited": { id: "Tak Terbatas", en: "Unlimited" },
     "program.progress": { id: "Progres", en: "Progress" },
     "program.deadline": { id: "Batas hari", en: "Day limit" },
     "program.deadline.unlimited": { id: "Tanpa batas hari", en: "No day limit" },

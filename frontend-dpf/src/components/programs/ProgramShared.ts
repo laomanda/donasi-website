@@ -1,3 +1,4 @@
+import React from "react";
 import { imagePlaceholder } from "@/lib/placeholder";
 import { resolveStorageUrl } from "../../lib/urls";
 import { programDict } from "./ProgramI18n";
@@ -17,7 +18,7 @@ export type Program = {
   thumbnail_path: string | null;
   banner_path?: string | null;
   program_images?: string[] | null;
-  target_amount: number | string;
+  target_amount?: number | string | null;
   collected_amount: number | string;
   status: string;
   category?: string | null;
@@ -55,7 +56,7 @@ export type ProgramAllocation = {
 
 export type ProgramShowResponse = {
   program: Program;
-  progress_percent?: number;
+  progress_percent?: number | null;
   recent_donations?: Donation[];
   latest_updates?: ProgramUpdate[];
   allocations?: ProgramAllocation[];
@@ -69,7 +70,7 @@ export const pickLocale = (idVal?: string | null, enVal?: string | null, locale:
   return idText || enText;
 };
 
-export const formatCurrency = (value: number | string | null | undefined, locale: "id" | "en") =>
+export const formatCurrency = (value: number | string | null | undefined, locale: "id" | "en" = "id") =>
   new Intl.NumberFormat(locale === "en" ? "en-US" : "id-ID", {
     style: "currency",
     currency: "IDR",
@@ -77,6 +78,30 @@ export const formatCurrency = (value: number | string | null | undefined, locale
     minimumFractionDigits: 0,
   }).format(Number(value ?? 0));
 
+export const isUnlimitedTarget = (target?: number | string | null): boolean => {
+  if (target === null || target === undefined || String(target).trim() === "") return true;
+  const num = Number(target);
+  return isNaN(num) || num <= 0;
+};
+
+export function InfinityIcon({ className = "w-4 h-4 inline-block" }: { className?: string }) {
+  return React.createElement(
+    "svg",
+    {
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: 2.5,
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className,
+      "aria-hidden": "true",
+    },
+    React.createElement("path", {
+      d: "M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4Z",
+    })
+  );
+}
 
 export const getImageUrl = (path?: string | null) => {
   return resolveStorageUrl(path, imagePlaceholder);
@@ -91,7 +116,8 @@ export const formatDate = (value?: string | null, locale: "id" | "en" = "id") =>
   }).format(new Date(value));
 };
 
-export const getProgress = (collected: number | string | undefined, target: number | string | undefined) => {
+export const getProgress = (collected: number | string | undefined, target: number | string | undefined | null) => {
+  if (isUnlimitedTarget(target)) return null;
   const safeTarget = Math.max(Number(target ?? 0), 1);
   const value = Math.round((Number(collected ?? 0) / safeTarget) * 100);
   return Number.isNaN(value) ? 0 : value;

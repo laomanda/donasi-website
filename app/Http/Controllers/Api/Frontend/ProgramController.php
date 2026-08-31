@@ -70,9 +70,9 @@ class ProgramController extends Controller
                     return $donation;
                 });
 
-            $progress = $program->target_amount > 0
+            $progress = ($program->target_amount !== null && (float) $program->target_amount > 0)
                 ? round(($program->collected_amount / $program->target_amount) * 100, 2)
-                : 0;
+                : null;
 
             $latestUpdates = Article::published()
                 ->where('program_id', $program->id)

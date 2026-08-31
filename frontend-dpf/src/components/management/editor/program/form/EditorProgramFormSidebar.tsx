@@ -166,12 +166,12 @@ export default function EditorProgramFormSidebar({
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <label className="block">
-                            <FormLabel label="Target Donasi (IDR)" required />
+                            <FormLabel label="Target Donasi (IDR)" optional subLabel="Kosongkan jika target tidak terbatas." />
                             <input
                                 type="number"
                                 value={form.target_amount}
                                 onChange={(e) => onChange({ target_amount: e.target.value })}
-                                placeholder="10000000"
+                                placeholder="Kosongkan jika tak terbatas"
                                 className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                                 disabled={disabled}
                             />

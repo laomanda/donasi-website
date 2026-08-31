@@ -17,6 +17,12 @@ export const formatCurrency = (value: number | string | null | undefined) => {
   );
 };
 
+export const isUnlimitedTarget = (target?: number | string | null): boolean => {
+  if (target === null || target === undefined || String(target).trim() === "") return true;
+  const num = Number(target);
+  return isNaN(num) || num <= 0;
+};
+
 export const getStatusTone = (status: ProgramStatus) => {
   const s = String(status ?? "").toLowerCase();
   if (s === "active") return "bg-brandGreen-600 text-white ring-brandGreen-700/70";

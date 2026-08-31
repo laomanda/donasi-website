@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare, faThumbtack } from "@fortawesome/free-solid-svg-icons";
 import { type Program } from "./EditorProgramTypes";
-import { formatDate, formatCurrency, getStatusTone, formatStatusLabel, getRemainingDays } from "./EditorProgramUtils";
+import { formatDate, formatCurrency, getStatusTone, formatStatusLabel, getRemainingDays, isUnlimitedTarget } from "./EditorProgramUtils";
 
 type Props = {
     program: Program;
@@ -48,7 +48,7 @@ export default function EditorProgramCard({ program, isSelected, onToggle, onEdi
             </div>
 
             <p className="mt-3 text-xs font-semibold text-slate-500">
-                Target: <span className="font-bold text-slate-700">{formatCurrency(program.target_amount)}</span>
+                Target: <span className="font-bold text-slate-700 text-sm leading-none">{isUnlimitedTarget(program.target_amount) ? "∞" : formatCurrency(program.target_amount)}</span>
                 <span className="mx-2 text-slate-300">-</span>
                 Terkumpul: <span className="font-bold text-slate-700">{formatCurrency(program.collected_amount)}</span>
                 <span className="mx-2 text-slate-300">-</span>

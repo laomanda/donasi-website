@@ -34,7 +34,6 @@ export function LiterasiCard({ article, locale, t, variant = "save" }: LiterasiC
     <article 
       onClick={() => navigate(`/literasi/${article.slug}`)}
       className="group relative flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-sm transition duration-200 hover:shadow-md cursor-pointer"
-      style={{ minHeight: "480px" }}
     >
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
         <img
@@ -84,11 +83,11 @@ export function LiterasiCard({ article, locale, t, variant = "save" }: LiterasiC
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="mt-2 h-[56px] overflow-hidden font-heading text-lg font-semibold leading-snug text-slate-900 line-clamp-2 transition-colors group-hover:text-brandGreen-700">
+        <h3 className="mt-2 font-heading text-lg font-semibold leading-snug text-slate-900 line-clamp-2 transition-colors group-hover:text-brandGreen-700">
           {pickLocale(article.title, article.title_en, locale)}
         </h3>
 
-        <p className="mt-3 line-clamp-3 overflow-hidden h-[72px] text-sm leading-relaxed text-slate-600">
+        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">
           {pickLocale(article.excerpt, article.excerpt_en, locale)}
         </p>
 

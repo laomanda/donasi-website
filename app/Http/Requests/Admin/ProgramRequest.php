@@ -30,7 +30,7 @@ class ProgramRequest extends FormRequest
             'description_en'    => ['nullable', 'string'],
             'benefits'          => ['nullable', 'string'],
             'benefits_en'       => ['nullable', 'string'],
-            'target_amount'     => [$required, 'numeric', 'min:0'],
+            'target_amount'     => ['nullable', 'numeric', 'min:0'],
             'collected_amount'  => ['nullable', 'numeric', 'min:0'],
             'thumbnail_path'    => ['nullable', 'string', 'max:255'],
             'banner_path'       => ['nullable', 'string', 'max:255'],

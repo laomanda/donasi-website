@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { dpfWakaf } from "@/assets/brand";
+import { InfinityIcon } from "@/components/programs/ProgramShared";
 
 interface ProgramShowcaseProps {
     isGeneralDonation: boolean;
@@ -34,6 +35,8 @@ export const ProgramShowcase = ({
     detailLink,
     t
 }: ProgramShowcaseProps) => {
+    const isUnlimited = displayTarget === null || displayTarget === undefined || Number(displayTarget) <= 0;
+
     return (
         <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_70px_-45px_rgba(15,23,42,0.35)]">
             <div className="relative">
@@ -63,7 +66,7 @@ export const ProgramShowcase = ({
                             <div className="h-2 w-full rounded-full bg-slate-100">
                                 <div
                                     className="h-full rounded-full bg-brandGreen-600"
-                                    style={{ width: `${hasProgramProgress ? Math.min(displayProgress, 100) : 0}%` }}
+                                    style={{ width: `${hasProgramProgress ? (isUnlimited ? 100 : Math.min(displayProgress, 100)) : 0}%` }}
                                 />
                             </div>
                         )}
@@ -81,9 +84,13 @@ export const ProgramShowcase = ({
                                     <span>
                                         {t("donate.card.target", "Target")}{" "}
                                         <span className="font-semibold text-slate-700">
-                                            {hasProgramProgress && displayTarget !== null
+                                            {hasProgramProgress && !isUnlimited
                                                 ? formatCurrency(displayTarget)
-                                                : t("donate.card.flexible", "Target Fleksibel")}
+                                                : (
+                                                    <span className="inline-flex items-center font-bold text-slate-700">
+                                                        <InfinityIcon className="w-4 h-4 text-brandGreen-600 inline" />
+                                                    </span>
+                                                )}
                                         </span>
                                     </span>
                                 </div>

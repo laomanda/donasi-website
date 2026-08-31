@@ -37,7 +37,7 @@ export type EditorProgram = {
     description_en?: string | null;
     benefits?: string | null;
     benefits_en?: string | null;
-    target_amount: number | string;
+    target_amount?: number | string | null;
     collected_amount?: number | string | null;
     deadline_days?: number | string | null;
     published_at?: string | null;
