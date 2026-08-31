@@ -56,6 +56,44 @@ export const landingDict: Dict = {
     },
     "landing.promise.more": { id: "Jelajahi", en: "Explore" },
 
+    // Transparency Section 
+    "landing.transparency.title": {
+        id: "Laporan Penghimpunan & Penyaluran Wakaf",
+        en: "Waqf Collection & Distribution Report",
+    },
+    "landing.transparency.subtitle": {
+        id: "Keterbukaan data riil pengelolaan dana wakaf DPF yang amanah, produktif, dan berdampak nyata bagi umat.",
+        en: "Real-time openness in DPF's waqf management: trustworthy, productive, and impactful for the community.",
+    },
+    "landing.transparency.collected": {
+        id: "Dana Wakaf Dihimpun",
+        en: "Waqf Funds Collected",
+    },
+    "landing.transparency.allocated": {
+        id: "Dana Disalurkan ke Program",
+        en: "Funds Distributed to Programs",
+    },
+    "landing.transparency.available": {
+        id: "Saldo Tersedia untuk Penyaluran",
+        en: "Available Balance for Distribution",
+    },
+    "landing.transparency.tabProgram": {
+        id: "Kalkulasi per Program",
+        en: "Calculation by Program",
+    },
+    "landing.transparency.tabTrends": {
+        id: "Tren Penghimpunan & Penyaluran",
+        en: "Collection & Distribution Trend",
+    },
+    "landing.transparency.searchPlaceholder": {
+        id: "Cari nama program...",
+        en: "Search program name...",
+    },
+    "landing.transparency.allCategories": {
+        id: "Semua Kategori",
+        en: "All Categories",
+    },
+
     // Programs section (landing)
     "landing.programs.badge": { id: "Misi Utama", en: "Main Missions" },
     "landing.programs.title": {

@@ -15,6 +15,7 @@ export function FooterNavigation({ t, limitedPrograms }: FooterNavigationProps) 
           <FooterLinkItem to="/#hero" label={t('nav.home')} />
           <FooterLinkItem to="/layanan#hero" label={t('nav.services')} />
           <FooterLinkItem to="/program#hero" label={t('nav.programs')} />
+          <FooterLinkItem to="/transparansi#hero" label={t('nav.transparency', 'Transparansi')} />
           <FooterLinkItem to="/literasi#hero" label={t('nav.literacy')} />
           <FooterLinkItem to="/tentang-kami#hero" label={t('nav.about')} />
         </ul>

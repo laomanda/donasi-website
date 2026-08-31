@@ -5,6 +5,7 @@ export const globalDict: Dict = {
     "nav.home": { id: "Beranda", en: "Home" },
     "nav.services": { id: "Layanan", en: "Services" },
     "nav.programs": { id: "Program", en: "Programs" },
+    "nav.transparency": { id: "Transparansi", en: "Transparency" },
     "nav.literacy": { id: "Literasi", en: "Literacy" },
     "nav.about": { id: "Tentang Kami", en: "About Us" },
     "nav.login": { id: "Masuk", en: "Login" },

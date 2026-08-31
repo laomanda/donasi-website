@@ -41,6 +41,19 @@ class Donation extends Model
         'whatsapp_sent_at'      => 'datetime',
     ];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('frontend.home');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('frontend.home');
+        });
+    }
+
     /*
     |--------------------------------------------------------------------------
     | RELATIONSHIPS

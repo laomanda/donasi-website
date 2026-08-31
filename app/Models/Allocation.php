@@ -21,6 +21,19 @@ class Allocation extends Model
         'allocated_at' => 'date',
     ];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('frontend.home');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('frontend.home');
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

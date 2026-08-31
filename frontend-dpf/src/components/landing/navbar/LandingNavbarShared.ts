@@ -3,7 +3,8 @@ import {
     faHandsHoldingCircle, 
     faHeart, 
     faBookOpen, 
-    faCircleInfo 
+    faCircleInfo,
+    faShieldHalved,
 } from "@fortawesome/free-solid-svg-icons";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { globalDict } from "../../../i18n/global";
@@ -18,6 +19,7 @@ export const NAV_ITEMS: NavItem[] = [
     { label: globalDict["nav.home"], href: "/", icon: faHouse },
     { label: globalDict["nav.services"], href: "/layanan", icon: faHandsHoldingCircle },
     { label: globalDict["nav.programs"], href: "/program", icon: faHeart },
+    { label: globalDict["nav.transparency"], href: "/transparansi", icon: faShieldHalved },
     { label: globalDict["nav.literacy"], href: "/literasi", icon: faBookOpen },
     { label: globalDict["nav.about"], href: "/tentang-kami", icon: faCircleInfo },
 ];
@@ -35,6 +37,11 @@ export const SEARCH_ITEMS = [
         href: "/program",
         labels: { id: "Program", en: "Programs" },
         keywords: ["program", "programs", "katalog", "pintu", "unggulan", "mitra", "partner"],
+    },
+    {
+        href: "/transparansi",
+        labels: { id: "Transparansi Kami", en: "Our Transparency" },
+        keywords: ["transparansi", "transparency", "laporan", "penyaluran", "akuntabilitas", "penghimpunan"],
     },
     {
         href: "/donate",
@@ -76,6 +83,7 @@ export const SEARCH_ITEMS = [
 export const SEARCH_INDEX = [
     { href: "/", corpus: "Djalaludin Pane Foundation Pintu pemberdayaan Amanah profesional Katalog kebaikan Mulai donasi Lihat program Program unggulan Mitra Bank rekening Rekening donasi Artikel terbaru Program terbaru" },
     { href: "/program", corpus: "Program unggulan Wakaf Donasi Beasiswa Campaign sosial Mitra Partner Program aktif Program nonaktif Donasi program" },
+    { href: "/transparansi", corpus: "Transparansi akuntabilitas laporan penyaluran penghimpunan dana wakaf nazhir DPF real time audit amanah" },
     { href: "/layanan", corpus: "Layanan Jemput Wakaf Konfirmasi Donasi Konsultasi WAKAF Konsultasi wakaf Jemput wakaf ke lokasi Donasi langsung" },
     { href: "/donate", corpus: "Donasi online Pembayaran otomatis Transfer bank Rekening donasi Donasi umum Pilih nominal Rekening resmi Tujuan transfer" },
     { href: "/literasi", corpus: "Literasi Artikel Berita Konten edukasi Baca selengkapnya Penulis Kategori" },

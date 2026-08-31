@@ -43,7 +43,7 @@ export function LandingNavbar() {
     
     const navShellClass = heroMode
         ? "border-b border-white/10 shadow-none"
-        : `${location.pathname === "/" && !heroMode ? "border-b border-slate-100" : "border-b border-transparent"} shadow-[0_12px_30px_-22px_rgba(15,23,42,0.3)]`;
+        : `${(location.pathname === "/" || location.pathname === "/transparansi") && !heroMode ? "border-b border-slate-100" : "border-b border-transparent"} shadow-[0_12px_30px_-22px_rgba(15,23,42,0.3)]`;
     
     const navItemActiveClass = heroMode
         ? "text-white bg-white/15 ring-1 ring-white/20"

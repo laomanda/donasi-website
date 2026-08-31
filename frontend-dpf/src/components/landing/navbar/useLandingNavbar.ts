@@ -46,8 +46,8 @@ export function useLandingNavbar() {
     const navigate = useNavigate();
     const location = useLocation();
     
-    const isLanding = location.pathname === "/";
-    const heroMode = isLanding && !scrolled;
+    const isHeroPage = location.pathname === "/" || location.pathname === "/transparansi";
+    const heroMode = isHeroPage && !scrolled;
     const topbarDark = heroMode;
     const showWave = !heroMode && !scrolled;
 
