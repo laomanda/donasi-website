@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHandHoldingHeart, faArrowRight, faCoins } from "@fortawesome/free-solid-svg-icons";
+import { faHandHoldingHeart, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { heroImg } from "@/assets/brand";
 import { imagePlaceholder } from "@/lib/placeholder";
-import { formatCurrency } from "./LandingUI";
+import { AnimatedWakafBadge } from "./AnimatedWakafBadge";
 
 export function HeroSection({ 
     error, 
@@ -67,24 +67,9 @@ export function HeroSection({
                 onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
               />
 
-              {/* Floating Stat Badge: Total Wakaf Terhimpun */}
-              <div className="absolute -bottom-2 left-2 sm:bottom-4 sm:left-4 lg:bottom-8 lg:-left-4 z-10 flex items-center gap-3.5 rounded-2xl sm:rounded-3xl border border-white/80 bg-white/95 p-3.5 sm:p-4 shadow-xl backdrop-blur-md">
-                <div className="flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center rounded-2xl bg-emerald-50 text-brandGreen-600 shadow-inner ring-1 ring-emerald-100 shrink-0">
-                  <FontAwesomeIcon icon={faCoins} className="text-lg sm:text-xl text-brandGreen-600" />
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">
-                      {locale === "en" ? "Total Wakaf Collected" : "Total Wakaf Terhimpun"}
-                    </p>
-                  </div>
-                  <p className="text-sm sm:text-lg font-heading font-extrabold text-slate-900">
-                    {stats?.amount_collected ? formatCurrency(stats.amount_collected, locale) : "Rp 0"}
-                  </p>
-                  <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400">
-                    {locale === "en" ? "From all active programs" : "Dari seluruh program wakaf"}
-                  </p>
-                </div>
+              {/* Floating Stat Badge: Total Wakaf Terhimpun with Interactive Animation */}
+              <div className="absolute -bottom-2 left-2 sm:bottom-4 sm:left-4 lg:bottom-8 lg:-left-4 z-10">
+                <AnimatedWakafBadge stats={stats} locale={locale} />
               </div>
 
             </div>
