@@ -122,7 +122,6 @@ export function AdminSuggestionsPage() {
 
   const onDeleteSelected = async () => {
     if (selection.count === 0) return;
-    if (!window.confirm(`Hapus ${selection.count} saran terpilih?`)) return;
     setBulkDeleting(true);
     try {
       const result = await runWithConcurrency(selection.selectedIds, 4, async (id) => {

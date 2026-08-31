@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 
@@ -20,6 +21,7 @@ export default function EditorTagFormHeader({
   onBack,
   onDelete,
 }: Props) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const title = mode === "create" ? "Tambah Tag" : "Ubah Tag";
 
   return (
@@ -46,19 +48,40 @@ export default function EditorTagFormHeader({
           </button>
 
           {mode === "edit" && onDelete && (
-            <button
-              type="button"
-              onClick={() => {
-                if (window.confirm("Apakah Anda yakin ingin menghapus tag ini? Tindakan ini tidak dapat dibatalkan.")) {
-                  onDelete();
-                }
-              }}
-              disabled={saving || deleting}
-              className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 sm:px-5 py-2.5 sm:py-3 text-sm font-bold text-rose-600 shadow-sm transition hover:bg-rose-100 hover:text-rose-700 disabled:opacity-50"
-            >
-              <FontAwesomeIcon icon={faTrash} />
-              {deleting ? "Menghapus..." : "Hapus"}
-            </button>
+            !confirmDelete ? (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                disabled={saving || deleting}
+                className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 sm:px-5 py-2.5 sm:py-3 text-sm font-bold text-rose-600 shadow-sm transition hover:bg-rose-100 hover:text-rose-700 disabled:opacity-50"
+              >
+                <FontAwesomeIcon icon={faTrash} />
+                {deleting ? "Menghapus..." : "Hapus"}
+              </button>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 animate-in fade-in">
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={deleting}
+                  className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmDelete(false);
+                    onDelete();
+                  }}
+                  disabled={saving || deleting}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-4 sm:px-5 py-2.5 sm:py-3 text-sm font-bold text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-50"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                  {deleting ? "Menghapus..." : "Yakin Hapus?"}
+                </button>
+              </div>
+            )
           )}
 
           <button
