@@ -210,7 +210,13 @@ export function AdminAllocationCreatePage() {
       toast.success("Penyaluran dana berhasil disimpan.", { title: "Berhasil" });
       navigate("/admin/allocations");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Gagal menyalurkan dana.", { title: "Gagal" });
+      const errs = err.response?.data?.errors;
+      let msg = err.response?.data?.message || "Gagal menyalurkan dana.";
+      if (errs && typeof errs === "object") {
+        const firstErr = Object.values(errs).flat()[0];
+        if (firstErr) msg = String(firstErr);
+      }
+      toast.error(msg, { title: "Validasi Gagal" });
     } finally {
       setSubmitting(false);
     }

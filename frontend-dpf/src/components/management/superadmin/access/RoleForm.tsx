@@ -150,7 +150,13 @@ export default function RoleForm({ mode, roleId }: RoleFormProps) {
       }
       navigate("/superadmin/roles");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Gagal menyimpan role.", { title: "Gagal" });
+      const errs = err.response?.data?.errors;
+      let msg = err.response?.data?.message || "Gagal menyimpan role.";
+      if (errs && typeof errs === "object") {
+        const firstErr = Object.values(errs).flat()[0];
+        if (firstErr) msg = String(firstErr);
+      }
+      toast.error(msg, { title: "Validasi Gagal" });
     } finally {
       setSaving(false);
     }

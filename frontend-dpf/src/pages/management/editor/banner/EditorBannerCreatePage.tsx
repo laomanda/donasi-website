@@ -105,8 +105,14 @@ export default function EditorBannerCreatePage() {
       toast.success("Banner berhasil dibuat.", { title: "Berhasil" });
       navigate("/editor/banners", { replace: true });
     } catch (err: any) {
-      const msg = err.response?.data?.message ?? "Gagal membuat banner.";
-      setErrors([msg]);
+      const errs = err.response?.data?.errors;
+      if (errs && typeof errs === "object") {
+        const msgs = Object.values(errs).flat().map(String);
+        setErrors(msgs.length ? msgs : ["Validasi gagal."]);
+      } else {
+        const msg = err.response?.data?.message ?? "Gagal membuat banner.";
+        setErrors([msg]);
+      }
     } finally {
       setSaving(false);
     }

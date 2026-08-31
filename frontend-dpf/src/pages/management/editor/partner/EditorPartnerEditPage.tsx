@@ -95,7 +95,13 @@ export default function EditorPartnerEditPage() {
       navigate("/editor/partners");
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.message || "Gagal menyimpan mitra.");
+      const errs = err.response?.data?.errors;
+      let msg = err.response?.data?.message || "Gagal menyimpan mitra.";
+      if (errs && typeof errs === "object") {
+        const firstErr = Object.values(errs).flat()[0];
+        if (firstErr) msg = String(firstErr);
+      }
+      setError(msg);
     } finally {
       setSaving(false);
     }

@@ -1,1 +1,0 @@
-import{j as o}from"./vendor-fontawesome-Bgr6D6yt.js";import{R as r}from"./RoleForm-DMdD6MoW.js";import"./vendor-react-0fmdHqY3.js";import"./index-DkMoPi6S.js";function i(){return o.jsx(r,{mode:"create"})}export{i as RoleCreatePage,i as default};
