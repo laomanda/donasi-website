@@ -1,5 +1,7 @@
+import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 
 interface AdminDonationMobileListProps {
   items: any[];
@@ -24,6 +26,10 @@ export function AdminDonationMobileList({
   handleOpenWhatsapp,
   openDonation,
 }: AdminDonationMobileListProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const basePath = location.pathname.startsWith("/keuangan") ? "/keuangan" : "/admin";
+
   return (
     <div className="divide-y divide-slate-100 md:hidden">
       {loading ? (
@@ -62,23 +68,34 @@ export function AdminDonationMobileList({
                 </div>
               </div>
 
-              {statusValue === "paid" && (
-                <div className="mt-3 flex justify-between items-center">
-                  {donation.whatsapp_sent_at && (
-                    <span className="text-[10px] text-slate-400">
-                      <FontAwesomeIcon icon={faWhatsapp} className="mr-1" />
-                      {formatDateTime(donation.whatsapp_sent_at)}
-                    </span>
-                  )}
-                  <button
-                    onClick={(e) => handleOpenWhatsapp(donation, e)}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 transition ring-1 ring-emerald-200 ml-auto"
-                  >
-                    <FontAwesomeIcon icon={faWhatsapp} className="text-sm" />
-                    {donation.whatsapp_sent_at ? "Kirim Ulang" : "Kirim Tanda Terima"}
-                  </button>
-                </div>
-              )}
+              <div className="mt-3 flex flex-wrap justify-between items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate(`${basePath}/donations/${donation.id}/edit`)}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-100 px-3 py-2 rounded-xl hover:bg-slate-200 transition"
+                >
+                  <FontAwesomeIcon icon={faPenToSquare} className="text-xs text-slate-500" />
+                  Edit Data
+                </button>
+
+                {statusValue === "paid" && (
+                  <div className="flex items-center gap-2 ml-auto">
+                    {donation.whatsapp_sent_at && (
+                      <span className="text-[10px] text-slate-400">
+                        <FontAwesomeIcon icon={faWhatsapp} className="mr-1" />
+                        {formatDateTime(donation.whatsapp_sent_at)}
+                      </span>
+                    )}
+                    <button
+                      onClick={(e) => handleOpenWhatsapp(donation, e)}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl hover:bg-emerald-100 transition ring-1 ring-emerald-200"
+                    >
+                      <FontAwesomeIcon icon={faWhatsapp} className="text-sm" />
+                      {donation.whatsapp_sent_at ? "Kirim Ulang" : "Kirim WA"}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           );
         })

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,10 +13,14 @@ import {
   faCreditCard,
   faAlignLeft,
   faCalendarDays,
+  faImage,
+  faTrash,
+  faCloudArrowUp,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
 import PhoneInput from "../../../../components/ui/PhoneInput";
+import { resolveStorageUrl } from "../../../../lib/urls";
 
 type BankAccount = {
   id: number;
@@ -45,6 +49,7 @@ type ManualDonationFormState = {
   payment_channel: string;
   notes: string;
   paid_at: string;
+  manual_proof_path: string;
 };
 
 const getLocalDatetimeString = (date = new Date()) => {
@@ -63,6 +68,7 @@ const emptyForm: ManualDonationFormState = {
   payment_channel: "",
   notes: "",
   paid_at: getLocalDatetimeString(),
+  manual_proof_path: "",
 };
 
 const normalizeErrors = (error: any): string[] => {
@@ -91,18 +97,23 @@ const formatCurrency = (value: number | string | null | undefined) => {
 export function AdminDonationManualCreatePage() {
   const navigate = useNavigate();
   const toast = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<ManualDonationFormState>(emptyForm);
   const [programOptions, setProgramOptions] = useState<ProgramOption[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [programLoading, setProgramLoading] = useState(false);
 
+  const [uploadingProof, setUploadingProof] = useState(false);
+  const [proofError, setProofError] = useState<string | null>(null);
+
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
   const amountNumber = useMemo(() => Number(form.amount || 0), [form.amount]);
+  const proofUrl = useMemo(() => resolveStorageUrl(form.manual_proof_path), [form.manual_proof_path]);
 
-  const canSubmit = !saving;
+  const canSubmit = !saving && !uploadingProof;
 
   useEffect(() => {
     let active = true;
@@ -132,6 +143,27 @@ export function AdminDonationManualCreatePage() {
     };
   }, []);
 
+  const onUploadProof = async (file: File) => {
+    setProofError(null);
+    setUploadingProof(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "donations/proofs");
+      const res = await http.post<{ path: string }>("/admin/uploads/image", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setForm((s) => ({ ...s, manual_proof_path: res.data.path }));
+      toast.success("Bukti transfer berhasil diunggah.", { title: "Berhasil" });
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Gagal mengunggah bukti transfer. Pastikan format JPG, PNG, atau WEBP (Maks. 10MB).";
+      setProofError(msg);
+      toast.error("Gagal mengunggah bukti transfer.", { title: "Gagal" });
+    } finally {
+      setUploadingProof(false);
+    }
+  };
+
   const payloadForRequest = (state: ManualDonationFormState) => {
     const amount = Number(state.amount || 0);
     return {
@@ -145,6 +177,7 @@ export function AdminDonationManualCreatePage() {
       payment_channel: state.payment_channel.trim() || null,
       notes: state.notes.trim() || null,
       paid_at: state.paid_at ? new Date(state.paid_at).toISOString() : null,
+      manual_proof_path: state.manual_proof_path.trim() || null,
     };
   };
 
@@ -370,6 +403,101 @@ export function AdminDonationManualCreatePage() {
                   </div>
                 </label>
               </div>
+            </div>
+          </div>
+
+          {/* Bukti Transfer (Opsional) */}
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="h-12 w-12 rounded-2xl bg-teal-50 flex items-center justify-center text-teal-600 ring-1 ring-teal-100">
+                <FontAwesomeIcon icon={faImage} className="text-xl" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-slate-900">Bukti Pembayaran / Transfer</h2>
+                  <span className="text-xs font-semibold text-slate-400">(Opsional)</span>
+                </div>
+                <p className="text-sm text-slate-500 font-medium">Foto struk ATM, tangkapan layar m-banking, atau file bukti transaksi</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={!canSubmit || uploadingProof}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-50"
+                >
+                  <FontAwesomeIcon icon={faCloudArrowUp} className="text-xs" />
+                  {form.manual_proof_path ? "Ganti Bukti Transfer" : "Unggah Bukti Transfer"}
+                </button>
+
+                {form.manual_proof_path && (
+                  <button
+                    type="button"
+                    onClick={() => setForm((s) => ({ ...s, manual_proof_path: "" }))}
+                    disabled={!canSubmit || uploadingProof}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
+                  >
+                    <FontAwesomeIcon icon={faTrash} className="text-xs" />
+                    Hapus
+                  </button>
+                )}
+
+                {uploadingProof && (
+                  <span className="text-xs font-semibold text-emerald-600 animate-pulse">
+                    Mengunggah file...
+                  </span>
+                )}
+              </div>
+
+              {proofError && (
+                <p className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-700">
+                  {proofError}
+                </p>
+              )}
+
+              {form.manual_proof_path && proofUrl ? (
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-2 max-w-md">
+                  <a href={proofUrl} target="_blank" rel="noopener noreferrer" className="block cursor-zoom-in group relative">
+                    <img
+                      src={proofUrl}
+                      alt="Bukti Transfer"
+                      className="h-auto max-h-60 w-full rounded-xl object-contain"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="rounded-lg bg-white/90 px-3 py-1 text-xs font-bold text-slate-800 shadow">
+                        Klik untuk melihat ukuran penuh
+                      </span>
+                    </div>
+                  </a>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="cursor-pointer rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-6 text-center transition hover:border-slate-300 hover:bg-slate-50 flex flex-col items-center justify-center gap-2"
+                >
+                  <FontAwesomeIcon icon={faImage} className="text-2xl text-slate-300" />
+                  <p className="text-xs font-semibold text-slate-600">
+                    Klik untuk memilih foto / gambar bukti transfer (JPG, PNG, WEBP)
+                  </p>
+                  <p className="text-[11px] text-slate-400">Maksimal ukuran file 10MB</p>
+                </div>
+              )}
+
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (file) onUploadProof(file);
+                }}
+                disabled={!canSubmit || uploadingProof}
+              />
             </div>
           </div>
 

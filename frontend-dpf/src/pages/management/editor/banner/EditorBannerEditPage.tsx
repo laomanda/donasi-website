@@ -13,6 +13,7 @@ import { LoadingSkeleton } from "../../../../components/management/editor/progra
 import { 
   type Banner, 
   type BannerFormState, 
+  emptyBannerForm,
   bannerFolder,
   getNextBannerOrder 
 } from "../../../../components/management/editor/banner/EditorBannerTypes";
@@ -22,7 +23,7 @@ export default function EditorBannerEditPage() {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const [form, setForm] = useState<BannerFormState>({ image_path: "", display_order: "0" });
+  const [form, setForm] = useState<BannerFormState>(emptyBannerForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -81,7 +82,8 @@ export default function EditorBannerEditPage() {
         if (banner) {
           setForm({
             image_path: banner.image_path || "",
-            display_order: String(banner.display_order ?? 0)
+            display_order: String(banner.display_order ?? 0),
+            status: banner.status || "published",
           });
         } else {
           setErrors(["Banner tidak ditemukan."]);
@@ -138,7 +140,8 @@ export default function EditorBannerEditPage() {
     try {
       await http.put(`/editor/banners/${bannerId}`, {
         image_path: form.image_path,
-        display_order: orderNumber
+        display_order: orderNumber,
+        status: form.status,
       });
       toast.success("Perubahan banner berhasil disimpan.", { title: "Berhasil" });
       navigate("/editor/banners", { replace: true });
@@ -197,6 +200,7 @@ export default function EditorBannerEditPage() {
           <EditorBannerFormSidebar
             form={form}
             onChange={(val) => setForm(s => ({ ...s, display_order: val }))}
+            onStatusChange={(status) => setForm(s => ({ ...s, status }))}
             onSuggest={() => setForm(s => ({ ...s, display_order: String(suggestedOrder) }))}
             suggestedOrder={suggestedOrder}
             loadingPeers={loadingPeers}

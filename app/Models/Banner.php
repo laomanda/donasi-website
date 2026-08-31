@@ -12,11 +12,17 @@ class Banner extends Model
     protected $fillable = [
         'image_path',
         'display_order',
+        'status',
     ];
 
     protected $casts = [
         'display_order' => 'integer',
     ];
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
+    }
 
     protected static function booted()
     {

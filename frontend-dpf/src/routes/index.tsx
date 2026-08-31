@@ -89,6 +89,7 @@ const AdminDonationsPage = lazy(() => import('../pages/management/admin/donation
 const DonationReportPage = lazy(() => import('../pages/management/shared/DonationReportPage').then(m => ({ default: m.DonationReportPage })))
 const CashFlowReportPage = lazy(() => import('../pages/management/keuangan/CashFlowReportPage').then(m => ({ default: m.CashFlowReportPage })))
 const AdminDonationManualCreatePage = lazy(() => import('../pages/management/admin/donation/AdminDonationManualCreatePage').then(m => ({ default: m.AdminDonationManualCreatePage })))
+const AdminDonationManualEditPage = lazy(() => import('../pages/management/admin/donation/AdminDonationManualEditPage').then(m => ({ default: m.AdminDonationManualEditPage })))
 const AdminDonationShowPage = lazy(() => import('../pages/management/admin/donation/AdminDonationShowPage').then(m => ({ default: m.AdminDonationShowPage })))
 const AdminDonationConfirmationsPage = lazy(() => import('../pages/management/admin/donation/AdminDonationConfirmationsPage').then(m => ({ default: m.AdminDonationConfirmationsPage })))
 const AdminConsultationsPage = lazy(() => import('../pages/management/admin/consultations/AdminConsultationsPage').then(m => ({ default: m.AdminConsultationsPage })))
@@ -208,6 +209,7 @@ export const router = createBrowserRouter([
             element: withSuspense(AdminDonationConfirmationsPage),
           },
           { path: 'donations/manual', element: withSuspense(AdminDonationManualCreatePage) },
+          { path: 'donations/:id/edit', element: withSuspense(AdminDonationManualEditPage) },
           { path: 'donations/:id', element: withSuspense(AdminDonationShowPage) },
           { path: 'consultations', element: withSuspense(AdminConsultationsPage) },
           { path: 'consultations/:id', element: withSuspense(AdminConsultationShowPage) },
@@ -229,6 +231,7 @@ export const router = createBrowserRouter([
           { path: 'dashboard', element: withSuspense(KeuanganDashboardPage) },
           { path: 'donations', element: withSuspense(AdminDonationsPage) },
           { path: 'donations/manual', element: withSuspense(AdminDonationManualCreatePage) },
+          { path: 'donations/:id/edit', element: withSuspense(AdminDonationManualEditPage) },
           { path: 'donations/:id', element: withSuspense(AdminDonationShowPage) },
           { path: 'donation-confirmations', element: withSuspense(AdminDonationConfirmationsPage) },
           { path: 'allocations', element: withSuspense(AdminAllocationsPage) },

@@ -45,6 +45,7 @@ export type Banner = {
   id: number;
   image_path: string;
   display_order: number;
+  status?: "published" | "draft";
 };
 
 export type HomePayload = {

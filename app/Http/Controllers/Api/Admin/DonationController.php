@@ -67,6 +67,15 @@ class DonationController extends Controller
         return response()->json($donation, 201);
     }
 
+    /**
+     * Update manual donation details.
+     */
+    public function updateManual(StoreManualDonationRequest $request, Donation $donation)
+    {
+        $updated = $this->donationService->updateManualDonation($donation, $request->validated());
+        return response()->json($updated);
+    }
+
     public function show(Donation $donation)
     {
         return response()->json($donation->load('program'));

@@ -100,7 +100,8 @@ export default function EditorBannerCreatePage() {
     try {
       await http.post("/editor/banners", {
         image_path: form.image_path,
-        display_order: orderNumber
+        display_order: orderNumber,
+        status: form.status,
       });
       toast.success("Banner berhasil dibuat.", { title: "Berhasil" });
       navigate("/editor/banners", { replace: true });
@@ -161,6 +162,7 @@ export default function EditorBannerCreatePage() {
               setOrderTouched(true);
               setForm(s => ({ ...s, display_order: val }));
             }}
+            onStatusChange={(status) => setForm(s => ({ ...s, status }))}
             onSuggest={() => {
                setOrderTouched(true);
                setForm(s => ({ ...s, display_order: String(suggestedOrder) }));

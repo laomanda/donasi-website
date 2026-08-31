@@ -23,6 +23,7 @@ class BannerRequest extends FormRequest
         return [
             'image_path'   => [$banner ? 'sometimes' : 'required', 'string', 'max:255'],
             'display_order'=> [$banner ? 'sometimes' : 'required', 'integer', 'min:0', $orderRule],
+            'status'       => ['sometimes', 'required', 'string', 'in:published,draft'],
         ];
     }
 }

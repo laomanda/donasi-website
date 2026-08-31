@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -16,6 +16,7 @@ import {
   faClock,
   faBan,
   faExclamationCircle,
+  faPenToSquare,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
@@ -116,9 +117,11 @@ const getStatusConfig = (status: DonationStatus) => {
 
 export function AdminDonationShowPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
   const { id } = useParams<{ id: string }>();
   const donationId = useMemo(() => Number(id), [id]);
+  const basePath = location.pathname.startsWith("/keuangan") ? "/keuangan" : "/admin";
 
   const [data, setData] = useState<Donation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -278,14 +281,24 @@ export function AdminDonationShowPage() {
         <div className="relative z-10 p-6 sm:p-8 md:p-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <button
-                  onClick={() => navigate("/admin/donations")}
+                  onClick={() => navigate(`${basePath}/donations`)}
                   className="group inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-white/90 backdrop-blur-sm transition hover:bg-white/20 sm:px-4 sm:text-sm"
                 >
                   <FontAwesomeIcon icon={faArrowLeft} className="transition group-hover:-translate-x-1" />
                   Kembali
                 </button>
+
+                {!loading && (
+                  <button
+                    onClick={() => navigate(`${basePath}/donations/${donationId}/edit`)}
+                    className="group inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-bold text-slate-900 shadow-md transition hover:bg-slate-50 hover:shadow-lg sm:px-4 sm:text-sm"
+                  >
+                    <FontAwesomeIcon icon={faPenToSquare} className="text-emerald-600" />
+                    Edit Data Donasi
+                  </button>
+                )}
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -505,6 +518,27 @@ export function AdminDonationShowPage() {
                     </button>
                   )}
                 </div>
+              </div>
+
+              {/* Edit Donation Card */}
+              <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                    <FontAwesomeIcon icon={faPenToSquare} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900">Ubah Data Donasi</h3>
+                    <p className="text-xs text-slate-500">Edit program, nominal, atau bukti</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => navigate(`${basePath}/donations/${donationId}/edit`)}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 py-3 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100"
+                >
+                  <FontAwesomeIcon icon={faPenToSquare} />
+                  Edit Transaksi Donasi
+                </button>
               </div>
 
               {/* Document Card */}

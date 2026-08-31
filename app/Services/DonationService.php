@@ -93,6 +93,76 @@ class DonationService
         });
     }
 
+    public function updateManualDonation(Donation $donation, array $data): Donation
+    {
+        return DB::transaction(function () use ($donation, $data) {
+            $oldStatus = (string) $donation->status;
+            $oldProgramId = $donation->program_id;
+            $oldAmount = (float) $donation->amount;
+
+            if (!empty($data['paid_at'])) {
+                $data['paid_at'] = Carbon::parse($data['paid_at']);
+            }
+
+            $donation->update($data);
+            $newStatus = (string) $donation->status;
+            $newProgramId = $donation->program_id;
+            $newAmount = (float) $donation->amount;
+
+            // Sync program collected amounts
+            if ($oldProgramId !== $newProgramId) {
+                if ($oldStatus === 'paid' && $oldProgramId) {
+                    /** @var Program|null $oldProg */
+                    $oldProg = Program::query()->find($oldProgramId);
+                    if ($oldProg) {
+                        $oldProg->collected_amount = max(0, (float) $oldProg->collected_amount - $oldAmount);
+                        $oldProg->save();
+                        Cache::forget("frontend_program_show_{$oldProg->slug}");
+                        if ($oldProg->slug_en) {
+                            Cache::forget("frontend_program_show_{$oldProg->slug_en}");
+                        }
+                    }
+                }
+                if ($newStatus === 'paid' && $newProgramId) {
+                    /** @var Program|null $newProg */
+                    $newProg = Program::query()->find($newProgramId);
+                    if ($newProg) {
+                        $newProg->collected_amount = (float) $newProg->collected_amount + $newAmount;
+                        $newProg->save();
+                        Cache::forget("frontend_program_show_{$newProg->slug}");
+                        if ($newProg->slug_en) {
+                            Cache::forget("frontend_program_show_{$newProg->slug_en}");
+                        }
+                    }
+                }
+            } else {
+                if ($newProgramId) {
+                    /** @var Program|null $prog */
+                    $prog = Program::query()->find($newProgramId);
+                    if ($prog) {
+                        if ($oldStatus === 'paid' && $newStatus === 'paid') {
+                            $diff = $newAmount - $oldAmount;
+                            $prog->collected_amount = max(0, (float) $prog->collected_amount + $diff);
+                            $prog->save();
+                        } elseif ($oldStatus !== 'paid' && $newStatus === 'paid') {
+                            $prog->collected_amount = (float) $prog->collected_amount + $newAmount;
+                            $prog->save();
+                        } elseif ($oldStatus === 'paid' && $newStatus !== 'paid') {
+                            $prog->collected_amount = max(0, (float) $prog->collected_amount - $oldAmount);
+                            $prog->save();
+                        }
+                        Cache::forget("frontend_program_show_{$prog->slug}");
+                        if ($prog->slug_en) {
+                            Cache::forget("frontend_program_show_{$prog->slug_en}");
+                        }
+                    }
+                }
+            }
+
+            return $donation->fresh()->load('program');
+        });
+    }
+
     public function updateStatus(Donation $donation, array $data): Donation
     {
         $previousStatus = $donation->status;

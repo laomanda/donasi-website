@@ -23,6 +23,7 @@ export default function EditorBannersTable({
             <tr>
               <th className="w-24 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Urutan</th>
               <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Banner</th>
+              <th className="w-36 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Status</th>
               <th className="w-40 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Diperbarui</th>
               <th className="w-24 px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Aksi</th>
             </tr>
@@ -38,13 +39,14 @@ export default function EditorBannersTable({
                       <div className="h-4 w-32 rounded bg-slate-100" />
                     </div>
                   </td>
+                  <td className="px-6 py-5"><div className="h-6 w-20 rounded-full bg-slate-100" /></td>
                   <td className="px-6 py-5"><div className="h-4 w-24 rounded bg-slate-100" /></td>
                   <td className="px-6 py-5"><div className="ml-auto h-8 w-10 rounded-xl bg-slate-100" /></td>
                 </tr>
               ))
             ) : banners.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-sm font-semibold text-slate-500">
+                <td colSpan={5} className="px-6 py-12 text-center text-sm font-semibold text-slate-500">
                   Belum ada banner yang ditambahkan.
                 </td>
               </tr>
@@ -71,6 +73,19 @@ export default function EditorBannersTable({
                         <p className="text-[10px] text-slate-400 font-medium truncate max-w-[200px]">{banner.image_path}</p>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-5">
+                    {banner.status === "draft" ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                        Draf
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        Dipublikasikan
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-5 text-sm font-semibold text-slate-600">
                     {formatBannerDate(banner.updated_at ?? banner.created_at)}
@@ -124,7 +139,18 @@ export default function EditorBannersTable({
                 </div>
                 <div className="min-w-0 flex-1 flex flex-col justify-between py-1">
                   <div>
-                    <p className="font-bold text-slate-900 line-clamp-1">Banner #{banner.display_order}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-bold text-slate-900 line-clamp-1">Banner #{banner.display_order}</p>
+                      {banner.status === "draft" ? (
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                          Draf
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                          Dipublikasikan
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[10px] text-slate-400 font-medium mt-0.5">Urutan: #{banner.display_order}</p>
                   </div>
                   <div className="mt-2 flex items-center justify-between gap-2">

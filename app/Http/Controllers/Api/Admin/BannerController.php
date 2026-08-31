@@ -9,16 +9,23 @@ use App\Http\Requests\Admin\BannerRequest;
 
 class BannerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(
-            Banner::orderBy('display_order')->get()
-        );
+        $query = Banner::orderBy('display_order');
+        if ($request->filled('status') && in_array($request->query('status'), ['published', 'draft'])) {
+            $query->where('status', $request->query('status'));
+        }
+
+        return response()->json($query->get());
     }
 
     public function store(BannerRequest $request)
     {
-        $banner = Banner::create($request->validated());
+        $data = $request->validated();
+        if (!isset($data['status'])) {
+            $data['status'] = 'published';
+        }
+        $banner = Banner::create($data);
         return response()->json($banner, 201);
     }
 
@@ -31,6 +38,6 @@ class BannerController extends Controller
     public function destroy(Banner $banner)
     {
         $banner->delete();
-        return response()->json(['message' => 'Banner deleted.']);
+        return response()->json(['message' => 'Banner berhasil dihapus.']);
     }
 }

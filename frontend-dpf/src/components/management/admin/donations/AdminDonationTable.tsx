@@ -1,5 +1,6 @@
+import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faReceipt } from "@fortawesome/free-solid-svg-icons";
+import { faReceipt, faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 
 interface AdminDonationTableProps {
@@ -29,13 +30,17 @@ export function AdminDonationTable({
   handleOpenWhatsapp,
   openDonation,
 }: AdminDonationTableProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const basePath = location.pathname.startsWith("/keuangan") ? "/keuangan" : "/admin";
+
   return (
     <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full table-fixed">
           <thead className="bg-slate-50">
             <tr>
-              <th className="w-[6%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+              <th className="w-[5%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                 <input
                   type="checkbox"
                   checked={pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id))}
@@ -45,24 +50,21 @@ export function AdminDonationTable({
               </th>
               <th className="w-[18%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Kode</th>
               <th className="w-[20%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Donatur</th>
-              <th className="w-[26%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Program</th>
+              <th className="w-[24%] px-6 py-5 text-left text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Program</th>
               <th className="w-[11%] px-6 py-5 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Nominal</th>
-              <th className="w-[19%] px-6 py-5 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status</th>
+              <th className="w-[22%] px-6 py-5 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status & Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i} className="animate-pulse">
-                  <td colSpan={6} className="px-6 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-slate-100" />
-                      <div className="space-y-2 flex-1">
-                        <div className="h-4 w-1/4 rounded bg-slate-100" />
-                        <div className="h-3 w-1/3 rounded bg-slate-100" />
-                      </div>
-                    </div>
-                  </td>
+                  <td className="px-6 py-5"><div className="h-4 w-4 bg-slate-200 rounded" /></td>
+                  <td className="px-6 py-5"><div className="h-4 w-28 bg-slate-200 rounded" /><div className="h-3 w-16 bg-slate-100 rounded mt-2" /></td>
+                  <td className="px-6 py-5"><div className="h-4 w-32 bg-slate-200 rounded" /><div className="h-3 w-20 bg-slate-100 rounded mt-2" /></td>
+                  <td className="px-6 py-5"><div className="h-4 w-40 bg-slate-200 rounded" /></td>
+                  <td className="px-6 py-5 text-right"><div className="h-4 w-24 bg-slate-200 rounded ml-auto" /></td>
+                  <td className="px-6 py-5"><div className="h-6 w-20 bg-slate-200 rounded-full mx-auto" /></td>
                 </tr>
               ))
             ) : items.length === 0 ? (
@@ -128,29 +130,35 @@ export function AdminDonationTable({
                     <td className="px-6 py-5 text-right">
                       <p className="text-sm font-bold text-slate-900">{formatCurrency(donation.amount)}</p>
                     </td>
-                    <td className="px-6 py-5 text-center">
-                      <div className="flex flex-wrap items-center justify-center gap-2">
-                          <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${tone}`}>
+                    <td className="px-6 py-5 text-center" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex flex-wrap items-center justify-center gap-1.5">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold ${tone}`}>
                           {getStatusLabel(statusValue)}
-                          </span>
-                          
-                          {statusValue === 'paid'  && (
-                              <div className="flex flex-col items-center gap-1">
-                                  <button
-                                      onClick={(e) => handleOpenWhatsapp(donation, e)}
-                                      className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1.5 rounded-lg hover:bg-emerald-100 hover:text-emerald-700 transition ring-1 ring-emerald-200 whitespace-nowrap"
-                                      title="Kirim Bukti via WhatsApp"
-                                  >
-                                      <FontAwesomeIcon icon={faWhatsapp} className="text-base" />
-                                      <span>{donation.whatsapp_sent_at ? "Kirim Ulang" : "Kirim WA"}</span>
-                                  </button>
-                                  {donation.whatsapp_sent_at && (
-                                      <span className="text-[9px] text-slate-400 font-medium">
-                                          {formatDateTime(donation.whatsapp_sent_at)}
-                                      </span>
-                                  )}
-                              </div>
-                          )}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => navigate(`${basePath}/donations/${donation.id}/edit`)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-emerald-600"
+                          title="Edit Data Donasi"
+                        >
+                          <FontAwesomeIcon icon={faPenToSquare} className="text-slate-400 group-hover:text-emerald-600" />
+                          <span>Edit</span>
+                        </button>
+                        
+                        {statusValue === 'paid' && (
+                          <div className="flex flex-col items-center">
+                            <button
+                              type="button"
+                              onClick={(e) => handleOpenWhatsapp(donation, e)}
+                              className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg hover:bg-emerald-100 hover:text-emerald-700 transition ring-1 ring-emerald-200 whitespace-nowrap"
+                              title="Kirim Bukti via WhatsApp"
+                            >
+                              <FontAwesomeIcon icon={faWhatsapp} className="text-xs" />
+                              <span>{donation.whatsapp_sent_at ? "Kirim Ulang" : "WA"}</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>

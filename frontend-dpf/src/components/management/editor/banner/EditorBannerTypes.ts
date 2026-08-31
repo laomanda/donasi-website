@@ -1,9 +1,12 @@
 export { resolveStorageUrl as resolveBannerUrl } from "@/lib/urls";
 
+export type BannerStatus = "published" | "draft";
+
 export type Banner = {
   id: number;
   image_path: string;
   display_order: number;
+  status: BannerStatus;
   created_at?: string | null;
   updated_at?: string | null;
 };
@@ -11,11 +14,13 @@ export type Banner = {
 export type BannerFormState = {
   image_path: string;
   display_order: string;
+  status: BannerStatus;
 };
 
 export const emptyBannerForm: BannerFormState = {
   image_path: "",
   display_order: "0",
+  status: "published",
 };
 
 export const bannerFolder = "uploads/banners";

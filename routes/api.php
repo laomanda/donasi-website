@@ -202,9 +202,11 @@ Route::prefix('v1')->group(function () {
 
             Route::middleware('role_or_permission:admin|superadmin|manage donations|manage pickup_requests|manage consultations|manage suggestions|manage allocations|manage bank_accounts|manage organization|manage partners')->group(function () {
                 Route::post('donations/manual', [AdminDonationController::class, 'storeManual']);
+                Route::put('donations/{donation}', [AdminDonationController::class, 'updateManual']);
                 Route::patch('donations/{donation}/status', [AdminDonationController::class, 'updateStatus']);
                 Route::post('donations/{donation}/send-whatsapp', [AdminDonationController::class, 'sendWhatsapp']);
                 Route::delete('donations/{donation}', [AdminDonationController::class, 'destroy']);
+                Route::post('uploads/image', [\App\Http\Controllers\Api\Editor\UploadController::class, 'storeImage']);
 
                 Route::apiResource('pickup-requests', AdminPickupRequestController::class)->except(['index', 'show']);
                 Route::patch('pickup-requests/{pickup_request}/status', [AdminPickupRequestController::class, 'updateStatus']);
