@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faImage, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
 import PhoneInput from "../../../../components/ui/PhoneInput";
 import { translateGroupToEn, ORGANIZATION_GROUPS } from "../../../../lib/organizationGroups";
-import { resolveStorageUrl } from "../../../../lib/urls";
 
 type OrganizationMember = {
   id: number;
@@ -15,10 +14,8 @@ type OrganizationMember = {
   position_title_en?: string | null;
   group: string;
   group_en?: string | null;
-  photo_path?: string | null;
   email?: string | null;
   phone?: string | null;
-  show_contact?: boolean;
   order: number;
   is_active: boolean;
 };
@@ -29,15 +26,11 @@ type FormState = {
   position_title_en: string;
   group: string;
   group_en: string;
-  photo_path: string;
   email: string;
   phone: string;
-  show_contact: boolean;
   order: string;
   is_active: boolean;
 };
-
-
 
 const emptyForm: FormState = {
   name: "",
@@ -45,10 +38,8 @@ const emptyForm: FormState = {
   position_title_en: "",
   group: "",
   group_en: "",
-  photo_path: "",
   email: "",
   phone: "",
-  show_contact: false,
   order: "0",
   is_active: true,
 };
@@ -69,12 +60,6 @@ const normalizeErrors = (error: any): string[] => {
   return messages.length ? messages : ["Validasi gagal."];
 };
 
-
-
-
-
-
-
 type Mode = "create" | "edit";
 
 export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; memberId?: number }) {
@@ -90,25 +75,14 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
   const [groupPeersError, setGroupPeersError] = useState<string | null>(null);
   const initialGroupRef = useRef<string>("");
 
-  const [photoUploading, setPhotoUploading] = useState(false);
-  const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
-  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
-  const photoInputRef = useRef<HTMLInputElement | null>(null);
-
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [dynamicGroups, setDynamicGroups] = useState<string[]>([]);
   const [dynamicGroupTranslations, setDynamicGroupTranslations] = useState<Record<string, string>>({});
 
   const isEditIdValid = typeof memberId === "number" && Number.isFinite(memberId) && memberId > 0;
-  const canSubmit = !loading && !saving && !photoUploading && !deleting;
-  const canDelete = mode === "edit" && isEditIdValid && !saving && !photoUploading && !deleting;
-
-  useEffect(() => {
-    return () => {
-      if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
-    };
-  }, [photoPreviewUrl]);
+  const canSubmit = !loading && !saving && !deleting;
+  const canDelete = mode === "edit" && isEditIdValid && !saving && !deleting;
 
   useEffect(() => {
     // Fetch all members once to get unique group options
@@ -125,7 +99,6 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
 
         // Build a dictionary of translations for dynamic groups
         const translations: Record<string, string> = {};
-        // Iterate backwards to prioritize the most recently created members' translations
         for (let i = list.length - 1; i >= 0; i--) {
           const m = list[i];
           const rawId = String(m.group ?? "").trim().toLowerCase();
@@ -164,10 +137,8 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
           position_title_en: m.position_title_en ?? "",
           group: m.group ?? "",
           group_en: m.group_en ?? "",
-          photo_path: m.photo_path ?? "",
           email: m.email ?? "",
           phone: m.phone ?? "",
-          show_contact: Boolean(m.show_contact),
           order: String(m.order ?? 0),
           is_active: Boolean(m.is_active),
         });
@@ -215,7 +186,6 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
           if (shouldAutoSync && groupOrder !== null && String(groupOrder) !== String(form.order)) {
             setForm((s) => ({ ...s, order: String(groupOrder) }));
           } else if (shouldAutoSync && groupOrder === null && mode === "create") {
-            // New group, default to 1 (or max+1 across all groups, but let's keep it simple)
             setForm((s) => ({ ...s, order: "1" }));
           }
         })
@@ -234,35 +204,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
       active = false;
       window.clearTimeout(timer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.group, mode, memberId]);
-
-  const uploadImage = async (file: File, folder: string) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folder", folder);
-
-    const res = await http.post<{ path?: string; url?: string }>("/editor/uploads/image", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    const path = String(res.data?.path ?? "").trim();
-    if (!path) throw new Error("Upload gagal: path kosong.");
-    return path;
-  };
-
-  const onUploadPhoto = async (file: File) => {
-    setPhotoUploadError(null);
-    setPhotoUploading(true);
-    try {
-      const path = await uploadImage(file, "uploads/organization/members");
-      setForm((s) => ({ ...s, photo_path: path }));
-    } catch (err: any) {
-      setPhotoUploadError(normalizeErrors(err).join(" "));
-    } finally {
-      setPhotoUploading(false);
-    }
-  };
 
   const payloadForRequest = (state: FormState) => {
     return {
@@ -271,10 +213,8 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
       position_title_en: state.position_title_en.trim() || null,
       group: state.group.trim(),
       group_en: state.group_en.trim() || null,
-      photo_path: state.photo_path.trim() || null,
       email: state.email.trim() || null,
       phone: state.phone.trim() || null,
-      show_contact: Boolean(state.show_contact),
       is_active: Boolean(state.is_active),
     };
   };
@@ -335,7 +275,6 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
   };
 
   const title = mode === "create" ? "Tambah Anggota" : "Ubah Anggota";
-  const storedPhotoUrl = useMemo(() => resolveStorageUrl(form.photo_path), [form.photo_path]);
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
@@ -345,8 +284,8 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
             <h1 className="font-heading text-2xl font-semibold text-slate-900 sm:text-3xl">{title}</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
               {mode === "create"
-                ? "Tambahkan anggota struktur dengan jabatan dan grup yang jelas."
-                : "Perbarui informasi anggota agar selalu rapi dan akurat."}
+                ? "Tambahkan anggota struktur dengan nama, jabatan, dan grup organisasi."
+                : "Perbarui informasi anggota struktur organisasi."}
             </p>
           </div>
 
@@ -355,7 +294,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
               type="button"
               onClick={() => navigate("/editor/organization-members")}
               className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-              disabled={saving || photoUploading || deleting}
+              disabled={saving || deleting}
             >
               <FontAwesomeIcon icon={faArrowLeft} />
               Kembali
@@ -389,11 +328,11 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-8">
           <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Informasi</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Informasi Anggota</p>
             <div className="mt-5 grid grid-cols-1 gap-4">
               <label className="block">
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                  Nama (Bahasa Indonesia) <span className="text-red-500">*</span>
+                  Nama Lengkap <span className="text-red-500">*</span>
                 </span>
                 <input
                   value={form.name}
@@ -411,7 +350,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                 <input
                   value={form.position_title}
                   onChange={(e) => setForm((s) => ({ ...s, position_title: e.target.value }))}
-                  placeholder="Mis. Direktur, Ketua, Staf."
+                  placeholder="Mis. Direktur, Ketua, Anggota Pembina."
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
@@ -424,7 +363,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                 <input
                   value={form.position_title_en}
                   onChange={(e) => setForm((s) => ({ ...s, position_title_en: e.target.value }))}
-                  placeholder="Terjemahan jabatan (opsional)."
+                  placeholder="Terjemahan jabatan dalam Bahasa Inggris."
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
@@ -433,7 +372,10 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
           </div>
 
           <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Kontak</p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Kontak Internal (Opsional)</p>
+              <span className="text-[11px] font-medium text-slate-400">Hanya tersimpan di database internal</span>
+            </div>
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
@@ -449,134 +391,17 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
               </label>
 
               <label className="block">
-                 {/* Custom label styling logic preserved by wrapping or letting PhoneInput handle it?
-                    PhoneInput component has its own label prop and styling.
-                    However, existing code uses a specific span style for label.
-                    I will use PhoneInput functionality but try to pass undefined label to it and use the existing custom label if I want to restrict layout changes,
-                    OR better: use PhoneInput's label prop if it matches the style. 
-                    The PhoneInput I created has a specific style: "text-sm font-semibold text-slate-700".
-                    The existing style here is: "text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400".
-                    They are quite different. I should probably keep the existing label and use PhoneInput just for the input part.
-                    My PhoneInput component renders a label IF the label prop is provided. If not, it just renders the input container.
-                    So I will NOT pass the 'label' prop to PhoneInput, and keep the existing label.
-                 */}
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                  No. HP <span className="text-slate-400">(opsional)</span>
+                  No. HP / WhatsApp <span className="text-slate-400">(opsional)</span>
                 </span>
                 <div className="mt-2">
-                    <PhoneInput
-                        value={form.phone}
-                        onChange={(val) => setForm((s) => ({ ...s, phone: val || "" }))}
-                        disabled={loading || saving || deleting}
-                    />
+                  <PhoneInput
+                    value={form.phone}
+                    onChange={(val) => setForm((s) => ({ ...s, phone: val || "" }))}
+                    disabled={loading || saving || deleting}
+                  />
                 </div>
               </label>
-
-              <div className="sm:col-span-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setForm((s) => ({ ...s, show_contact: !s.show_contact }))}
-                  disabled={loading || saving || deleting}
-                  className={[
-                    "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-bold shadow-sm transition",
-                    form.show_contact
-                      ? "border-sky-200 bg-sky-50 text-sky-800"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
-                  ].join(" ")}
-                >
-                  <div className="flex flex-col text-left">
-                    <span>Tampilkan Kontak di Publik</span>
-                    <span className="text-[10px] font-normal opacity-80 mt-0.5">Jika aktif, email dan No. HP akan terlihat oleh pengunjung website.</span>
-                  </div>
-                  <span className="text-xs font-semibold opacity-80">{form.show_contact ? "Ya" : "Tidak"}</span>
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-          <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Foto</p>
-            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-slate-700">Unggah foto anggota.</p>
-                  <p className="mt-1 text-xs text-slate-500">jpg/png/webp, maks. 4MB.</p>
-                </div>
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200">
-                  <FontAwesomeIcon icon={faImage} />
-                </span>
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => photoInputRef.current?.click()}
-                  disabled={!canSubmit}
-                  className="inline-flex items-center justify-center rounded-2xl bg-white px-4 py-2.5 text-sm font-bold text-slate-800 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-                >
-                  Pilih Gambar
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
-                    setPhotoPreviewUrl(null);
-                    setForm((s) => ({ ...s, photo_path: "" }));
-                    setPhotoUploadError(null);
-                  }}
-                  disabled={!canSubmit || (!photoPreviewUrl && !form.photo_path)}
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-red-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Hapus
-                </button>
-
-                {photoUploading ? (
-                  <span className="text-sm font-semibold text-slate-600">Mengunggah...</span>
-                ) : form.photo_path ? (
-                  <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
-                    Tersimpan
-                  </span>
-                ) : (
-                  <span className="text-sm font-semibold text-slate-600">Belum ada.</span>
-                )}
-              </div>
-
-              <div className="mt-4">
-                <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
-                  {photoPreviewUrl || storedPhotoUrl ? (
-                    <img
-                      src={photoPreviewUrl ?? storedPhotoUrl ?? undefined}
-                      alt=""
-                      className="h-[320px] w-full object-contain bg-slate-50"
-                    />
-                  ) : (
-                    <div className="flex h-[320px] items-center justify-center text-sm font-semibold text-slate-500">
-                      Tidak ada pratinjau.
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {photoUploadError && <p className="mt-3 text-sm font-semibold text-red-700">{photoUploadError}</p>}
-
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                aria-label="Unggah foto anggota"
-                ref={photoInputRef}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  e.target.value = "";
-                  if (!file) return;
-                  if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
-                  setPhotoPreviewUrl(URL.createObjectURL(file));
-                  void onUploadPhoto(file);
-                }}
-                disabled={!canSubmit}
-              />
             </div>
           </div>
 
@@ -585,7 +410,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
               <p className="text-xs font-bold tracking-wide text-red-600">Zona berbahaya</p>
               <h2 className="mt-2 font-heading text-xl font-semibold text-slate-900">Hapus anggota</h2>
               <p className="mt-2 text-sm text-slate-600">
-                Anggota yang dihapus tidak akan tampil di sistem. Pastikan sudah benar.
+                Anggota yang dihapus tidak akan tampil di sistem. Pastikan data sudah benar.
               </p>
 
               {!showDeleteConfirm ? (
@@ -628,11 +453,9 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
 
         <div className="space-y-6 lg:col-span-4 lg:sticky lg:top-24 lg:self-start lg:h-fit">
           <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-sky-300 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Properti</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Grup & Visibilitas</p>
 
             <div className="mt-5 space-y-4">
-
-
               <label className="block">
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                   Grup (Bahasa Indonesia) <span className="text-red-500">*</span>
@@ -642,21 +465,20 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                   onChange={(e) => {
                     const val = e.target.value;
                     setForm((s) => {
-                        const next = { ...s, group: val };
-                        const en = translateGroupToEn(val);
-                        if (en) {
-                            next.group_en = en;
-                        } else {
-                            // Check dynamic translations if standard fails
-                            const dynamicEn = dynamicGroupTranslations[val.trim().toLowerCase()];
-                            if (dynamicEn) {
-                                next.group_en = dynamicEn;
-                            }
+                      const next = { ...s, group: val };
+                      const en = translateGroupToEn(val);
+                      if (en) {
+                        next.group_en = en;
+                      } else {
+                        const dynamicEn = dynamicGroupTranslations[val.trim().toLowerCase()];
+                        if (dynamicEn) {
+                          next.group_en = dynamicEn;
                         }
-                        return next;
+                      }
+                      return next;
                     });
                   }}
-                  placeholder="Mis. pengurus"
+                  placeholder="Mis. pengurus, pembina, pengawas"
                   list="org-group-options"
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
@@ -685,7 +507,6 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                   disabled={loading || saving || deleting}
                 />
               </label>
-
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <label className="block">
@@ -737,7 +558,7 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                     : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
                 ].join(" ")}
               >
-                <span>Tampilkan di publik</span>
+                <span>Status Aktif</span>
                 <span className="text-xs font-semibold opacity-80">{form.is_active ? "Aktif" : "Nonaktif"}</span>
               </button>
             </div>

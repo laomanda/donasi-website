@@ -8,7 +8,7 @@ export type OrganizationMember = {
   photo_path?: string | null;
   email?: string | null;
   phone?: string | null;
-  show_contact: boolean;
+  show_contact?: boolean;
   order: number;
   is_active: boolean;
   updated_at?: string | null;

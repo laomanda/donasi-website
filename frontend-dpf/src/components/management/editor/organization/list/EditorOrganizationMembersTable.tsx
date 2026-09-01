@@ -1,8 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
-import { imagePlaceholder } from "@/lib/placeholder";
+import { faPenToSquare, faUserTie } from "@fortawesome/free-solid-svg-icons";
 import type { OrganizationMember } from "../EditorOrganizationMemberTypes";
-import { resolveStorageUrl, formatDate, getStatusTone, groupTone } from "../EditorOrganizationMemberTypes";
+import { formatDate, getStatusTone, groupTone } from "../EditorOrganizationMemberTypes";
 
 type BulkSelectionType = {
   selectedIds: number[];
@@ -82,7 +81,6 @@ export default function EditorOrganizationMembersTable({
               </tr>
             ) : (
               items.map((member) => {
-                const photo = resolveStorageUrl(member.photo_path) ?? imagePlaceholder;
                 const updated = member.updated_at ?? member.created_at;
                 return (
                   <tr key={member.id} className="hover:bg-slate-50">
@@ -97,13 +95,8 @@ export default function EditorOrganizationMembersTable({
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-4">
-                        <div className="h-11 w-11 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
-                          <img
-                            src={photo}
-                            alt={member.name}
-                            className="h-full w-full object-cover"
-                            onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
-                          />
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+                          <FontAwesomeIcon icon={faUserTie} className="text-base" />
                         </div>
                         <div className="min-w-0">
                           <p className="line-clamp-1 text-sm font-bold text-slate-900">{member.name}</p>
@@ -167,7 +160,6 @@ export default function EditorOrganizationMembersTable({
           </div>
         ) : (
           items.map((member) => {
-            const photo = resolveStorageUrl(member.photo_path) ?? imagePlaceholder;
             const updated = member.updated_at ?? member.created_at;
             return (
               <div key={member.id} className="p-5">
@@ -185,13 +177,8 @@ export default function EditorOrganizationMembersTable({
                 </div>
                 <div className="block w-full text-left">
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200">
-                      <img
-                        src={photo}
-                        alt={member.name}
-                        className="h-full w-full object-cover"
-                        onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
-                      />
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+                      <FontAwesomeIcon icon={faUserTie} className="text-lg" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-base font-bold text-slate-900">{member.name}</p>

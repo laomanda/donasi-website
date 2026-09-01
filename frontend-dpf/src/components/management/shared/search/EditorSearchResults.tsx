@@ -170,13 +170,12 @@ export default function EditorSearchResults({
             </span>,
           ];
 
-          const imageUrl = resolveStorageUrl(item.photo_path) ?? imagePlaceholder;
           return (
             <SearchResultRow
               key={item.id}
               title={item.name}
               subtitle={item.position_title}
-              imageUrl={imageUrl}
+              icon={faSitemap}
               metaLeft={meta}
               metaRight={<span className="text-[11px] font-semibold text-slate-500">Diperbarui: {formatDate(item.updated_at ?? item.created_at)}</span>}
               tone="amber"

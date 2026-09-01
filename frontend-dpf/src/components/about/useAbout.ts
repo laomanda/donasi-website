@@ -54,9 +54,14 @@ export function useAbout() {
       });
     });
 
-    // Sort items within each bucket by member ID (Terlama -> Terbaru)
+    // Sort items within each bucket by order, then by member ID
     Object.keys(buckets).forEach((key) => {
-      buckets[key] = buckets[key].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+      buckets[key] = buckets[key].sort((a, b) => {
+        const orderA = Number(a.order ?? 0);
+        const orderB = Number(b.order ?? 0);
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.id ?? 0) - (b.id ?? 0);
+      });
     });
 
     // Sort group keys based on the minimum order of members in that group

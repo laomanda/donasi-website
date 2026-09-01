@@ -21,12 +21,13 @@ export type OrganizationMember = {
   id: number;
   name: string;
   position_title: string;
+  position_title_en?: string | null;
   group: string | null;
   group_en?: string | null;
   photo_path?: string | null;
-  show_contact?: boolean;
   email?: string | null;
   phone?: string | null;
+  show_contact?: boolean;
   order: number;
 };
 
