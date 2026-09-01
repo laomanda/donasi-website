@@ -8,6 +8,7 @@ interface Donation {
   donation_code: string;
   amount: number;
   status: string;
+  paid_at?: string | null;
   created_at: string;
   program?: {
     title: string;
@@ -71,7 +72,7 @@ export function MitraDonationCards({
               </p>
               <p className="text-sm font-bold uppercase text-slate-900">{don.donation_code}</p>
               <p className="text-[11px] font-semibold text-slate-500">
-                {formatDateShort(don.created_at, locale)}
+                {formatDateShort(don.paid_at || don.created_at, locale)}
               </p>
             </div>
             <MitraStatusBadge status={don.status} t={t} variant="solid" />

@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faReceipt
+  faReceipt,
+  faHandHoldingHeart,
+  faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "@/layouts/LandingLayout";
 import { useLang } from "@/lib/i18n";
@@ -14,10 +17,17 @@ import {
 } from "@/components/landing/LandingUI";
 import proposalWakafImg from "@/assets/brand/proposal_wakaf.webp";
 
+import {
+  DistributionShowcase,
+  type AllocationItem,
+} from "@/components/ui/design-testimonial";
+
 export function PenyaluranPage() {
   const { locale } = useLang();
   const [data, setData] = useState<HomePayload | null>(null);
   const [loading, setLoading] = useState(true);
+  const [allocations, setAllocations] = useState<AllocationItem[]>([]);
+  const [loadingAllocations, setLoadingAllocations] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -32,19 +42,26 @@ export function PenyaluranPage() {
         if (isMounted) setLoading(false);
       });
 
+    http
+      .get<{ success: boolean; data: AllocationItem[] }>("/allocations")
+      .then((res) => {
+        if (!isMounted) return;
+        setAllocations(res.data.data || []);
+      })
+      .catch((err) => console.error("Error loading allocations:", err))
+      .finally(() => {
+        if (isMounted) setLoadingAllocations(false);
+      });
+
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const totalCollected = Number(data?.stats?.amount_collected ?? 0);
   const totalAllocated = Number(data?.stats?.amount_allocated ?? 0);
 
-  const distributionRatio =
-    totalCollected > 0 ? ((totalAllocated / totalCollected) * 100).toFixed(1) : "0";
-
   return (
-    <LandingLayout whatsappPhone="6285195542022" footerWaveBgClassName="bg-slate-50">
+    <LandingLayout whatsappPhone="6285195542022" footerWaveBgClassName="bg-white">
       {/* =========================================================================
           HERO SECTION: "Amanah & Human-Impact" (Split Hero with Live Metrik)
       ========================================================================= */}
@@ -200,11 +217,6 @@ export function PenyaluranPage() {
                       />
                     )}
                   </p>
-                  <p className="text-[11px] font-medium text-slate-500 mt-0.5">
-                    {locale === "en"
-                      ? `${distributionRatio}% of waqf pool distributed`
-                      : `Realisasi ${distributionRatio}% dari kas wakaf`}
-                  </p>
                 </div>
               </div>
             </div>
@@ -213,28 +225,105 @@ export function PenyaluranPage() {
       </header>
 
       {/* =========================================================================
-          CONTENT CANVAS: Ready for Next Section Instruction (Table / Gallery / etc.)
+          DISTRIBUTION SHOWCASE (KINETIC SLIDER DENGAN TYPOGRAPHY NILAI)
       ========================================================================= */}
-      <main className="min-h-[200px] py-12 bg-slate-50/50">
+      <main className="pt-2 pb-20 lg:pt-4 lg:pb-28 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Subtle placeholder canvas box */}
-          <div className="rounded-3xl border border-dashed border-slate-300 bg-white/80 p-8 sm:p-12 text-center backdrop-blur-xs shadow-xs">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 mb-3">
-              <FontAwesomeIcon icon={faReceipt} className="text-xl" />
-            </div>
-            <h3 className="font-heading text-lg sm:text-xl font-bold text-slate-900">
+          <div className="mb-8 lg:mb-10 max-w-3xl text-left">
+            {/* Main Headline */}
+            <h2 className="font-heading text-2xl sm:text-4xl lg:text-[2.5rem] font-extrabold text-slate-900 tracking-tight leading-[1.2]">
+              {locale === "en" ? (
+                <>
+                  Every Rupiah Realized into{" "}
+                  <span className="text-primary-600">Tangible Impact.</span>
+                </>
+              ) : (
+                <>
+                  Setiap Rupiah Berbuah Menjadi{" "}
+                  <span className="text-primary-600">Manfaat Nyata.</span>
+                </>
+              )}
+            </h2>
+
+            {/* Subheadline description */}
+            <p className="mt-3 text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">
               {locale === "en"
-                ? "Section Canvas Ready"
-                : "Hero Section Penyaluran Selesai Dibuat"}
-            </h3>
-            <p className="mt-1.5 max-w-md mx-auto text-xs sm:text-sm text-slate-500 leading-relaxed">
-              {locale === "en"
-                ? "The hero section with live metrics, search, and storytelling visual is live. What content would you like to build underneath next?"
-                : "Hero section lengkap dengan live metrics, search bar, dan visual storytelling sudah terpasang. Apa komponen atau data yang ingin kita bangun di bawahnya selanjutnya?"}
+                ? "Explore real-time distribution records funded by donors with 100% transparency and measurable social empowerment."
+                : "Telusuri rincian kegiatan penyaluran yang telah direalisasikan secara amanah dari dana titipan para donatur dan wakif untuk kemandirian umat."}
             </p>
           </div>
+
+          {/* Interactive Distribution Showcase Slider */}
+          <DistributionShowcase
+            items={allocations}
+            loading={loadingAllocations}
+          />
         </div>
       </main>
+
+      {/* =========================================================================
+          CALL TO ACTION (CTA) SECTION
+      ========================================================================= */}
+      <section className="pb-24 pt-4 bg-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-700 via-primary-600 to-amber-600 p-8 sm:p-12 lg:p-16 text-white shadow-2xl shadow-primary-900/15">
+            {/* Ambient Background Decorative Glows */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-24 -bottom-24 h-96 w-96 rounded-full bg-white/10 blur-2xl"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -left-20 -top-20 h-80 w-80 rounded-full bg-amber-400/20 blur-2xl"
+            />
+
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+              {/* Left Column: Heading & Description */}
+              <div className="max-w-2xl text-left">
+                <h3 className="font-heading text-2xl sm:text-4xl lg:text-[2.6rem] font-extrabold text-white leading-tight tracking-tight">
+                  {locale === "en"
+                    ? "Together, Let's Flow Endless Streams of Benefit."
+                    : "Mari Bersama Alirkan Manfaat yang Tak Pernah Putus."}
+                </h3>
+
+                <p className="mt-3.5 text-sm sm:text-base text-primary-50 leading-relaxed max-w-xl font-normal">
+                  {locale === "en"
+                    ? "Your waqf empowers communities, educates youth, and builds lasting sustainable assets for generations."
+                    : "Setiap rupiah wakaf yang Anda tunaikan akan terus berputar menghasilkan kemaslahatan produktif, pendidikan, dan kesejahteraan umat."}
+                </p>
+              </div>
+
+              {/* Right Column: CTA Buttons */}
+              <div className="flex flex-wrap items-center gap-3.5 lg:shrink-0">
+                <Link
+                  to="/donate"
+                  className="inline-flex items-center justify-center gap-2.5 rounded-full bg-white px-8 py-4 text-sm font-extrabold text-primary-800 shadow-xl hover:bg-amber-50 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition"
+                >
+                  <FontAwesomeIcon
+                    icon={faHandHoldingHeart}
+                    className="text-primary-600"
+                  />
+                  <span>
+                    {locale === "en"
+                      ? "Donate Waqf Now"
+                      : "Tunaikan Wakaf Sekarang"}
+                  </span>
+                </Link>
+
+                <Link
+                  to="/program"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white/15 border border-white/30 px-7 py-4 text-sm font-bold text-white backdrop-blur-sm hover:bg-white/25 active:scale-95 transition"
+                >
+                  <span>
+                    {locale === "en" ? "Explore Programs" : "Pilih Program"}
+                  </span>
+                  <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </LandingLayout>
   );
 }

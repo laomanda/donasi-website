@@ -117,7 +117,7 @@ export function DonationReportTable({ items, loading, visibleColumns }: Donation
 
               {isVisible("time") && (
                 <td className="px-6 py-4 text-right">
-                  <span className="text-[10px] font-bold text-slate-400">{Utils.formatDateTime(item.created_at)}</span>
+                  <span className="text-[10px] font-bold text-slate-400">{Utils.formatDateTime(item.paid_at || item.created_at)}</span>
                 </td>
               )}
             </tr>

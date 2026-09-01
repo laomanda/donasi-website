@@ -64,9 +64,21 @@ class MidtransWebhookController extends Controller
                 'fraud_status'    => $fraudStatus,
             ]);
 
+            $paidAt = $donation->paid_at;
+            if ($newStatus === 'paid') {
+                if (!empty($data['settlement_time'])) {
+                    $paidAt = \Carbon\Carbon::parse($data['settlement_time']);
+                } elseif (!empty($data['transaction_time'])) {
+                    $paidAt = \Carbon\Carbon::parse($data['transaction_time']);
+                } else {
+                    $paidAt = now();
+                }
+            }
+
             $donation->update([
                 'status'                  => $newStatus,
-                'paid_at'                 => $newStatus === 'paid' ? now() : $donation->paid_at,
+                'paid_at'                 => $paidAt,
+                'created_at'              => ($newStatus === 'paid' && $paidAt) ? $paidAt : $donation->created_at,
                 'midtrans_transaction_id' => $data['transaction_id'] ?? $donation->midtrans_transaction_id,
                 'midtrans_va_numbers'     => $data['va_numbers'] ?? $donation->midtrans_va_numbers,
                 'midtrans_raw_response'   => $data,

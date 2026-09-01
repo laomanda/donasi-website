@@ -134,9 +134,13 @@ class DonationController extends Controller
             // Update for ANY status change (paid, failed, cancelled, etc.)
             if ($newStatus !== $donation->status) {
                 $previousStatus = $donation->status;
+                $txTime = $snapResult['transaction_time'] ?? null;
+                $paidAt = $newStatus === 'paid' ? ($txTime ? \Carbon\Carbon::parse($txTime) : now()) : $donation->paid_at;
+
                 $donation->update([
-                    'status'               => $newStatus,
-                    'paid_at'             => $newStatus === 'paid' ? now() : $donation->paid_at,
+                    'status'                => $newStatus,
+                    'paid_at'               => $paidAt,
+                    'created_at'            => ($newStatus === 'paid' && $paidAt) ? $paidAt : $donation->created_at,
                     'midtrans_raw_response' => $snapResult,
                 ]);
                 $this->donationService->syncProgramAmount($donation->fresh(), $previousStatus, $newStatus);
@@ -196,9 +200,13 @@ class DonationController extends Controller
             ]);
         }
 
+        $txTime = $status->settlement_time ?? $status->transaction_time ?? null;
+        $paidAt = $newStatus === 'paid' ? ($txTime ? \Carbon\Carbon::parse($txTime) : now()) : $donation->paid_at;
+
         $donation->update([
-            'status' => $newStatus,
-            'paid_at' => $newStatus === 'paid' ? now() : $donation->paid_at,
+            'status'                => $newStatus,
+            'paid_at'               => $paidAt,
+            'created_at'            => ($newStatus === 'paid' && $paidAt) ? $paidAt : $donation->created_at,
             'midtrans_raw_response' => (array) $status,
         ]);
 

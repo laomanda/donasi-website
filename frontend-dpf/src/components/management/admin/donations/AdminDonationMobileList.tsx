@@ -64,7 +64,7 @@ export function AdminDonationMobileList({
 
                 <div className="flex items-center justify-between border-t border-slate-100 pt-3">
                   <span className="text-xs font-bold uppercase text-slate-400 tracking-wider text-[10px]">{normalizeSourceLabel(donation.payment_source)}</span>
-                  <span className="text-xs font-medium text-slate-500">{formatDateTime(donation.created_at)}</span>
+                  <span className="text-xs font-medium text-slate-500">{formatDateTime(donation.paid_at || donation.created_at)}</span>
                 </div>
               </div>
 

@@ -8,6 +8,7 @@ interface Donation {
   donation_code: string;
   amount: number;
   status: string;
+  paid_at?: string | null;
   created_at: string;
   program?: {
     title: string;
@@ -83,7 +84,7 @@ export function MitraDonationsTable({
                     {don.donation_code}
                   </p>
                   <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                    {formatDateLong(don.created_at, locale)}
+                    {formatDateLong(don.paid_at || don.created_at, locale)}
                   </p>
                 </td>
                 <td className="px-8 py-7">

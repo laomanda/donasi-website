@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\Editor\OrganizationController as EditorOrganization
 use App\Http\Controllers\Api\Editor\PartnerController as EditorPartnerController;
 use App\Http\Controllers\Api\Editor\ProgramController as EditorProgramController;
 use App\Http\Controllers\Api\Editor\UploadController as EditorUploadController;
+use App\Http\Controllers\Api\Frontend\AllocationController as FrontendAllocationController;
 use App\Http\Controllers\Api\Frontend\ArticleController as FrontendArticleController;
 use App\Http\Controllers\Api\Frontend\BannerController as FrontendBannerController;
 use App\Http\Controllers\Api\Frontend\ConsultationController as FrontendConsultationController;
@@ -169,6 +170,7 @@ Route::prefix('v1')->group(function () {
         Route::get('articles/{slug}', [FrontendArticleController::class, 'show']);
 
         Route::get('organization', [FrontendOrganizationController::class, 'index']);
+        Route::get('allocations', [FrontendAllocationController::class, 'index']);
         Route::get('prayer-times', [PrayerTimesController::class, 'index'])->middleware('throttle:20,1');
 
         Route::get('donations/summary', [FrontendDonationController::class, 'summary']);

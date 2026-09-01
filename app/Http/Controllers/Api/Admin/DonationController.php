@@ -37,11 +37,11 @@ class DonationController extends Controller
         }
 
         if ($dateFrom = $request->date('date_from')) {
-            $query->whereDate('created_at', '>=', $dateFrom);
+            $query->whereDate(\Illuminate\Support\Facades\DB::raw('COALESCE(paid_at, created_at)'), '>=', $dateFrom);
         }
 
         if ($dateTo = $request->date('date_to')) {
-            $query->whereDate('created_at', '<=', $dateTo);
+            $query->whereDate(\Illuminate\Support\Facades\DB::raw('COALESCE(paid_at, created_at)'), '<=', $dateTo);
         }
 
         $search = $request->string('q')->trim()->toString();
@@ -52,7 +52,7 @@ class DonationController extends Controller
             });
         }
 
-        $donations = $query->orderByDesc('created_at')
+        $donations = $query->orderByRaw('COALESCE(paid_at, created_at) DESC')
             ->paginate($request->integer('per_page', 20));
 
         return response()->json($donations);

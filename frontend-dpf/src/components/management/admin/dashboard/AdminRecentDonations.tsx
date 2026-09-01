@@ -83,7 +83,7 @@ export function AdminRecentDonations({
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-slate-700">
                     Nominal: <span className="font-bold text-slate-900">{formatCurrency(amount)}</span>
                   </span>
-                  <span className="text-slate-500">Waktu: {formatDateTime(item.created_at)}</span>
+                  <span className="text-slate-500">Waktu: {formatDateTime(item.paid_at || item.created_at)}</span>
                 </div>
               </button>
             );

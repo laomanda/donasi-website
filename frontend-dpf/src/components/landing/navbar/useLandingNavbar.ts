@@ -56,7 +56,7 @@ export function useLandingNavbar() {
 
     const phoneNumber = publicSettings["landing.contact_phone"]?.trim() || "+62 851-9554-2022";
     const phoneLink = publicSettings["landing.contact_phone_link"]?.trim() || "https://wa.me/6285195542022";
-    const emailText = publicSettings["landing.contact_email"]?.trim() || "info@dpf.or.id";
+    const emailText = publicSettings["landing.contact_email"]?.trim() || "wakafdpf@gmail.com";
     const emailLink = publicSettings["landing.contact_email_link"]?.trim() || `https://mail.google.com/mail/?view=cm&fs=1&to=${emailText}`;
 
     // Scroll handler

@@ -112,7 +112,7 @@ export function AdminDonationTable({
                         <span className="inline-flex items-center rounded bg-slate-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white shadow-sm whitespace-nowrap">
                           {source}
                         </span>
-                        <span className="text-[10px] font-medium text-slate-400">{formatDateTime(donation.created_at)}</span>
+                        <span className="text-[10px] font-medium text-slate-400">{formatDateTime(donation.paid_at || donation.created_at)}</span>
                       </div>
                     </td>
                     <td className="px-6 py-5">

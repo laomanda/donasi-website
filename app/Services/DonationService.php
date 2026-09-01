@@ -102,6 +102,7 @@ class DonationService
 
             if (!empty($data['paid_at'])) {
                 $data['paid_at'] = Carbon::parse($data['paid_at']);
+                $data['created_at'] = $data['paid_at'];
             }
 
             $donation->update($data);

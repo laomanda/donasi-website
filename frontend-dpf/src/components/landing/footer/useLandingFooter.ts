@@ -47,7 +47,7 @@ export function useLandingFooter() {
   const phoneDisplay =
     publicSettings['landing.contact_phone_display']?.trim() || `${phoneNumber} (DPF Official)`
   const phoneLink = publicSettings['landing.contact_phone_link']?.trim() || 'https://wa.me/6285195542022'
-  const emailText = publicSettings['landing.contact_email']?.trim() || 'layanan@dpf.or.id'
+  const emailText = publicSettings['landing.contact_email']?.trim() || 'wakafdpf@gmail.com'
   const emailLink =
     publicSettings['landing.contact_email_link']?.trim() || `https://mail.google.com/mail/?view=cm&fs=1&to=${emailText}`
   const jakartaMapEmbed =

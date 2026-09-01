@@ -65,7 +65,7 @@ export function DonationReportMobileList({ items, loading }: DonationReportMobil
             </div>
 
             <div className="pt-2 border-t border-slate-50">
-              <p className="text-[10px] font-medium text-slate-400 italic">{Utils.formatDateTime(item.created_at)}</p>
+              <p className="text-[10px] font-medium text-slate-400 italic">{Utils.formatDateTime(item.paid_at || item.created_at)}</p>
             </div>
           </div>
         </div>

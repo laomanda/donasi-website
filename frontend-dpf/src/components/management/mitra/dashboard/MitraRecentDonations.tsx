@@ -8,6 +8,7 @@ interface RecentDonation {
   id: string;
   amount: number;
   status: string;
+  paid_at?: string | null;
   created_at: string;
   donatur_name: string;
 }
@@ -71,7 +72,7 @@ export function MitraRecentDonations({ donations, locale, t }: MitraRecentDonati
                         {item.donatur_name}
                       </p>
                       <p className="text-[10px] font-semibold text-slate-400">
-                        {formatDateShort(item.created_at, locale)}
+                        {formatDateShort(item.paid_at || item.created_at, locale)}
                       </p>
                     </div>
                   </div>
@@ -100,7 +101,7 @@ export function MitraRecentDonations({ donations, locale, t }: MitraRecentDonati
                 <div>
                   <p className="line-clamp-1 text-sm font-bold text-slate-900">{item.donatur_name}</p>
                   <p className="text-[10px] font-semibold text-slate-400">
-                    {formatDateShort(item.created_at, locale)}
+                    {formatDateShort(item.paid_at || item.created_at, locale)}
                   </p>
                 </div>
               </div>
