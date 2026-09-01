@@ -10,6 +10,7 @@ import {
     faArrowRight,
     faMagnifyingGlass,
     faArrowTrendUp,
+    faArrowTrendDown,
     faBuildingColumns,
     faChevronLeft,
     faChevronRight,
@@ -33,6 +34,7 @@ import {
     formatCurrency,
     pickLocale,
     AnimatedCounter,
+    calculateMoM,
 } from "./LandingUI";
 
 ChartJS.register(
@@ -67,6 +69,8 @@ export function TransparencySection({
     const availableBalance = Math.max(0, totalCollected - totalAllocated);
     const distributionRatio =
         totalCollected > 0 ? (totalAllocated / totalCollected) * 100 : 0;
+
+    const momCollected = calculateMoM(stats?.monthly_trends, stats?.collected_mom);
 
     const programAllocations = useMemo(
         () => stats?.program_allocations ?? [],
@@ -299,6 +303,7 @@ export function TransparencySection({
                         </div>
 
                         <div className="mt-5">
+                            {/* Full-width number: scalable for millions, billions, and trillions */}
                             <p className="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                                 <AnimatedCounter
                                     value={totalCollected}
@@ -307,26 +312,58 @@ export function TransparencySection({
                                     }
                                 />
                             </p>
-                            <p className="mt-2 text-xs font-medium text-slate-500">
-                                <AnimatedCounter
-                                    value={stats?.total_donations ?? 0}
-                                />{" "}
-                                {locale === "en"
-                                    ? "verified donation transactions"
-                                    : "transaksi donatur terverifikasi"}
-                            </p>
+
+                            {/* Info row with growth badge & transaction count */}
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                                {momCollected !== null && (
+                                    <span
+                                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold shrink-0 ${
+                                            momCollected >= 0
+                                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                                : "bg-rose-50 text-rose-700 border border-rose-200"
+                                        }`}
+                                    >
+                                        <FontAwesomeIcon
+                                            icon={
+                                                momCollected >= 0
+                                                    ? faArrowTrendUp
+                                                    : faArrowTrendDown
+                                            }
+                                            className="text-[10px]"
+                                        />
+                                        <span>
+                                            {momCollected >= 0 ? "+" : ""}
+                                            {momCollected.toFixed(1)}%
+                                        </span>
+                                        <span className="text-[10px] font-semibold opacity-75">
+                                            {locale === "en" ? "vs last month" : "dari bulan lalu"}
+                                        </span>
+                                    </span>
+                                )}
+                                <span className="text-xs font-medium text-slate-500">
+                                    <AnimatedCounter
+                                        value={stats?.total_donations ?? 0}
+                                    />{" "}
+                                    {locale === "en"
+                                        ? "verified transactions"
+                                        : "transaksi terverifikasi"}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Card 2: Penyaluran */}
-                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
+                    {/* Card 2: Penyaluran (Clickable Link to /penyaluran) */}
+                    <Link
+                        to="/penyaluran"
+                        className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition-all duration-300 hover:border-sky-300 hover:shadow-md block text-left"
+                    >
                         <div className="flex items-center justify-between gap-4">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 group-hover:text-sky-600 transition-colors">
                                 {locale === "en"
                                     ? "Funds Distributed to Partners"
                                     : "Dana Disalurkan ke Program"}
                             </span>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-700 border border-sky-100">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-700 border border-sky-100 group-hover:scale-105 group-hover:bg-sky-100 transition">
                                 <FontAwesomeIcon
                                     icon={faReceipt}
                                     className="text-sm"
@@ -343,16 +380,21 @@ export function TransparencySection({
                                     }
                                 />
                             </p>
-                            <p className="mt-2 text-xs font-medium text-slate-500">
-                                <AnimatedCounter
-                                    value={stats?.total_allocations ?? 0}
-                                />{" "}
-                                {locale === "en"
-                                    ? "allocation disbursements executed"
-                                    : "kali kegiatan penyaluran amanah"}
-                            </p>
+                            <div className="mt-2 flex items-center justify-between text-xs font-medium text-slate-500">
+                                <span>
+                                    <AnimatedCounter
+                                        value={stats?.total_allocations ?? 0}
+                                    />{" "}
+                                    {locale === "en"
+                                        ? "disbursements executed"
+                                        : "kali penyaluran amanah"}
+                                </span>
+                                <span className="text-sky-600 font-semibold text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {locale === "en" ? "View details" : "Lihat detail"} &rarr;
+                                </span>
+                            </div>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Card 3: Saldo Tersedia & Rasio */}
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300 sm:col-span-2 lg:col-span-1">

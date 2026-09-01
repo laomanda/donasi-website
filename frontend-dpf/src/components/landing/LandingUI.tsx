@@ -147,6 +147,8 @@ export type HomeStats = {
   amount_collected: string | number;
   total_allocations?: number;
   amount_allocated?: string | number;
+  collected_mom?: number | null;
+  allocated_mom?: number | null;
   program_allocations?: ProgramAllocation[];
   monthly_trends?: MonthlyTrend[];
 };
@@ -166,6 +168,56 @@ export const formatCurrency = (value: number | string | undefined, locale: "id" 
     currency: "IDR",
     maximumFractionDigits: 0,
   }).format(Number(value ?? 0));
+
+export const calculateMoM = (
+  monthlyTrends?: MonthlyTrend[] | null,
+  explicitMoM?: number | null
+): number | null => {
+  if (explicitMoM !== undefined && explicitMoM !== null) {
+    return explicitMoM;
+  }
+  if (!monthlyTrends || monthlyTrends.length < 2) {
+    return null;
+  }
+
+  for (let i = monthlyTrends.length - 1; i >= 1; i--) {
+    const current = Number(monthlyTrends[i]?.collected ?? 0);
+    const prev = Number(monthlyTrends[i - 1]?.collected ?? 0);
+    if (current > 0 || prev > 0) {
+      if (prev > 0) {
+        return Number((((current - prev) / prev) * 100).toFixed(1));
+      }
+      return 100.0;
+    }
+  }
+
+  return null;
+};
+
+export const calculateAllocMoM = (
+  monthlyTrends?: MonthlyTrend[] | null,
+  explicitMoM?: number | null
+): number | null => {
+  if (explicitMoM !== undefined && explicitMoM !== null) {
+    return explicitMoM;
+  }
+  if (!monthlyTrends || monthlyTrends.length < 2) {
+    return null;
+  }
+
+  for (let i = monthlyTrends.length - 1; i >= 1; i--) {
+    const current = Number(monthlyTrends[i]?.allocated ?? 0);
+    const prev = Number(monthlyTrends[i - 1]?.allocated ?? 0);
+    if (current > 0 || prev > 0) {
+      if (prev > 0) {
+        return Number((((current - prev) / prev) * 100).toFixed(1));
+      }
+      return 100.0;
+    }
+  }
+
+  return null;
+};
 
 export const formatDate = (value: string | null | undefined, locale: "id" | "en", t: (k: string, f?: string) => string) => {
   if (!value) return t("landing.common.soon");

@@ -23,6 +23,7 @@ const LiterasiPage = lazy(() => import('../pages/LiterasiPage').then(m => ({ def
 const LiterasiDetailPage = lazy(() => import('../pages/LiterasiDetailPage').then(m => ({ default: m.LiterasiDetailPage })))
 const TentangKamiPage = lazy(() => import('../pages/TentangKamiPage').then(m => ({ default: m.TentangKamiPage })))
 const TransparansiPage = lazy(() => import('../pages/TransparansiPage').then(m => ({ default: m.TransparansiPage })))
+const PenyaluranPage = lazy(() => import('../pages/PenyaluranPage').then(m => ({ default: m.PenyaluranPage })))
 const KonsultasiPage = lazy(() => import('../pages/KonsultasiPage').then(m => ({ default: m.KonsultasiPage })))
 const JemputWakafPage = lazy(() => import('../pages/JemputWakafPage').then(m => ({ default: m.JemputWakafPage })))
 const KonfirmasiDonasiPage = lazy(() => import('../pages/KonfirmasiDonasiPage').then(m => ({ default: m.KonfirmasiDonasiPage })))
@@ -147,6 +148,7 @@ export const router = createBrowserRouter([
       },
       { path: 'tentang-kami', element: withSuspense(TentangKamiPage) },
       { path: 'transparansi', element: withSuspense(TransparansiPage) },
+      { path: 'penyaluran', element: withSuspense(PenyaluranPage) },
       { path: 'konsultasi', element: withSuspense(KonsultasiPage) },
       { path: 'jemput-wakaf', element: withSuspense(JemputWakafPage) },
       { path: 'konfirmasi-donasi', element: withSuspense(KonfirmasiDonasiPage) },

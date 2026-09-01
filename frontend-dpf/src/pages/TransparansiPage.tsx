@@ -10,13 +10,20 @@ import {
   faHandshakeAngle,
   faArrowRight,
   faScaleBalanced,
+  faArrowTrendUp,
+  faArrowTrendDown,
 } from "@fortawesome/free-solid-svg-icons";
 import http from "@/lib/http";
 import { useLang } from "@/lib/i18n";
 import { landingDict } from "@/components/landing/LandingI18n";
 import { translate } from "@/lib/i18n-utils";
 import { LandingLayout } from "@/layouts/LandingLayout";
-import { type HomePayload, formatCurrency, AnimatedCounter } from "@/components/landing/LandingUI";
+import {
+  type HomePayload,
+  formatCurrency,
+  AnimatedCounter,
+  calculateMoM,
+} from "@/components/landing/LandingUI";
 import { TransparencySection } from "@/components/landing/TransparencySection";
 import heroTransparantImg from "@/assets/brand/hero-transparant.webp";
 
@@ -33,7 +40,7 @@ export function TransparansiPage() {
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 1024);
     };
     checkMobile();
     window.addEventListener("resize", checkMobile);
@@ -62,6 +69,9 @@ export function TransparansiPage() {
   const totalAllocated = Number(data?.stats?.amount_allocated ?? 0);
   const totalDonations = data?.stats?.total_donations ?? 0;
   const totalAllocations = data?.stats?.total_allocations ?? 0;
+
+  // MoM (Month-over-Month) Growth Percentage
+  const momCollected = calculateMoM(data?.stats?.monthly_trends, data?.stats?.collected_mom);
 
   return (
     <LandingLayout whatsappPhone="6285195542022" footerWaveBgClassName="bg-slate-50">
@@ -116,18 +126,47 @@ export function TransparansiPage() {
                       />
                     )}
                   </p>
+                  {momCollected !== null && (
+                    <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
+                          momCollected >= 0
+                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                            : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                        }`}
+                      >
+                        <FontAwesomeIcon
+                          icon={momCollected >= 0 ? faArrowTrendUp : faArrowTrendDown}
+                          className="text-[8px]"
+                        />
+                        <span>{momCollected >= 0 ? "+" : ""}{momCollected.toFixed(1)}%</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        {locale === "en" ? "from last month" : "dari bulan lalu"}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Card 2: Dana Disalurkan */}
-            <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-sky-500/40 hover:bg-slate-900/85">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500/15 text-sky-400 border border-sky-500/20 group-hover:scale-105 transition">
+            {/* Card 2: Dana Disalurkan (Clickable to /penyaluran) */}
+            <Link
+              to="/penyaluran"
+              className="group relative rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition-all duration-300 hover:border-sky-500/50 hover:bg-slate-900/85 hover:scale-[1.02] cursor-pointer block text-left"
+              title={locale === "en" ? "Click to view distribution details" : "Klik untuk melihat detail penyaluran"}
+            >
+              {/* Subtle link indicator on top right */}
+              <div className="absolute top-3.5 right-3.5 flex h-5 w-5 items-center justify-center rounded-full bg-white/5 text-slate-400 group-hover:bg-sky-500/20 group-hover:text-sky-400 transition-all">
+                <FontAwesomeIcon icon={faArrowRight} className="text-[9px] -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
+              </div>
+
+              <div className="flex items-center gap-3 pr-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500/15 text-sky-400 border border-sky-500/20 group-hover:scale-105 group-hover:bg-sky-500/25 transition">
                   <FontAwesomeIcon icon={faReceipt} className="text-sm" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="text-[11px] font-medium text-slate-300 block truncate">
+                  <span className="text-[11px] font-medium text-slate-300 block truncate group-hover:text-sky-300 transition-colors">
                     {locale === "en" ? "Total Distributed" : "Dana Disalurkan"}
                   </span>
                   <p className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white tracking-tight truncate">
@@ -138,9 +177,12 @@ export function TransparansiPage() {
                       />
                     )}
                   </p>
+                  <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400 font-medium">
+                    <span>{locale === "en" ? "To all programs" : "Untuk program"}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* Card 3: Donasi Terverifikasi */}
             <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-teal-500/40 hover:bg-slate-900/85">
@@ -153,35 +195,31 @@ export function TransparansiPage() {
                     {locale === "en" ? "Donations Verified" : "Donasi Terverifikasi"}
                   </span>
                   <p className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white tracking-tight truncate">
-                    {loading ? "..." : (
-                      <AnimatedCounter
-                        value={totalDonations}
-                        suffix={locale === "en" ? " Transactions" : " Transaksi"}
-                      />
-                    )}
+                    {loading ? "..." : <AnimatedCounter value={totalDonations} />}
                   </p>
+                  <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400 font-medium">
+                    <span>{locale === "en" ? "All donors" : "Total donatur"}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Card 4: Penyaluran Program */}
-            <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-amber-500/40 hover:bg-slate-900/85">
+            <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-indigo-500/40 hover:bg-slate-900/85">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/20 group-hover:scale-105 transition">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/20 group-hover:scale-105 transition">
                   <FontAwesomeIcon icon={faHandshakeAngle} className="text-sm" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-[11px] font-medium text-slate-300 block truncate">
-                    {locale === "en" ? "Allocations Executed" : "Penyaluran Program"}
+                    {locale === "en" ? "Active Programs" : "Penyaluran Program"}
                   </span>
                   <p className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white tracking-tight truncate">
-                    {loading ? "..." : (
-                      <AnimatedCounter
-                        value={totalAllocations}
-                        suffix={locale === "en" ? " Activities" : " Kegiatan"}
-                      />
-                    )}
+                    {loading ? "..." : <AnimatedCounter value={totalAllocations} />}
                   </p>
+                  <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400 font-medium">
+                    <span>{locale === "en" ? "Beneficiaries" : "Program aktif"}</span>
+                  </div>
                 </div>
               </div>
             </div>

@@ -9,13 +9,19 @@ use App\Models\Donation;
 use App\Models\Partner;
 use App\Models\Program;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
+    {
+        return $this->index($request);
+    }
+
+    public function index(?Request $request = null): JsonResponse
     {
         $data = Cache::remember('frontend.home', 120, function () {
             $highlights = Program::highlight()
@@ -53,28 +59,28 @@ class HomeController extends Controller
             // Program Allocations Breakdown
             $programAllocations = [];
             $allPrograms = Program::all();
-            
+
             foreach ($allPrograms as $prog) {
                 $agg = $allocAggregates->get($prog->id);
                 $progAllocSum = $agg ? (float) $agg->total_allocated : 0;
                 $progAllocCount = $agg ? (int) $agg->allocation_count : 0;
                 $progCollected = (float) $prog->collected_amount;
                 $progTarget = (float) $prog->target_amount;
-                
+
                 // Include program if it has collected funds or allocations
                 if ($progCollected > 0 || $progAllocSum > 0) {
                     $programAllocations[] = [
-                        'id'               => $prog->id,
-                        'title'            => $prog->title,
-                        'title_en'         => $prog->title_en,
-                        'category'         => $prog->category ?: 'Umum',
-                        'category_en'      => $prog->category_en ?: 'General',
+                        'id' => $prog->id,
+                        'title' => $prog->title,
+                        'title_en' => $prog->title_en,
+                        'category' => $prog->category ?: 'Umum',
+                        'category_en' => $prog->category_en ?: 'General',
                         'collected_amount' => $progCollected,
                         'allocated_amount' => $progAllocSum,
-                        'target_amount'    => $progTarget,
+                        'target_amount' => $progTarget,
                         'allocation_count' => $progAllocCount,
-                        'slug'             => $prog->slug,
-                        'thumbnail_path'   => $prog->thumbnail_path,
+                        'slug' => $prog->slug,
+                        'thumbnail_path' => $prog->thumbnail_path,
                     ];
                 }
             }
@@ -84,20 +90,20 @@ class HomeController extends Controller
             $generalAllocSum = $generalAgg ? (float) $generalAgg->total_allocated : (float) Allocation::whereNull('program_id')->sum('amount');
             $generalAllocCount = $generalAgg ? (int) $generalAgg->allocation_count : Allocation::whereNull('program_id')->count();
             $generalCollected = (float) Donation::whereNull('program_id')->where('status', 'paid')->sum('amount');
-            
+
             if ($generalAllocSum > 0 || $generalCollected > 0) {
                 $programAllocations[] = [
-                    'id'               => null,
-                    'title'            => 'Dana Umum / Wakaf Terbuka',
-                    'title_en'         => 'General Waqf Fund',
-                    'category'         => 'Umum',
-                    'category_en'      => 'General',
+                    'id' => null,
+                    'title' => 'Dana Umum / Wakaf Terbuka',
+                    'title_en' => 'General Waqf Fund',
+                    'category' => 'Umum',
+                    'category_en' => 'General',
                     'collected_amount' => $generalCollected,
                     'allocated_amount' => $generalAllocSum,
-                    'target_amount'    => 0,
+                    'target_amount' => 0,
                     'allocation_count' => $generalAllocCount,
-                    'slug'             => null,
-                    'thumbnail_path'   => null,
+                    'slug' => null,
+                    'thumbnail_path' => null,
                 ];
             }
 
@@ -106,6 +112,7 @@ class HomeController extends Controller
                 if ($b['allocated_amount'] !== $a['allocated_amount']) {
                     return $b['allocated_amount'] <=> $a['allocated_amount'];
                 }
+
                 return $b['collected_amount'] <=> $a['collected_amount'];
             });
 
@@ -125,26 +132,60 @@ class HomeController extends Controller
                     ->sum('amount');
 
                 $monthlyTrends[] = [
-                    'month_key'  => $date->format('Y-m'),
-                    'label'      => $date->translatedFormat('M Y'),
+                    'month_key' => $date->format('Y-m'),
+                    'label' => $date->translatedFormat('M Y'),
                     'month_name' => $date->translatedFormat('F'),
-                    'collected'  => $collected,
-                    'allocated'  => $allocated,
+                    'collected' => $collected,
+                    'allocated' => $allocated,
                 ];
             }
 
+            // Calculate MoM (Month-over-Month) Growth Percentage
+            $lastTwoDonationMonths = Donation::where('status', 'paid')
+                ->selectRaw('DATE_FORMAT(COALESCE(paid_at, created_at), "%Y-%m") as m, sum(amount) as total')
+                ->groupBy('m')
+                ->orderByDesc('m')
+                ->limit(2)
+                ->get();
+
+            $collectedMoM = null;
+            if ($lastTwoDonationMonths->count() >= 2) {
+                $latest = (float) $lastTwoDonationMonths[0]->total;
+                $previous = (float) $lastTwoDonationMonths[1]->total;
+                $collectedMoM = $previous > 0 ? round((($latest - $previous) / $previous) * 100, 1) : 100.0;
+            } elseif ($lastTwoDonationMonths->count() === 1) {
+                $collectedMoM = 100.0;
+            }
+
+            $lastTwoAllocMonths = Allocation::selectRaw('DATE_FORMAT(COALESCE(allocated_at, created_at), "%Y-%m") as m, sum(amount) as total')
+                ->groupBy('m')
+                ->orderByDesc('m')
+                ->limit(2)
+                ->get();
+
+            $allocatedMoM = null;
+            if ($lastTwoAllocMonths->count() >= 2) {
+                $latestA = (float) $lastTwoAllocMonths[0]->total;
+                $previousA = (float) $lastTwoAllocMonths[1]->total;
+                $allocatedMoM = $previousA > 0 ? round((($latestA - $previousA) / $previousA) * 100, 1) : 100.0;
+            } elseif ($lastTwoAllocMonths->count() === 1) {
+                $allocatedMoM = 100.0;
+            }
+
             return [
-                'highlights'      => $highlights,
+                'highlights' => $highlights,
                 'latest_articles' => $articles,
-                'partners'        => $partners,
-                'stats'           => [
-                    'total_programs'      => Program::where('status', 'active')->count(),
-                    'total_donations'     => $totalDonationsCount,
-                    'amount_collected'    => $totalCollected,
-                    'total_allocations'   => $totalAllocationsCount,
-                    'amount_allocated'    => $totalAllocated,
+                'partners' => $partners,
+                'stats' => [
+                    'total_programs' => Program::where('status', 'active')->count(),
+                    'total_donations' => $totalDonationsCount,
+                    'amount_collected' => $totalCollected,
+                    'total_allocations' => $totalAllocationsCount,
+                    'amount_allocated' => $totalAllocated,
+                    'collected_mom' => $collectedMoM,
+                    'allocated_mom' => $allocatedMoM,
                     'program_allocations' => $programAllocations,
-                    'monthly_trends'      => $monthlyTrends,
+                    'monthly_trends' => $monthlyTrends,
                 ],
             ];
         });
