@@ -17,7 +17,7 @@ class OrganizationController extends Controller
                 'structure'     => OrganizationMember::active()
                     ->orderBy('order', 'asc')
                     ->orderBy('id', 'asc')
-                    ->get(['id', 'name', 'position_title', 'position_title_en', 'group', 'group_en', 'order', 'is_active']),
+                    ->get(['id', 'name', 'position_title', 'position_title_en', 'group', 'group_en', 'order', 'photo_path', 'is_active']),
                 'partners'      => Partner::active()->get(),
                 'bank_accounts' => BankAccount::visible()->get(),
             ];
