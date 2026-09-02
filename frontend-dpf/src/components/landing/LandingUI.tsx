@@ -157,6 +157,8 @@ export type HomePayload = {
   highlights: Program[];
   latest_articles: Literasi[];
   partners: Partner[];
+  selected_year?: string;
+  available_years?: number[];
   stats: HomeStats;
 };
 

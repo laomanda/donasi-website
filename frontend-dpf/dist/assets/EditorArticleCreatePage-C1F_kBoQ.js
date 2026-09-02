@@ -1,1 +1,0 @@
-import{j as r}from"./vendor-fontawesome-jFpTq-5h.js";import{E as t}from"./EditorArticleForm-D0t9jjVq.js";import"./vendor-react-0fmdHqY3.js";import"./index-BCgsgZ_E.js";import"./editorArticleUtils-4tMoQcFG.js";function p(){return r.jsx(t,{mode:"create"})}export{p as EditorArticleCreatePage,p as default};

@@ -31,6 +31,7 @@ export function TransparansiPage() {
   const [data, setData] = useState<HomePayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<string>("all");
   const { locale } = useLang();
   const t = (key: string, fallback?: string) => translate(landingDict, locale, key, fallback);
 
@@ -49,8 +50,10 @@ export function TransparansiPage() {
 
   useEffect(() => {
     let mounted = true;
+    setLoading(true);
+    const url = selectedYear && selectedYear !== "all" ? `/home?year=${selectedYear}` : "/home";
     http
-      .get<HomePayload>("/home")
+      .get<HomePayload>(url)
       .then((res) => {
         if (!mounted) return;
         setData(res.data);
@@ -63,7 +66,7 @@ export function TransparansiPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [selectedYear]);
 
   const totalCollected = Number(data?.stats?.amount_collected ?? 0);
   const totalAllocated = Number(data?.stats?.amount_allocated ?? 0);
@@ -227,8 +230,15 @@ export function TransparansiPage() {
         </div>
       </section>
 
-      {/* Main Interactive Transparency Section */}
-      <TransparencySection stats={data?.stats} locale={locale} t={t} />
+      {/* Main Interactive Transparency Section with Year Filter */}
+      <TransparencySection
+        stats={data?.stats}
+        locale={locale}
+        selectedYear={selectedYear}
+        availableYears={data?.available_years}
+        onYearChange={setSelectedYear}
+        t={t}
+      />
 
       {/* Governance & Pillars Section */}
       <section className="bg-slate-50 pb-20 sm:pb-28">

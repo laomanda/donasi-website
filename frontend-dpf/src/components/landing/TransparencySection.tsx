@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,6 +14,8 @@ import {
     faBuildingColumns,
     faChevronLeft,
     faChevronRight,
+    faCalendarAlt,
+    faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 import {
     Chart as ChartJS,
@@ -50,18 +52,51 @@ ChartJS.register(
 interface TransparencySectionProps {
     stats?: HomeStats | null;
     locale?: "id" | "en";
+    selectedYear?: string;
+    availableYears?: number[];
+    onYearChange?: (year: string) => void;
     t: (key: string, fallback?: string) => string;
 }
 
 export function TransparencySection({
     stats,
     locale = "id",
+    selectedYear = "all",
+    availableYears,
+    onYearChange,
     t,
 }: TransparencySectionProps) {
     const [activeTab, setActiveTab] = useState<"program" | "trends">("program");
     const [searchQuery, setSearchQuery] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [currentPage, setCurrentPage] = useState(1);
+    const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
+    const yearDropdownRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (yearDropdownRef.current && !yearDropdownRef.current.contains(e.target as Node)) {
+                setYearDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const currentYear = new Date().getFullYear();
+    const yearsList = useMemo(() => {
+        if (availableYears && availableYears.length > 0) {
+            return availableYears;
+        }
+        const startYear = 2020;
+        const endYear = Math.max(currentYear, 2026);
+        const yrs: number[] = [];
+        for (let y = endYear; y >= startYear; y--) {
+            yrs.push(y);
+        }
+        return yrs;
+    }, [availableYears, currentYear]);
+
     const itemsPerPage = 6;
 
     const totalCollected = Number(stats?.amount_collected ?? 0);
@@ -272,16 +307,82 @@ export function TransparencySection({
             id="transparansi"
             className="relative bg-slate-50 py-16 sm:py-24"
         >
-            <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
-                {/* Section Header */}
-                <div className="text-center max-w-3xl mx-auto space-y-4">
-                    <h2 className="font-heading text-3xl font-extrabold text-slate-900 sm:text-4xl lg:text-5xl leading-tight">
-                        {t("landing.transparency.title")}
-                    </h2>
+            <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-10">
+                {/* Section Header & Year Filter Dropdown */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 border-b border-slate-200/80 pb-6">
+                    <div className="text-left space-y-2 max-w-2xl">
+                        <h2 className="font-heading text-2xl font-extrabold text-slate-900 sm:text-3xl lg:text-4xl leading-tight">
+                            {t("landing.transparency.title")}
+                        </h2>
 
-                    <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-                        {t("landing.transparency.subtitle")}
-                    </p>
+                        <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
+                            {t("landing.transparency.subtitle")}
+                        </p>
+                    </div>
+
+                    {/* Custom Styled Year Dropdown */}
+                    {onYearChange && (
+                        <div ref={yearDropdownRef} className="relative w-full sm:w-auto self-start md:self-end">
+                            <button
+                                type="button"
+                                id="filter-transparency-year-btn"
+                                onClick={() => setYearDropdownOpen(!yearDropdownOpen)}
+                                className="w-full sm:w-auto min-w-[210px] inline-flex items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-800 hover:border-slate-400 focus:outline-none transition cursor-pointer"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <FontAwesomeIcon icon={faCalendarAlt} className="text-primary-600 text-xs" />
+                                    <span>
+                                        {selectedYear === "all"
+                                            ? (locale === "en" ? "All Years / Total" : "Semua Tahun / Total")
+                                            : (locale === "en" ? `Year ${selectedYear}` : `Tahun ${selectedYear}`)}
+                                    </span>
+                                </div>
+                                <FontAwesomeIcon
+                                    icon={faChevronDown}
+                                    className={`text-xs text-slate-400 transition-transform duration-200 ${
+                                        yearDropdownOpen ? "rotate-180" : ""
+                                    }`}
+                                />
+                            </button>
+
+                            {yearDropdownOpen && (
+                                <div className="absolute right-0 mt-1.5 w-full sm:w-56 max-h-64 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-lg z-30 space-y-0.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            onYearChange("all");
+                                            setYearDropdownOpen(false);
+                                        }}
+                                        className={`w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl transition text-left cursor-pointer ${
+                                            selectedYear === "all"
+                                                ? "bg-primary-50 text-primary-700"
+                                                : "text-slate-700 hover:bg-slate-50"
+                                        }`}
+                                    >
+                                        <span>{locale === "en" ? "All Years (Total)" : "Semua Tahun (Total)"}</span>
+                                    </button>
+
+                                    {yearsList.map((yr) => (
+                                        <button
+                                            key={yr}
+                                            type="button"
+                                            onClick={() => {
+                                                onYearChange(String(yr));
+                                                setYearDropdownOpen(false);
+                                            }}
+                                            className={`w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl transition text-left cursor-pointer ${
+                                                selectedYear === String(yr)
+                                                    ? "bg-primary-50 text-primary-700"
+                                                    : "text-slate-700 hover:bg-slate-50"
+                                            }`}
+                                        >
+                                            <span>{locale === "en" ? `Year ${yr}` : `Tahun ${yr}`}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* 3 Main KPI Summary Cards - Clean & Professional */}
