@@ -7,6 +7,7 @@ import {
   faArrowRight,
   faCalendarAlt,
   faLayerGroup,
+  faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "@/layouts/LandingLayout";
 import { useLang } from "@/lib/i18n";
@@ -330,74 +331,47 @@ export function PenyaluranPage() {
             </div>
           </div>
 
-          {/* Filter Bar: Rekapan Per Tahun (2020 - Sekarang) */}
-          <div className="mb-6 p-4 rounded-2xl bg-slate-50 border border-slate-200">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700">
-                <FontAwesomeIcon icon={faCalendarAlt} className="text-primary-600" />
-                <span>
-                  {locale === "en" ? "Filter Distribution Year:" : "Filter Tahun Penyaluran:"}
+          {/* Filter Bar: Rekapan Per Tahun (Dropdown Responsive) */}
+          <div className="mb-6 p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 text-sm font-semibold text-slate-700">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-700 shrink-0">
+                <FontAwesomeIcon icon={faCalendarAlt} className="text-xs" />
+              </div>
+              <div>
+                <span className="block text-xs sm:text-sm font-bold text-slate-800">
+                  {locale === "en" ? "Filter Distribution Year" : "Pilih Tahun Penyaluran"}
+                </span>
+                <span className="block text-[11px] text-slate-500 font-normal">
+                  {locale === "en"
+                    ? `Showing ${filteredAllocations.length} records in ${selectedYear === "all" ? "All Years" : `Year ${selectedYear}`}`
+                    : `Menampilkan ${filteredAllocations.length} data pada ${selectedYear === "all" ? "Semua Tahun" : `Tahun ${selectedYear}`}`}
                 </span>
               </div>
-              <span className="text-xs text-slate-500">
-                {locale === "en"
-                  ? `Showing ${filteredAllocations.length} records in ${selectedYear === "all" ? "All Years" : `Year ${selectedYear}`}`
-                  : `Menampilkan ${filteredAllocations.length} data pada ${selectedYear === "all" ? "Semua Tahun" : `Tahun ${selectedYear}`}`}
-              </span>
             </div>
 
-            {/* Year Buttons Strip */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-              <button
-                type="button"
-                onClick={() => setSelectedYear("all")}
-                className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer shrink-0 ${
-                  selectedYear === "all"
-                    ? "bg-primary-600 text-white"
-                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-                }`}
+            {/* Dropdown Select Container */}
+            <div className="relative w-full sm:w-auto min-w-[200px]">
+              <select
+                id="filter-year-select"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                aria-label={locale === "en" ? "Filter by year" : "Filter berdasarkan tahun"}
+                className="w-full sm:w-auto appearance-none rounded-xl border border-slate-300 bg-white py-2 pl-3.5 pr-9 text-xs sm:text-sm font-semibold text-slate-800 hover:border-slate-400 focus:border-primary-500 focus:outline-none transition-colors cursor-pointer"
               >
-                <span>{locale === "en" ? "All Years" : "Semua Tahun"}</span>
-                <span
-                  className={`inline-flex items-center justify-center rounded-md px-1.5 py-0.2 text-[10px] font-bold ${
-                    selectedYear === "all"
-                      ? "bg-white/20 text-white"
-                      : "bg-slate-100 text-slate-600"
-                  }`}
-                >
-                  {yearCounts["all"] || 0}
-                </span>
-              </button>
-
-              {availableYears.map((yr) => {
-                const isSelected = selectedYear === String(yr);
-                const count = yearCounts[String(yr)] || 0;
-                return (
-                  <button
-                    key={yr}
-                    type="button"
-                    onClick={() => setSelectedYear(String(yr))}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer shrink-0 ${
-                      isSelected
-                        ? "bg-primary-600 text-white"
-                        : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                  >
-                    <span>{yr}</span>
-                    <span
-                      className={`inline-flex items-center justify-center rounded-md px-1.5 py-0.2 text-[10px] font-bold ${
-                        isSelected
-                          ? "bg-white/20 text-white"
-                          : count > 0
-                          ? "bg-primary-50 text-primary-700"
-                          : "bg-slate-100 text-slate-400"
-                      }`}
-                    >
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
+                <option value="all">
+                  {locale === "en"
+                    ? `All Years (${yearCounts["all"] || 0})`
+                    : `Semua Tahun (${yearCounts["all"] || 0})`}
+                </option>
+                {availableYears.map((yr) => (
+                  <option key={yr} value={String(yr)}>
+                    {locale === "en" ? `Year ${yr}` : `Tahun ${yr}`} ({yearCounts[String(yr)] || 0})
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                <FontAwesomeIcon icon={faChevronDown} className="text-xs" />
+              </div>
             </div>
           </div>
 
