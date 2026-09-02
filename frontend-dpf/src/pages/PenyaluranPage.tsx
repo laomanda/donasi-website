@@ -331,15 +331,15 @@ export function PenyaluranPage() {
           </div>
 
           {/* Filter Bar: Rekapan Per Tahun (2020 - Sekarang) */}
-          <div className="mb-8 p-4 sm:p-5 rounded-3xl bg-slate-50/80 border border-slate-200/80 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-700">
+          <div className="mb-6 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700">
                 <FontAwesomeIcon icon={faCalendarAlt} className="text-primary-600" />
                 <span>
-                  {locale === "en" ? "Filter Distribution Period / Year:" : "Filter Periode Penyaluran / Tahun:"}
+                  {locale === "en" ? "Filter Distribution Year:" : "Filter Tahun Penyaluran:"}
                 </span>
               </div>
-              <span className="text-xs text-slate-500 font-medium">
+              <span className="text-xs text-slate-500">
                 {locale === "en"
                   ? `Showing ${filteredAllocations.length} records in ${selectedYear === "all" ? "All Years" : `Year ${selectedYear}`}`
                   : `Menampilkan ${filteredAllocations.length} data pada ${selectedYear === "all" ? "Semua Tahun" : `Tahun ${selectedYear}`}`}
@@ -347,19 +347,19 @@ export function PenyaluranPage() {
             </div>
 
             {/* Year Buttons Strip */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
               <button
                 type="button"
                 onClick={() => setSelectedYear("all")}
-                className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 active:scale-95 ${
+                className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer shrink-0 ${
                   selectedYear === "all"
-                    ? "bg-primary-600 text-white shadow-md shadow-primary-600/20 ring-2 ring-primary-600/30"
-                    : "bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/90 shadow-2xs"
+                    ? "bg-primary-600 text-white"
+                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                 }`}
               >
                 <span>{locale === "en" ? "All Years" : "Semua Tahun"}</span>
                 <span
-                  className={`inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                  className={`inline-flex items-center justify-center rounded-md px-1.5 py-0.2 text-[10px] font-bold ${
                     selectedYear === "all"
                       ? "bg-white/20 text-white"
                       : "bg-slate-100 text-slate-600"
@@ -377,19 +377,19 @@ export function PenyaluranPage() {
                     key={yr}
                     type="button"
                     onClick={() => setSelectedYear(String(yr))}
-                    className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 active:scale-95 ${
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer shrink-0 ${
                       isSelected
-                        ? "bg-primary-600 text-white shadow-md shadow-primary-600/20 ring-2 ring-primary-600/30"
-                        : "bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/90 shadow-2xs"
+                        ? "bg-primary-600 text-white"
+                        : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                     }`}
                   >
                     <span>{yr}</span>
                     <span
-                      className={`inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                      className={`inline-flex items-center justify-center rounded-md px-1.5 py-0.2 text-[10px] font-bold ${
                         isSelected
                           ? "bg-white/20 text-white"
                           : count > 0
-                          ? "bg-primary-50 text-primary-700 font-black"
+                          ? "bg-primary-50 text-primary-700"
                           : "bg-slate-100 text-slate-400"
                       }`}
                     >
@@ -401,16 +401,16 @@ export function PenyaluranPage() {
             </div>
           </div>
 
-          {/* Yearly Recap Stats Grid (3 Crisp Cards) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-8">
+          {/* Yearly Recap Stats Grid (3 Crisp Flat Cards) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             {/* Card 1: Total Dana Disalurkan */}
-            <div className="rounded-3xl border border-slate-200/90 bg-white p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100/80">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="flex items-center gap-3 mb-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
                   <FontAwesomeIcon icon={faReceipt} className="text-sm" />
                 </div>
                 <div>
-                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     {locale === "en" ? "Funds Distributed" : "Total Penyaluran"}
                   </span>
                   <span className="text-xs font-semibold text-emerald-700">
@@ -420,22 +420,22 @@ export function PenyaluranPage() {
                   </span>
                 </div>
               </div>
-              <p className="font-heading text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+              <p className="font-heading text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 {formatCurrency(yearStats.totalAmount, locale)}
               </p>
-              <p className="text-xs text-slate-500 mt-1 font-medium">
+              <p className="text-xs text-slate-500 mt-1">
                 {locale === "en" ? "Verified realization funds" : "Realisasi dana tepat sasaran"}
               </p>
             </div>
 
             {/* Card 2: Jumlah Kegiatan Penyaluran */}
-            <div className="rounded-3xl border border-slate-200/90 bg-white p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 border border-sky-100/80">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="flex items-center gap-3 mb-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
                   <FontAwesomeIcon icon={faHandHoldingHeart} className="text-sm" />
                 </div>
                 <div>
-                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     {locale === "en" ? "Activities & Distribution" : "Kegiatan Penyaluran"}
                   </span>
                   <span className="text-xs font-semibold text-sky-700">
@@ -445,25 +445,25 @@ export function PenyaluranPage() {
                   </span>
                 </div>
               </div>
-              <p className="font-heading text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+              <p className="font-heading text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 {yearStats.totalCount}{" "}
-                <span className="text-sm sm:text-base font-bold text-slate-500">
+                <span className="text-sm font-semibold text-slate-500">
                   {locale === "en" ? "Activities" : "Kegiatan"}
                 </span>
               </p>
-              <p className="text-xs text-slate-500 mt-1 font-medium">
+              <p className="text-xs text-slate-500 mt-1">
                 {locale === "en" ? "Documented social impacts" : "Dokumentasi penyaluran amanah"}
               </p>
             </div>
 
             {/* Card 3: Program Terdampak */}
-            <div className="rounded-3xl border border-slate-200/90 bg-white p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-100/80">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="flex items-center gap-3 mb-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
                   <FontAwesomeIcon icon={faLayerGroup} className="text-sm" />
                 </div>
                 <div>
-                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     {locale === "en" ? "Target Programs" : "Program Terdampak"}
                   </span>
                   <span className="text-xs font-semibold text-amber-700">
@@ -471,14 +471,11 @@ export function PenyaluranPage() {
                   </span>
                 </div>
               </div>
-              <p className="font-heading text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+              <p className="font-heading text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 {yearStats.uniquePrograms}{" "}
-                <span className="text-sm sm:text-base font-bold text-slate-500">
+                <span className="text-sm font-semibold text-slate-500">
                   {locale === "en" ? "Programs" : "Program"}
                 </span>
-              </p>
-              <p className="text-xs text-slate-500 mt-1 font-medium">
-                {locale === "en" ? "Beneficiary waqf sectors" : "Sektor kemaslahatan umat"}
               </p>
             </div>
           </div>

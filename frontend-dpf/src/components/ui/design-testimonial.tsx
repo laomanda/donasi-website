@@ -102,16 +102,16 @@ export function DistributionShowcase({
 
   if (items.length === 0) {
     return (
-      <div className="relative w-full py-16 px-6 rounded-3xl border border-dashed border-slate-200 bg-slate-50/70 text-center flex flex-col items-center justify-center my-4">
-        <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-slate-400 mb-3.5">
-          <FontAwesomeIcon icon={faFolderOpen} className="text-xl" />
+      <div className="relative w-full py-16 px-6 rounded-2xl border border-slate-200 bg-slate-50/50 text-center flex flex-col items-center justify-center my-4">
+        <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 mb-3">
+          <FontAwesomeIcon icon={faFolderOpen} className="text-lg" />
         </div>
-        <h4 className="font-heading text-lg font-bold text-slate-800">
+        <h4 className="font-heading text-base font-bold text-slate-800">
           {locale === "en"
             ? `No Distribution Records in ${selectedYear !== "all" ? selectedYear : "this period"}`
             : `Belum Ada Catatan Penyaluran di Tahun ${selectedYear !== "all" ? selectedYear : "ini"}`}
         </h4>
-        <p className="text-sm text-slate-500 max-w-md mt-1 mb-5 leading-relaxed">
+        <p className="text-xs sm:text-sm text-slate-500 max-w-md mt-1 mb-4 leading-relaxed">
           {locale === "en"
             ? "There are no recorded waqf fund distribution activities for the selected year period."
             : "Belum ada aktivitas penyaluran dana wakaf yang tercatat pada filter tahun yang dipilih."}
@@ -120,7 +120,7 @@ export function DistributionShowcase({
           <button
             type="button"
             onClick={onResetYear}
-            className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-5 py-2.5 text-xs font-bold text-primary-700 hover:bg-primary-50 hover:border-primary-200 transition shadow-xs cursor-pointer active:scale-95"
+            className="inline-flex items-center gap-2 rounded-xl bg-white border border-slate-200 px-4 py-2 text-xs font-semibold text-primary-700 hover:bg-slate-50 transition cursor-pointer active:scale-95"
           >
             <FontAwesomeIcon icon={faRotateLeft} className="text-xs" />
             <span>{locale === "en" ? "View All Years" : "Tampilkan Semua Tahun"}</span>
@@ -131,9 +131,9 @@ export function DistributionShowcase({
   }
 
   return (
-    <div className="relative w-full py-4 sm:py-6">
-      <div className="relative w-full min-h-[430px] sm:min-h-[450px] lg:min-h-[460px] overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-10 lg:p-12 shadow-xl shadow-slate-900/[0.03] flex flex-col justify-between">
-        <div className="relative flex flex-1 gap-6 lg:gap-10">
+    <div className="relative w-full py-2">
+      <div className="relative w-full min-h-[400px] sm:min-h-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 lg:p-10 flex flex-col justify-between">
+        <div className="relative flex flex-1 gap-6 lg:gap-8">
           {/* Left Column: Subtle Vertical Step Tracker (Desktop only) */}
           <div className="hidden sm:flex flex-col items-center justify-between pr-6 border-r border-slate-100 shrink-0 select-none py-1">
             <span
