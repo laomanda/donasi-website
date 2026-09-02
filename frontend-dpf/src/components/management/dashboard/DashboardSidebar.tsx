@@ -10,6 +10,7 @@ interface SidebarContentProps {
   theme: RoleTheme;
   navSections: NavSection[];
   badgeCounts?: Record<string, number>;
+  userRoleLabel?: string | null;
   onClose?: () => void;
   showClose?: boolean;
   t: (key: string, fallback?: string) => string;
@@ -20,6 +21,7 @@ export function SidebarContent({
   theme,
   navSections,
   badgeCounts,
+  userRoleLabel,
   onClose,
   showClose,
   t,
@@ -34,7 +36,7 @@ export function SidebarContent({
           <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em]">DPF</p>
             <p className="truncate font-heading text-base font-semibold capitalize text-white">
-              {ROLE_LABEL[role] || (role.charAt(0).toUpperCase() + role.slice(1))}
+              {userRoleLabel || ROLE_LABEL[role] || (role.charAt(0).toUpperCase() + role.slice(1))}
             </p>
           </div>
         </div>
@@ -107,6 +109,7 @@ interface DashboardSidebarProps {
   theme: RoleTheme;
   navSections: NavSection[];
   badgeCounts?: Record<string, number>;
+  userRoleLabel?: string | null;
   t: (key: string, fallback?: string) => string;
 }
 
@@ -117,6 +120,7 @@ export function DashboardSidebar({
   theme,
   navSections,
   badgeCounts,
+  userRoleLabel,
   t,
 }: DashboardSidebarProps) {
   return (
@@ -135,6 +139,7 @@ export function DashboardSidebar({
               theme={theme}
               navSections={navSections}
               badgeCounts={badgeCounts}
+              userRoleLabel={userRoleLabel}
               onClose={() => setMobileOpen(false)}
               showClose
               t={t}
@@ -149,6 +154,7 @@ export function DashboardSidebar({
           theme={theme}
           navSections={navSections}
           badgeCounts={badgeCounts}
+          userRoleLabel={userRoleLabel}
           t={t}
         />
       </aside>

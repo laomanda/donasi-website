@@ -187,6 +187,7 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
           theme={theme}
           navSections={navSections}
           badgeCounts={currentBadgeCounts}
+          userRoleLabel={userRoleLabel}
           t={t}
         />
 

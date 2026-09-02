@@ -31,7 +31,7 @@ export const resolveUserDashboard = (): string | null => {
     if (normalized.has("editor")) return "/editor/dashboard";
     if (normalized.has("keuangan")) return "/keuangan/dashboard";
     if (normalized.has("mitra")) return "/mitra/dashboard";
-    return "/editor/dashboard";
+    return "/management/dashboard";
 };
 
 export function useLandingNavbar() {
