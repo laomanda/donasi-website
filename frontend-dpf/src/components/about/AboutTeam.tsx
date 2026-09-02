@@ -20,9 +20,6 @@ export function AboutTeam({ t, locale, loadingMembers, errorMembersKey, groupedM
     <section className="bg-slate-50">
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary-700">
-            {t("about.team.label")}
-          </p>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-bold text-slate-900 tracking-tight">
             {t("about.team.heading")}
           </h2>
