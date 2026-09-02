@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faReceipt,
   faHandHoldingHeart,
   faArrowRight,
+  faCalendarAlt,
+  faLayerGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { LandingLayout } from "@/layouts/LandingLayout";
 import { useLang } from "@/lib/i18n";
@@ -28,6 +30,7 @@ export function PenyaluranPage() {
   const [loading, setLoading] = useState(true);
   const [allocations, setAllocations] = useState<AllocationItem[]>([]);
   const [loadingAllocations, setLoadingAllocations] = useState(true);
+  const [selectedYear, setSelectedYear] = useState<string>("all");
 
   useEffect(() => {
     let isMounted = true;
@@ -59,6 +62,78 @@ export function PenyaluranPage() {
   }, []);
 
   const totalAllocated = Number(data?.stats?.amount_allocated ?? 0);
+
+  // Available Years: automatically generates from highest year (current year / 2027+ in DB) down to 2020
+  const availableYears = useMemo(() => {
+    const startYear = 2020;
+    const currentYear = new Date().getFullYear();
+
+    // Find highest year from data or current year
+    let maxYearInData = currentYear;
+    allocations.forEach((item) => {
+      const dateStr = item.allocated_at || item.created_at;
+      if (dateStr) {
+        const y = new Date(dateStr).getFullYear();
+        if (!isNaN(y) && y > maxYearInData) {
+          maxYearInData = y;
+        }
+      }
+    });
+
+    const endYear = Math.max(currentYear, maxYearInData, 2026);
+    const yrs: number[] = [];
+    for (let y = endYear; y >= startYear; y--) {
+      yrs.push(y);
+    }
+    return yrs;
+  }, [allocations]);
+
+  // Counts of allocations per year
+  const yearCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: allocations.length };
+    allocations.forEach((item) => {
+      const dateStr = item.allocated_at || item.created_at;
+      if (dateStr) {
+        const y = new Date(dateStr).getFullYear();
+        if (!isNaN(y)) {
+          counts[String(y)] = (counts[String(y)] || 0) + 1;
+        }
+      }
+    });
+    return counts;
+  }, [allocations]);
+
+  // Filtered allocations for showcase
+  const filteredAllocations = useMemo(() => {
+    if (selectedYear === "all") return allocations;
+    const targetY = Number(selectedYear);
+    return allocations.filter((item) => {
+      const dateStr = item.allocated_at || item.created_at;
+      if (!dateStr) return false;
+      const y = new Date(dateStr).getFullYear();
+      return y === targetY;
+    });
+  }, [allocations, selectedYear]);
+
+  // Yearly summary metrics
+  const yearStats = useMemo(() => {
+    const totalAmount = filteredAllocations.reduce(
+      (acc, curr) => acc + Number(curr.amount || 0),
+      0
+    );
+    const totalCount = filteredAllocations.length;
+    const uniquePrograms = new Set(
+      filteredAllocations
+        .map((a) => a.program_id || a.program?.id)
+        .filter(Boolean)
+    ).size;
+
+    return {
+      totalAmount,
+      totalCount,
+      uniquePrograms,
+    };
+  }, [filteredAllocations]);
 
   return (
     <LandingLayout whatsappPhone="6285195542022" footerWaveBgClassName="bg-white">
@@ -225,38 +300,195 @@ export function PenyaluranPage() {
       </header>
 
       {/* =========================================================================
-          DISTRIBUTION SHOWCASE (KINETIC SLIDER DENGAN TYPOGRAPHY NILAI)
+          DISTRIBUTION SHOWCASE (KINETIC SLIDER DENGAN REKAPAN TAHUNAN)
       ========================================================================= */}
       <main className="pt-2 pb-20 lg:pt-4 lg:pb-28 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 lg:mb-10 max-w-3xl text-left">
-            {/* Main Headline */}
-            <h2 className="font-heading text-2xl sm:text-4xl lg:text-[2.5rem] font-extrabold text-slate-900 tracking-tight leading-[1.2]">
-              {locale === "en" ? (
-                <>
-                  Every Rupiah Realized into{" "}
-                  <span className="text-primary-600">Tangible Impact.</span>
-                </>
-              ) : (
-                <>
-                  Setiap Rupiah Berbuah Menjadi{" "}
-                  <span className="text-primary-600">Manfaat Nyata.</span>
-                </>
-              )}
-            </h2>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 lg:mb-10">
+            <div className="max-w-3xl text-left">
+              {/* Main Headline */}
+              <h2 className="font-heading text-2xl sm:text-4xl lg:text-[2.5rem] font-extrabold text-slate-900 tracking-tight leading-[1.2]">
+                {locale === "en" ? (
+                  <>
+                    Every Rupiah Realized into{" "}
+                    <span className="text-primary-600">Tangible Impact.</span>
+                  </>
+                ) : (
+                  <>
+                    Setiap Rupiah Berbuah Menjadi{" "}
+                    <span className="text-primary-600">Manfaat Nyata.</span>
+                  </>
+                )}
+              </h2>
 
-            {/* Subheadline description */}
-            <p className="mt-3 text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">
-              {locale === "en"
-                ? "Explore real-time distribution records funded by donors with 100% transparency and measurable social empowerment."
-                : "Telusuri rincian kegiatan penyaluran yang telah direalisasikan secara amanah dari dana titipan para donatur dan wakif untuk kemandirian umat."}
-            </p>
+              {/* Subheadline description */}
+              <p className="mt-3 text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">
+                {locale === "en"
+                  ? "Explore real-time distribution records funded by donors with 100% transparency and measurable social empowerment."
+                  : "Telusuri rincian kegiatan penyaluran yang telah direalisasikan secara amanah dari dana titipan para donatur dan wakif untuk kemandirian umat."}
+              </p>
+            </div>
+          </div>
+
+          {/* Filter Bar: Rekapan Per Tahun (2020 - Sekarang) */}
+          <div className="mb-8 p-4 sm:p-5 rounded-3xl bg-slate-50/80 border border-slate-200/80 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-700">
+                <FontAwesomeIcon icon={faCalendarAlt} className="text-primary-600" />
+                <span>
+                  {locale === "en" ? "Filter Distribution Period / Year:" : "Filter Periode Penyaluran / Tahun:"}
+                </span>
+              </div>
+              <span className="text-xs text-slate-500 font-medium">
+                {locale === "en"
+                  ? `Showing ${filteredAllocations.length} records in ${selectedYear === "all" ? "All Years" : `Year ${selectedYear}`}`
+                  : `Menampilkan ${filteredAllocations.length} data pada ${selectedYear === "all" ? "Semua Tahun" : `Tahun ${selectedYear}`}`}
+              </span>
+            </div>
+
+            {/* Year Buttons Strip */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar">
+              <button
+                type="button"
+                onClick={() => setSelectedYear("all")}
+                className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 active:scale-95 ${
+                  selectedYear === "all"
+                    ? "bg-primary-600 text-white shadow-md shadow-primary-600/20 ring-2 ring-primary-600/30"
+                    : "bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/90 shadow-2xs"
+                }`}
+              >
+                <span>{locale === "en" ? "All Years" : "Semua Tahun"}</span>
+                <span
+                  className={`inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                    selectedYear === "all"
+                      ? "bg-white/20 text-white"
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {yearCounts["all"] || 0}
+                </span>
+              </button>
+
+              {availableYears.map((yr) => {
+                const isSelected = selectedYear === String(yr);
+                const count = yearCounts[String(yr)] || 0;
+                return (
+                  <button
+                    key={yr}
+                    type="button"
+                    onClick={() => setSelectedYear(String(yr))}
+                    className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 active:scale-95 ${
+                      isSelected
+                        ? "bg-primary-600 text-white shadow-md shadow-primary-600/20 ring-2 ring-primary-600/30"
+                        : "bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/90 shadow-2xs"
+                    }`}
+                  >
+                    <span>{yr}</span>
+                    <span
+                      className={`inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                        isSelected
+                          ? "bg-white/20 text-white"
+                          : count > 0
+                          ? "bg-primary-50 text-primary-700 font-black"
+                          : "bg-slate-100 text-slate-400"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Yearly Recap Stats Grid (3 Crisp Cards) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-8">
+            {/* Card 1: Total Dana Disalurkan */}
+            <div className="rounded-3xl border border-slate-200/90 bg-white p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100/80">
+                  <FontAwesomeIcon icon={faReceipt} className="text-sm" />
+                </div>
+                <div>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    {locale === "en" ? "Funds Distributed" : "Total Penyaluran"}
+                  </span>
+                  <span className="text-xs font-semibold text-emerald-700">
+                    {selectedYear === "all"
+                      ? (locale === "en" ? "All Period" : "Semua Periode")
+                      : (locale === "en" ? `Year ${selectedYear}` : `Tahun ${selectedYear}`)}
+                  </span>
+                </div>
+              </div>
+              <p className="font-heading text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+                {formatCurrency(yearStats.totalAmount, locale)}
+              </p>
+              <p className="text-xs text-slate-500 mt-1 font-medium">
+                {locale === "en" ? "Verified realization funds" : "Realisasi dana tepat sasaran"}
+              </p>
+            </div>
+
+            {/* Card 2: Jumlah Kegiatan Penyaluran */}
+            <div className="rounded-3xl border border-slate-200/90 bg-white p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 border border-sky-100/80">
+                  <FontAwesomeIcon icon={faHandHoldingHeart} className="text-sm" />
+                </div>
+                <div>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    {locale === "en" ? "Activities & Distribution" : "Kegiatan Penyaluran"}
+                  </span>
+                  <span className="text-xs font-semibold text-sky-700">
+                    {selectedYear === "all"
+                      ? (locale === "en" ? "Total Logged" : "Total Tercatat")
+                      : (locale === "en" ? `Year ${selectedYear}` : `Tahun ${selectedYear}`)}
+                  </span>
+                </div>
+              </div>
+              <p className="font-heading text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+                {yearStats.totalCount}{" "}
+                <span className="text-sm sm:text-base font-bold text-slate-500">
+                  {locale === "en" ? "Activities" : "Kegiatan"}
+                </span>
+              </p>
+              <p className="text-xs text-slate-500 mt-1 font-medium">
+                {locale === "en" ? "Documented social impacts" : "Dokumentasi penyaluran amanah"}
+              </p>
+            </div>
+
+            {/* Card 3: Program Terdampak */}
+            <div className="rounded-3xl border border-slate-200/90 bg-white p-5 lg:p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-100/80">
+                  <FontAwesomeIcon icon={faLayerGroup} className="text-sm" />
+                </div>
+                <div>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    {locale === "en" ? "Target Programs" : "Program Terdampak"}
+                  </span>
+                  <span className="text-xs font-semibold text-amber-700">
+                    {locale === "en" ? "Empowered Clusters" : "Klaster Penerima"}
+                  </span>
+                </div>
+              </div>
+              <p className="font-heading text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+                {yearStats.uniquePrograms}{" "}
+                <span className="text-sm sm:text-base font-bold text-slate-500">
+                  {locale === "en" ? "Programs" : "Program"}
+                </span>
+              </p>
+              <p className="text-xs text-slate-500 mt-1 font-medium">
+                {locale === "en" ? "Beneficiary waqf sectors" : "Sektor kemaslahatan umat"}
+              </p>
+            </div>
           </div>
 
           {/* Interactive Distribution Showcase Slider */}
           <DistributionShowcase
-            items={allocations}
+            items={filteredAllocations}
             loading={loadingAllocations}
+            selectedYear={selectedYear}
+            onResetYear={() => setSelectedYear("all")}
           />
         </div>
       </main>

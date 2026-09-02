@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFolderOpen,
+  faRotateLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import { formatCurrency } from "@/components/landing/LandingUI";
 import { useLang } from "@/lib/i18n";
 
@@ -21,33 +26,35 @@ export interface AllocationItem {
 interface DistributionShowcaseProps {
   items: AllocationItem[];
   loading?: boolean;
+  selectedYear?: string;
+  onResetYear?: () => void;
 }
 
 export function DistributionShowcase({
   items,
   loading,
+  selectedYear = "all",
+  onResetYear,
 }: DistributionShowcaseProps) {
   const { locale } = useLang();
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Safe fallback if items is empty
-  const displayItems: AllocationItem[] =
-    items.length > 0
-      ? items
-      : [
-          {
-            id: 1,
-            amount: 2000000,
-            description: "Penyaluran dana program bantuan pemberdayaan umat",
-            allocated_at: "2026-08-04",
-            program: { id: 1, title: "Wakaf Produktif" },
-          },
-        ];
+  // Reset active index when items or selectedYear change
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [items, selectedYear]);
 
-  const total = displayItems.length;
+  const total = items.length;
 
-  const goNext = () => setActiveIndex((prev) => (prev + 1) % total);
-  const goPrev = () => setActiveIndex((prev) => (prev - 1 + total) % total);
+  const goNext = () => {
+    if (total <= 0) return;
+    setActiveIndex((prev) => (prev + 1) % total);
+  };
+
+  const goPrev = () => {
+    if (total <= 0) return;
+    setActiveIndex((prev) => (prev - 1 + total) % total);
+  };
 
   useEffect(() => {
     if (total <= 1) return;
@@ -57,12 +64,12 @@ export function DistributionShowcase({
 
   // Keep active index in range if item count changes
   useEffect(() => {
-    if (activeIndex >= total) {
+    if (total > 0 && activeIndex >= total) {
       setActiveIndex(0);
     }
   }, [total, activeIndex]);
 
-  const current = displayItems[activeIndex] || displayItems[0];
+  const current = items[activeIndex] || items[0];
 
   const formatDate = (dateStr?: string | null) => {
     if (!dateStr) return "-";
@@ -89,6 +96,36 @@ export function DistributionShowcase({
               : "Memuat data penyaluran..."}
           </span>
         </div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="relative w-full py-16 px-6 rounded-3xl border border-dashed border-slate-200 bg-slate-50/70 text-center flex flex-col items-center justify-center my-4">
+        <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-slate-400 mb-3.5">
+          <FontAwesomeIcon icon={faFolderOpen} className="text-xl" />
+        </div>
+        <h4 className="font-heading text-lg font-bold text-slate-800">
+          {locale === "en"
+            ? `No Distribution Records in ${selectedYear !== "all" ? selectedYear : "this period"}`
+            : `Belum Ada Catatan Penyaluran di Tahun ${selectedYear !== "all" ? selectedYear : "ini"}`}
+        </h4>
+        <p className="text-sm text-slate-500 max-w-md mt-1 mb-5 leading-relaxed">
+          {locale === "en"
+            ? "There are no recorded waqf fund distribution activities for the selected year period."
+            : "Belum ada aktivitas penyaluran dana wakaf yang tercatat pada filter tahun yang dipilih."}
+        </p>
+        {onResetYear && selectedYear !== "all" && (
+          <button
+            type="button"
+            onClick={onResetYear}
+            className="inline-flex items-center gap-2 rounded-full bg-white border border-slate-200 px-5 py-2.5 text-xs font-bold text-primary-700 hover:bg-primary-50 hover:border-primary-200 transition shadow-xs cursor-pointer active:scale-95"
+          >
+            <FontAwesomeIcon icon={faRotateLeft} className="text-xs" />
+            <span>{locale === "en" ? "View All Years" : "Tampilkan Semua Tahun"}</span>
+          </button>
+        )}
       </div>
     );
   }
