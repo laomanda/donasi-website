@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -32,6 +32,18 @@ export function PenyaluranPage() {
   const [allocations, setAllocations] = useState<AllocationItem[]>([]);
   const [loadingAllocations, setLoadingAllocations] = useState(true);
   const [selectedYear, setSelectedYear] = useState<string>("all");
+  const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
+  const yearDropdownRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (yearDropdownRef.current && !yearDropdownRef.current.contains(e.target as Node)) {
+        setYearDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -349,29 +361,87 @@ export function PenyaluranPage() {
               </div>
             </div>
 
-            {/* Dropdown Select Container */}
-            <div className="relative w-full sm:w-auto min-w-[200px]">
-              <select
-                id="filter-year-select"
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                aria-label={locale === "en" ? "Filter by year" : "Filter berdasarkan tahun"}
-                className="w-full sm:w-auto appearance-none rounded-xl border border-slate-300 bg-white py-2 pl-3.5 pr-9 text-xs sm:text-sm font-semibold text-slate-800 hover:border-slate-400 focus:border-primary-500 focus:outline-none transition-colors cursor-pointer"
+            {/* Custom Styled Dropdown */}
+            <div ref={yearDropdownRef} className="relative w-full sm:w-auto">
+              <button
+                type="button"
+                id="filter-year-dropdown-btn"
+                onClick={() => setYearDropdownOpen(!yearDropdownOpen)}
+                className="w-full sm:w-auto min-w-[210px] inline-flex items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs sm:text-sm font-semibold text-slate-800 hover:border-slate-400 focus:outline-none transition cursor-pointer"
               >
-                <option value="all">
-                  {locale === "en"
-                    ? `All Years (${yearCounts["all"] || 0})`
-                    : `Semua Tahun (${yearCounts["all"] || 0})`}
-                </option>
-                {availableYears.map((yr) => (
-                  <option key={yr} value={String(yr)}>
-                    {locale === "en" ? `Year ${yr}` : `Tahun ${yr}`} ({yearCounts[String(yr)] || 0})
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
-                <FontAwesomeIcon icon={faChevronDown} className="text-xs" />
-              </div>
+                <span>
+                  {selectedYear === "all"
+                    ? (locale === "en" ? `All Years (${yearCounts["all"] || 0})` : `Semua Tahun (${yearCounts["all"] || 0})`)
+                    : (locale === "en" ? `Year ${selectedYear} (${yearCounts[selectedYear] || 0})` : `Tahun ${selectedYear} (${yearCounts[selectedYear] || 0})`)}
+                </span>
+                <FontAwesomeIcon
+                  icon={faChevronDown}
+                  className={`text-xs text-slate-400 transition-transform duration-200 ${
+                    yearDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {yearDropdownOpen && (
+                <div className="absolute right-0 mt-1.5 w-full sm:w-60 max-h-64 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-lg z-30 space-y-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedYear("all");
+                      setYearDropdownOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl transition text-left cursor-pointer ${
+                      selectedYear === "all"
+                        ? "bg-primary-50 text-primary-700"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span>{locale === "en" ? "All Years" : "Semua Tahun"}</span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        selectedYear === "all"
+                          ? "bg-primary-200/70 text-primary-800"
+                          : "bg-slate-100 text-slate-500"
+                      }`}
+                    >
+                      {yearCounts["all"] || 0}
+                    </span>
+                  </button>
+
+                  {availableYears.map((yr) => {
+                    const isCurrent = selectedYear === String(yr);
+                    const count = yearCounts[String(yr)] || 0;
+                    return (
+                      <button
+                        key={yr}
+                        type="button"
+                        onClick={() => {
+                          setSelectedYear(String(yr));
+                          setYearDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-xl transition text-left cursor-pointer ${
+                          isCurrent
+                            ? "bg-primary-50 text-primary-700"
+                            : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        <span>{locale === "en" ? `Year ${yr}` : `Tahun ${yr}`}</span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            isCurrent
+                              ? "bg-primary-200/70 text-primary-800"
+                              : count > 0
+                              ? "bg-primary-50 text-primary-700"
+                              : "bg-slate-100 text-slate-400"
+                          }`}
+                        >
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 

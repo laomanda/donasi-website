@@ -1,1 +1,0 @@
-import{j as r}from"./vendor-fontawesome-jFpTq-5h.js";import{E as t}from"./EditorBankForm-BK8M_hJ1.js";import"./vendor-react-0fmdHqY3.js";import"./index-BTxpG3_r.js";function i(){return r.jsx(t,{mode:"create"})}export{i as EditorBankCreatePage,i as default};
