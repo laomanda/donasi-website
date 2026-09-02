@@ -124,15 +124,15 @@ export function LandingNavbar() {
                     <div className={`relative z-[20] ${navShellClass}`}>
                         <div className="mx-auto flex h-20 w-full max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-12">
                             <Link to="/" className="flex items-center gap-3 group shrink-0">
-                                <span className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-sm transition-transform group-hover:scale-105 overflow-hidden">
+                                <span className="flex shrink-0 items-center justify-center transition-transform group-hover:scale-105">
                                     <img
                                         src={dpfWakaf}
                                         alt="DPF"
-                                        className="h-9 w-9 sm:h-10 sm:w-10 object-contain p-0.5"
+                                        className="h-14 sm:h-16 w-auto object-contain drop-shadow-sm"
                                     />
                                 </span>
                                 <div className="leading-tight">
-                                    <p className={`font-heading text-sm sm:text-base font-bold tracking-tight ${brandTitleClass}`}>
+                                    <p className={`font-heading text-base sm:text-lg font-bold tracking-tight ${brandTitleClass}`}>
                                         DPF WAKAF
                                     </p>
                                     <p className={`font-accent text-[10px] sm:text-[11px] font-bold tracking-[0.1em] uppercase ${brandTaglineClass}`}>

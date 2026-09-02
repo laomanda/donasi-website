@@ -36,7 +36,6 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const isCustomUser = userRoles.includes("custom");
   const displayRole: Utils.DashboardRole = isCustomUser ? "custom" : role;
   const theme = Utils.ROLE_THEME[displayRole] ?? Utils.ROLE_THEME[role];
-  const isSearchEnabled = displayRole === "editor" || displayRole === "superadmin" || displayRole === "admin" || displayRole === "custom";
 
   const navSections = useMemo(() => {
     // When the user has a custom role, ALWAYS retain all permitted sections across all modules
@@ -47,7 +46,6 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const [query, setQuery] = useState("");
   const [now, setNow] = useState(() => new Date());
   const [showClock, setShowClock] = useState(() => readShowClock());
   const [adminBadgeCounts, setAdminBadgeCounts] = useState<Record<string, number>>({});
@@ -174,25 +172,6 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
     }
   };
 
-  const onSearchSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!isSearchEnabled) return;
-    const value = query.trim();
-    if (!value) return;
-    const searchBase = displayRole === "custom" ? "management" : displayRole;
-    navigate(`/${searchBase}/search?q=${encodeURIComponent(value)}`);
-  };
-
-  const routeSearchQuery = useMemo(() => {
-    if (!location.pathname.endsWith("/search")) return null;
-    return (new URLSearchParams(location.search).get("q") ?? "").trim();
-  }, [location.pathname, location.search]);
-
-  useEffect(() => {
-    if (routeSearchQuery === null) return;
-    setQuery(routeSearchQuery);
-  }, [routeSearchQuery]);
-  
   // Gabungkan semua badge counts agar sidebar bisa menampilkan semuanya sekaligus (Penting untuk Role Kustom)
   const currentBadgeCounts = useMemo(() => {
     return { ...adminBadgeCounts };
@@ -216,10 +195,6 @@ export function DashboardLayout({ role, children }: DashboardLayoutProps) {
             role={displayRole}
             theme={theme}
             onOpenSidebar={() => setMobileSidebarOpen(true)}
-            isSearchEnabled={isSearchEnabled}
-            query={query}
-            setQuery={setQuery}
-            onSearchSubmit={onSearchSubmit}
             showClock={showClock}
             now={now}
             locale={effectiveLocale}

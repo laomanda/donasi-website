@@ -1,7 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import type { DashboardRole, RoleTheme } from "./DashboardUtils";
-import { DashboardSearch } from "./DashboardSearch";
 import { DashboardWorkClock } from "./DashboardWorkClock";
 import { DashboardLangSwitcher } from "./DashboardLangSwitcher";
 import { DashboardUserMenu } from "./DashboardUserMenu";
@@ -10,10 +9,6 @@ interface DashboardHeaderProps {
   role: DashboardRole;
   theme: RoleTheme;
   onOpenSidebar: () => void;
-  isSearchEnabled: boolean;
-  query: string;
-  setQuery: (q: string) => void;
-  onSearchSubmit: (e: React.FormEvent) => void;
   showClock: boolean;
   now: Date;
   locale: string;
@@ -33,10 +28,6 @@ export function DashboardHeader({
   role,
   theme,
   onOpenSidebar,
-  isSearchEnabled,
-  query,
-  setQuery,
-  onSearchSubmit,
   showClock,
   now,
   locale,
@@ -64,14 +55,6 @@ export function DashboardHeader({
         </button>
 
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          {isSearchEnabled && (
-            <DashboardSearch
-              query={query}
-              setQuery={setQuery}
-              onSubmit={onSearchSubmit}
-              placeholder={t("nav.search", "Cari Cepat...")}
-            />
-          )}
 
           {showClock && (
             <DashboardWorkClock

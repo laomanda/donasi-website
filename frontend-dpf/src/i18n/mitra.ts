@@ -72,7 +72,7 @@ export const mitraDict: Dict = {
     "mitra.no_saved_articles": { id: "Belum ada artikel yang disimpan.", en: "No articles saved yet." },
 
     // Layout
-    "nav.search": { id: "Cari Cepat...", en: "Quick Search..." },
+
     "nav.open": { id: "Buka sidebar", en: "Open sidebar" },
     "nav.close": { id: "Tutup sidebar", en: "Close sidebar" },
     "role.mitra": { id: "Mitra", en: "Partner" },

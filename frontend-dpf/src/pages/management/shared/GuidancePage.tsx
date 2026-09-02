@@ -208,7 +208,7 @@ export function GuidancePage() {
             <div>
               <h3 className="font-semibold text-brandGreen-900">{t("guidance.tips.title", "Tips Tambahan")}</h3>
               <p className="text-sm text-brandGreen-700 mt-1">
-                {t("guidance.tips.desc", "Jika Anda merasa kesulitan menemukan fitur tertentu, gunakan fitur Cari Cepat di header atas. Jangan lupa untuk selalu Keluar (Logout) setelah selesai mengelola dashboard demi keamanan akun Anda.")}
+                {t("guidance.tips.desc", "Jangan lupa untuk selalu Keluar (Logout) setelah selesai mengelola dashboard demi keamanan akun Anda.")}
               </p>
             </div>
           </div>
