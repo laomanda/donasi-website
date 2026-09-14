@@ -104,13 +104,6 @@ export function AdminAllocationCreatePage() {
       return;
     }
 
-    if (amountNum > maxAmount) {
-      toast.error(`Nominal melebihi saldo tersedia (Maksimal: ${formatRupiah(maxAmount)})`, {
-        title: "Validasi Gagal",
-      });
-      return;
-    }
-
     setSubmitting(true);
 
     const fd = new FormData();

@@ -183,33 +183,6 @@ class AllocationController extends Controller
         $programId = !empty($data['program_id']) ? (int) $data['program_id'] : null;
         $amount = (float) $data['amount'];
 
-        // Balance validation based on program or general fund
-        if ($programId) {
-            /** @var Program $program */
-            $program = Program::findOrFail($programId);
-            $totalCollected = (float) $program->collected_amount;
-            $totalAllocated = (float) Allocation::where('program_id', $program->id)->sum('amount');
-            $remaining = max(0, $totalCollected - $totalAllocated);
-
-            if ($amount > $remaining + 0.01) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Nominal penyaluran melebihi sisa dana program ini (Maksimal tersedia: Rp ' . number_format($remaining, 0, ',', '.') . ').'
-                ], 422);
-            }
-        } else {
-            $generalDonations = (float) Donation::whereNull('program_id')->where('status', 'paid')->sum('amount');
-            $generalAllocated = (float) Allocation::whereNull('program_id')->sum('amount');
-            $generalRemaining = max(0, $generalDonations - $generalAllocated);
-
-            if ($amount > $generalRemaining + 0.01) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Nominal penyaluran melebihi sisa saldo dana umum (Maksimal tersedia: Rp ' . number_format($generalRemaining, 0, ',', '.') . ').'
-                ], 422);
-            }
-        }
-
         // Upload proof if exists
         $proofPath = null;
         if ($request->hasFile('proof')) {
@@ -255,37 +228,6 @@ class AllocationController extends Controller
         $programId = !empty($data['program_id']) ? (int) $data['program_id'] : null;
         $amount = (float) $data['amount'];
         $oldProgramId = $allocation->program_id;
-
-        // Balance validation excluding this allocation record
-        if ($programId) {
-            /** @var Program $program */
-            $program = Program::findOrFail($programId);
-            $totalCollected = (float) $program->collected_amount;
-            $otherAllocated = (float) Allocation::where('program_id', $program->id)
-                ->where('id', '!=', $allocation->id)
-                ->sum('amount');
-            $remaining = max(0, $totalCollected - $otherAllocated);
-
-            if ($amount > $remaining + 0.01) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Nominal penyaluran melebihi sisa dana program ini (Maksimal tersedia: Rp ' . number_format($remaining, 0, ',', '.') . ').'
-                ], 422);
-            }
-        } else {
-            $generalDonations = (float) Donation::whereNull('program_id')->where('status', 'paid')->sum('amount');
-            $otherGeneralAllocated = (float) Allocation::whereNull('program_id')
-                ->where('id', '!=', $allocation->id)
-                ->sum('amount');
-            $generalRemaining = max(0, $generalDonations - $otherGeneralAllocated);
-
-            if ($amount > $generalRemaining + 0.01) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Nominal penyaluran melebihi sisa saldo dana umum (Maksimal tersedia: Rp ' . number_format($generalRemaining, 0, ',', '.') . ').'
-                ], 422);
-            }
-        }
 
         // Upload proof if exists or handle removal
         $proofPath = $allocation->proof_path;

@@ -58,7 +58,7 @@ export default function AdminAllocationCreateForm({
     "mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-slate-100/80 disabled:text-slate-400";
   const labelClass = "block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1";
 
-  const isAmountOver = maxAmount > 0 && amountNumber > maxAmount;
+  const isAmountOver = selectedProgram ? amountNumber > selectedProgram.remaining_balance : false;
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-12">
@@ -140,8 +140,8 @@ export default function AdminAllocationCreateForm({
 
                 {selectedProgram.remaining_balance <= 0 && (
                   <div className="mt-3 flex items-center gap-2 rounded-xl bg-amber-50 p-3 border border-amber-200 text-xs font-semibold text-amber-800">
-                    <FontAwesomeIcon icon={faCircleInfo} className="text-amber-600" />
-                    <span>Seluruh dana program ini sudah habis disalurkan.</span>
+                    <FontAwesomeIcon icon={faCircleInfo} className="text-amber-600 shrink-0" />
+                    <span>Seluruh saldo himpunan tercatat program ini sudah tersalurkan. Anda tetap dapat menambahkan penyaluran baru jika diperlukan.</span>
                   </div>
                 )}
               </div>
@@ -199,7 +199,7 @@ export default function AdminAllocationCreateForm({
                     onChange={(e) => handleAmountChange(e.target.value)}
                     placeholder={isProgramSelected ? "Contoh: 5000000" : "Pilih program donasi terlebih dahulu"}
                     inputMode="numeric"
-                    className={`${inputClass} pl-12 text-lg ${isAmountOver ? "border-rose-300 bg-rose-50/50 focus:border-rose-500 focus:ring-rose-500/10" : ""}`}
+                    className={`${inputClass} pl-12 text-lg ${isAmountOver ? "border-amber-300 bg-amber-50/30 focus:border-amber-500 focus:ring-amber-500/10" : ""}`}
                     disabled={!isProgramSelected || submitting}
                   />
                   <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">
@@ -213,8 +213,9 @@ export default function AdminAllocationCreateForm({
                   </p>
 
                   {isAmountOver && (
-                    <p className="text-xs font-bold text-rose-600">
-                      ⚠️ Melebihi saldo tersedia ({formatRupiah(maxAmount)})
+                    <p className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                      <FontAwesomeIcon icon={faCircleInfo} className="text-amber-600 text-xs" />
+                      <span>Melebihi saldo himpunan tercatat ({formatRupiah(maxAmount)}) — tetap dapat disimpan</span>
                     </p>
                   )}
                 </div>
@@ -403,8 +404,17 @@ export default function AdminAllocationCreateForm({
                   </div>
                   <div className="flex justify-between border-t border-slate-200 pt-1.5">
                     <span className="text-slate-500">Sisa Setelahnya:</span>
-                    <span className={`font-bold ${selectedProgram.remaining_balance - amountNumber < 0 ? "text-rose-600" : "text-emerald-700"}`}>
-                      {formatRupiah(Math.max(0, selectedProgram.remaining_balance - amountNumber))}
+                    <span className={`font-bold ${selectedProgram.remaining_balance - amountNumber < 0 ? "text-amber-600" : "text-emerald-700"}`}>
+                      {selectedProgram.remaining_balance - amountNumber < 0 ? (
+                        <>
+                          <span>{formatRupiah(0)}</span>{" "}
+                          <span className="text-[10px] font-medium text-amber-600">
+                            (Defisit {formatRupiah(amountNumber - selectedProgram.remaining_balance)})
+                          </span>
+                        </>
+                      ) : (
+                        formatRupiah(selectedProgram.remaining_balance - amountNumber)
+                      )}
                     </span>
                   </div>
                 </div>
@@ -413,7 +423,7 @@ export default function AdminAllocationCreateForm({
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={submitting || isAmountOver || amountNumber <= 0 || !formData.program_id}
+                  disabled={submitting || amountNumber <= 0 || !formData.program_id}
                   className="group w-full rounded-xl bg-emerald-600 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                 >
                   {submitting ? (

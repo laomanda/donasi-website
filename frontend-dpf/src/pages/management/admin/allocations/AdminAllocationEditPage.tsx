@@ -100,7 +100,7 @@ export function AdminAllocationEditPage() {
 
   const isProgramSelected = Boolean(programId);
   const amountNumber = Number(amount || 0);
-  const isAmountOver = maxAmount > 0 && amountNumber > maxAmount;
+  const isAmountOver = selectedProgram ? amountNumber > maxAmount : false;
 
   const handleProgramChange = (selectedVal: string) => {
     setProgramId(selectedVal);
@@ -145,13 +145,6 @@ export function AdminAllocationEditPage() {
 
     if (amountNumber <= 0) {
       toast.error("Nominal penyaluran harus lebih dari 0.", { title: "Validasi Gagal" });
-      return;
-    }
-
-    if (amountNumber > maxAmount) {
-      toast.error(`Nominal melebihi saldo tersedia (Maksimal: ${formatRupiah(maxAmount)})`, {
-        title: "Validasi Gagal",
-      });
       return;
     }
 
@@ -405,7 +398,7 @@ export function AdminAllocationEditPage() {
                       onChange={(e) => handleAmountChange(e.target.value)}
                       placeholder="Contoh: 5000000"
                       inputMode="numeric"
-                      className={`${inputClass} pl-12 text-lg ${isAmountOver ? "border-rose-300 bg-rose-50/50 focus:border-rose-500 focus:ring-rose-500/10" : ""}`}
+                      className={`${inputClass} pl-12 text-lg ${isAmountOver ? "border-amber-300 bg-amber-50/30 focus:border-amber-500 focus:ring-amber-500/10" : ""}`}
                       disabled={!isProgramSelected || submitting}
                     />
                     <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">
@@ -419,8 +412,9 @@ export function AdminAllocationEditPage() {
                     </p>
 
                     {isAmountOver && (
-                      <p className="text-xs font-bold text-rose-600">
-                        ⚠️ Melebihi saldo tersedia ({formatRupiah(maxAmount)})
+                      <p className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
+                        <FontAwesomeIcon icon={faCircleInfo} className="text-amber-600 text-xs" />
+                        <span>Melebihi saldo himpunan tercatat ({formatRupiah(maxAmount)}) — tetap dapat disimpan</span>
                       </p>
                     )}
                   </div>
@@ -601,8 +595,17 @@ export function AdminAllocationEditPage() {
                     </div>
                     <div className="flex justify-between border-t border-slate-200 pt-1.5">
                       <span className="text-slate-500">Sisa Setelahnya:</span>
-                      <span className={`font-bold ${maxAmount - amountNumber < 0 ? "text-rose-600" : "text-emerald-700"}`}>
-                        {formatRupiah(Math.max(0, maxAmount - amountNumber))}
+                      <span className={`font-bold ${maxAmount - amountNumber < 0 ? "text-amber-600" : "text-emerald-700"}`}>
+                        {maxAmount - amountNumber < 0 ? (
+                          <>
+                            <span>{formatRupiah(0)}</span>{" "}
+                            <span className="text-[10px] font-medium text-amber-600">
+                              (Defisit {formatRupiah(amountNumber - maxAmount)})
+                            </span>
+                          </>
+                        ) : (
+                          formatRupiah(maxAmount - amountNumber)
+                        )}
                       </span>
                     </div>
                   </div>
@@ -611,7 +614,7 @@ export function AdminAllocationEditPage() {
                 <div className="pt-2">
                   <button
                     type="submit"
-                    disabled={submitting || isAmountOver || amountNumber <= 0 || !programId}
+                    disabled={submitting || amountNumber <= 0 || !programId}
                     className="group w-full rounded-xl bg-emerald-600 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? (
