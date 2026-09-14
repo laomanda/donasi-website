@@ -54,7 +54,10 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
-        return response()->json($role->load('permissions'), 201);
+        return response()->json($role->load([
+            'permissions',
+            'users:id,name,email,phone,avatar_path,is_active,role_label,created_at'
+        ]), 201);
     }
 
     /**
@@ -62,7 +65,10 @@ class RoleController extends Controller
      */
     public function show($id)
     {
-        $role = Role::with('permissions')->findOrFail($id);
+        $role = Role::with([
+            'permissions',
+            'users:id,name,email,phone,avatar_path,is_active,role_label,created_at'
+        ])->findOrFail($id);
         return response()->json($role);
     }
 
@@ -98,7 +104,10 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
-        return response()->json($role->load('permissions'));
+        return response()->json($role->load([
+            'permissions',
+            'users:id,name,email,phone,avatar_path,is_active,role_label,created_at'
+        ]));
     }
 
     /**

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
@@ -8,26 +8,51 @@ import {
   faArrowLeft,
   faFloppyDisk,
   faCircleCheck,
-  faInfoCircle
+  faInfoCircle,
+  faUsers,
+  faUserGroup,
+  faMagnifyingGlass,
+  faEnvelope,
+  faPhone,
+  faArrowUpRightFromSquare
 } from "@fortawesome/free-solid-svg-icons";
 import http from "../../../../lib/http";
 import { useToast } from "../../../ui/ToastProvider";
+import { resolveStorageUrl } from "../../../../lib/urls";
+import { formatDateTime } from "../shared/SuperAdminUtils";
 
 type Permission = {
   id: number;
   name: string;
 };
 
+type RoleUser = {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  avatar_path?: string | null;
+  is_active: boolean | number;
+  role_label?: string | null;
+  created_at?: string | null;
+};
+
 type Role = {
   id: number;
   name: string;
   permissions?: Permission[];
+  users?: RoleUser[];
 };
 
 type RoleFormProps = {
   mode: "create" | "edit";
   roleId?: number;
 };
+
+function getInitials(name: string): string {
+  const trimmed = String(name ?? "").trim();
+  return trimmed.length > 0 ? trimmed.charAt(0).toUpperCase() : "U";
+}
 
 const PERMISSION_DETAILS: Record<string, { label: string; desc: string }> = {
   "manage allocations": { label: "Kelola Alokasi", desc: "Penyaluran dana & alokasi ke mitra" },
@@ -99,7 +124,20 @@ export default function RoleForm({ mode, roleId }: RoleFormProps) {
   const [name, setName] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
+  const [roleUsers, setRoleUsers] = useState<RoleUser[]>([]);
+  const [userSearch, setUserSearch] = useState("");
   const [saving, setSaving] = useState(false);
+  const [loadingRole, setLoadingRole] = useState(mode === "edit");
+
+  const filteredUsers = useMemo(() => {
+    if (!userSearch.trim()) return roleUsers;
+    const q = userSearch.toLowerCase();
+    return roleUsers.filter(u => 
+      u.name.toLowerCase().includes(q) || 
+      u.email.toLowerCase().includes(q) || 
+      (u.phone && u.phone.toLowerCase().includes(q))
+    );
+  }, [roleUsers, userSearch]);
 
   const fetchPermissions = async () => {
     try {
@@ -111,13 +149,17 @@ export default function RoleForm({ mode, roleId }: RoleFormProps) {
   };
 
   const fetchRole = async (id: number) => {
+    setLoadingRole(true);
     try {
       const res = await http.get<Role>(`/superadmin/roles/${id}`);
       setName(res.data.name);
       setSelectedPermissions(res.data.permissions?.map(p => p.name) || []);
+      setRoleUsers(Array.isArray(res.data.users) ? res.data.users : []);
     } catch {
       toast.error("Gagal memuat data role.", { title: "Gagal" });
       navigate("/superadmin/roles");
+    } finally {
+      setLoadingRole(false);
     }
   };
 
@@ -229,6 +271,177 @@ export default function RoleForm({ mode, roleId }: RoleFormProps) {
             </div>
           </div>
 
+          {/* Role Users Card */}
+          <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 sm:p-10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-6 mb-6">
+              <h3 className="font-heading text-xl font-bold text-slate-900 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                  <FontAwesomeIcon icon={faUserGroup} />
+                </div>
+                Pengguna dengan Role Ini
+              </h3>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-[11px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${
+                    mode === "create"
+                      ? "bg-slate-100 text-slate-500 border-slate-200"
+                      : roleUsers.length > 0
+                      ? "bg-brandGreen-600 text-white"
+                      : "bg-amber-600 text-white"
+                  }`}
+                >
+                  {mode === "create"
+                    ? "Role Baru (0 Pengguna)"
+                    : loadingRole
+                    ? "Memuat..."
+                    : `${roleUsers.length} Pengguna Terdaftar`}
+                </span>
+              </div>
+            </div>
+
+            {mode === "create" ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shrink-0 shadow-sm">
+                  <FontAwesomeIcon icon={faUsers} />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-bold text-slate-900">Penugasan Pengguna</h4>
+                  <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">
+                    Role ini sedang dibuat dan belum memiliki pengguna. Setelah Anda menyimpan role baru ini, Anda dapat menugaskan pengguna ke role ini melalui menu{" "}
+                    <button
+                      type="button"
+                      onClick={() => navigate("/superadmin/users")}
+                      className="font-bold text-emerald-600 hover:text-emerald-700 underline"
+                    >
+                      Kelola Pengguna
+                    </button>.
+                  </p>
+                </div>
+              </div>
+            ) : loadingRole ? (
+              <div className="space-y-3 py-2">
+                <div className="h-16 w-full rounded-2xl bg-slate-100 animate-pulse" />
+                <div className="h-16 w-full rounded-2xl bg-slate-100 animate-pulse" />
+              </div>
+            ) : roleUsers.length === 0 ? (
+              <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
+                <div className="mx-auto h-14 w-14 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 text-xl mb-3 shadow-inner">
+                  <FontAwesomeIcon icon={faUsers} />
+                </div>
+                <h4 className="text-sm font-bold text-slate-700">Belum Ada Pengguna</h4>
+                <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 leading-relaxed">
+                  Saat ini belum ada pengguna yang ditugaskan ke role ini. Anda dapat menetapkan role ini saat membuat atau mengubah data pengguna di menu Kelola Pengguna.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate("/superadmin/users")}
+                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-50 text-emerald-700 px-4 py-2 text-xs font-bold border border-emerald-200 hover:bg-emerald-100 transition shadow-sm"
+                >
+                  <FontAwesomeIcon icon={faUsers} />
+                  Buka Kelola Pengguna
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Search box if more than 2 users */}
+                {roleUsers.length > 2 && (
+                  <div className="relative">
+                    <FontAwesomeIcon
+                      icon={faMagnifyingGlass}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"
+                    />
+                    <input
+                      type="text"
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      placeholder={`Cari dari ${roleUsers.length} pengguna (nama, email, telepon)...`}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2.5 text-xs font-semibold text-slate-800 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none transition shadow-sm"
+                    />
+                  </div>
+                )}
+
+                {/* Users List Container */}
+                <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-slate-50/40 pr-1">
+                  {filteredUsers.length === 0 ? (
+                    <div className="p-6 text-center text-xs font-semibold text-slate-500">
+                      Tidak ada pengguna yang sesuai dengan kata kunci &quot;{userSearch}&quot;.
+                    </div>
+                  ) : (
+                    filteredUsers.map((user) => {
+                      const isActive = Boolean(user.is_active);
+                      const avatarUrl = user.avatar_path ? resolveStorageUrl(user.avatar_path) : null;
+                      return (
+                        <div
+                          key={user.id}
+                          className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 transition-colors hover:bg-emerald-50/40"
+                        >
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            {avatarUrl ? (
+                              <img
+                                src={avatarUrl}
+                                alt={user.name}
+                                className="h-11 w-11 shrink-0 rounded-2xl object-cover ring-2 ring-slate-200 group-hover:ring-emerald-400 transition shadow-sm"
+                              />
+                            ) : (
+                              <div className="h-11 w-11 shrink-0 rounded-2xl bg-primary-600 flex items-center justify-center text-white font-black text-sm">
+                                {getInitials(user.name)}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition truncate">
+                                  {user.name}
+                                </p>
+                                <span
+                                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${
+                                    isActive
+                                      ? "bg-brandGreen-600 text-white"
+                                      : "bg-red-600 text-white"
+                                  }`}
+                                >
+                                  {isActive ? "Aktif" : "Nonaktif"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 flex-wrap">
+                                <span className="flex items-center gap-1">
+                                  <FontAwesomeIcon icon={faEnvelope} className="text-[10px] text-slate-400" />
+                                  {user.email}
+                                </span>
+                                {user.phone && (
+                                  <span className="flex items-center gap-1">
+                                    <FontAwesomeIcon icon={faPhone} className="text-[10px] text-slate-400" />
+                                    {user.phone}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
+                            {user.created_at && (
+                              <span className="text-[11px] font-medium text-slate-400 hidden md:inline-block">
+                                Bergabung {formatDateTime(user.created_at)}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => window.open(`/superadmin/users/${user.id}/edit`, "_blank")}
+                              title="Buka data pengguna di tab baru"
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95"
+                            >
+                              <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-[10px]" />
+                              Detail
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Permissions Selection Card */}
           <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 sm:p-10">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-8 mb-8">
@@ -290,21 +503,62 @@ export default function RoleForm({ mode, roleId }: RoleFormProps) {
           <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50 sticky top-6">
             <h3 className="font-heading text-lg font-bold text-slate-900 mb-6">Status & Konfigurasi</h3>
             
-            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 divide-y divide-slate-200">
+            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 divide-y divide-slate-200 space-y-4">
               <div className="pb-4">
                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[2px] mb-4 text-center">Rekapitulasi Akses</h4>
                 <div className="flex flex-col items-center justify-center gap-1">
                   <span className="text-5xl font-black text-emerald-600 tabular-nums">{selectedPermissions.length}</span>
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Izin Terpilih</span>
                 </div>
-              </div>
-              <div className="pt-4">
-                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden shadow-inner">
+                <div className="mt-4 w-full bg-slate-200 h-2 rounded-full overflow-hidden shadow-inner">
                   <div
                     className="bg-emerald-500 h-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(16,185,129,0.5)]"
                     style={{ width: `${(selectedPermissions.length / (allPermissions.length || 1)) * 100}%` }}
                   />
                 </div>
+              </div>
+
+              {/* Users Stat in Sidebar */}
+              <div className="pt-4">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[2px] mb-3 text-center">Pengguna Role</h4>
+                <div className="flex flex-col items-center justify-center gap-1">
+                  <span className="text-3xl font-black text-slate-800 tabular-nums">
+                    {mode === "create" ? "0" : roleUsers.length}
+                  </span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    {mode === "create" ? "Pengguna Baru" : "Pengguna Terdaftar"}
+                  </span>
+                </div>
+
+                {roleUsers.length > 0 && (
+                  <div className="mt-3 flex items-center justify-center -space-x-2 overflow-hidden py-1">
+                    {roleUsers.slice(0, 5).map((u) => {
+                      const av = u.avatar_path ? resolveStorageUrl(u.avatar_path) : null;
+                      return av ? (
+                        <img
+                          key={u.id}
+                          src={av}
+                          alt={u.name}
+                          title={u.name}
+                          className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover shadow-sm"
+                        />
+                      ) : (
+                        <div
+                          key={u.id}
+                          title={u.name}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-[10px] font-black text-white ring-2 ring-white shadow-sm"
+                        >
+                          {getInitials(u.name)}
+                        </div>
+                      );
+                    })}
+                    {roleUsers.length > 5 && (
+                      <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-[10px] font-black text-slate-600 ring-2 ring-white shadow-sm">
+                        +{roleUsers.length - 5}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
