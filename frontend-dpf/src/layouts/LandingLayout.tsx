@@ -81,7 +81,7 @@ export function LandingLayout({
   }, [programs, locale]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-body antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-body antialiased overflow-x-clip">
       <LandingNavbar />
 
       <main className="pt-24 min-w-0 max-w-full overflow-x-clip">{children}</main>

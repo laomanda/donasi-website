@@ -25,6 +25,7 @@ import {
   calculateMoM,
 } from "@/components/landing/LandingUI";
 import { TransparencySection } from "@/components/landing/TransparencySection";
+import { MonthlyRowaSection } from "@/components/landing/MonthlyRowaSection";
 import heroTransparantImg from "@/assets/brand/hero-transparant.webp";
 
 export function TransparansiPage() {
@@ -238,6 +239,13 @@ export function TransparansiPage() {
         availableYears={data?.available_years}
         onYearChange={setSelectedYear}
         t={t}
+      />
+
+      {/* Monthly Realization & RoWA Section */}
+      <MonthlyRowaSection
+        stats={data?.stats}
+        locale={locale}
+        selectedYear={selectedYear}
       />
 
       {/* Governance & Pillars Section */}

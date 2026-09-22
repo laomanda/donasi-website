@@ -37,7 +37,7 @@ export function ProgramDetailSidebar({
   const progressWidth = collectedNum < 1000 ? 0 : (isUnlimited ? 100 : Math.min(progressPercent, 100));
 
   return (
-    <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+    <div className="space-y-6 lg:sticky lg:top-28 lg:self-start h-fit">
       <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <p className="text-xs font-semibold text-slate-500">{locale === "en" ? "Waqf summary" : "Ringkasan penyaluran wakaf"}</p>
 

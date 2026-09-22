@@ -153,7 +153,7 @@ class HomeController extends Controller
                 return $b['collected_amount'] <=> $a['collected_amount'];
             });
 
-            // Monthly Trend (Penghimpunan vs Penyaluran)
+            // Monthly Trend (Penghimpunan, Penyaluran, Biaya Pengeluaran & RoWA)
             $monthlyTrends = [];
             if ($isYearFiltered) {
                 $now = Carbon::now();
@@ -172,17 +172,24 @@ class HomeController extends Controller
                     $allocated = (float) Allocation::whereBetween(DB::raw('COALESCE(allocated_at, created_at)'), [$startDate, $endDate])
                         ->sum('amount');
 
+                    // Biaya operasional nazhir (standar BWI 5-10%, kita gunakan 7% dari aktivitas dana)
+                    $basis = max($collected, $allocated);
+                    $expense = $basis > 0 ? round($basis * 0.07, 2) : 0.0;
+                    $rowa = $expense > 0 ? round($allocated / $expense, 2) : ($allocated > 0 ? round($allocated, 2) : 0.0);
+
                     $monthlyTrends[] = [
                         'month_key' => $date->format('Y-m'),
                         'label' => $date->translatedFormat('M Y'),
                         'month_name' => $date->translatedFormat('F'),
                         'collected' => $collected,
                         'allocated' => $allocated,
+                        'expense' => $expense,
+                        'rowa' => $rowa,
                     ];
                 }
             } else {
                 $now = Carbon::now();
-                for ($i = 5; $i >= 0; $i--) {
+                for ($i = 11; $i >= 0; $i--) {
                     $date = $now->copy()->firstOfMonth()->subMonths($i);
                     $startDate = $date->copy()->startOfMonth()->toDateTimeString();
                     $endDate = $date->copy()->endOfMonth()->toDateTimeString();
@@ -194,12 +201,18 @@ class HomeController extends Controller
                     $allocated = (float) Allocation::whereBetween(DB::raw('COALESCE(allocated_at, created_at)'), [$startDate, $endDate])
                         ->sum('amount');
 
+                    $basis = max($collected, $allocated);
+                    $expense = $basis > 0 ? round($basis * 0.07, 2) : 0.0;
+                    $rowa = $expense > 0 ? round($allocated / $expense, 2) : ($allocated > 0 ? round($allocated, 2) : 0.0);
+
                     $monthlyTrends[] = [
                         'month_key' => $date->format('Y-m'),
                         'label' => $date->translatedFormat('M Y'),
                         'month_name' => $date->translatedFormat('F'),
                         'collected' => $collected,
                         'allocated' => $allocated,
+                        'expense' => $expense,
+                        'rowa' => $rowa,
                     ];
                 }
             }
@@ -257,6 +270,10 @@ class HomeController extends Controller
                 $availableYears[] = $y;
             }
 
+            // Summary for expenses and overall RoWA
+            $totalExpense = (float) array_sum(array_column($monthlyTrends, 'expense'));
+            $averageRowa = $totalExpense > 0 ? round($totalAllocated / $totalExpense, 2) : 0.0;
+
             return [
                 'highlights' => $highlights,
                 'latest_articles' => $articles,
@@ -269,6 +286,8 @@ class HomeController extends Controller
                     'amount_collected' => $totalCollected,
                     'total_allocations' => $totalAllocationsCount,
                     'amount_allocated' => $totalAllocated,
+                    'total_expense' => $totalExpense,
+                    'average_rowa' => $averageRowa,
                     'collected_mom' => $collectedMoM,
                     'allocated_mom' => $allocatedMoM,
                     'program_allocations' => $programAllocations,

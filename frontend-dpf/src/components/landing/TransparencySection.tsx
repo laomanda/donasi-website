@@ -806,14 +806,14 @@ export function TransparencySection({
 
                                 {/* Pagination Controls */}
                                 {totalPages > 1 && (
-                                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                        <p className="text-xs text-slate-500">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-slate-100">
+                                        <p className="text-xs text-slate-500 text-center sm:text-left font-medium">
                                             {locale === "en"
                                                 ? `Showing ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, filteredPrograms.length)} of ${filteredPrograms.length} programs`
                                                 : `Menampilkan ${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, filteredPrograms.length)} dari total ${filteredPrograms.length} program`}
                                         </p>
 
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 self-center sm:self-auto">
                                             <button
                                                 type="button"
                                                 disabled={currentPage === 1}
@@ -835,7 +835,7 @@ export function TransparencySection({
                                                 </span>
                                             </button>
 
-                                            <div className="flex items-center gap-1">
+                                            <div className="flex flex-wrap items-center justify-center gap-1">
                                                 {Array.from(
                                                     { length: totalPages },
                                                     (_, i) => i + 1,
@@ -846,7 +846,7 @@ export function TransparencySection({
                                                         onClick={() =>
                                                             setCurrentPage(pg)
                                                         }
-                                                        className={`h-8 w-8 rounded-xl text-xs font-bold transition ${
+                                                        className={`h-7 w-7 sm:h-8 sm:w-8 rounded-xl text-xs font-bold transition ${
                                                             currentPage === pg
                                                                 ? "bg-brandGreen-600 text-white shadow-sm"
                                                                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"

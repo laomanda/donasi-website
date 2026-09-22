@@ -139,6 +139,8 @@ export type MonthlyTrend = {
   month_name: string;
   collected: number;
   allocated: number;
+  expense?: number;
+  rowa?: number | null;
 };
 
 export type HomeStats = {
@@ -147,6 +149,8 @@ export type HomeStats = {
   amount_collected: string | number;
   total_allocations?: number;
   amount_allocated?: string | number;
+  total_expense?: string | number;
+  average_rowa?: number | null;
   collected_mom?: number | null;
   allocated_mom?: number | null;
   program_allocations?: ProgramAllocation[];
