@@ -61,7 +61,7 @@ export const PageHero: React.FC<PageHeroProps> = ({
                   {badge}
                 </span>
               )}
-              <h1 className="font-heading text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
+              <h1 className="font-heading text-3xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl break-words [overflow-wrap:anywhere]">
                 {title}
               </h1>
               {subtitle && (

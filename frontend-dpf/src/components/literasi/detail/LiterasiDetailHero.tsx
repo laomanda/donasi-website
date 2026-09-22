@@ -78,8 +78,8 @@ export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroPro
   const [activeMedia, setActiveMedia] = useState<"video" | "image">(hasVideo ? "video" : "image");
 
   return (
-    <div className="space-y-6">
-      <div className="group relative aspect-[16/9] max-h-[520px] w-full overflow-hidden rounded-[32px] border border-slate-100 bg-slate-950 shadow-soft flex items-center justify-center">
+    <div className="space-y-6 min-w-0 max-w-full">
+      <div className="group relative aspect-[16/9] max-h-[520px] w-full overflow-hidden rounded-2xl sm:rounded-[32px] border border-slate-100 bg-slate-950 shadow-soft flex items-center justify-center">
         {hasVideo && activeMedia === "video" ? (
           <video
             src={videoUrl!}
@@ -112,24 +112,24 @@ export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroPro
             <button
               type="button"
               onClick={() => setActiveMedia((prev) => (prev === "video" ? "image" : "video"))}
-              className="absolute left-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition hover:bg-black/80 hover:scale-110"
+              className="absolute left-2.5 sm:left-4 top-1/2 z-20 flex h-8 w-8 sm:h-10 sm:w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition hover:bg-black/80 hover:scale-110"
               title="Media Sebelumnya"
             >
-              <FontAwesomeIcon icon={faChevronLeft} className="text-sm" />
+              <FontAwesomeIcon icon={faChevronLeft} className="text-xs sm:text-sm" />
             </button>
             <button
               type="button"
               onClick={() => setActiveMedia((prev) => (prev === "video" ? "image" : "video"))}
-              className="absolute right-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition hover:bg-black/80 hover:scale-110"
+              className="absolute right-2.5 sm:right-4 top-1/2 z-20 flex h-8 w-8 sm:h-10 sm:w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition hover:bg-black/80 hover:scale-110"
               title="Media Selanjutnya"
             >
-              <FontAwesomeIcon icon={faChevronRight} className="text-sm" />
+              <FontAwesomeIcon icon={faChevronRight} className="text-xs sm:text-sm" />
             </button>
           </>
         )}
       </div>
 
-      <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-2xl sm:rounded-[32px] border border-slate-200 bg-white p-4 sm:p-6 lg:p-8 shadow-sm min-w-0 max-w-full overflow-hidden">
         <div className="flex flex-wrap items-center gap-2">
           {article.category ? (
             <InfoBadge 
@@ -163,11 +163,11 @@ export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroPro
           ) : null}
         </div>
 
-        <h1 className="mt-5 font-heading text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="mt-4 sm:mt-5 font-heading text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 break-words [overflow-wrap:anywhere]">
           {article.title}
         </h1>
         {article.excerpt ? (
-          <p className="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base sm:leading-7">
+          <p className="mt-3 sm:mt-4 text-sm leading-relaxed text-slate-600 sm:text-base sm:leading-7 break-words [overflow-wrap:anywhere]">
             {article.excerpt}
           </p>
         ) : null}

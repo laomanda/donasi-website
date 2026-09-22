@@ -254,50 +254,82 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
     });
   };
 
-  const insertIntoBody = (snippet: string) => {
+  const insertIntoField = (field: "body" | "body_en", snippet: string, isBlock = true) => {
+    const isBody = field === "body";
+    const textareaRef = isBody ? bodyTextareaRef : bodyEnRef;
+    const selectionRef = isBody ? bodySelectionRef : bodyEnSelectionRef;
+    const nextCursorRef = isBody ? bodyNextCursorRef : bodyEnNextCursorRef;
+
     setForm((state) => {
-      const value = String(state.body ?? "");
-      const selection = bodySelectionRef.current;
-      const start = selection?.start ?? value.length;
-      const end = selection?.end ?? value.length;
+      const value = String((isBody ? state.body : state.body_en) ?? "");
+      const textarea = textareaRef.current;
 
-      const before = value.slice(0, start);
-      const after = value.slice(end);
+      let start = textarea && Number.isFinite(textarea.selectionStart)
+        ? textarea.selectionStart
+        : selectionRef.current?.start ?? value.length;
+      let end = textarea && Number.isFinite(textarea.selectionEnd)
+        ? textarea.selectionEnd
+        : selectionRef.current?.end ?? value.length;
 
-      const needsLeadingNewline = before !== "" && !before.endsWith("\n");
-      const needsTrailingNewline = after !== "" && !after.startsWith("\n");
+      if (start < 0) start = 0;
+      if (start > value.length) start = value.length;
+      if (end < start) end = start;
+      if (end > value.length) end = value.length;
 
-      const finalSnippet = `${needsLeadingNewline ? "\n" : ""}${snippet}${needsTrailingNewline ? "\n" : ""}`;
-      const nextBody = `${before}${finalSnippet}${after}`;
-      bodyNextCursorRef.current = (before + finalSnippet).length;
+      let before = value.slice(0, start);
+      let after = value.slice(end);
 
-      // Otomatis sisipkan media (gambar/video) ke body_en juga jika belum ada
-      const valueEn = String(state.body_en ?? "");
-      let nextBodyEn = valueEn;
-      if (!valueEn.includes(snippet)) {
-        const selectionEn = bodyEnSelectionRef.current;
-        const startEn = selectionEn?.start ?? valueEn.length;
-        const endEn = selectionEn?.end ?? valueEn.length;
-        const beforeEn = valueEn.slice(0, startEn);
-        const afterEn = valueEn.slice(endEn);
-        const needsLeadingNewlineEn = beforeEn !== "" && !beforeEn.endsWith("\n");
-        const needsTrailingNewlineEn = afterEn !== "" && !afterEn.startsWith("\n");
-        const finalSnippetEn = `${needsLeadingNewlineEn ? "\n" : ""}${snippet}${needsTrailingNewlineEn ? "\n" : ""}`;
-        nextBodyEn = `${beforeEn}${finalSnippetEn}${afterEn}`;
+      // Proteksi tag HTML: Jika kursor berada di tengah tag <...>, geser titik sisip setelah >
+      const lastOpenBracket = before.lastIndexOf("<");
+      const lastCloseBracket = before.lastIndexOf(">");
+      if (lastOpenBracket > lastCloseBracket) {
+        const closingIndex = after.indexOf(">");
+        if (closingIndex !== -1) {
+          before = before + after.slice(0, closingIndex + 1);
+          after = after.slice(closingIndex + 1);
+        }
       }
 
-      return { ...state, body: nextBody, body_en: nextBodyEn };
+      let finalSnippet = snippet;
+      if (isBlock) {
+        // Cek apakah posisi kursor berada di dalam elemen <p>...</p>
+        const lastOpenP = before.lastIndexOf("<p");
+        const lastCloseP = before.lastIndexOf("</p>");
+        const isInsideParagraph = lastOpenP !== -1 && (lastCloseP === -1 || lastCloseP < lastOpenP);
+
+        if (isInsideParagraph) {
+          // Tutup paragraf sebelumnya dan buka paragraf baru setelah media agar struktur HTML tetap valid
+          finalSnippet = `</p>\n\n${snippet}\n\n<p>`;
+        } else {
+          // Pastikan media terpisah rapi dengan baris kosong ganda
+          const needsLeadingNewline = before.trim() !== "" && !before.endsWith("\n\n");
+          const leading = needsLeadingNewline ? (before.endsWith("\n") ? "\n" : "\n\n") : (before !== "" && !before.endsWith("\n") ? "\n\n" : "");
+
+          const needsTrailingNewline = after.trim() !== "" && !after.startsWith("\n\n");
+          const trailing = needsTrailingNewline ? (after.startsWith("\n") ? "\n" : "\n\n") : (after !== "" && !after.startsWith("\n") ? "\n\n" : "");
+
+          finalSnippet = `${leading}${snippet}${trailing}`;
+        }
+      }
+
+      const nextValue = `${before}${finalSnippet}${after}`;
+      nextCursorRef.current = (before + finalSnippet).length;
+
+      return isBody ? { ...state, body: nextValue } : { ...state, body_en: nextValue };
     });
 
     requestAnimationFrame(() => {
-      const textarea = bodyTextareaRef.current;
-      const cursor = bodyNextCursorRef.current;
+      const textarea = textareaRef.current;
+      const cursor = nextCursorRef.current;
       if (!textarea || cursor === null) return;
       textarea.focus();
       textarea.setSelectionRange(cursor, cursor);
-      bodyNextCursorRef.current = null;
+      nextCursorRef.current = null;
     });
   };
+
+  const insertIntoBody = (snippet: string) => insertIntoField("body", snippet, true);
+
 
   const uploadContentImage = async (file: File) => {
     setContentImageUploadError(null);
@@ -463,6 +495,7 @@ export function EditorArticleForm({ mode, articleId }: { mode: Mode; articleId?:
             insertInlineTag={insertInlineTag}
             uploadContentImage={uploadContentImage}
             insertIntoBody={insertIntoBody}
+            insertIntoField={insertIntoField}
             contentImageUploading={contentImageUploading}
             contentImageUploadError={contentImageUploadError}
             contentVideoUploading={contentVideoUploading}

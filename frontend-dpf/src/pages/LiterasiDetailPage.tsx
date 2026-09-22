@@ -45,19 +45,19 @@ export function LiterasiDetailPage() {
           <div className="absolute -right-24 top-10 h-[380px] w-[380px] rounded-full bg-brandGreen-100/30 blur-[110px]" />
         </div>
 
-        <div className="relative mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-          <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="relative mx-auto max-w-5xl px-3.5 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16 min-w-0 max-w-full">
+          <div className="mb-6 flex flex-wrap items-center gap-2 sm:gap-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary-200 hover:text-primary-700"
+              className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary-200 hover:text-primary-700"
             >
               <FontAwesomeIcon icon={faArrowLeft} />
               {t("literasi.detail.back")}
             </button>
             <Link
               to="/literasi"
-              className="text-sm font-semibold text-primary-600 hover:text-primary-700 transition"
+              className="text-xs sm:text-sm font-semibold text-primary-600 hover:text-primary-700 transition"
             >
               {t("literasi.detail.viewOther")}
             </Link>
@@ -65,7 +65,7 @@ export function LiterasiDetailPage() {
             <button
               type="button"
               onClick={() => toggleSave(Number(article?.id), 'Article')}
-              className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-semibold shadow-sm transition active:scale-95 ${
+              className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full border px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold shadow-sm transition active:scale-95 ${
                 saved 
                   ? "bg-primary-600 text-white border-primary-600 hover:bg-primary-700" 
                   : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
@@ -83,15 +83,15 @@ export function LiterasiDetailPage() {
               {errorKey === "not_found" ? t("literasi.detail.notFound") : t("literasi.detail.error")}
             </div>
           ) : localizedArticle ? (
-            <div className="space-y-10">
-              <article className="space-y-6">
+            <div className="space-y-8 sm:space-y-10 min-w-0 max-w-full">
+              <article className="space-y-6 min-w-0 max-w-full">
                 <LiterasiDetailHero 
                   article={localizedArticle} 
                   locale={locale} 
                   t={t} 
                 />
 
-                <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                <div className="rounded-2xl sm:rounded-[32px] border border-slate-200 bg-white p-4 sm:p-6 lg:p-8 shadow-sm min-w-0 max-w-full overflow-hidden">
                   <LiterasiDetailContent 
                     body={localizedArticle.body} 
                     excerpt={localizedArticle.excerpt} 

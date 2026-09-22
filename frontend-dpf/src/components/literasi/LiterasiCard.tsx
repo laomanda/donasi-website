@@ -82,12 +82,12 @@ export function LiterasiCard({ article, locale, t, variant = "save" }: LiterasiC
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
-        <h3 className="mt-2 font-heading text-lg font-semibold leading-snug text-slate-900 line-clamp-2 transition-colors group-hover:text-brandGreen-700">
+      <div className="flex flex-1 flex-col p-4 sm:p-5 min-w-0">
+        <h3 className="mt-2 font-heading text-lg font-semibold leading-snug text-slate-900 line-clamp-2 transition-colors group-hover:text-brandGreen-700 break-words [overflow-wrap:anywhere]">
           {pickLocale(article.title, article.title_en, locale)}
         </h3>
 
-        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">
+        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600 break-words [overflow-wrap:anywhere]">
           {pickLocale(article.excerpt, article.excerpt_en, locale)}
         </p>
 

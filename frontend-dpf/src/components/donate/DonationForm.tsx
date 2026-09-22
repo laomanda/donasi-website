@@ -47,17 +47,17 @@ export const DonationForm = ({
             <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4 text-slate-800 space-y-2">
                 <div className="flex items-center gap-2 text-amber-800 font-bold text-xs sm:text-sm">
                     <FontAwesomeIcon icon={faExclamationTriangle} className="text-amber-600 shrink-0 text-base" />
-                    <span>Pembayaran Online Midtrans Dalam Pengembangan</span>
+                    <span>{t("donate.banner.midtransDev.title", "Pembayaran Online Midtrans Dalam Pengembangan")}</span>
                 </div>
                 <p className="text-xs text-amber-950/80 leading-relaxed font-medium">
-                    Fitur donasi otomatis via Midtrans (QRIS, E-Wallet & Virtual Account) saat ini masih dalam tahap penyiapan & verifikasi sistem.
+                    {t("donate.banner.midtransDev.desc", "Fitur donasi otomatis via Midtrans (QRIS, E-Wallet & Virtual Account) saat ini masih dalam tahap penyiapan & verifikasi sistem.")}
                 </p>
                 <div className="pt-1">
                     <Link 
                         to="/konfirmasi-donasi" 
                         className="inline-flex items-center gap-1.5 text-xs font-bold text-brandGreen-700 hover:text-brandGreen-800 underline decoration-brandGreen-300 underline-offset-4 transition"
                     >
-                        <span>Gunakan Transfer Bank Manual & Konfirmasi Donasi</span>
+                        <span>{t("donate.banner.midtransDev.cta", "Gunakan Transfer Bank Manual & Konfirmasi Donasi")}</span>
                         <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
                     </Link>
                 </div>
@@ -76,7 +76,7 @@ export const DonationForm = ({
                             );
                             return {
                                 value: String(p.id),
-                                label: isClosed ? `${p.title} (Tersalurkan)` : p.title,
+                                label: isClosed ? `${p.title} (${t("donate.program.distributedTag", "Tersalurkan")})` : p.title,
                                 disabled: isClosed,
                             };
                         }),
@@ -163,7 +163,7 @@ export const DonationForm = ({
                         className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-5 py-3.5 text-sm font-bold text-slate-400 shadow-none transition"
                     >
                         <FontAwesomeIcon icon={faLock} className="text-slate-400" />
-                        <span>Pembayaran Online (Midtrans) - Dalam Pemeliharaan</span>
+                        <span>{t("donate.form.midtransMaintenance", "Pembayaran Online (Midtrans) - Dalam Pemeliharaan")}</span>
                     </button>
 
                     {/* Primary Action Button: Transfer Bank Manual */}
@@ -172,16 +172,16 @@ export const DonationForm = ({
                         className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brandGreen-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-brandGreen-600/20 transition hover:bg-brandGreen-700 hover:-translate-y-0.5"
                     >
                         <FontAwesomeIcon icon={faCreditCard} />
-                        <span>Donasi via Transfer Bank Manual & Konfirmasi</span>
+                        <span>{t("donate.form.manualTransferBtn", "Donasi via Transfer Bank Manual & Konfirmasi")}</span>
                     </Link>
                 </div>
 
                 <p className="text-xs text-center text-slate-500 pt-1">
-                    Silakan gunakan{" "}
+                    {t("donate.form.manualTransferNotePrefix", "Silakan gunakan")}{" "}
                     <Link to="/konfirmasi-donasi" className="font-bold text-brandGreen-700 hover:underline">
-                        Transfer Bank Manual
+                        {t("donate.form.manualTransferLink", "Transfer Bank Manual")}
                     </Link>{" "}
-                    atau hubungi tim DPF untuk informasi donasi.
+                    {t("donate.form.manualTransferNoteSuffix", "atau hubungi tim DPF untuk informasi donasi.")}
                 </p>
             </form>
         </div>

@@ -140,4 +140,82 @@ export const donateDict: Dict = {
         en: "Most scholars are of the opinion that what is meant by that hadith (ongoing charity) is Waqf, because ongoing charity is a charity whose benefits are continuous." 
     },
     "donate.quotes.4.source": { id: "", en: "" },
+
+    // Notice Banner & Form Buttons
+    "donate.banner.midtransDev.title": { 
+        id: "Pembayaran Online Midtrans Dalam Pengembangan", 
+        en: "Midtrans Online Payment Under Development" 
+    },
+    "donate.banner.midtransDev.desc": { 
+        id: "Fitur donasi otomatis via Midtrans (QRIS, E-Wallet & Virtual Account) saat ini masih dalam tahap penyiapan & verifikasi sistem.", 
+        en: "Automatic donation via Midtrans (QRIS, E-Wallet & Virtual Account) is currently undergoing system setup & verification." 
+    },
+    "donate.banner.midtransDev.cta": { 
+        id: "Gunakan Transfer Bank Manual & Konfirmasi Donasi", 
+        en: "Use Manual Bank Transfer & Confirm Donation" 
+    },
+    "donate.form.selectPlaceholder": { id: "Pilih Program", en: "Select Program" },
+    "donate.program.distributedTag": { id: "Tersalurkan", en: "Distributed" },
+    "donate.form.midtransMaintenance": { 
+        id: "Pembayaran Online (Midtrans) - Dalam Pemeliharaan", 
+        en: "Online Payment (Midtrans) - Under Maintenance" 
+    },
+    "donate.form.manualTransferBtn": { 
+        id: "Donasi via Transfer Bank Manual & Konfirmasi", 
+        en: "Donate via Manual Bank Transfer & Confirmation" 
+    },
+    "donate.form.manualTransferNotePrefix": { id: "Silakan gunakan", en: "Please use" },
+    "donate.form.manualTransferLink": { id: "Transfer Bank Manual", en: "Manual Bank Transfer" },
+    "donate.form.manualTransferNoteSuffix": { 
+        id: "atau hubungi tim DPF untuk informasi donasi.", 
+        en: "or contact the DPF team for donation inquiries." 
+    },
+
+    // Accounts & Copy
+    "donate.accounts.scanQris": { id: "Lihat / Scan QRIS", en: "View / Scan QRIS" },
+    "donate.accounts.copied": { id: "Tersalin!", en: "Copied!" },
+    "donate.accounts.copy": { id: "Salin", en: "Copy" },
+    "donate.accounts.copyTitle": { id: "Salin Nomor Rekening", en: "Copy Account Number" },
+
+    // Categories
+    "donate.category.bank_transfer": { id: "Transfer Bank", en: "Bank Transfer" },
+    "donate.category.domestic": { id: "Transfer Bank", en: "Bank Transfer" },
+    "donate.category.international": { id: "Transfer Internasional", en: "International Transfer" },
+    "donate.category.ewallet": { id: "E-Wallet", en: "E-Wallet" },
+    "donate.category.qris": { id: "QRIS", en: "QRIS" },
+    "donate.category.virtual_account": { id: "Virtual Account", en: "Virtual Account" },
+    "donate.category.other": { id: "Lainnya", en: "Other" },
+
+    // Modals & Overlays
+    "donate.modal.qrisTitle": { id: "Scan QRIS", en: "Scan QRIS" },
+    "donate.modal.qrisClose": { id: "Tutup Scan QRIS", en: "Close QRIS Modal" },
+    "donate.modal.qrisDesc": { 
+        id: "Scan kode QR di atas menggunakan aplikasi e-wallet atau mobile banking Anda.", 
+        en: "Scan the QR code above using your e-wallet or mobile banking app." 
+    },
+    "donate.success.overlay.title": { id: "Donasi Berhasil!", en: "Donation Successful!" },
+    "donate.success.overlay.sub": { 
+        id: "Terima kasih atas kebaikan Anda. Semoga menjadi amal jariyah.", 
+        en: "Thank you for your generosity. May it be an enduring charity." 
+    },
+    "donate.success.overlay.btn": { id: "Oke, Terima Kasih!", en: "Okay, Thank You!" },
+    "donate.failed.overlay.title": { id: "Transaksi Gagal", en: "Transaction Failed" },
+    "donate.failed.overlay.desc": { 
+        id: "Pembayaran tidak diselesaikan. Transaksi dibatalkan.", 
+        en: "Payment was not completed. Transaction cancelled." 
+    },
+    "donate.failed.overlay.btn": { id: "Tutup", en: "Close" },
+    "donate.overlay.dana.title": { id: "Verifikasi Pembayaran", en: "Payment Verification" },
+    "donate.overlay.dana.desc": { 
+        id: "Apakah Anda sudah berhasil menyelesaikan pembayaran melalui", 
+        en: "Have you successfully completed your payment via" 
+    },
+    "donate.overlay.dana.confirmBtn": { id: "Ya, Sudah Bayar", en: "Yes, I Have Paid" },
+    "donate.overlay.dana.cancelBtn": { id: "Belum / Batal", en: "Not Yet / Cancel" },
+    "donate.overlay.pending.title": { id: "Menunggu Pembayaran", en: "Awaiting Payment" },
+    "donate.overlay.pending.desc": { 
+        id: "Selesaikan pembayaran Anda segera.", 
+        en: "Please complete your payment soon." 
+    },
+    "donate.overlay.pending.checkBtn": { id: "Cek Status", en: "Check Status" },
 };

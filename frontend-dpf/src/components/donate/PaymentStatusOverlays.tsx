@@ -135,9 +135,9 @@ export const PaymentStatusOverlays = ({
                                     <FontAwesomeIcon icon={faCreditCard} className="text-3xl text-blue-600" />
                                 </div>
                             </div>
-                            <h3 className="mb-2 text-lg font-bold text-slate-900">Verifikasi Pembayaran</h3>
+                            <h3 className="mb-2 text-lg font-bold text-slate-900">{t("donate.overlay.dana.title", "Verifikasi Pembayaran")}</h3>
                             <p className="mb-5 text-sm text-slate-600 leading-relaxed">
-                                Apakah Anda sudah berhasil menyelesaikan pembayaran melalui <strong>Dana / GoPay</strong>?
+                                {t("donate.overlay.dana.desc", "Apakah Anda sudah berhasil menyelesaikan pembayaran melalui")} <strong>Dana / GoPay</strong>?
                             </p>
                             <div className="flex flex-col gap-2">
                                 <button
@@ -149,13 +149,13 @@ export const PaymentStatusOverlays = ({
                                     className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brandGreen-600 px-6 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-brandGreen-700 disabled:opacity-50"
                                 >
                                     {checkingPayment ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faCheckCircle} />}
-                                    Ya, Sudah Bayar
+                                    {t("donate.overlay.dana.confirmBtn", "Ya, Sudah Bayar")}
                                 </button>
                                 <button
                                     onClick={() => setShowDanaConfirm(false)}
                                     className="w-full rounded-xl bg-slate-100 px-6 py-3 text-sm font-bold text-slate-500 transition hover:bg-slate-200"
                                 >
-                                    Belum / Batal
+                                    {t("donate.overlay.dana.cancelBtn", "Belum / Batal")}
                                 </button>
                             </div>
                         </motion.div>
@@ -178,8 +178,8 @@ export const PaymentStatusOverlays = ({
                                     <FontAwesomeIcon icon={faSpinner} spin className="text-brandGreen-500" />
                                 </div>
                                 <div>
-                                    <h4 className="text-xs font-bold text-slate-900">Menunggu Pembayaran</h4>
-                                    <p className="text-[10px] text-slate-500">Selesaikan pembayaran Anda segera.</p>
+                                    <h4 className="text-xs font-bold text-slate-900">{t("donate.overlay.pending.title", "Menunggu Pembayaran")}</h4>
+                                    <p className="text-[10px] text-slate-500">{t("donate.overlay.pending.desc", "Selesaikan pembayaran Anda segera.")}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 border-l pl-4 border-slate-100">
@@ -188,7 +188,7 @@ export const PaymentStatusOverlays = ({
                                     disabled={checkingPayment}
                                     className="rounded-lg bg-brandGreen-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-brandGreen-700 disabled:opacity-50"
                                 >
-                                    {checkingPayment ? <FontAwesomeIcon icon={faSpinner} spin /> : "Cek Status"}
+                                    {checkingPayment ? <FontAwesomeIcon icon={faSpinner} spin /> : t("donate.overlay.pending.checkBtn", "Cek Status")}
                                 </button>
                                 <button
                                     onClick={() => setShowPendingBanner(false)}

@@ -45,7 +45,7 @@ export function ProgramDetailPage() {
   return (
     <LandingLayout>
       <section id="hero" className="bg-slate-50">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <div className="mx-auto max-w-6xl px-3.5 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16 min-w-0 max-w-full">
           <ProgramDetailActionHeader 
             programId={Number(program?.id)}
             locale={locale}
@@ -67,8 +67,8 @@ export function ProgramDetailPage() {
                   : "Gagal memuat detail program."}
             </div>
           ) : localizedProgram ? (
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-              <div className="space-y-8">
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start min-w-0 max-w-full">
+              <div className="space-y-6 sm:space-y-8 min-w-0 max-w-full">
                 <ProgramDetailGallery 
                   galleryUrls={galleryUrls.filter((url): url is string => !!url)}
                   activeImageIndex={activeImageIndex}

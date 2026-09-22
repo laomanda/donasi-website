@@ -473,13 +473,13 @@ const DonatePage = () => {
     ];
 
     const categoryLabels: Record<string, string> = {
-        bank_transfer: "Transfer Bank",
-        domestic: "Transfer Bank",
-        international: "Transfer Internasional",
-        ewallet: "E-Wallet",
-        qris: "QRIS",
-        virtual_account: "Virtual Account",
-        other: "Lainnya"
+        bank_transfer: t("donate.category.bank_transfer", "Transfer Bank"),
+        domestic: t("donate.category.domestic", "Transfer Bank"),
+        international: t("donate.category.international", "Transfer Internasional"),
+        ewallet: t("donate.category.ewallet", "E-Wallet"),
+        qris: t("donate.category.qris", "QRIS"),
+        virtual_account: t("donate.category.virtual_account", "Virtual Account"),
+        other: t("donate.category.other", "Lainnya")
     };
 
     return (
@@ -650,11 +650,11 @@ const DonatePage = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 px-4 backdrop-blur-sm" onClick={() => setQrisImage(null)}>
                     <div className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl transition-all p-6" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-slate-800">Scan QRIS</h3>
+                            <h3 className="text-lg font-bold text-slate-800">{t("donate.modal.qrisTitle", "Scan QRIS")}</h3>
                             <button
                                 type="button"
                                 onClick={() => setQrisImage(null)}
-                                aria-label="Tutup Scan QRIS"
+                                aria-label={t("donate.modal.qrisClose", "Tutup Scan QRIS")}
                                 className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
                             >
                                 <FontAwesomeIcon icon={faTimesCircle} />
@@ -664,7 +664,7 @@ const DonatePage = () => {
                             <img src={qrisImage} alt="QRIS Code" className="h-full w-full object-contain" />
                         </div>
                         <p className="mt-4 text-center text-sm font-medium text-slate-500">
-                            Scan kode QR di atas menggunakan aplikasi e-wallet atau mobile banking Anda.
+                            {t("donate.modal.qrisDesc", "Scan kode QR di atas menggunakan aplikasi e-wallet atau mobile banking Anda.")}
                         </p>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlus,
@@ -11,6 +11,7 @@ import {
   faXmark,
   faCheck,
   faVideo,
+  faImage,
 } from "@fortawesome/free-solid-svg-icons";
 import type { ArticleFormState } from "../../../../types/article";
 import React from "react";
@@ -32,6 +33,7 @@ type EditorArticleFormContentProps = {
   uploadContentImage: (file: File) => Promise<string | null>;
   uploadContentVideo?: (file: File) => Promise<string | null>;
   insertIntoBody: (snippet: string) => void;
+  insertIntoField?: (field: "body" | "body_en", snippet: string, isBlock?: boolean) => void;
   contentImageUploading: boolean;
   contentImageUploadError: string | null;
   contentVideoUploading?: boolean;
@@ -55,6 +57,7 @@ export default function EditorArticleFormContent({
   uploadContentImage,
   uploadContentVideo,
   insertIntoBody,
+  insertIntoField,
   contentImageUploading,
   contentImageUploadError,
   contentVideoUploading = false,
@@ -62,10 +65,42 @@ export default function EditorArticleFormContent({
 }: EditorArticleFormContentProps) {
   const disabled = loading || saving || deleting;
 
+  // Melacak field mana yang sedang ditargetkan saat menyisipkan media (gambar/video)
+  const [activeMediaField, setActiveMediaField] = useState<"body" | "body_en">("body");
+
   const [activeLinkField, setActiveLinkField] = useState<"body" | "body_en" | null>(null);
   const [linkUrl, setLinkUrl] = useState("");
   const [linkText, setLinkText] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
+
+  const doInsert = (field: "body" | "body_en", snippet: string, isBlock = true) => {
+    if (insertIntoField) {
+      insertIntoField(field, snippet, isBlock);
+    } else {
+      insertIntoBody(snippet);
+    }
+  };
+
+  // Ekstraksi URL gambar dari konten Bahasa Indonesia dan Bahasa Inggris
+  const extractImageUrls = (content: string | null | undefined): string[] => {
+    if (!content) return [];
+    const regex = /<img[^>]+src=["']([^"']+)["']/gi;
+    const urls: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(content)) !== null) {
+      if (match[1] && !urls.includes(match[1])) {
+        urls.push(match[1]);
+      }
+    }
+    return urls;
+  };
+
+  const bodyImages = useMemo(() => extractImageUrls(form.body), [form.body]);
+  const bodyEnImages = useMemo(() => extractImageUrls(form.body_en), [form.body_en]);
+  const uninsertedImages = useMemo(
+    () => bodyImages.filter((url) => !bodyEnImages.includes(url)),
+    [bodyImages, bodyEnImages]
+  );
 
   const openLinkPopover = (field: "body" | "body_en") => {
     if (field === "body") rememberBodySelection();
@@ -119,30 +154,87 @@ export default function EditorArticleFormContent({
     return (
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
+          {/* Sisipkan Gambar */}
           <button
             type="button"
-            onMouseDown={rememberFn}
-            onClick={() => contentImageInputRef.current?.click()}
+            onMouseDown={() => {
+              setActiveMediaField(field);
+              rememberFn();
+            }}
+            onClick={() => {
+              setActiveMediaField(field);
+              contentImageInputRef.current?.click();
+            }}
             className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-            disabled={!canSubmit}
-            title="Sisipkan Gambar (Otomatis Sync ke Konten Indo & Inggris)"
+            disabled={!canSubmit || contentImageUploading}
+            title={isBody ? "Sisipkan Gambar ke Konten Indonesia" : "Sisipkan Gambar ke Konten Bahasa Inggris"}
           >
-            <FontAwesomeIcon icon={faPlus} />
+            <FontAwesomeIcon icon={faImage} />
             <span>Gambar</span>
           </button>
 
+          {/* Sisipkan Video */}
           <button
             type="button"
-            onMouseDown={rememberFn}
-            onClick={() => contentVideoInputRef?.current?.click()}
+            onMouseDown={() => {
+              setActiveMediaField(field);
+              rememberFn();
+            }}
+            onClick={() => {
+              setActiveMediaField(field);
+              contentVideoInputRef?.current?.click();
+            }}
             className="inline-flex items-center gap-1.5 rounded-2xl border border-purple-200 bg-purple-50/60 px-3 py-1.5 text-xs font-bold text-purple-700 shadow-sm transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-70"
             disabled={!canSubmit || contentVideoUploading}
-            title="Sisipkan Video di Paragraf (Otomatis Sync ke Konten Indo & Inggris)"
+            title={isBody ? "Sisipkan Video ke Konten Indonesia" : "Sisipkan Video ke Konten Bahasa Inggris"}
           >
             <FontAwesomeIcon icon={faVideo} />
             <span>Video</span>
           </button>
 
+          {/* Subheading H2 */}
+          <button
+            type="button"
+            onMouseDown={rememberFn}
+            onClick={() =>
+              insertInlineTag(field, "<h2>", "</h2>", isBody ? "Judul Bagian" : "Section Heading")
+            }
+            className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-extrabold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={!canSubmit}
+            title="Heading 2 (Judul Bagian)"
+          >
+            <span className="font-heading">H2</span>
+          </button>
+
+          {/* Subheading H3 */}
+          <button
+            type="button"
+            onMouseDown={rememberFn}
+            onClick={() =>
+              insertInlineTag(field, "<h3>", "</h3>", isBody ? "Sub-Judul Bagian" : "Sub-heading")
+            }
+            className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-extrabold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={!canSubmit}
+            title="Heading 3 (Sub-judul)"
+          >
+            <span className="font-heading">H3</span>
+          </button>
+
+          {/* Paragraf */}
+          <button
+            type="button"
+            onMouseDown={rememberFn}
+            onClick={() =>
+              insertInlineTag(field, "<p>", "</p>", isBody ? "Teks paragraf baru" : "New paragraph text")
+            }
+            className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={!canSubmit}
+            title="Bungkus Paragraf (<p>)"
+          >
+            <span>&para; P</span>
+          </button>
+
+          {/* Tebal */}
           <button
             type="button"
             onMouseDown={rememberFn}
@@ -155,6 +247,7 @@ export default function EditorArticleFormContent({
             <span>Tebal</span>
           </button>
 
+          {/* Miring */}
           <button
             type="button"
             onMouseDown={rememberFn}
@@ -167,10 +260,18 @@ export default function EditorArticleFormContent({
             <span>Miring</span>
           </button>
 
+          {/* Bullet List */}
           <button
             type="button"
             onMouseDown={rememberFn}
-            onClick={() => insertInlineTag(field, "<ul>\n  <li>", "</li>\n  <li>Item kedua</li>\n</ul>", isBody ? "Item pertama" : "First item")}
+            onClick={() =>
+              insertInlineTag(
+                field,
+                "<ul>\n  <li>",
+                "</li>\n  <li>Item kedua</li>\n</ul>",
+                isBody ? "Item pertama" : "First item"
+              )
+            }
             className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
             disabled={!canSubmit}
             title="Bullet List"
@@ -179,10 +280,18 @@ export default function EditorArticleFormContent({
             <span>List</span>
           </button>
 
+          {/* Numbered List */}
           <button
             type="button"
             onMouseDown={rememberFn}
-            onClick={() => insertInlineTag(field, "<ol>\n  <li>", "</li>\n  <li>Langkah kedua</li>\n</ol>", isBody ? "Langkah pertama" : "First step")}
+            onClick={() =>
+              insertInlineTag(
+                field,
+                "<ol>\n  <li>",
+                "</li>\n  <li>Langkah kedua</li>\n</ol>",
+                isBody ? "Langkah pertama" : "First step"
+              )
+            }
             className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
             disabled={!canSubmit}
             title="Numbered List"
@@ -191,6 +300,7 @@ export default function EditorArticleFormContent({
             <span>Nomor</span>
           </button>
 
+          {/* Tautan */}
           <button
             type="button"
             onMouseDown={rememberFn}
@@ -207,21 +317,24 @@ export default function EditorArticleFormContent({
             <span>Tautan</span>
           </button>
 
-          {isBody && contentImageUploading && (
-            <span className="text-xs font-semibold text-slate-500">Mengunggah gambar...</span>
+          {activeMediaField === field && contentImageUploading && (
+            <span className="text-xs font-semibold text-slate-500 animate-pulse">Mengunggah gambar...</span>
           )}
 
-          {isBody && contentVideoUploading && (
-            <span className="text-xs font-semibold text-purple-600">Mengunggah video...</span>
+          {activeMediaField === field && contentVideoUploading && (
+            <span className="text-xs font-semibold text-purple-600 animate-pulse">Mengunggah video...</span>
           )}
 
-          {isBody && contentVideoUploadError && (
+          {activeMediaField === field && contentVideoUploadError && (
             <span className="text-xs font-semibold text-red-600">{contentVideoUploadError}</span>
           )}
         </div>
 
         {activeLinkField === field && (
-          <form onSubmit={handleInsertLink} className="rounded-2xl border border-brandGreen-200 bg-brandGreen-50/60 p-4 space-y-3 shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
+          <form
+            onSubmit={handleInsertLink}
+            className="rounded-2xl border border-brandGreen-200 bg-brandGreen-50/60 p-4 space-y-3 shadow-sm animate-in fade-in slide-in-from-top-2 duration-200"
+          >
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-bold uppercase tracking-wider text-brandGreen-800 flex items-center gap-2">
                 <FontAwesomeIcon icon={faLink} />
@@ -267,9 +380,7 @@ export default function EditorArticleFormContent({
               </div>
             </div>
 
-            {linkError && (
-              <p className="text-xs font-semibold text-red-600">{linkError}</p>
-            )}
+            {linkError && <p className="text-xs font-semibold text-red-600">{linkError}</p>}
 
             <div className="flex items-center justify-end gap-2 pt-1">
               <button
@@ -296,17 +407,18 @@ export default function EditorArticleFormContent({
   return (
     <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8">
       <div className="grid grid-cols-1 gap-6">
+        {/* FIELD KONTEN BAHASA INDONESIA */}
         <label className="block">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
             Konten (Bahasa Indonesia) <span className="text-red-500">*</span>
             <span className="normal-case font-semibold tracking-normal text-slate-500">
-              Bisa teks biasa atau HTML.
+              Bisa teks biasa atau kode HTML. Format HTML tetap terjaga rapi saat menyisipkan foto.
             </span>
           </span>
 
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs font-semibold text-slate-500">
-              Gunakan toolbar di bawah untuk menambah heading, list, atau tautan.
+              Gunakan toolbar untuk menyisipkan gambar, heading, paragraf, atau tautan.
             </p>
             {renderToolbar("body")}
           </div>
@@ -319,7 +431,7 @@ export default function EditorArticleFormContent({
             onMouseUp={rememberBodySelection}
             onBlur={rememberBodySelection}
             rows={14}
-            placeholder="Tulis isi artikel lengkap di sini..."
+            placeholder="Tulis atau paste isi artikel berformat HTML / teks di sini..."
             className="mt-2 w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
             disabled={disabled}
             ref={bodyTextareaRef}
@@ -328,35 +440,104 @@ export default function EditorArticleFormContent({
           {contentImageUploadError && (
             <p className="mt-3 text-sm font-semibold text-red-700">{contentImageUploadError}</p>
           )}
-
-          <input
-            type="file"
-            accept="image/*"
-            aria-label="Unggah gambar konten artikel"
-            className="hidden"
-            ref={contentImageInputRef}
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (!file) return;
-
-              const url = await uploadContentImage(file);
-              if (!url) return;
-
-              const snippet = `<img src="${url}" alt="Gambar artikel" loading="lazy" />`;
-              insertIntoBody(snippet);
-            }}
-            disabled={!canSubmit}
-          />
         </label>
 
-        <label className="block">
-          <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
-            Konten (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
-            <span className="normal-case font-semibold tracking-normal text-slate-500">
-              Bisa teks biasa atau HTML.
+        {/* FIELD KONTEN BAHASA INGGRIS */}
+        <div className="block space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+              Konten (Bahasa Inggris) <span className="text-slate-400">(opsional)</span>
+              <span className="normal-case font-semibold tracking-normal text-slate-500">
+                Bisa teks biasa atau kode HTML.
+              </span>
             </span>
-          </span>
+          </div>
+
+          {/* KETERANGAN STATUS FOTO BAHASA INGGRIS */}
+          {bodyImages.length > 0 && uninsertedImages.length > 0 && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/85 p-4 shadow-sm animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                  <FontAwesomeIcon icon={faCircleInfo} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-amber-900">
+                      Keterangan: Foto Belum Dimasukkan ke Versi Bahasa Inggris
+                    </h4>
+                    <span className="rounded-full bg-amber-200/80 px-2.5 py-0.5 text-[11px] font-bold text-amber-900">
+                      {uninsertedImages.length} dari {bodyImages.length} foto tersedia
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-amber-800/90 leading-relaxed">
+                    Foto pada artikel versi Indonesia belum dimasukkan ke versi Bahasa Inggris ini. Klik tombol di bawah untuk menyisipkan foto ke posisi kursor teks Bahasa Inggris:
+                  </p>
+
+                  <div className="mt-3 flex flex-wrap gap-2.5">
+                    {uninsertedImages.map((imgUrl) => {
+                      const originalIndex = bodyImages.indexOf(imgUrl) + 1;
+                      return (
+                        <div
+                          key={imgUrl}
+                          className="flex items-center gap-2.5 rounded-xl border border-amber-200 bg-white p-1.5 pr-3 shadow-xs"
+                        >
+                          <img
+                            src={imgUrl}
+                            alt={`Foto ${originalIndex}`}
+                            className="h-10 w-10 rounded-lg object-cover border border-slate-200"
+                          />
+                          <div className="flex flex-col">
+                            <span className="text-[11px] font-bold text-slate-700">Foto {originalIndex}</span>
+                            <button
+                              type="button"
+                              onMouseDown={rememberBodyEnSelection}
+                              onClick={() => {
+                                const snippet = `<img src="${imgUrl}" alt="Article image" loading="lazy" />`;
+                                doInsert("body_en", snippet, true);
+                              }}
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-brandGreen-700 hover:text-brandGreen-800 hover:underline text-left"
+                              title="Sisipkan foto ini pada posisi kursor Bahasa Inggris"
+                              disabled={disabled}
+                            >
+                              <FontAwesomeIcon icon={faPlus} className="text-[9px]" />
+                              Sisipkan ke Kursor
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {uninsertedImages.length > 1 && (
+                      <button
+                        type="button"
+                        onMouseDown={rememberBodyEnSelection}
+                        onClick={() => {
+                          const snippetAll = uninsertedImages
+                            .map((url) => `<img src="${url}" alt="Article image" loading="lazy" />`)
+                            .join("\n\n");
+                          doInsert("body_en", snippetAll, true);
+                        }}
+                        className="self-center rounded-xl border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold text-amber-900 shadow-xs hover:bg-amber-100 transition"
+                        disabled={disabled}
+                        title="Sisipkan semua foto yang belum ada ke posisi kursor Bahasa Inggris"
+                      >
+                        Sisipkan Semua ({uninsertedImages.length})
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {bodyImages.length > 0 && uninsertedImages.length === 0 && (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-2.5 flex items-center justify-between text-xs text-emerald-800 shadow-xs">
+              <span className="flex items-center gap-2 font-medium">
+                <FontAwesomeIcon icon={faCheck} className="text-emerald-600" />
+                Semua foto dari versi Indonesia ({bodyImages.length} foto) sudah dimasukkan ke konten Bahasa Inggris.
+              </span>
+            </div>
+          )}
 
           <div className="mt-3">
             {renderToolbar("body_en")}
@@ -370,12 +551,12 @@ export default function EditorArticleFormContent({
             onMouseUp={rememberBodyEnSelection}
             onBlur={rememberBodyEnSelection}
             rows={14}
-            placeholder="Terjemahan isi artikel (opsional)."
+            placeholder="Terjemahan isi artikel (opsional). Anda dapat menyisipkan foto secara bebas di posisi manapun."
             className="mt-2 w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
             disabled={disabled}
             ref={bodyEnTextareaRef}
           />
-        </label>
+        </div>
 
         <p className="text-xs font-semibold text-slate-500">
           <span className="inline-flex items-center gap-2">
@@ -384,7 +565,29 @@ export default function EditorArticleFormContent({
           </span>
         </p>
 
-        {/* Hidden File Input for Paragraph Inline Video */}
+        {/* INPUT FILE UNTUK GAMBAR (DIPAKAI OLEH BODY MAUPUN BODY_EN) */}
+        <input
+          type="file"
+          accept="image/*"
+          aria-label="Unggah gambar konten artikel"
+          className="hidden"
+          ref={contentImageInputRef}
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (!file) return;
+
+            const url = await uploadContentImage(file);
+            if (!url) return;
+
+            const altText = activeMediaField === "body" ? "Gambar artikel" : "Article image";
+            const snippet = `<img src="${url}" alt="${altText}" loading="lazy" />`;
+            doInsert(activeMediaField, snippet, true);
+          }}
+          disabled={!canSubmit}
+        />
+
+        {/* INPUT FILE UNTUK VIDEO PARAGRAF */}
         {contentVideoInputRef && (
           <input
             type="file"
@@ -397,7 +600,7 @@ export default function EditorArticleFormContent({
                 const videoUrl = await uploadContentVideo(file);
                 if (videoUrl) {
                   const videoSnippet = `<video controls preload="metadata" class="my-6 w-full rounded-2xl shadow-md overflow-hidden bg-black aspect-video" src="${videoUrl}"></video>`;
-                  insertIntoBody(videoSnippet);
+                  doInsert(activeMediaField, videoSnippet, true);
                 }
               }
               e.target.value = "";

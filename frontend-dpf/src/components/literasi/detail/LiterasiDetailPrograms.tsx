@@ -13,14 +13,14 @@ export function LiterasiDetailPrograms({ programs = [], locale }: LiterasiDetail
   if (!programs || programs.length === 0) return null;
 
   return (
-    <section className="mt-8 rounded-[32px] border border-emerald-150 bg-gradient-to-br from-emerald-50/80 via-white to-slate-50 p-6 sm:p-8 shadow-sm">
+    <section className="mt-8 rounded-2xl sm:rounded-[32px] border border-emerald-150 bg-gradient-to-br from-emerald-50/80 via-white to-slate-50 p-4 sm:p-6 lg:p-8 shadow-sm min-w-0 max-w-full overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-100/80 pb-4">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100/80 px-3 py-1 text-xs font-bold text-emerald-800">
             <FontAwesomeIcon icon={faHandHoldingHeart} className="text-emerald-600" />
             <span>{locale === "en" ? "Related Waqf Program" : "Program Wakaf Terkait"}</span>
           </div>
-          <h3 className="mt-2 text-lg sm:text-xl font-heading font-bold text-slate-900">
+          <h3 className="mt-2 text-lg sm:text-xl font-heading font-bold text-slate-900 break-words [overflow-wrap:anywhere]">
             {locale === "en"
               ? "Support Related Waqf Programs"
               : "Salurkan Kebaikan Melalui Program Terkait"}
@@ -35,7 +35,7 @@ export function LiterasiDetailPrograms({ programs = [], locale }: LiterasiDetail
             <Link
               key={prog.id}
               to={`/programs/${prog.slug}`}
-              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-md"
+              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-md min-w-0"
             >
               <div>
                 {thumbUrl ? (
@@ -60,7 +60,7 @@ export function LiterasiDetailPrograms({ programs = [], locale }: LiterasiDetail
                   )
                 )}
 
-                <h4 className="mt-3 text-sm font-bold text-slate-900 line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors">
+                <h4 className="mt-3 text-sm font-bold text-slate-900 line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors break-words [overflow-wrap:anywhere]">
                   {prog.title}
                 </h4>
               </div>

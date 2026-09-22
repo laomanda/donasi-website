@@ -5,7 +5,7 @@ import { imagePlaceholder } from "@/lib/placeholder";
 import { useLang } from "../../../lib/i18n";
 import { translate } from "../../../lib/i18n-utils";
 import { literasiDict } from "../../../components/literasi/LiterasiI18n";
-import { sanitizeHtml } from "../../../lib/sanitize";
+import { formatArticleContentHtml, isHtmlContent } from "../../../lib/articleContent";
 
 // Preview Components
 import type { PreviewPayload } from "../../../components/management/editor/article/preview/ArticlePreviewTypes";
@@ -103,20 +103,18 @@ export function PreviewPage() {
     return String(article?.video_url ?? "").trim() || undefined;
   }, [article?.video_url]);
 
-  const isProbablyHtml = useMemo(() => {
-    const body = String(article?.body ?? "");
-    return /<\/?(p|div|span|h1|h2|h3|h4|ul|ol|li|br|strong|em|img|video|source|a|blockquote)\b/i.test(body);
-  }, [article?.body]);
-
   const rawContent = useMemo(() => {
     return String(article?.body ?? article?.excerpt ?? "");
   }, [article?.body, article?.excerpt]);
 
+  const isProbablyHtml = useMemo(() => {
+    return isHtmlContent(rawContent);
+  }, [rawContent]);
+
   const contentHtml = useMemo(() => {
-    if (!rawContent) return "";
-    if (isProbablyHtml) return sanitizeHtml(rawContent);
-    return sanitizeHtml(rawContent.replace(/\n/g, "<br/>"));
-  }, [isProbablyHtml, rawContent]);
+    return formatArticleContentHtml(rawContent);
+  }, [rawContent]);
+
 
   const onBack = () => {
     if (typeof window !== "undefined" && window.opener) {

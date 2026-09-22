@@ -32,8 +32,8 @@ export default function ArticlePreviewContent({
   title,
   excerpt,
   contentHtml,
-  isProbablyHtml,
-  rawContent,
+  isProbablyHtml: _isProbablyHtml,
+  rawContent: _rawContent,
   emptyContentLabel,
 }: Props) {
   return (
@@ -70,14 +70,13 @@ export default function ArticlePreviewContent({
           "[&_img]:my-6 [&_img]:block [&_img]:w-full [&_img]:h-auto [&_img]:rounded-2xl [&_img]:shadow-sm [&_img]:ring-1 [&_img]:ring-slate-200",
           "[&_video]:my-6 [&_video]:block [&_video]:w-full [&_video]:max-h-[500px] [&_video]:rounded-2xl [&_video]:shadow-md [&_video]:bg-black",
         ].join(" ")}
-        {...(isProbablyHtml ? { dangerouslySetInnerHTML: { __html: contentHtml } } : {})}
+        {...(contentHtml ? { dangerouslySetInnerHTML: { __html: contentHtml } } : {})}
       >
-        {isProbablyHtml ? null : rawContent ? (
-          <div className="whitespace-pre-wrap">{rawContent}</div>
-        ) : (
+        {contentHtml ? null : (
           <p className="text-sm font-semibold text-slate-500">{emptyContentLabel}</p>
         )}
       </div>
     </div>
   );
 }
+

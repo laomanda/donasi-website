@@ -20,7 +20,7 @@ export function LiterasiDetailRelated({ related, locale, t }: LiterasiDetailRela
   }
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <section className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 lg:p-8 shadow-sm min-w-0 max-w-full overflow-hidden">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold text-slate-500">{locale === "en" ? "Recommendation" : "Rekomendasi"}</p>
@@ -36,7 +36,7 @@ export function LiterasiDetailRelated({ related, locale, t }: LiterasiDetailRela
           <Link
             key={item.id}
             to={`/literasi/${item.slug}`}
-            className="group overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-primary-100 hover:shadow-soft"
+            className="group overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-primary-100 hover:shadow-soft min-w-0"
           >
             <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
               <img
@@ -53,7 +53,7 @@ export function LiterasiDetailRelated({ related, locale, t }: LiterasiDetailRela
                 onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
               />
             </div>
-            <div className="p-5">
+            <div className="p-4 sm:p-5">
               <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-500">
                 {item.category ? (
                   <span className="inline-flex min-w-0 max-w-full items-center rounded-full bg-brandGreen-50 px-3 py-1 text-[11px] font-semibold text-brandGreen-700 ring-1 ring-brandGreen-100 sm:max-w-[14rem] truncate">
@@ -62,10 +62,10 @@ export function LiterasiDetailRelated({ related, locale, t }: LiterasiDetailRela
                 ) : null}
                 <span>{locale === "en" ? "Published" : "Terbit"}: {formatDate(item.published_at, locale, t)}</span>
               </div>
-              <h3 className="mt-2 line-clamp-2 font-heading text-base font-bold text-slate-900 group-hover:text-primary-700">
+              <h3 className="mt-2 line-clamp-2 font-heading text-base font-bold text-slate-900 group-hover:text-primary-700 break-words [overflow-wrap:anywhere]">
                 {item.title}
               </h3>
-              {item.excerpt && <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.excerpt}</p>}
+              {item.excerpt && <p className="mt-2 line-clamp-2 text-sm text-slate-600 break-words [overflow-wrap:anywhere]">{item.excerpt}</p>}
             </div>
           </Link>
         ))}

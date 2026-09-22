@@ -107,17 +107,17 @@ export const AccountCard = ({
                         className={`inline-flex items-center gap-1.5 text-xs font-semibold transition ${
                             copied ? "text-brandGreen-700 font-bold" : "text-brandGreen-600 hover:text-brandGreen-700"
                         }`}
-                        title="Salin Nomor Rekening"
+                        title={t("donate.accounts.copyTitle", "Salin Nomor Rekening")}
                     >
                         {copied ? (
                             <>
                                 <FontAwesomeIcon icon={faCheck} className="text-brandGreen-600" />
-                                <span>Tersalin!</span>
+                                <span>{t("donate.accounts.copied", "Tersalin!")}</span>
                             </>
                         ) : (
                             <>
                                 <FontAwesomeIcon icon={faCopy} className="text-[11px]" />
-                                <span>Salin</span>
+                                <span>{t("donate.accounts.copy", "Salin")}</span>
                             </>
                         )}
                     </button>
@@ -136,7 +136,7 @@ export const AccountCard = ({
                         className="mt-3 w-full rounded-xl border border-brandGreen-200 bg-brandGreen-50 py-2.5 text-center text-sm font-bold text-brandGreen-700 hover:bg-brandGreen-100 transition"
                     >
                         <FontAwesomeIcon icon={faQrcode} className="mr-2" />
-                        Lihat / Scan QRIS
+                        {t("donate.accounts.scanQris", "Lihat / Scan QRIS")}
                     </button>
                 )}
             </div>

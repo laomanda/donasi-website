@@ -81,10 +81,10 @@ export function LandingLayout({
   }, [programs, locale]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-body antialiased">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-body antialiased overflow-x-hidden">
       <LandingNavbar />
 
-      <main className="pt-24">{children}</main>
+      <main className="pt-24 min-w-0 max-w-full overflow-x-clip">{children}</main>
 
       <div className={footerWaveBgClassName}>
         <WaveDivider fillClassName="fill-brandGreen-700" className="-mb-[1px]" />

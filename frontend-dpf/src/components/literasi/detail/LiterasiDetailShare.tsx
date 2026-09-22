@@ -27,11 +27,11 @@ export function LiterasiDetailShare({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={handleShare}
-            className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-200"
+            className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-primary-600 px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-200"
           >
             <FontAwesomeIcon icon={faShareNodes} />
             {locale === "en" ? "Share" : "Bagikan"}
@@ -40,7 +40,7 @@ export function LiterasiDetailShare({
             href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-brandGreen-200 bg-brandGreen-50 px-4 py-2.5 text-sm font-semibold text-brandGreen-700 transition hover:bg-brandGreen-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brandGreen-200"
+            className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-brandGreen-200 bg-brandGreen-50 px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-semibold text-brandGreen-700 transition hover:bg-brandGreen-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brandGreen-200"
           >
             <FontAwesomeIcon icon={faWhatsapp} />
             WhatsApp
@@ -48,7 +48,7 @@ export function LiterasiDetailShare({
           <button
             type="button"
             onClick={copyToClipboard}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary-200 hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-200"
+            className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary-200 hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-200"
           >
             <FontAwesomeIcon icon={faLink} />
             {locale === "en" ? "Copy link" : "Salin tautan"}
