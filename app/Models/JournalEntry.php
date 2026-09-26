@@ -5,6 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $accounting_period_id
+ * @property string $journal_number
+ * @property \Illuminate\Support\Carbon|null $transaction_date
+ * @property string|null $reference_type
+ * @property int|null $reference_id
+ * @property int|null $program_id
+ * @property string|null $description
+ * @property string $status
+ * @property int|null $created_by
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ */
 class JournalEntry extends Model
 {
     use HasFactory;

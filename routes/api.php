@@ -51,6 +51,10 @@ use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboa
 use App\Http\Controllers\Api\Superadmin\RoleController as SuperadminRoleController;
 use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
 use App\Http\Controllers\Api\Finance\JournalEntryController;
+use App\Http\Controllers\Api\Finance\GeneralLedgerController;
+use App\Http\Controllers\Api\Finance\TrialBalanceController;
+use App\Http\Controllers\Api\Finance\FinancialStatementController;
+use App\Http\Controllers\Api\Finance\WaqfAssetReportController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -301,6 +305,13 @@ Route::prefix('v1')->group(function () {
             Route::post('journals/{id}/post', [JournalEntryController::class, 'post']);
             Route::post('journals/{id}/void', [JournalEntryController::class, 'void']);
             Route::post('journals/{id}/reverse', [JournalEntryController::class, 'reverse']);
+            Route::get('general-ledger', [GeneralLedgerController::class, 'index']);
+            Route::get('trial-balance', [TrialBalanceController::class, 'index']);
+            Route::get('balance-sheet', [FinancialStatementController::class, 'balanceSheet']);
+            Route::get('activity-statement', [FinancialStatementController::class, 'activityStatement']);
+            Route::get('waqf-assets-report', [WaqfAssetReportController::class, 'index']);
+            Route::get('waqf-assets-register', [WaqfAssetReportController::class, 'register']);
+            Route::get('waqf-assets/{id}', [WaqfAssetReportController::class, 'show']);
         });
 
     /*

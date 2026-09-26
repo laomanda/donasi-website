@@ -5,6 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $asset_id
+ * @property int $period_id
+ * @property float $depreciation_expense
+ * @property float $accumulated_depreciation
+ * @property float $book_value
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ */
 class AssetDepreciation extends Model
 {
     use HasFactory;

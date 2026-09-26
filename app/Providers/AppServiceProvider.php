@@ -39,5 +39,6 @@ class AppServiceProvider extends ServiceProvider
         }
 
         \App\Models\Donation::observe(\App\Observers\DonationObserver::class);
+        \App\Models\Allocation::observe(\App\Observers\AllocationObserver::class);
     }
 }

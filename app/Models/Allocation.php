@@ -48,4 +48,21 @@ class Allocation extends Model
     {
         return $this->belongsTo(Program::class);
     }
+
+    /**
+     * Get the associated journal entry.
+     */
+    public function journalEntry()
+    {
+        return $this->hasOne(JournalEntry::class, 'reference_id')
+            ->where('reference_type', 'allocation');
+    }
+
+    /**
+     * Check if allocation meets accounting criteria for journaling.
+     */
+    public function isValidForJournal(): bool
+    {
+        return app(\App\Services\AllocationJournalService::class)->isAllocationValid($this);
+    }
 }
