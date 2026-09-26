@@ -42,6 +42,6 @@ class AccountingPeriod extends Model
 
     public function financialNotes()
     {
-        return $this->hasMany(FinancialNote::class, 'period_id');
+        return $this->hasMany(FinancialNote::class, 'accounting_period_id');
     }
 }

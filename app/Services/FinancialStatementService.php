@@ -7,7 +7,8 @@ use App\Models\AccountingPeriod;
 class FinancialStatementService
 {
     public function __construct(
-        protected TrialBalanceService $trialBalanceService
+        protected TrialBalanceService $trialBalanceService,
+        protected FinancialNoteService $financialNoteService
     ) {}
 
     /**
@@ -108,6 +109,10 @@ class FinancialStatementService
         // Balance check: Total Assets == Total Liabilities + Total Net Assets
         $isBalanced = abs($totalAssets - ($totalLiabilities + $totalNetAssets)) < 0.001;
 
+        // Notes / CLK for the period
+        $resolvedPeriodId = $accountingPeriodId ?? ($tb['period']['id'] ?? null);
+        $notes = $resolvedPeriodId ? $this->financialNoteService->getNotes($resolvedPeriodId, null, 'published') : [];
+
         return [
             'period'                 => $tb['period'],
             'start_date'             => $tb['start_date'],
@@ -123,6 +128,8 @@ class FinancialStatementService
             'total_net_asset'        => $totalNetAssets,
             'current_period_surplus' => $currentPeriodSurplus,
             'is_balanced'            => $isBalanced,
+            'notes'                  => $notes,
+            'financial_notes'        => $notes,
         ];
     }
 
@@ -191,6 +198,10 @@ class FinancialStatementService
         // 3. Surplus / Defisit
         $surplusDeficit = $totalRevenues - $totalExpenses;
 
+        // Notes / CLK for the period
+        $resolvedPeriodId = $accountingPeriodId ?? ($tb['period']['id'] ?? null);
+        $notes = $resolvedPeriodId ? $this->financialNoteService->getNotes($resolvedPeriodId, null, 'published') : [];
+
         return [
             'period'           => $tb['period'],
             'start_date'       => $tb['start_date'],
@@ -203,6 +214,32 @@ class FinancialStatementService
             'total_beban'      => $totalExpenses,
             'surplus_deficit'  => $surplusDeficit,
             'is_surplus'       => $surplusDeficit >= 0,
+            'notes'            => $notes,
+            'financial_notes'  => $notes,
+        ];
+    }
+
+    /**
+     * Generate Comprehensive Annual Financial Report Package:
+     * LP (Balance Sheet) + LA (Activity Statement) + LRAW (Waqf Assets) + CLK (Notes).
+     *
+     * @param int $accountingPeriodId
+     * @return array
+     */
+    public function getComprehensivePackage(int $accountingPeriodId): array
+    {
+        $period = AccountingPeriod::find($accountingPeriodId);
+        $balanceSheet = $this->getBalanceSheet($accountingPeriodId);
+        $activityStatement = $this->getActivityStatement($accountingPeriodId);
+        $waqfAssetReport = app(WaqfAssetReportService::class)->getReport(null, $accountingPeriodId);
+        $notes = $this->financialNoteService->getNotes($accountingPeriodId, null, 'published');
+
+        return [
+            'period'             => $period,
+            'balance_sheet'      => $balanceSheet,
+            'activity_statement' => $activityStatement,
+            'waqf_asset_report'  => $waqfAssetReport,
+            'financial_notes'    => $notes,
         ];
     }
 }

@@ -55,6 +55,10 @@ use App\Http\Controllers\Api\Finance\GeneralLedgerController;
 use App\Http\Controllers\Api\Finance\TrialBalanceController;
 use App\Http\Controllers\Api\Finance\FinancialStatementController;
 use App\Http\Controllers\Api\Finance\WaqfAssetReportController;
+use App\Http\Controllers\Api\Finance\FinancialNoteController;
+use App\Http\Controllers\Api\Finance\FinanceExportController;
+use App\Http\Controllers\Api\Finance\FinanceImportController;
+use App\Http\Controllers\Api\Finance\FinanceImportHistoryController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -312,6 +316,32 @@ Route::prefix('v1')->group(function () {
             Route::get('waqf-assets-report', [WaqfAssetReportController::class, 'index']);
             Route::get('waqf-assets-register', [WaqfAssetReportController::class, 'register']);
             Route::get('waqf-assets/{id}', [WaqfAssetReportController::class, 'show']);
+            Route::get('financial-notes/summary', [FinancialNoteController::class, 'summary']);
+            Route::apiResource('financial-notes', FinancialNoteController::class);
+
+            // Finance Excel Exports
+            Route::prefix('export')->name('export.')->group(function () {
+                Route::get('accounts', [FinanceExportController::class, 'accounts'])->name('accounts');
+                Route::get('journals', [FinanceExportController::class, 'journals'])->name('journals');
+                Route::get('general-ledger', [FinanceExportController::class, 'generalLedger'])->name('general-ledger');
+                Route::get('trial-balance', [FinanceExportController::class, 'trialBalance'])->name('trial-balance');
+                Route::get('balance-sheet', [FinanceExportController::class, 'balanceSheet'])->name('balance-sheet');
+                Route::get('activity-statement', [FinanceExportController::class, 'activityStatement'])->name('activity-statement');
+                Route::get('waqf-assets', [FinanceExportController::class, 'waqfAssets'])->name('waqf-assets');
+                Route::get('financial-notes', [FinanceExportController::class, 'financialNotes'])->name('financial-notes');
+                Route::get('annual-package', [FinanceExportController::class, 'annualPackage'])->name('annual-package');
+            });
+
+            // Finance Excel Imports
+            Route::prefix('import')->name('import.')->group(function () {
+                Route::get('accounts/template', [FinanceImportController::class, 'template'])->name('accounts.template');
+                Route::post('accounts/preview', [FinanceImportController::class, 'preview'])->name('accounts.preview');
+                Route::post('accounts/confirm', [FinanceImportController::class, 'confirm'])->name('accounts.confirm');
+                Route::post('accounts', [FinanceImportController::class, 'accounts'])->name('accounts');
+
+                Route::get('history', [FinanceImportHistoryController::class, 'index'])->name('history.index');
+                Route::get('history/{id}', [FinanceImportHistoryController::class, 'show'])->name('history.show');
+            });
         });
 
     /*

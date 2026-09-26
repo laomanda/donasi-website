@@ -13,12 +13,18 @@ return new class extends Migration
     {
         Schema::create('financial_notes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('period_id')->constrained('accounting_periods')->cascadeOnDelete();
+            $table->foreignId('accounting_period_id')->nullable()->constrained('accounting_periods')->nullOnDelete();
             $table->string('title', 255);
+            $table->string('category', 50)->default('general_note');
             $table->longText('content');
+            $table->integer('sort_order')->default(0);
+            $table->enum('status', ['draft', 'published'])->default('draft');
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->index('period_id');
+            $table->index('accounting_period_id');
+            $table->index('category');
+            $table->index('status');
         });
     }
 

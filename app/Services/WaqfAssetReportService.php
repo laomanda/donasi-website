@@ -201,21 +201,25 @@ class WaqfAssetReportService
         $assets = $this->getAssetRegister($categoryId, $periodId, $status);
         $summary = $this->getSummary($categoryId, $periodId, $status);
 
+        $notes = $periodId ? app(FinancialNoteService::class)->getNotes($periodId, null, 'published') : [];
+
         return [
-            'period'  => $period ? [
+            'period'          => $period ? [
                 'id'         => $period->id,
                 'name'       => $period->name,
                 'start_date' => $period->start_date ? Carbon::parse($period->start_date)->toDateString() : null,
                 'end_date'   => $period->end_date ? Carbon::parse($period->end_date)->toDateString() : null,
                 'status'     => $period->status,
             ] : null,
-            'filters' => [
+            'filters'         => [
                 'category_id' => $categoryId,
                 'period_id'   => $periodId,
                 'status'      => $status,
             ],
-            'summary' => $summary,
-            'assets'  => $assets,
+            'summary'         => $summary,
+            'assets'          => $assets,
+            'notes'           => $notes,
+            'financial_notes' => $notes,
         ];
     }
 
