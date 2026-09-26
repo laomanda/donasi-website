@@ -76,6 +76,12 @@ class Donation extends Model
         return $this->hasMany(Allocation::class);
     }
 
+    public function journalEntry()
+    {
+        return $this->hasOne(JournalEntry::class, 'reference_id')
+            ->where('reference_type', 'donation');
+    }
+
     public function getAllocatedAmountAttribute(): float
     {
         return (float) $this->allocations()->sum('amount');

@@ -18,6 +18,9 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             UserSeeder::class,
             SocialMediaSettingSeeder::class,
+            AccountSeeder::class,
+            AccountingPeriodSeeder::class,
+            WaqfAssetCategorySeeder::class,
         ]);
     }
 }

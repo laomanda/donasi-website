@@ -44,4 +44,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Allocation::class);
     }
+
+    public function journalEntries()
+    {
+        return $this->hasMany(JournalEntry::class, 'created_by');
+    }
 }

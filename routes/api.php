@@ -50,6 +50,7 @@ use App\Http\Controllers\Api\SavedItemController;
 use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboardController;
 use App\Http\Controllers\Api\Superadmin\RoleController as SuperadminRoleController;
 use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
+use App\Http\Controllers\Api\Finance\JournalEntryController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -285,6 +286,21 @@ Route::prefix('v1')->group(function () {
             Route::get('saved-items', [SavedItemController::class, 'index']);
             Route::post('saved-items/toggle', [SavedItemController::class, 'toggle']);
             Route::get('saved-items/status', [SavedItemController::class, 'checkStatus']);
+        });
+
+    /*
+    |--------------------------------------------------------------------------
+    | FINANCE (Role: keuangan, superadmin)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:keuangan|superadmin|manage donations|view reports'])
+        ->prefix('finance')
+        ->name('finance.')
+        ->group(function () {
+            Route::apiResource('journals', JournalEntryController::class)->only(['index', 'show', 'store']);
+            Route::post('journals/{id}/post', [JournalEntryController::class, 'post']);
+            Route::post('journals/{id}/void', [JournalEntryController::class, 'void']);
+            Route::post('journals/{id}/reverse', [JournalEntryController::class, 'reverse']);
         });
 
     /*

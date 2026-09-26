@@ -110,6 +110,11 @@ class Program extends Model
         return $this->morphMany(SavedItem::class, 'saveable');
     }
 
+    public function journalEntries()
+    {
+        return $this->hasMany(JournalEntry::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | SCOPES SEDERHANA
