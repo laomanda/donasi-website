@@ -59,6 +59,8 @@ use App\Http\Controllers\Api\Finance\FinancialNoteController;
 use App\Http\Controllers\Api\Finance\FinanceExportController;
 use App\Http\Controllers\Api\Finance\FinanceImportController;
 use App\Http\Controllers\Api\Finance\FinanceImportHistoryController;
+use App\Http\Controllers\Api\Finance\FinanceJournalImportController;
+use App\Http\Controllers\Api\Finance\FinanceOpeningBalanceImportController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -341,6 +343,20 @@ Route::prefix('v1')->group(function () {
 
                 Route::get('history', [FinanceImportHistoryController::class, 'index'])->name('history.index');
                 Route::get('history/{id}', [FinanceImportHistoryController::class, 'show'])->name('history.show');
+
+                // Journal Umum (JU) Imports
+                Route::get('journals/template', [FinanceJournalImportController::class, 'template'])->name('journals.template');
+                Route::post('journals/preview', [FinanceJournalImportController::class, 'preview'])->name('journals.preview');
+                Route::post('journals/confirm', [FinanceJournalImportController::class, 'confirm'])->name('journals.confirm');
+                Route::get('journals/history', [FinanceJournalImportController::class, 'history'])->name('journals.history');
+                Route::get('journals/history/{id}', [FinanceJournalImportController::class, 'showHistory'])->name('journals.history.show');
+
+                // Opening Balance Imports
+                Route::get('opening-balance/template', [FinanceOpeningBalanceImportController::class, 'template'])->name('opening-balance.template');
+                Route::post('opening-balance/preview', [FinanceOpeningBalanceImportController::class, 'preview'])->name('opening-balance.preview');
+                Route::post('opening-balance/confirm', [FinanceOpeningBalanceImportController::class, 'confirm'])->name('opening-balance.confirm');
+                Route::get('opening-balance/history', [FinanceOpeningBalanceImportController::class, 'history'])->name('opening-balance.history');
+                Route::get('opening-balance/history/{id}', [FinanceOpeningBalanceImportController::class, 'showHistory'])->name('opening-balance.history.show');
             });
         });
 

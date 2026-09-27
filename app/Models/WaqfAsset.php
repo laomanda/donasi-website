@@ -21,6 +21,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\WaqfAssetCategory|null $category
+ * @property-read \App\Models\Wakif|null $wakif
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\WaqfAssetSource> $sources
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AssetDepreciation> $depreciations
+ * @method \Illuminate\Database\Eloquent\Relations\HasMany depreciations()
+ * @method \Illuminate\Database\Eloquent\Relations\HasMany sources()
+ * @method \Illuminate\Database\Eloquent\Relations\BelongsTo category()
+ * @method \Illuminate\Database\Eloquent\Relations\BelongsTo wakif()
  */
 class WaqfAsset extends Model
 {

@@ -10,6 +10,7 @@ use App\Models\ImportError;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -44,7 +45,7 @@ class FinanceImportService
      */
     public function importAccounts(UploadedFile $file, ?User $user = null): array
     {
-        $user = $user ?? auth()->user() ?? User::first();
+        $user = $user ?? Auth::user() ?? User::query()->first();
         if (!$user) {
             throw new \RuntimeException('Pengguna (User) tidak ditemukan untuk menjalankan import.');
         }
@@ -173,8 +174,11 @@ class FinanceImportService
         $filePath = $file->getRealPath();
 
         // Detect worksheet names
+        /** @var \PhpOffice\PhpSpreadsheet\Reader\Xlsx $reader */
         $reader = IOFactory::createReaderForFile($filePath);
-        $sheetNames = $reader->listWorksheetNames($filePath);
+        $sheetNames = method_exists($reader, 'listWorksheetNames')
+            ? $reader->listWorksheetNames($filePath)
+            : [];
 
         $targetSheetIndex = 0;
         foreach ($sheetNames as $idx => $name) {

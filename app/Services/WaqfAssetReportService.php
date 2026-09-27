@@ -28,7 +28,7 @@ class WaqfAssetReportService
             $status = $filters['status'] ?? null;
         }
 
-        $query = WaqfAsset::with(['category', 'wakif', 'sources', 'depreciations']);
+        $query = WaqfAsset::with(['category', 'wakif', 'sources', 'depreciations.period']);
 
         if ($categoryId) {
             $query->where('category_id', $categoryId);
@@ -38,11 +38,16 @@ class WaqfAssetReportService
             $query->where('status', $status);
         }
 
+        $period = $periodId ? AccountingPeriod::find($periodId) : null;
+        $periodEndDate = ($period && $period->end_date) ? Carbon::parse($period->end_date)->toDateString() : null;
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\WaqfAsset> $assets */
         $assets = $query->orderBy('asset_code', 'asc')->get();
 
         $register = [];
 
         foreach ($assets as $asset) {
+            /** @var \App\Models\WaqfAsset $asset */
             $accumulatedDepreciation = 0.0;
             $bookValue = (float) $asset->acquisition_value;
 
@@ -53,22 +58,21 @@ class WaqfAssetReportService
                 if ($depreciation) {
                     $accumulatedDepreciation = (float) $depreciation->accumulated_depreciation;
                     $bookValue = (float) $depreciation->book_value;
-                } else {
+                } elseif ($periodEndDate) {
                     // Check if there are earlier depreciations up to this period's end date
-                    $period = AccountingPeriod::find($periodId);
-                    if ($period && $period->end_date) {
-                        $periodEndDate = Carbon::parse($period->end_date)->toDateString();
-                        $priorDepreciation = $asset->depreciations()
-                            ->join('accounting_periods', 'asset_depreciations.period_id', '=', 'accounting_periods.id')
-                            ->where('accounting_periods.end_date', '<=', $periodEndDate)
-                            ->orderBy('accounting_periods.end_date', 'desc')
-                            ->select('asset_depreciations.*')
-                            ->first();
+                    $priorDepreciation = $asset->depreciations
+                        ->filter(function ($d) use ($periodEndDate) {
+                            $endDate = $d->period?->end_date ? Carbon::parse($d->period->end_date)->toDateString() : null;
+                            return $endDate !== null && $endDate <= $periodEndDate;
+                        })
+                        ->sortByDesc(function ($d) {
+                            return $d->period?->end_date ? Carbon::parse($d->period->end_date)->timestamp : 0;
+                        })
+                        ->first();
 
-                        if ($priorDepreciation) {
-                            $accumulatedDepreciation = (float) $priorDepreciation->accumulated_depreciation;
-                            $bookValue = (float) $priorDepreciation->book_value;
-                        }
+                    if ($priorDepreciation) {
+                        $accumulatedDepreciation = (float) $priorDepreciation->accumulated_depreciation;
+                        $bookValue = (float) $priorDepreciation->book_value;
                     }
                 }
             } else {

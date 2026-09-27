@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class FinanceImportPreviewService
@@ -22,7 +23,7 @@ class FinanceImportPreviewService
      */
     public function previewAccounts(UploadedFile $file, ?User $user = null): array
     {
-        $user = $user ?? auth()->user();
+        $user = $user ?? Auth::user();
 
         // 1. Read Excel
         $rows = $this->importService->readAccountsSheet($file);

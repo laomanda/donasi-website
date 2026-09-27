@@ -170,6 +170,47 @@ class WaqfAssetReportEngineTest extends TestCase
         $this->assertEquals(228000000.00, $item['book_value']);
     }
 
+    public function test_asset_register_with_prior_period_depreciation(): void
+    {
+        $priorPeriod = AccountingPeriod::create([
+            'name'       => 'Tahun 2025',
+            'start_date' => '2025-01-01',
+            'end_date'   => '2025-12-31',
+            'status'     => 'closed',
+        ]);
+
+        $asset = WaqfAsset::create([
+            'asset_code'        => 'AST-TEST-003',
+            'asset_name'        => 'Kendaraan Operasional Wakaf',
+            'category_id'       => $this->categoryBangunan->id,
+            'wakif_id'          => $this->wakif->id,
+            'acquisition_date'  => '2025-01-01',
+            'quantity'          => 1.00,
+            'useful_life_month' => 60,
+            'acquisition_value' => 100000000.00,
+            'current_value'     => 80000000.00,
+            'location'          => 'Kantor',
+            'condition'         => 'good',
+            'status'            => 'active',
+        ]);
+
+        AssetDepreciation::create([
+            'asset_id'                 => $asset->id,
+            'period_id'                => $priorPeriod->id,
+            'depreciation_expense'     => 20000000.00,
+            'accumulated_depreciation' => 20000000.00,
+            'book_value'               => 80000000.00,
+        ]);
+
+        // Query with $this->period (2026), where no depreciation is recorded yet
+        $register = $this->reportService->getAssetRegister(null, $this->period->id, null);
+
+        $item = collect($register)->firstWhere('asset_code', 'AST-TEST-003');
+        $this->assertNotNull($item);
+        $this->assertEquals(20000000.00, $item['accumulated_depreciation']);
+        $this->assertEquals(80000000.00, $item['book_value']);
+    }
+
     public function test_asset_register_filters_by_category_and_status(): void
     {
         WaqfAsset::create([

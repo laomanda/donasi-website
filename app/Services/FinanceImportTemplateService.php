@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exports\Finance\AccountsTemplateExport;
 use App\Models\AuditLog;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -15,7 +16,7 @@ class FinanceImportTemplateService
      */
     public function generateAccountsTemplate(?User $user = null): BinaryFileResponse
     {
-        $user = $user ?? auth()->user();
+        $user = $user ?? Auth::user();
 
         if ($user) {
             AuditLog::create([

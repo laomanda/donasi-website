@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Program query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Program where($column, $operator = null, $value = null, $boolean = 'and')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Program firstWhere($column, $operator = null, $value = null, $boolean = 'and')
  * @method bool|null delete()
+ * @mixin \Eloquent
  */
 class Program extends Model
 {
