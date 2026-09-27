@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\AccountingPeriod;
 use App\Models\AuditLog;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryLine;
@@ -13,12 +12,13 @@ use Illuminate\Validation\ValidationException;
 
 class JournalService
 {
+    public function __construct(
+        protected AccountingPeriodService $periodService
+    ) {}
+
     /**
      * Create a new journal entry with lines.
      *
-     * @param array $data
-     * @param User|null $user
-     * @return JournalEntry
      * @throws ValidationException
      */
     public function createJournal(array $data, ?User $user = null): JournalEntry
@@ -29,61 +29,56 @@ class JournalService
         $userId = $user?->id ?? auth()->id() ?? User::first()?->id ?? 1;
         $transactionDate = Carbon::parse($data['transaction_date']);
 
-        // Auto-assign open accounting period if not provided
-        $periodId = $data['accounting_period_id'] ?? null;
-        if (!$periodId) {
-            $period = AccountingPeriod::where('status', 'open')
-                ->where('start_date', '<=', $transactionDate->toDateString())
-                ->where('end_date', '>=', $transactionDate->toDateString())
-                ->first();
-
-            $periodId = $period?->id ?? AccountingPeriod::where('status', 'open')->first()?->id;
+        // Resolve or validate accounting period
+        if (! empty($data['accounting_period_id'])) {
+            $period = $this->periodService->ensurePeriodExists((int) $data['accounting_period_id']);
+            $this->periodService->validateDateWithinPeriod($period, $transactionDate);
+        } else {
+            $period = $this->periodService->resolvePeriodByDate($transactionDate);
         }
 
-        if (!$periodId) {
-            throw ValidationException::withMessages([
-                'accounting_period_id' => ['Tidak ada periode akuntansi aktif (open) untuk tanggal transaksi ini.'],
-            ]);
-        }
+        // Period must be open
+        $this->periodService->ensurePeriodOpen($period);
+        $periodId = $period->id;
 
         $journalNumber = $data['journal_number'] ?? $this->generateJournalNumber($transactionDate);
 
         return DB::transaction(function () use ($data, $lines, $userId, $periodId, $transactionDate, $journalNumber) {
             $journal = JournalEntry::create([
                 'accounting_period_id' => $periodId,
-                'journal_number'       => $journalNumber,
-                'transaction_date'     => $transactionDate->toDateString(),
-                'reference_type'       => $data['reference_type'] ?? 'manual',
-                'reference_id'         => $data['reference_id'] ?? null,
-                'program_id'           => $data['program_id'] ?? null,
-                'description'          => $data['description'],
-                'status'               => $data['status'] ?? 'draft',
-                'created_by'           => $userId,
+                'journal_number' => $journalNumber,
+                'transaction_date' => $transactionDate->toDateString(),
+                'reference_type' => $data['reference_type'] ?? 'manual',
+                'reference_id' => $data['reference_id'] ?? null,
+                'program_id' => $data['program_id'] ?? null,
+                'description' => $data['description'],
+                'status' => $data['status'] ?? 'draft',
+                'created_by' => $userId,
             ]);
 
             foreach ($lines as $line) {
                 JournalEntryLine::create([
                     'journal_entry_id' => $journal->id,
-                    'account_id'       => $line['account_id'],
-                    'debit'            => (float) ($line['debit'] ?? 0),
-                    'credit'           => (float) ($line['credit'] ?? 0),
-                    'description'      => $line['description'] ?? null,
+                    'account_id' => $line['account_id'],
+                    'debit' => (float) ($line['debit'] ?? 0),
+                    'credit' => (float) ($line['credit'] ?? 0),
+                    'description' => $line['description'] ?? null,
                 ]);
             }
 
             // Audit log
             AuditLog::create([
-                'user_id'      => $userId,
-                'module'       => 'journal',
-                'action'       => 'create_journal',
+                'user_id' => $userId,
+                'module' => 'journal',
+                'action' => 'create_journal',
                 'reference_id' => $journal->id,
-                'old_data'     => null,
-                'new_data'     => [
-                    'journal_number'   => $journal->journal_number,
+                'old_data' => null,
+                'new_data' => [
+                    'journal_number' => $journal->journal_number,
                     'transaction_date' => $journal->transaction_date->toDateString(),
-                    'total_debit'      => $journal->total_debit,
-                    'total_credit'     => $journal->total_credit,
-                    'status'           => $journal->status,
+                    'total_debit' => $journal->total_debit,
+                    'total_credit' => $journal->total_credit,
+                    'status' => $journal->status,
                 ],
             ]);
 
@@ -94,7 +89,6 @@ class JournalService
     /**
      * Validate double-entry rules.
      *
-     * @param array $lines
      * @throws ValidationException
      */
     public function validateJournal(array $lines): void
@@ -111,7 +105,7 @@ class JournalService
         foreach ($lines as $index => $line) {
             if (empty($line['account_id'])) {
                 throw ValidationException::withMessages([
-                    "journal_lines.{$index}.account_id" => ["Baris ke-" . ($index + 1) . " wajib memilih akun (account_id)."],
+                    "journal_lines.{$index}.account_id" => ['Baris ke-'.($index + 1).' wajib memilih akun (account_id).'],
                 ]);
             }
 
@@ -120,25 +114,25 @@ class JournalService
 
             if ($debit < 0) {
                 throw ValidationException::withMessages([
-                    "journal_lines.{$index}.debit" => ["Nilai debit pada baris ke-" . ($index + 1) . " tidak boleh negatif."],
+                    "journal_lines.{$index}.debit" => ['Nilai debit pada baris ke-'.($index + 1).' tidak boleh negatif.'],
                 ]);
             }
 
             if ($credit < 0) {
                 throw ValidationException::withMessages([
-                    "journal_lines.{$index}.credit" => ["Nilai kredit pada baris ke-" . ($index + 1) . " tidak boleh negatif."],
+                    "journal_lines.{$index}.credit" => ['Nilai kredit pada baris ke-'.($index + 1).' tidak boleh negatif.'],
                 ]);
             }
 
             if ($debit > 0 && $credit > 0) {
                 throw ValidationException::withMessages([
-                    "journal_lines.{$index}" => ["Baris ke-" . ($index + 1) . " hanya boleh memiliki nilai Debit ATAU Kredit, tidak boleh keduanya."],
+                    "journal_lines.{$index}" => ['Baris ke-'.($index + 1).' hanya boleh memiliki nilai Debit ATAU Kredit, tidak boleh keduanya.'],
                 ]);
             }
 
             if ($debit == 0 && $credit == 0) {
                 throw ValidationException::withMessages([
-                    "journal_lines.{$index}" => ["Baris ke-" . ($index + 1) . " harus memiliki nilai Debit atau Kredit yang lebih besar dari 0."],
+                    "journal_lines.{$index}" => ['Baris ke-'.($index + 1).' harus memiliki nilai Debit atau Kredit yang lebih besar dari 0.'],
                 ]);
             }
 
@@ -152,7 +146,7 @@ class JournalService
             $formattedCredit = number_format($totalCredit, 2, ',', '.');
             throw ValidationException::withMessages([
                 'journal_lines' => [
-                    "Total Debit (Rp {$formattedDebit}) tidak seimbang dengan Total Kredit (Rp {$formattedCredit}). Selisih: Rp " . number_format(abs($totalDebit - $totalCredit), 2, ',', '.')
+                    "Total Debit (Rp {$formattedDebit}) tidak seimbang dengan Total Kredit (Rp {$formattedCredit}). Selisih: Rp ".number_format(abs($totalDebit - $totalCredit), 2, ',', '.'),
                 ],
             ]);
         }
@@ -161,9 +155,6 @@ class JournalService
     /**
      * Post a draft journal to posted status.
      *
-     * @param JournalEntry|int $journal
-     * @param User|null $user
-     * @return JournalEntry
      * @throws ValidationException
      */
     public function postJournal(JournalEntry|int $journal, ?User $user = null): JournalEntry
@@ -182,36 +173,40 @@ class JournalService
             ]);
         }
 
-        // Verify period is open
-        if ($entry->accountingPeriod && $entry->accountingPeriod->status === 'closed') {
+        // Verify period exists and is open
+        $period = $entry->accountingPeriod;
+        if (! $period) {
+            $period = $this->periodService->ensurePeriodExists($entry->accounting_period_id);
+        }
+
+        if ($period->isClosed()) {
             throw ValidationException::withMessages([
-                'accounting_period' => ['Periode akuntansi untuk jurnal ini sudah ditutup (closed). Transaksi tidak dapat di-posting.'],
+                'accounting_period' => ['Cannot post journal in closed accounting period'],
             ]);
         }
 
         // Re-validate lines before posting
         $linesArray = $entry->lines->map(fn ($l) => [
             'account_id' => $l->account_id,
-            'debit'      => (float) $l->debit,
-            'credit'     => (float) $l->credit,
+            'debit' => (float) $l->debit,
+            'credit' => (float) $l->credit,
         ])->toArray();
 
         $this->validateJournal($linesArray);
 
         $userId = $user?->id ?? auth()->id() ?? User::first()?->id ?? 1;
-        $oldData = $entry->toArray();
 
         $entry->update([
             'status' => 'posted',
         ]);
 
         AuditLog::create([
-            'user_id'      => $userId,
-            'module'       => 'journal',
-            'action'       => 'post_journal',
+            'user_id' => $userId,
+            'module' => 'journal',
+            'action' => 'post_journal',
             'reference_id' => $entry->id,
-            'old_data'     => ['status' => 'draft'],
-            'new_data'     => ['status' => 'posted', 'posted_at' => now()->toDateTimeString()],
+            'old_data' => ['status' => 'draft'],
+            'new_data' => ['status' => 'posted', 'posted_at' => now()->toDateTimeString()],
         ]);
 
         return $entry->fresh(['lines.account', 'program', 'accountingPeriod', 'creator']);
@@ -220,10 +215,6 @@ class JournalService
     /**
      * Void a journal entry.
      *
-     * @param JournalEntry|int $journal
-     * @param string $reason
-     * @param User|null $user
-     * @return JournalEntry
      * @throws ValidationException
      */
     public function voidJournal(JournalEntry|int $journal, string $reason = '', ?User $user = null): JournalEntry
@@ -236,7 +227,11 @@ class JournalService
             ]);
         }
 
-        if ($entry->accountingPeriod && $entry->accountingPeriod->status === 'closed') {
+        if ($entry->status === 'posted') {
+            throw new \DomainException('Posted journal is immutable');
+        }
+
+        if ($entry->accountingPeriod && $entry->accountingPeriod->isClosed()) {
             throw ValidationException::withMessages([
                 'accounting_period' => ['Periode akuntansi untuk jurnal ini sudah ditutup. Tidak dapat diubah statusnya.'],
             ]);
@@ -246,17 +241,17 @@ class JournalService
         $oldStatus = $entry->status;
 
         $entry->update([
-            'status'      => 'void',
-            'description' => $reason ? $entry->description . " [VOID: {$reason}]" : $entry->description . " [VOID]",
+            'status' => 'void',
+            'description' => $reason ? $entry->description." [VOID: {$reason}]" : $entry->description.' [VOID]',
         ]);
 
         AuditLog::create([
-            'user_id'      => $userId,
-            'module'       => 'journal',
-            'action'       => 'void_journal',
+            'user_id' => $userId,
+            'module' => 'journal',
+            'action' => 'void_journal',
             'reference_id' => $entry->id,
-            'old_data'     => ['status' => $oldStatus],
-            'new_data'     => ['status' => 'void', 'reason' => $reason],
+            'old_data' => ['status' => $oldStatus],
+            'new_data' => ['status' => 'void', 'reason' => $reason],
         ]);
 
         return $entry->fresh(['lines.account', 'program', 'accountingPeriod', 'creator']);
@@ -265,13 +260,9 @@ class JournalService
     /**
      * Create a reversing / adjustment journal for an existing posted journal.
      *
-     * @param JournalEntry|int $journal
-     * @param string $description
-     * @param User|null $user
-     * @return JournalEntry
      * @throws ValidationException
      */
-    public function reverseJournal(JournalEntry|int $journal, string $description = '', ?User $user = null): JournalEntry
+    public function reverseJournal(JournalEntry|int $journal, string $description = '', ?User $user = null, ?string $reversalDate = null): JournalEntry
     {
         $original = $journal instanceof JournalEntry ? $journal : JournalEntry::with('lines')->findOrFail($journal);
 
@@ -287,23 +278,27 @@ class JournalService
         // Swap debit and credit
         foreach ($original->lines as $line) {
             $reversalLines[] = [
-                'account_id'  => $line->account_id,
-                'debit'       => (float) $line->credit,
-                'credit'      => (float) $line->debit,
-                'description' => 'Pembalik: ' . ($line->description ?: $original->journal_number),
+                'account_id' => $line->account_id,
+                'debit' => (float) $line->credit,
+                'credit' => (float) $line->debit,
+                'description' => 'Pembalik: '.($line->description ?: $original->journal_number),
             ];
         }
 
+        $date = $reversalDate ?: now()->toDateString();
+        $reversalPeriod = $this->periodService->resolvePeriodByDate($date);
+        $this->periodService->ensurePeriodOpen($reversalPeriod);
+
         $reversalData = [
-            'transaction_date'     => now()->toDateString(),
-            'accounting_period_id' => $original->accounting_period_id,
-            'journal_number'       => 'REV-' . $original->journal_number,
-            'reference_type'       => 'reversal',
-            'reference_id'         => $original->id,
-            'program_id'           => $original->program_id,
-            'description'          => $description ?: "Jurnal Pembalik untuk {$original->journal_number}",
-            'status'               => 'draft',
-            'journal_lines'        => $reversalLines,
+            'transaction_date' => $date,
+            'accounting_period_id' => $reversalPeriod->id,
+            'journal_number' => 'REV-'.$original->journal_number,
+            'reference_type' => 'reversal',
+            'reference_id' => $original->id,
+            'program_id' => $original->program_id,
+            'description' => $description ?: "Jurnal Pembalik untuk {$original->journal_number}",
+            'status' => 'draft',
+            'journal_lines' => $reversalLines,
         ];
 
         return $this->createJournal($reversalData, $user);
@@ -311,23 +306,20 @@ class JournalService
 
     /**
      * Generate unique journal voucher number.
-     *
-     * @param Carbon $date
-     * @return string
      */
     protected function generateJournalNumber(Carbon $date): string
     {
-        $prefix = 'JU-' . $date->format('Ym') . '-';
-        $latest = JournalEntry::where('journal_number', 'like', $prefix . '%')
+        $prefix = 'JU-'.$date->format('Ym').'-';
+        $latest = JournalEntry::where('journal_number', 'like', $prefix.'%')
             ->orderByDesc('id')
             ->value('journal_number');
 
-        if ($latest && preg_match('/' . preg_quote($prefix, '/') . '(\d+)/', $latest, $matches)) {
+        if ($latest && preg_match('/'.preg_quote($prefix, '/').'(\d+)/', $latest, $matches)) {
             $next = (int) $matches[1] + 1;
         } else {
             $next = 1;
         }
 
-        return $prefix . str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
     }
 }

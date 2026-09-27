@@ -25,6 +25,19 @@ use App\Http\Controllers\Api\Editor\OrganizationController as EditorOrganization
 use App\Http\Controllers\Api\Editor\PartnerController as EditorPartnerController;
 use App\Http\Controllers\Api\Editor\ProgramController as EditorProgramController;
 use App\Http\Controllers\Api\Editor\UploadController as EditorUploadController;
+use App\Http\Controllers\Api\Finance\AccountingPeriodController;
+use App\Http\Controllers\Api\Finance\FinanceExportController;
+use App\Http\Controllers\Api\Finance\FinanceImportController;
+use App\Http\Controllers\Api\Finance\FinanceImportHistoryController;
+use App\Http\Controllers\Api\Finance\FinanceJournalImportController;
+use App\Http\Controllers\Api\Finance\FinanceOpeningBalanceImportController;
+use App\Http\Controllers\Api\Finance\FinanceReconciliationController;
+use App\Http\Controllers\Api\Finance\FinancialNoteController;
+use App\Http\Controllers\Api\Finance\FinancialStatementController;
+use App\Http\Controllers\Api\Finance\GeneralLedgerController;
+use App\Http\Controllers\Api\Finance\JournalEntryController;
+use App\Http\Controllers\Api\Finance\TrialBalanceController;
+use App\Http\Controllers\Api\Finance\WaqfAssetReportController;
 use App\Http\Controllers\Api\Frontend\AllocationController as FrontendAllocationController;
 use App\Http\Controllers\Api\Frontend\ArticleController as FrontendArticleController;
 use App\Http\Controllers\Api\Frontend\BannerController as FrontendBannerController;
@@ -50,17 +63,6 @@ use App\Http\Controllers\Api\SavedItemController;
 use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboardController;
 use App\Http\Controllers\Api\Superadmin\RoleController as SuperadminRoleController;
 use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
-use App\Http\Controllers\Api\Finance\JournalEntryController;
-use App\Http\Controllers\Api\Finance\GeneralLedgerController;
-use App\Http\Controllers\Api\Finance\TrialBalanceController;
-use App\Http\Controllers\Api\Finance\FinancialStatementController;
-use App\Http\Controllers\Api\Finance\WaqfAssetReportController;
-use App\Http\Controllers\Api\Finance\FinancialNoteController;
-use App\Http\Controllers\Api\Finance\FinanceExportController;
-use App\Http\Controllers\Api\Finance\FinanceImportController;
-use App\Http\Controllers\Api\Finance\FinanceImportHistoryController;
-use App\Http\Controllers\Api\Finance\FinanceJournalImportController;
-use App\Http\Controllers\Api\Finance\FinanceOpeningBalanceImportController;
 use App\Http\Controllers\Api\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -118,17 +120,17 @@ Route::prefix('v1')->group(function () {
 
         $ogTags = [];
         if ($metaTitle) {
-            $ogTags[] = '<meta property="og:title" content="' . $metaTitle . '" />';
-            $ogTags[] = '<meta name="twitter:title" content="' . $metaTitle . '" />';
+            $ogTags[] = '<meta property="og:title" content="'.$metaTitle.'" />';
+            $ogTags[] = '<meta name="twitter:title" content="'.$metaTitle.'" />';
         }
         if ($metaDescription) {
-            $ogTags[] = '<meta property="og:description" content="' . $metaDescription . '" />';
-            $ogTags[] = '<meta name="twitter:description" content="' . $metaDescription . '" />';
+            $ogTags[] = '<meta property="og:description" content="'.$metaDescription.'" />';
+            $ogTags[] = '<meta name="twitter:description" content="'.$metaDescription.'" />';
         }
         if ($metaImage) {
-            $ogTags[] = '<meta property="og:image" content="' . e($metaImage) . '" />';
-            $ogTags[] = '<meta property="og:image:secure_url" content="' . e($metaImage) . '" />';
-            $ogTags[] = '<meta name="twitter:image" content="' . e($metaImage) . '" />';
+            $ogTags[] = '<meta property="og:image" content="'.e($metaImage).'" />';
+            $ogTags[] = '<meta property="og:image:secure_url" content="'.e($metaImage).'" />';
+            $ogTags[] = '<meta name="twitter:image" content="'.e($metaImage).'" />';
             $ogTags[] = '<meta name="twitter:card" content="summary_large_image" />';
         }
 
@@ -320,6 +322,18 @@ Route::prefix('v1')->group(function () {
             Route::get('waqf-assets/{id}', [WaqfAssetReportController::class, 'show']);
             Route::get('financial-notes/summary', [FinancialNoteController::class, 'summary']);
             Route::apiResource('financial-notes', FinancialNoteController::class);
+
+            // Accounting Periods
+            Route::get('accounting-periods', [AccountingPeriodController::class, 'index']);
+            Route::get('accounting-periods/{id}', [AccountingPeriodController::class, 'show']);
+            Route::post('accounting-periods/{id}/close', [AccountingPeriodController::class, 'close'])
+                ->middleware('role_or_permission:keuangan|superadmin');
+
+            // Finance Reconciliation & Control
+            Route::middleware('role_or_permission:keuangan|superadmin|view reports')->group(function () {
+                Route::get('reconciliation/summary', [FinanceReconciliationController::class, 'summary']);
+                Route::get('reconciliation', [FinanceReconciliationController::class, 'index']);
+            });
 
             // Finance Excel Exports
             Route::prefix('export')->name('export.')->group(function () {

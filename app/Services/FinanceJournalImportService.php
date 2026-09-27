@@ -22,20 +22,17 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 class FinanceJournalImportService
 {
     public function __construct(
-        protected JournalService $journalService
+        protected JournalService $journalService,
+        protected AccountingPeriodService $periodService
     ) {}
 
     /**
      * Import General Journal entries (JU) from Excel file.
-     *
-     * @param UploadedFile $file
-     * @param User|null $user
-     * @return array
      */
     public function importJournalEntries(UploadedFile $file, ?User $user = null): array
     {
         $user = $user ?? Auth::user() ?? User::query()->first();
-        if (!$user) {
+        if (! $user) {
             throw new \RuntimeException('Pengguna (User) tidak ditemukan untuk menjalankan import jurnal.');
         }
 
@@ -43,9 +40,9 @@ class FinanceJournalImportService
 
         // 1. Create ImportBatch
         $batch = ImportBatch::create([
-            'file_name'   => $fileName,
-            'module'      => 'journal_entries',
-            'status'      => 'processing',
+            'file_name' => $fileName,
+            'module' => 'journal_entries',
+            'status' => 'processing',
             'imported_by' => $user->id,
         ]);
 
@@ -55,14 +52,14 @@ class FinanceJournalImportService
 
             if ($rows->isEmpty()) {
                 return $this->handleFailedImport($batch, $user, [
-                    ['row' => 1, 'message' => 'File Excel kosong atau sheet JU tidak memiliki data transaksi.']
+                    ['row' => 1, 'message' => 'File Excel kosong atau sheet JU tidak memiliki data transaksi.'],
                 ]);
             }
 
             // 3, 4, 5, 6. Group by journal_number & validate
             $parsed = $this->parseAndValidateRows($rows);
 
-            if (!empty($parsed['errors'])) {
+            if (! empty($parsed['errors'])) {
                 return $this->handleFailedImport($batch, $user, $parsed['errors']);
             }
 
@@ -76,15 +73,15 @@ class FinanceJournalImportService
             foreach ($vouchers as $voucher) {
                 // Build payload
                 $payload = [
-                    'journal_number'       => $voucher['journal_number'],
-                    'transaction_date'     => $voucher['transaction_date'],
-                    'description'          => $voucher['description'],
-                    'program_id'           => $voucher['program_id'],
+                    'journal_number' => $voucher['journal_number'],
+                    'transaction_date' => $voucher['transaction_date'],
+                    'description' => $voucher['description'],
+                    'program_id' => $voucher['program_id'],
                     'accounting_period_id' => $voucher['accounting_period_id'],
-                    'reference_type'       => 'import',
-                    'reference_id'         => $batch->id,
-                    'status'               => 'draft',
-                    'journal_lines'        => $voucher['lines'],
+                    'reference_type' => 'import',
+                    'reference_id' => $batch->id,
+                    'status' => 'draft',
+                    'journal_lines' => $voucher['lines'],
                 ];
 
                 // 8. Call JournalService->createJournal (creates draft)
@@ -101,34 +98,34 @@ class FinanceJournalImportService
 
             // 10. Create AuditLog
             AuditLog::create([
-                'user_id'      => $user->id,
-                'module'       => 'finance_import',
-                'action'       => 'confirm_journal_import',
+                'user_id' => $user->id,
+                'module' => 'finance_import',
+                'action' => 'confirm_journal_import',
                 'reference_id' => $batch->id,
-                'old_data'     => null,
-                'new_data'     => [
-                    'file_name'      => $fileName,
-                    'status'         => 'completed',
-                    'total_rows'     => $totalRows,
+                'old_data' => null,
+                'new_data' => [
+                    'file_name' => $fileName,
+                    'status' => 'completed',
+                    'total_rows' => $totalRows,
                     'total_journals' => $totalJournals,
-                    'success_rows'   => $totalRows,
-                    'failed_rows'    => 0,
+                    'success_rows' => $totalRows,
+                    'failed_rows' => 0,
                 ],
             ]);
 
             return [
-                'status'         => 'success',
-                'batch_id'       => $batch->id,
-                'total_rows'     => $totalRows,
+                'status' => 'success',
+                'batch_id' => $batch->id,
+                'total_rows' => $totalRows,
                 'total_journals' => $totalJournals,
-                'success_rows'   => $totalRows,
-                'failed_rows'    => 0,
+                'success_rows' => $totalRows,
+                'failed_rows' => 0,
             ];
         } catch (\Throwable $e) {
             DB::rollBack();
 
             return $this->handleFailedImport($batch, $user, [
-                ['row' => 0, 'message' => $e->getMessage()]
+                ['row' => 0, 'message' => $e->getMessage()],
             ]);
         }
     }
@@ -154,9 +151,9 @@ class FinanceJournalImportService
             }
         }
 
-        $sheets = Excel::toCollection(new JournalEntriesImport(), $file);
+        $sheets = Excel::toCollection(new JournalEntriesImport, $file);
 
-        return $sheets->get($targetSheetIndex, new Collection());
+        return $sheets->get($targetSheetIndex, new Collection);
     }
 
     /**
@@ -168,8 +165,8 @@ class FinanceJournalImportService
 
         if ($rows->isEmpty()) {
             return [
-                'vouchers'   => [],
-                'errors'     => [['row' => 1, 'message' => 'Sheet JU kosong.']],
+                'vouchers' => [],
+                'errors' => [['row' => 1, 'message' => 'Sheet JU kosong.']],
                 'total_rows' => 0,
             ];
         }
@@ -182,19 +179,19 @@ class FinanceJournalImportService
         $headerKeys = array_keys((array) $firstRow);
 
         $hasJournalNum = $this->hasMatchingKey($headerKeys, ['nomor_jurnal', 'no_jurnal', 'journal_number', 'no_voucher']);
-        $hasDate       = $this->hasMatchingKey($headerKeys, ['tanggal', 'date', 'tgl', 'transaction_date']);
-        $hasCode       = $this->hasMatchingKey($headerKeys, ['kode_akun', 'kode', 'code', 'account_code']);
-        $hasDebit      = $this->hasMatchingKey($headerKeys, ['debit', 'debet']);
-        $hasCredit     = $this->hasMatchingKey($headerKeys, ['kredit', 'credit']);
+        $hasDate = $this->hasMatchingKey($headerKeys, ['tanggal', 'date', 'tgl', 'transaction_date']);
+        $hasCode = $this->hasMatchingKey($headerKeys, ['kode_akun', 'kode', 'code', 'account_code']);
+        $hasDebit = $this->hasMatchingKey($headerKeys, ['debit', 'debet']);
+        $hasCredit = $this->hasMatchingKey($headerKeys, ['kredit', 'credit']);
 
-        if (!$hasJournalNum || !$hasDate || !$hasCode || !$hasDebit || !$hasCredit) {
+        if (! $hasJournalNum || ! $hasDate || ! $hasCode || ! $hasDebit || ! $hasCredit) {
             return [
-                'vouchers'   => [],
-                'errors'     => [
+                'vouchers' => [],
+                'errors' => [
                     [
-                        'row'     => 1,
-                        'message' => 'Format header Excel tidak sesuai. Kolom wajib: Nomor Jurnal, Tanggal, Kode Akun, Debit, Kredit.'
-                    ]
+                        'row' => 1,
+                        'message' => 'Format header Excel tidak sesuai. Kolom wajib: Nomor Jurnal, Tanggal, Kode Akun, Debit, Kredit.',
+                    ],
                 ],
                 'total_rows' => 0,
             ];
@@ -211,6 +208,7 @@ class FinanceJournalImportService
 
             if ($this->isEmptyRow($row)) {
                 $excelRowNumber++;
+
                 continue;
             }
 
@@ -220,11 +218,12 @@ class FinanceJournalImportService
 
             if ($journalNumber === '') {
                 $errors[] = [
-                    'row'            => $excelRowNumber,
-                    'message'        => 'Nomor Jurnal wajib diisi.',
+                    'row' => $excelRowNumber,
+                    'message' => 'Nomor Jurnal wajib diisi.',
                     'journal_number' => null,
                 ];
                 $excelRowNumber++;
+
                 continue;
             }
 
@@ -234,13 +233,13 @@ class FinanceJournalImportService
                 $allAccountCodes[] = $code;
             }
 
-            if (!isset($vouchersRaw[$journalNumber])) {
+            if (! isset($vouchersRaw[$journalNumber])) {
                 $vouchersRaw[$journalNumber] = [];
             }
 
             $vouchersRaw[$journalNumber][] = [
                 'excel_row' => $excelRowNumber,
-                'raw'       => $row,
+                'raw' => $row,
             ];
 
             $excelRowNumber++;
@@ -267,8 +266,8 @@ class FinanceJournalImportService
             // 1. Check duplicate journal number in DB
             if (DB::table('journal_entries')->where('journal_number', $journalNumber)->exists()) {
                 $errors[] = [
-                    'row'            => $firstRowNum,
-                    'message'        => "Duplicate journal number: {$journalNumber} already exists in database.",
+                    'row' => $firstRowNum,
+                    'message' => "Duplicate journal number: {$journalNumber} already exists in database.",
                     'journal_number' => $journalNumber,
                 ];
                 $voucherHasError = true;
@@ -277,8 +276,8 @@ class FinanceJournalImportService
             // 2. Minimum 2 lines
             if (count($rowsInVoucher) < 2) {
                 $errors[] = [
-                    'row'            => $firstRowNum,
-                    'message'        => "Jurnal {$journalNumber} minimal harus memiliki 2 baris (Debit & Kredit).",
+                    'row' => $firstRowNum,
+                    'message' => "Jurnal {$journalNumber} minimal harus memiliki 2 baris (Debit & Kredit).",
                     'journal_number' => $journalNumber,
                 ];
                 $voucherHasError = true;
@@ -288,10 +287,10 @@ class FinanceJournalImportService
             $rawDate = $this->extractValue($firstRowData, ['tanggal', 'date', 'tgl', 'transaction_date']);
             $parsedDate = $this->parseDate($rawDate);
 
-            if (!$parsedDate) {
+            if (! $parsedDate) {
                 $errors[] = [
-                    'row'            => $firstRowNum,
-                    'message'        => "Format tanggal tidak valid pada jurnal {$journalNumber}.",
+                    'row' => $firstRowNum,
+                    'message' => "Format tanggal tidak valid pada jurnal {$journalNumber}.",
                     'journal_number' => $journalNumber,
                 ];
                 $voucherHasError = true;
@@ -300,32 +299,23 @@ class FinanceJournalImportService
             // 4. Validate accounting period
             $assignedPeriodId = null;
             if ($parsedDate) {
-                $matchingClosedPeriod = $closedPeriods->first(function ($p) use ($parsedDate) {
-                    return $parsedDate >= $p->start_date->toDateString() && $parsedDate <= $p->end_date->toDateString();
-                });
-
-                if ($matchingClosedPeriod) {
+                try {
+                    $resolvedPeriod = $this->periodService->resolvePeriodByDate($parsedDate);
+                    $this->periodService->ensurePeriodOpen($resolvedPeriod);
+                    $assignedPeriodId = $resolvedPeriod->id;
+                } catch (\Throwable $e) {
+                    $errMessage = $e->getMessage();
+                    if (str_contains(strtolower($errMessage), 'closed')) {
+                        $errMessage = 'Accounting period is closed';
+                    } elseif (str_contains(strtolower($errMessage), 'not found')) {
+                        $errMessage = 'Accounting period not found for transaction date';
+                    }
                     $errors[] = [
-                        'row'            => $firstRowNum,
-                        'message'        => "Accounting period ({$matchingClosedPeriod->name}) is closed for date {$parsedDate} on journal {$journalNumber}.",
+                        'row' => $firstRowNum,
+                        'message' => $errMessage,
                         'journal_number' => $journalNumber,
                     ];
                     $voucherHasError = true;
-                } else {
-                    $matchingOpenPeriod = $openPeriods->first(function ($p) use ($parsedDate) {
-                        return $parsedDate >= $p->start_date->toDateString() && $parsedDate <= $p->end_date->toDateString();
-                    });
-
-                    if (!$matchingOpenPeriod) {
-                        $errors[] = [
-                            'row'            => $firstRowNum,
-                            'message'        => "No open accounting period found for date {$parsedDate} on journal {$journalNumber}.",
-                            'journal_number' => $journalNumber,
-                        ];
-                        $voucherHasError = true;
-                    } else {
-                        $assignedPeriodId = $matchingOpenPeriod->id;
-                    }
                 }
             }
 
@@ -354,22 +344,24 @@ class FinanceJournalImportService
 
                 if ($code === '') {
                     $errors[] = [
-                        'row'            => $rNum,
-                        'message'        => "Kode akun wajib diisi pada baris jurnal {$journalNumber}.",
+                        'row' => $rNum,
+                        'message' => "Kode akun wajib diisi pada baris jurnal {$journalNumber}.",
                         'journal_number' => $journalNumber,
                     ];
                     $voucherHasError = true;
+
                     continue;
                 }
 
                 $account = $accounts->get($code);
-                if (!$account) {
+                if (! $account) {
                     $errors[] = [
-                        'row'            => $rNum,
-                        'message'        => "Account code not found: {$code}",
+                        'row' => $rNum,
+                        'message' => "Account code not found: {$code}",
                         'journal_number' => $journalNumber,
                     ];
                     $voucherHasError = true;
+
                     continue;
                 }
 
@@ -378,22 +370,22 @@ class FinanceJournalImportService
 
                 if ($debit < 0 || $credit < 0) {
                     $errors[] = [
-                        'row'            => $rNum,
-                        'message'        => "Nilai debit atau kredit tidak boleh negatif pada jurnal {$journalNumber}.",
+                        'row' => $rNum,
+                        'message' => "Nilai debit atau kredit tidak boleh negatif pada jurnal {$journalNumber}.",
                         'journal_number' => $journalNumber,
                     ];
                     $voucherHasError = true;
                 } elseif ($debit > 0 && $credit > 0) {
                     $errors[] = [
-                        'row'            => $rNum,
-                        'message'        => "Baris pada jurnal {$journalNumber} hanya boleh memiliki Debit ATAU Kredit, tidak boleh keduanya.",
+                        'row' => $rNum,
+                        'message' => "Baris pada jurnal {$journalNumber} hanya boleh memiliki Debit ATAU Kredit, tidak boleh keduanya.",
                         'journal_number' => $journalNumber,
                     ];
                     $voucherHasError = true;
                 } elseif ($debit == 0.0 && $credit == 0.0) {
                     $errors[] = [
-                        'row'            => $rNum,
-                        'message'        => "Baris pada jurnal {$journalNumber} harus memiliki nilai Debit atau Kredit lebih dari 0.",
+                        'row' => $rNum,
+                        'message' => "Baris pada jurnal {$journalNumber} harus memiliki nilai Debit atau Kredit lebih dari 0.",
                         'journal_number' => $journalNumber,
                     ];
                     $voucherHasError = true;
@@ -405,9 +397,9 @@ class FinanceJournalImportService
                 $lineDesc = $this->extractValue($rData, ['keterangan', 'deskripsi', 'description', 'memo', 'catatan']);
 
                 $voucherLines[] = [
-                    'account_id'  => $account->id,
-                    'debit'       => $debit,
-                    'credit'      => $credit,
+                    'account_id' => $account->id,
+                    'debit' => $debit,
+                    'credit' => $credit,
                     'description' => $lineDesc ? trim((string) $lineDesc) : null,
                 ];
             }
@@ -415,38 +407,38 @@ class FinanceJournalImportService
             // 7. Validate debit credit balance
             if (abs($totalDebit - $totalCredit) > 0.001) {
                 $errors[] = [
-                    'row'            => $firstRowNum,
-                    'message'        => "Journal is not balanced on {$journalNumber}. Total Debit (" . number_format($totalDebit, 2) . ") != Total Credit (" . number_format($totalCredit, 2) . ").",
+                    'row' => $firstRowNum,
+                    'message' => "Journal is not balanced on {$journalNumber}. Total Debit (".number_format($totalDebit, 2).') != Total Credit ('.number_format($totalCredit, 2).').',
                     'journal_number' => $journalNumber,
                 ];
                 $voucherHasError = true;
             } elseif ($totalDebit <= 0.0) {
                 $errors[] = [
-                    'row'            => $firstRowNum,
-                    'message'        => "Total nilai transaksi pada jurnal {$journalNumber} harus lebih besar dari 0.",
+                    'row' => $firstRowNum,
+                    'message' => "Total nilai transaksi pada jurnal {$journalNumber} harus lebih besar dari 0.",
                     'journal_number' => $journalNumber,
                 ];
                 $voucherHasError = true;
             }
 
-            if (!$voucherHasError) {
+            if (! $voucherHasError) {
                 $voucherDesc = $this->extractValue($firstRowData, ['keterangan', 'deskripsi', 'description', 'memo']) ?: "Import Jurnal {$journalNumber}";
 
                 $validatedVouchers[] = [
-                    'journal_number'       => $journalNumber,
-                    'transaction_date'     => $parsedDate,
-                    'description'          => trim((string) $voucherDesc),
-                    'program_id'           => $resolvedProgramId,
+                    'journal_number' => $journalNumber,
+                    'transaction_date' => $parsedDate,
+                    'description' => trim((string) $voucherDesc),
+                    'program_id' => $resolvedProgramId,
                     'accounting_period_id' => $assignedPeriodId,
-                    'lines'                => $voucherLines,
+                    'lines' => $voucherLines,
                 ];
             }
         }
 
         return [
-            'vouchers'       => $validatedVouchers,
-            'errors'         => $errors,
-            'total_rows'     => $totalNonEmptyRows,
+            'vouchers' => $validatedVouchers,
+            'errors' => $errors,
+            'total_rows' => $totalNonEmptyRows,
             'total_journals' => count($vouchersRaw),
         ];
     }
@@ -460,30 +452,30 @@ class FinanceJournalImportService
 
         foreach ($errors as $err) {
             ImportError::create([
-                'batch_id'      => $batch->id,
-                'row_number'    => (int) ($err['row'] ?? 0),
+                'batch_id' => $batch->id,
+                'row_number' => (int) ($err['row'] ?? 0),
                 'error_message' => (string) ($err['message'] ?? 'Unknown error'),
             ]);
         }
 
         AuditLog::create([
-            'user_id'      => $user->id,
-            'module'       => 'finance_import',
-            'action'       => 'journal_import_failed',
+            'user_id' => $user->id,
+            'module' => 'finance_import',
+            'action' => 'journal_import_failed',
             'reference_id' => $batch->id,
-            'old_data'     => null,
-            'new_data'     => [
-                'file_name'   => $batch->file_name,
-                'status'      => 'failed',
+            'old_data' => null,
+            'new_data' => [
+                'file_name' => $batch->file_name,
+                'status' => 'failed',
                 'failed_rows' => count($errors),
-                'errors'      => $errors,
+                'errors' => $errors,
             ],
         ]);
 
         return [
-            'status'   => 'failed',
+            'status' => 'failed',
             'batch_id' => $batch->id,
-            'errors'   => $errors,
+            'errors' => $errors,
         ];
     }
 
@@ -549,6 +541,7 @@ class FinanceJournalImportService
                 return true;
             }
         }
+
         return false;
     }
 
@@ -562,6 +555,7 @@ class FinanceJournalImportService
                 return $row[$cand];
             }
         }
+
         return null;
     }
 
@@ -575,6 +569,7 @@ class FinanceJournalImportService
                 return false;
             }
         }
+
         return true;
     }
 }

@@ -39,6 +39,21 @@ class JournalEntry extends Model
         'transaction_date' => 'date',
     ];
 
+    protected static function booted(): void
+    {
+        static::updating(function (JournalEntry $journal) {
+            if ($journal->getOriginal('status') === 'posted') {
+                throw new \DomainException('Posted journal is immutable');
+            }
+        });
+
+        static::deleting(function (JournalEntry $journal) {
+            if ($journal->status === 'posted' || $journal->getOriginal('status') === 'posted') {
+                throw new \DomainException('Posted journal is immutable');
+            }
+        });
+    }
+
     public function accountingPeriod()
     {
         return $this->belongsTo(AccountingPeriod::class, 'accounting_period_id');

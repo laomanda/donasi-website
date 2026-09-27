@@ -11,14 +11,12 @@ use Illuminate\Support\Facades\Log;
 class AllocationJournalService
 {
     public function __construct(
-        protected JournalService $journalService
+        protected JournalService $journalService,
+        protected AccountingPeriodService $periodService
     ) {}
 
     /**
      * Check if allocation is in a valid condition to be recorded in journal.
-     *
-     * @param Allocation $allocation
-     * @return bool
      */
     public function isAllocationValid(Allocation $allocation): bool
     {
@@ -38,9 +36,6 @@ class AllocationJournalService
     /**
      * Generate journal entry for an allocation (penyaluran dana).
      * Protected against duplicates.
-     *
-     * @param Allocation $allocation
-     * @return JournalEntry|null
      */
     public function recordAllocationJournal(Allocation $allocation): ?JournalEntry
     {
@@ -54,7 +49,7 @@ class AllocationJournalService
         }
 
         // 2. Validity check
-        if (!$this->isAllocationValid($allocation)) {
+        if (! $this->isAllocationValid($allocation)) {
             return null;
         }
 
@@ -68,28 +63,39 @@ class AllocationJournalService
             ? $allocation->allocated_at->toDateString()
             : ($allocation->created_at ? $allocation->created_at->toDateString() : now()->toDateString());
 
+        // Resolve & ensure accounting period is open
+        try {
+            $period = $this->periodService->resolvePeriodByDate($transactionDate);
+            $this->periodService->ensurePeriodOpen($period);
+        } catch (\Throwable $e) {
+            Log::error("Cannot create allocation journal in closed accounting period: allocation {$allocation->id} date {$transactionDate} - ".$e->getMessage());
+
+            return null;
+        }
+
         $description = $allocation->description
             ? "Penyaluran: {$allocation->description} ({$programTitle})"
             : "Penyaluran Dana Program {$programTitle}";
 
         $journalData = [
             'transaction_date' => $transactionDate,
-            'reference_type'   => 'allocation',
-            'reference_id'     => $allocation->id,
-            'program_id'       => $allocation->program_id,
-            'description'      => $description,
-            'status'           => 'posted',
-            'journal_lines'    => [
+            'accounting_period_id' => $period->id,
+            'reference_type' => 'allocation',
+            'reference_id' => $allocation->id,
+            'program_id' => $allocation->program_id,
+            'description' => $description,
+            'status' => 'posted',
+            'journal_lines' => [
                 [
-                    'account_id'  => $debitAccount->id,
-                    'debit'       => (float) $allocation->amount,
-                    'credit'      => 0.00,
+                    'account_id' => $debitAccount->id,
+                    'debit' => (float) $allocation->amount,
+                    'credit' => 0.00,
                     'description' => "Penyaluran Dana - {$debitAccount->name} ({$programTitle})",
                 ],
                 [
-                    'account_id'  => $creditAccount->id,
-                    'debit'       => 0.00,
-                    'credit'      => (float) $allocation->amount,
+                    'account_id' => $creditAccount->id,
+                    'debit' => 0.00,
+                    'credit' => (float) $allocation->amount,
                     'description' => "Pengeluaran Kas/Bank via {$creditAccount->name}",
                 ],
             ],
@@ -100,24 +106,25 @@ class AllocationJournalService
 
             // Audit Log
             AuditLog::create([
-                'user_id'      => $allocation->user_id ?? auth()->id(),
-                'module'       => 'allocation',
-                'action'       => 'create_journal',
+                'user_id' => $allocation->user_id ?? auth()->id(),
+                'module' => 'allocation',
+                'action' => 'create_journal',
                 'reference_id' => $allocation->id,
-                'old_data'     => null,
-                'new_data'     => [
+                'old_data' => null,
+                'new_data' => [
                     'journal_entry_id' => $journal->id,
-                    'journal_number'   => $journal->journal_number,
-                    'amount'           => (float) $allocation->amount,
-                    'program_id'       => $allocation->program_id,
-                    'debit_account'    => $debitAccount->code . ' - ' . $debitAccount->name,
-                    'credit_account'   => $creditAccount->code . ' - ' . $creditAccount->name,
+                    'journal_number' => $journal->journal_number,
+                    'amount' => (float) $allocation->amount,
+                    'program_id' => $allocation->program_id,
+                    'debit_account' => $debitAccount->code.' - '.$debitAccount->name,
+                    'credit_account' => $creditAccount->code.' - '.$creditAccount->name,
                 ],
             ]);
 
             return $journal;
         } catch (\Throwable $e) {
-            Log::error("Failed to auto-generate journal for allocation {$allocation->id}: " . $e->getMessage());
+            Log::error("Failed to auto-generate journal for allocation {$allocation->id}: ".$e->getMessage());
+
             return null;
         }
     }
@@ -131,9 +138,6 @@ class AllocationJournalService
      * - Dakwah / Keagamaan: 5130 Penyaluran Program Dakwah & Keagamaan
      * - Kesehatan: 5140 Penyaluran Program Layanan Kesehatan
      * - Ekonomi / UMKM / Produktif: 5150 Penyaluran Program Pemberdayaan Ekonomi
-     *
-     * @param Allocation $allocation
-     * @return Account
      */
     public function resolveDebitAccount(Allocation $allocation): Account
     {
@@ -198,9 +202,6 @@ class AllocationJournalService
 
     /**
      * Resolve credit account (Kas / Bank sumber dana) for allocation.
-     *
-     * @param Allocation $allocation
-     * @return Account
      */
     public function resolveCreditAccount(Allocation $allocation): Account
     {

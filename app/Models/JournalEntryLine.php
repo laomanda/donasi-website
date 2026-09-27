@@ -18,9 +18,26 @@ class JournalEntryLine extends Model
     ];
 
     protected $casts = [
-        'debit'  => 'decimal:2',
+        'debit' => 'decimal:2',
         'credit' => 'decimal:2',
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(function (JournalEntryLine $line) {
+            $journal = $line->journalEntry;
+            if ($journal && $journal->status === 'posted') {
+                throw new \DomainException('Posted journal is immutable');
+            }
+        });
+
+        static::deleting(function (JournalEntryLine $line) {
+            $journal = $line->journalEntry;
+            if ($journal && $journal->status === 'posted') {
+                throw new \DomainException('Posted journal is immutable');
+            }
+        });
+    }
 
     public function journalEntry()
     {
