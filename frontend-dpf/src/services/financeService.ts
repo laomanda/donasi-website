@@ -1,5 +1,10 @@
 import http from '../lib/http';
 import type {
+  Account,
+  AccountPayload,
+  AccountFilterParams,
+  AccountSummary,
+  AccountListResponse,
   JournalEntry,
   JournalEntryPayload,
   JournalFilterParams,
@@ -23,6 +28,7 @@ import type {
   ImportPreviewResponse,
   ImportConfirmResponse,
   PaginatedFinanceResponse,
+  ProgramOption,
 } from '../types/finance';
 
 /**
@@ -31,13 +37,60 @@ import type {
  */
 const financeService = {
   // ==========================================
+  // 0. CHART OF ACCOUNTS (COA)
+  // ==========================================
+  getAccounts: async (params?: AccountFilterParams): Promise<AccountListResponse> => {
+    const res = await http.get<{
+      success?: boolean;
+      data: Account[] | PaginatedFinanceResponse<Account>;
+      summary?: AccountSummary;
+    }>('/finance/accounts', { params });
+    return res.data;
+  },
+
+  getAccount: async (id: number) => {
+    const res = await http.get<{
+      success?: boolean;
+      data: Account;
+    }>(`/finance/accounts/${id}`);
+    return res.data.data;
+  },
+
+  createAccount: async (payload: AccountPayload) => {
+    const res = await http.post<{
+      success: boolean;
+      message: string;
+      data: Account;
+    }>('/finance/accounts', payload, { skipErrorRedirect: true });
+    return res.data;
+  },
+
+  updateAccount: async (id: number, payload: Partial<AccountPayload>) => {
+    const res = await http.put<{
+      success: boolean;
+      message: string;
+      data: Account;
+    }>(`/finance/accounts/${id}`, payload, { skipErrorRedirect: true });
+    return res.data;
+  },
+
+  deleteAccount: async (id: number) => {
+    const res = await http.delete<{
+      success: boolean;
+      message: string;
+    }>(`/finance/accounts/${id}`, { skipErrorRedirect: true });
+    return res.data;
+  },
+
+  // ==========================================
   // 1. JOURNALS
   // ==========================================
   getJournals: async (params?: JournalFilterParams) => {
-    const res = await http.get<PaginatedFinanceResponse<JournalEntry>>('/finance/journals', {
+    const res = await http.get<{ data?: PaginatedFinanceResponse<JournalEntry> } & PaginatedFinanceResponse<JournalEntry>>('/finance/journals', {
       params,
     });
-    return res.data;
+    const data = res.data?.data ?? res.data;
+    return data as PaginatedFinanceResponse<JournalEntry>;
   },
 
   getJournal: async (id: number) => {
@@ -82,41 +135,55 @@ const financeService = {
     return res.data;
   },
 
+  getPrograms: async (): Promise<ProgramOption[]> => {
+    const res = await http.get<{ data?: ProgramOption[] } | ProgramOption[]>('/programs', {
+      params: { per_page: 100 },
+    });
+    const list = Array.isArray(res.data)
+      ? res.data
+      : (res.data as { data?: ProgramOption[] })?.data || [];
+    return list;
+  },
+
   // ==========================================
   // 2. GENERAL LEDGER (Buku Besar)
   // ==========================================
   getGeneralLedger: async (params?: GeneralLedgerFilterParams) => {
-    const res = await http.get<GeneralLedgerResponse>('/finance/general-ledger', {
+    const res = await http.get<{ data?: GeneralLedgerResponse } & GeneralLedgerResponse>('/finance/general-ledger', {
       params,
     });
-    return res.data;
+    const data = res.data?.data ?? res.data;
+    return data as GeneralLedgerResponse;
   },
 
   // ==========================================
   // 3. TRIAL BALANCE (Neraca Saldo)
   // ==========================================
   getTrialBalance: async (params?: TrialBalanceFilterParams) => {
-    const res = await http.get<TrialBalanceResponse>('/finance/trial-balance', {
+    const res = await http.get<{ data?: TrialBalanceResponse } & TrialBalanceResponse>('/finance/trial-balance', {
       params,
     });
-    return res.data;
+    const data = res.data?.data ?? res.data;
+    return data as TrialBalanceResponse;
   },
 
   // ==========================================
   // 4. FINANCIAL STATEMENTS
   // ==========================================
   getBalanceSheet: async (params?: StatementFilterParams) => {
-    const res = await http.get<BalanceSheetResponse>('/finance/balance-sheet', {
+    const res = await http.get<{ data?: BalanceSheetResponse } & BalanceSheetResponse>('/finance/balance-sheet', {
       params,
     });
-    return res.data;
+    const data = res.data?.data ?? res.data;
+    return data as BalanceSheetResponse;
   },
 
   getActivityStatement: async (params?: StatementFilterParams) => {
-    const res = await http.get<ActivityStatementResponse>('/finance/activity-statement', {
+    const res = await http.get<{ data?: ActivityStatementResponse } & ActivityStatementResponse>('/finance/activity-statement', {
       params,
     });
-    return res.data;
+    const data = res.data?.data ?? res.data;
+    return data as ActivityStatementResponse;
   },
 
   // ==========================================
@@ -186,13 +253,15 @@ const financeService = {
   // 7. ACCOUNTING PERIOD & CLOSING CONTROL
   // ==========================================
   getAccountingPeriods: async () => {
-    const res = await http.get<AccountingPeriod[]>('/finance/accounting-periods');
-    return res.data;
+    const res = await http.get<{ data?: AccountingPeriod[] } & AccountingPeriod[]>('/finance/accounting-periods');
+    const data = (Array.isArray(res.data) ? res.data : (res.data as { data?: AccountingPeriod[] })?.data) || [];
+    return data as AccountingPeriod[];
   },
 
   getAccountingPeriod: async (id: number) => {
-    const res = await http.get<AccountingPeriod>(`/finance/accounting-periods/${id}`);
-    return res.data;
+    const res = await http.get<{ data?: AccountingPeriod } & AccountingPeriod>(`/finance/accounting-periods/${id}`);
+    const data = (res.data as { data?: AccountingPeriod })?.data ?? res.data;
+    return data as AccountingPeriod;
   },
 
   closeAccountingPeriod: async (id: number, closingNotes?: string) => {
@@ -207,23 +276,27 @@ const financeService = {
   // ==========================================
   // 8. FINANCE RECONCILIATION & CONTROL
   // ==========================================
-  getReconciliationSummary: async () => {
-    const res = await http.get<ReconciliationSummary>('/finance/reconciliation/summary');
-    return res.data;
+  getReconciliationSummary: async (params?: { period_id?: number }) => {
+    const res = await http.get<{ data?: ReconciliationSummary } & ReconciliationSummary>('/finance/reconciliation/summary', {
+      params,
+    });
+    const data = res.data?.data ?? res.data;
+    return data as ReconciliationSummary;
   },
 
-  getReconciliationReport: async (params?: { date?: string }) => {
+  getReconciliationReport: async (params?: { period_id?: number; date?: string }) => {
     const res = await http.get<{ data: ReconciliationSummary }>('/finance/reconciliation', {
       params,
     });
-    return res.data;
+    const data = res.data?.data ?? res.data;
+    return data as ReconciliationSummary;
   },
 
   // ==========================================
   // 9. EXCEL EXPORTS (Download Blobs)
   // ==========================================
-  exportAccounts: async () => {
-    const res = await http.get('/finance/export/accounts', { responseType: 'blob' });
+  exportAccounts: async (params?: Record<string, string>) => {
+    const res = await http.get('/finance/export/accounts', { params, responseType: 'blob' });
     return res.data;
   },
 

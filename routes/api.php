@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\Editor\OrganizationController as EditorOrganization
 use App\Http\Controllers\Api\Editor\PartnerController as EditorPartnerController;
 use App\Http\Controllers\Api\Editor\ProgramController as EditorProgramController;
 use App\Http\Controllers\Api\Editor\UploadController as EditorUploadController;
+use App\Http\Controllers\Api\Finance\AccountController;
 use App\Http\Controllers\Api\Finance\AccountingPeriodController;
 use App\Http\Controllers\Api\Finance\FinanceExportController;
 use App\Http\Controllers\Api\Finance\FinanceImportController;
@@ -309,6 +310,7 @@ Route::prefix('v1')->group(function () {
         ->prefix('finance')
         ->name('finance.')
         ->group(function () {
+            Route::apiResource('accounts', AccountController::class);
             Route::apiResource('journals', JournalEntryController::class)->only(['index', 'show', 'store']);
             Route::post('journals/{id}/post', [JournalEntryController::class, 'post']);
             Route::post('journals/{id}/void', [JournalEntryController::class, 'void']);

@@ -129,3 +129,60 @@ export const downloadBlobFile = (data: BlobPart, filename: string, mimeType = 'a
   link.remove();
   window.URL.revokeObjectURL(url);
 };
+
+/**
+ * Standard Indonesian label for Account Types.
+ */
+export const getAccountTypeLabel = (type: string | null | undefined): string => {
+  switch (type?.toLowerCase()) {
+    case 'asset':
+      return 'Aset';
+    case 'liability':
+      return 'Liabilitas';
+    case 'net_asset':
+    case 'equity':
+      return 'Aset Neto';
+    case 'revenue':
+      return 'Penerimaan';
+    case 'expense':
+      return 'Beban';
+    default:
+      return type || '-';
+  }
+};
+
+/**
+ * Standard Indonesian label for Normal Balance.
+ */
+export const getNormalBalanceLabel = (balance: string | null | undefined): string => {
+  switch (balance?.toLowerCase()) {
+    case 'debit':
+      return 'Debit';
+    case 'credit':
+      return 'Kredit';
+    default:
+      return balance || '-';
+  }
+};
+
+/**
+ * Subtle badge color classes for Account Types (semantic, clean, not loud).
+ */
+export const getAccountTypeBadgeClass = (type: string | null | undefined): string => {
+  switch (type?.toLowerCase()) {
+    case 'asset':
+      return 'bg-blue-50 text-blue-700 border-blue-200';
+    case 'liability':
+      return 'bg-amber-50 text-amber-700 border-amber-200';
+    case 'net_asset':
+    case 'equity':
+      return 'bg-purple-50 text-purple-700 border-purple-200';
+    case 'revenue':
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    case 'expense':
+      return 'bg-rose-50 text-rose-700 border-rose-200';
+    default:
+      return 'bg-slate-50 text-slate-700 border-slate-200';
+  }
+};
+

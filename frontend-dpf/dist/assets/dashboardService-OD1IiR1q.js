@@ -1,0 +1,1 @@
+import{h as a}from"./index-uLn7tZ_9.js";const t={getAdminDashboard:async()=>(await a.get("/admin/dashboard")).data,getSuperAdminDashboard:async()=>(await a.get("/superadmin/dashboard")).data};export{t as d};
