@@ -165,73 +165,99 @@ export interface JournalFilterParams {
 // ==========================================
 // 3. GENERAL LEDGER (Buku Besar)
 // ==========================================
-export interface GeneralLedgerLine {
-  id: number;
-  date: string;
-  journal_number: string;
-  description: string;
-  debit: number;
-  credit: number;
-  balance: number;
+export interface GeneralLedgerTransaction {
+  journal_entry_id: number | null;
+  line_id: number;
+  transaction_date: string | null;
+  journal_number: string | null;
   reference_type?: string | null;
   reference_id?: number | null;
+  description: string | null;
+  debit: number;
+  credit: number;
+  running_balance: number;
 }
 
 export interface GeneralLedgerAccount {
   account_id: number;
-  account_code: string;
-  account_name: string;
+  code: string;
+  name: string;
   account_type: AccountType;
   normal_balance: NormalBalance;
+  report_category?: string;
   opening_balance: number;
   total_debit: number;
   total_credit: number;
-  ending_balance: number;
-  entries: GeneralLedgerLine[];
+  closing_balance: number;
+  transactions: GeneralLedgerTransaction[];
+}
+
+export interface GeneralLedgerPeriodInfo {
+  id: number;
+  name: string;
+  start_date: string | null;
+  end_date: string | null;
+  status: string;
 }
 
 export interface GeneralLedgerResponse {
-  period_from: string;
-  period_to: string;
+  period?: GeneralLedgerPeriodInfo | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  total_accounts: number;
+  grand_total_debit: number;
+  grand_total_credit: number;
   accounts: GeneralLedgerAccount[];
+  account?: GeneralLedgerAccount | null;
 }
 
 export interface GeneralLedgerFilterParams {
   account_id?: number | '';
-  date_from?: string;
-  date_to?: string;
-  q?: string;
+  period_id?: number | '';
+  accounting_period_id?: number | '';
+  start_date?: string;
+  end_date?: string;
+  include_zero_balance?: boolean;
 }
 
 // ==========================================
 // 4. TRIAL BALANCE (Neraca Saldo)
 // ==========================================
-export interface TrialBalanceItem {
+export interface TrialBalanceAccount {
   account_id: number;
   code: string;
   name: string;
-  type: AccountType;
+  account_type: AccountType;
   normal_balance: NormalBalance;
-  opening_debit: number;
-  opening_credit: number;
-  movement_debit: number;
-  movement_credit: number;
-  ending_debit: number;
-  ending_credit: number;
+  total_debit: number;
+  total_credit: number;
+  ending_balance: number;
+  debit_balance: number;
+  credit_balance: number;
+}
+
+export type TrialBalanceItem = TrialBalanceAccount;
+
+export interface TrialBalancePeriodInfo {
+  id: number;
+  name: string;
+  start_date: string | null;
+  end_date: string | null;
+  status: string;
 }
 
 export interface TrialBalanceResponse {
-  period_from?: string;
-  period_to?: string;
-  start_date?: string;
-  end_date?: string;
-  total_debit?: number;
-  total_credit?: number;
-  total_debit_balance?: number;
-  total_credit_balance?: number;
+  period?: TrialBalancePeriodInfo | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  total_accounts: number;
+  total_debit: number;
+  total_credit: number;
+  total_debit_balance: number;
+  total_credit_balance: number;
   is_balanced: boolean;
-  data?: TrialBalanceItem[];
-  accounts?: TrialBalanceItem[];
+  accounts: TrialBalanceAccount[];
+  data?: TrialBalanceAccount[];
   totals?: {
     opening_debit: number;
     opening_credit: number;
@@ -244,12 +270,10 @@ export interface TrialBalanceResponse {
 }
 
 export interface TrialBalanceFilterParams {
-  period_id?: number;
-  date_from?: string;
-  date_to?: string;
+  period_id?: number | '';
+  accounting_period_id?: number | '';
   start_date?: string;
   end_date?: string;
-  include_zero?: boolean;
   include_zero_balance?: boolean;
 }
 
