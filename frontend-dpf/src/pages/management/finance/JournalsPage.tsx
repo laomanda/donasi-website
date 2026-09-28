@@ -371,7 +371,7 @@ export function JournalsPage() {
       {/* 1. Page Header */}
       <FinancePageHeader
         title="Jurnal Umum"
-        description="Pencatatan transaksi keuangan berdasarkan prinsip pembukuan berpasangan (double-entry accounting)."
+        description="Kelola, tinjau, dan posting transaksi jurnal keuangan YWDP."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -388,6 +388,14 @@ export function JournalsPage() {
               <span className="hidden sm:inline">Segarkan</span>
             </button>
 
+            <Link
+              to="/finance/import"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-xs transition hover:bg-slate-50 active:scale-95"
+            >
+              <FontAwesomeIcon icon={faFileImport} className="text-slate-500" />
+              <span>Import / Export</span>
+            </Link>
+
             <button
               type="button"
               onClick={handleExport}
@@ -398,14 +406,6 @@ export function JournalsPage() {
               <span>{exporting ? "Mengunduh..." : "Export Excel"}</span>
             </button>
 
-            <Link
-              to="/finance/import"
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-xs transition hover:bg-slate-50 active:scale-95"
-            >
-              <FontAwesomeIcon icon={faFileImport} className="text-blue-600" />
-              <span className="hidden md:inline">Import Jurnal</span>
-            </Link>
-
             {canManage && (
               <button
                 type="button"
@@ -413,7 +413,7 @@ export function JournalsPage() {
                 className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95"
               >
                 <FontAwesomeIcon icon={faPlus} />
-                <span>Jurnal Baru</span>
+                <span>+ Buat Jurnal</span>
               </button>
             )}
           </div>
@@ -623,7 +623,7 @@ export function JournalsPage() {
       {/* 4. Journal Table / States */}
       {error ? (
         <FinanceErrorState
-          title="Tidak dapat memuat jurnal"
+          title="Gagal memuat daftar jurnal."
           message={error}
           onRetry={fetchJournals}
         />
@@ -653,13 +653,13 @@ export function JournalsPage() {
                       <FinanceEmptyState
                         title={
                           isFilterActive
-                            ? "Tidak Ada Jurnal yang Sesuai"
-                            : "Belum Ada Jurnal"
+                            ? "Jurnal tidak ditemukan"
+                            : "Belum ada jurnal"
                         }
                         description={
                           isFilterActive
                             ? "Tidak ada transaksi jurnal yang cocok dengan filter atau kata kunci pencarian Anda."
-                            : "Belum ada catatan jurnal pada periode ini. Klik tombol '+ Jurnal Baru' untuk membuat entri pembukuan."
+                            : "Belum ada catatan jurnal pada periode ini. Klik tombol '+ Buat Jurnal' untuk membuat entri pembukuan."
                         }
                         icon={faReceipt}
                         action={

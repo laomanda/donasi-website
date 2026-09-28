@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSitemap,
   faFileExcel,
+  faFileImport,
   faPlus,
   faSearch,
   faTimes,
@@ -112,7 +114,7 @@ export function AccountsPage() {
       });
       setExpandedIds(defaultExpanded);
     } catch (err) {
-      const msg = extractFinanceErrorMessage(err, "Gagal memuat bagan akun (COA).");
+      const msg = extractFinanceErrorMessage(err, "Gagal memuat daftar akun.");
       setError(msg);
     } finally {
       setLoading(false);
@@ -351,10 +353,18 @@ export function AccountsPage() {
     <div className="space-y-6">
       {/* 1. Page Header */}
       <FinancePageHeader
-        title="Daftar Akun (Chart of Accounts)"
-        description="Struktur dan pengelolaan bagan akun perkiraan yang digunakan dalam pencatatan pembukuan dan laporan keuangan yayasan."
+        title="Daftar Akun"
+        description="Kelola struktur dan klasifikasi akun keuangan YWDP."
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Link
+              to="/finance/import"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs transition hover:bg-slate-50 active:scale-95"
+            >
+              <FontAwesomeIcon icon={faFileImport} className="text-slate-500" />
+              <span>Import / Export</span>
+            </Link>
+
             <button
               type="button"
               onClick={handleExport}
@@ -662,7 +672,7 @@ export function AccountsPage() {
         ) : error ? (
           <div className="p-8">
             <FinanceErrorState
-              title="Gagal Memuat Bagan Akun"
+              title="Gagal memuat daftar akun."
               message={error}
               onRetry={fetchAccounts}
             />
@@ -670,8 +680,8 @@ export function AccountsPage() {
         ) : accounts.length === 0 ? (
           <div className="p-8">
             <FinanceEmptyState
-              title="Belum Ada Akun"
-              description="Bagan Akun (Chart of Accounts) belum memiliki data. Silakan tambahkan akun perkiraan pertama Anda."
+              title="Belum ada akun"
+              description="Bagan akun belum memiliki data. Silakan tambahkan akun pertama."
               icon={faSitemap}
               action={
                 canManage ? (
@@ -684,7 +694,7 @@ export function AccountsPage() {
                     className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition"
                   >
                     <FontAwesomeIcon icon={faPlus} />
-                    <span>Tambah Akun Baru</span>
+                    <span>Tambah Akun</span>
                   </button>
                 ) : undefined
               }
@@ -693,7 +703,7 @@ export function AccountsPage() {
         ) : (viewMode === "tree" ? treeItems.length === 0 : flatFilteredItems.length === 0) ? (
           <div className="p-8">
             <FinanceEmptyState
-              title="Tidak Ada Akun yang Sesuai"
+              title="Akun tidak ditemukan"
               description="Tidak ditemukan akun perkiraan dengan kriteria pencarian dan filter yang Anda pilih."
               icon={faSearch}
               action={
