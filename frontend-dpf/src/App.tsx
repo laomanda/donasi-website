@@ -13,7 +13,10 @@ const App = () => {
     location.pathname.startsWith('/editor') ||
     location.pathname.startsWith('/mitra') ||
     location.pathname.startsWith('/superadmin') ||
+    location.pathname.startsWith('/keuangan') ||
+    location.pathname.startsWith('/finance') ||
     location.pathname.startsWith('/management');
+
 
 
   // Global cleanup: if there's a pending donation in sessionStorage but user

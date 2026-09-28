@@ -33,7 +33,9 @@ function RequireDashboardRole({ role }: { role: Utils.DashboardRole }) {
   const isAuthorizedRole = roles.includes(role);
   const isCustomRole = roles.includes("custom");
 
-  if (!isAuthorizedRole && !isCustomRole) {
+  const isSuperAdmin = roles.includes("superadmin");
+
+  if (!isAuthorizedRole && !isCustomRole && !(isSuperAdmin && (role === "keuangan" || role === "admin" || role === "editor"))) {
     const home = roles[0];
     const redirectPath = home === "custom" ? "/management/dashboard" : `/${home}/dashboard`;
     return <Navigate to={redirectPath} replace />;
@@ -52,7 +54,6 @@ function RequireDashboardRole({ role }: { role: Utils.DashboardRole }) {
     return location.pathname === item.href || location.pathname.startsWith(`${item.href}/`);
   });
 
-  const isSuperAdmin = roles.includes("superadmin");
   if (!isSuperAdmin && currentItem?.permission && !permissionSet.has(currentItem.permission)) {
     // If user doesn't have specific permission for this page, boot to unauthorized
     // Superadmin bypasses this check
@@ -82,6 +83,10 @@ export function KeuanganShell() {
   return <RequireDashboardRole role="keuangan" />;
 }
 
+export function FinanceShell() {
+  return <RequireDashboardRole role="keuangan" />;
+}
+
 export function MitraShell() {
   return <RequireDashboardRole role="mitra" />;
 }
@@ -89,3 +94,4 @@ export function MitraShell() {
 export function ManagementShell() {
   return <RequireDashboardRole role="custom" />;
 }
+

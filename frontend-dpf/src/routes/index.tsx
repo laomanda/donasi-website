@@ -35,9 +35,24 @@ const MitraRegisterPage = lazy(() => import('../pages/auth/MitraRegisterPage').t
 const EditorShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.EditorShell })))
 const AdminShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.AdminShell })))
 const KeuanganShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.KeuanganShell })))
+const FinanceShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.FinanceShell })))
 const SuperAdminShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.SuperAdminShell })))
 const MitraShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.MitraShell })))
 const ManagementShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.ManagementShell })))
+
+// Finance Pages
+const FinanceDashboardPage = lazy(() => import('../pages/management/finance/FinanceDashboardPage').then(m => ({ default: m.FinanceDashboardPage })))
+const AccountsPage = lazy(() => import('../pages/management/finance/AccountsPage').then(m => ({ default: m.AccountsPage })))
+const JournalsPage = lazy(() => import('../pages/management/finance/JournalsPage').then(m => ({ default: m.JournalsPage })))
+const GeneralLedgerPage = lazy(() => import('../pages/management/finance/GeneralLedgerPage').then(m => ({ default: m.GeneralLedgerPage })))
+const TrialBalancePage = lazy(() => import('../pages/management/finance/TrialBalancePage').then(m => ({ default: m.TrialBalancePage })))
+const BalanceSheetPage = lazy(() => import('../pages/management/finance/BalanceSheetPage').then(m => ({ default: m.BalanceSheetPage })))
+const ActivityStatementPage = lazy(() => import('../pages/management/finance/ActivityStatementPage').then(m => ({ default: m.ActivityStatementPage })))
+const WaqfAssetsPage = lazy(() => import('../pages/management/finance/WaqfAssetsPage').then(m => ({ default: m.WaqfAssetsPage })))
+const FinancialNotesPage = lazy(() => import('../pages/management/finance/FinancialNotesPage').then(m => ({ default: m.FinancialNotesPage })))
+const AccountingPeriodsPage = lazy(() => import('../pages/management/finance/AccountingPeriodsPage').then(m => ({ default: m.AccountingPeriodsPage })))
+const ReconciliationPage = lazy(() => import('../pages/management/finance/ReconciliationPage').then(m => ({ default: m.ReconciliationPage })))
+const FinanceImportExportPage = lazy(() => import('../pages/management/finance/FinanceImportExportPage').then(m => ({ default: m.FinanceImportExportPage })))
 
 // Shared & Management Pages
 const CustomDashboardPage = lazy(() => import('../pages/management/custom/CustomDashboardPage').then(m => ({ default: m.CustomDashboardPage })))
@@ -253,6 +268,37 @@ export const router = createBrowserRouter([
           { path: 'reports/cashflow', element: withSuspense(CashFlowReportPage) },
           { path: 'search', element: <Suspense fallback={<PageLoader />}><SearchPage role="keuangan" /></Suspense> },
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="keuangan" /></Suspense> },
+          // Finance aliases within keuangan
+          { path: 'accounts', element: withSuspense(AccountsPage) },
+          { path: 'journals', element: withSuspense(JournalsPage) },
+          { path: 'general-ledger', element: withSuspense(GeneralLedgerPage) },
+          { path: 'trial-balance', element: withSuspense(TrialBalancePage) },
+          { path: 'balance-sheet', element: withSuspense(BalanceSheetPage) },
+          { path: 'activity-statement', element: withSuspense(ActivityStatementPage) },
+          { path: 'waqf-assets', element: withSuspense(WaqfAssetsPage) },
+          { path: 'financial-notes', element: withSuspense(FinancialNotesPage) },
+          { path: 'accounting-periods', element: withSuspense(AccountingPeriodsPage) },
+          { path: 'reconciliation', element: withSuspense(ReconciliationPage) },
+          { path: 'import', element: withSuspense(FinanceImportExportPage) },
+        ],
+      },
+      {
+        path: 'finance',
+        element: withSuspense(FinanceShell),
+        children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          { path: 'dashboard', element: withSuspense(FinanceDashboardPage) },
+          { path: 'accounts', element: withSuspense(AccountsPage) },
+          { path: 'journals', element: withSuspense(JournalsPage) },
+          { path: 'general-ledger', element: withSuspense(GeneralLedgerPage) },
+          { path: 'trial-balance', element: withSuspense(TrialBalancePage) },
+          { path: 'balance-sheet', element: withSuspense(BalanceSheetPage) },
+          { path: 'activity-statement', element: withSuspense(ActivityStatementPage) },
+          { path: 'waqf-assets', element: withSuspense(WaqfAssetsPage) },
+          { path: 'financial-notes', element: withSuspense(FinancialNotesPage) },
+          { path: 'accounting-periods', element: withSuspense(AccountingPeriodsPage) },
+          { path: 'reconciliation', element: withSuspense(ReconciliationPage) },
+          { path: 'import', element: withSuspense(FinanceImportExportPage) },
         ],
       },
       {
