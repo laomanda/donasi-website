@@ -280,6 +280,49 @@ export interface TrialBalanceFilterParams {
 // ==========================================
 // 5. FINANCIAL STATEMENTS
 // ==========================================
+export interface FinancialStatementPeriod {
+  id: number;
+  name: string;
+  start_date: string | null;
+  end_date: string | null;
+  status: string;
+}
+
+export interface BalanceSheetAccount {
+  account_id: number | null;
+  code: string;
+  name: string;
+  account_type: AccountType;
+  report_category?: string;
+  balance: number;
+}
+
+export interface ActivityStatementAccount {
+  account_id: number;
+  code: string;
+  name: string;
+  account_type: AccountType;
+  report_category?: string;
+  amount: number;
+}
+
+export interface FinancialStatementNoteItem {
+  id: number;
+  accounting_period_id?: number | null;
+  period_id?: number | null;
+  period_name?: string | null;
+  title: string;
+  category: string;
+  category_label?: string;
+  content: string;
+  sort_order?: number;
+  status: string;
+  created_by?: number | null;
+  creator_name?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface StatementLineItem {
   account_id?: number | null;
   code: string;
@@ -296,82 +339,149 @@ export interface StatementSection {
 }
 
 export interface BalanceSheetResponse {
+  period?: FinancialStatementPeriod | null;
+  start_date?: string | null;
+  end_date?: string | null;
   as_of_date?: string;
-  start_date?: string;
-  end_date?: string;
-  assets?: StatementSection[] | StatementLineItem[];
+  assets: BalanceSheetAccount[];
   total_assets: number;
   total_asset?: number;
-  liabilities?: StatementSection[] | StatementLineItem[];
+  liabilities: BalanceSheetAccount[];
   total_liabilities: number;
   total_liability?: number;
-  net_assets?: StatementSection[] | StatementLineItem[];
-  equity?: StatementSection[] | StatementLineItem[];
-  total_net_assets?: number;
+  net_assets: BalanceSheetAccount[];
+  total_net_assets: number;
   total_net_asset?: number;
   total_equity?: number;
   total_liabilities_and_equity?: number;
-  current_period_surplus?: number;
+  current_period_surplus: number;
   is_balanced: boolean;
+  notes?: FinancialStatementNoteItem[];
+  financial_notes?: FinancialStatementNoteItem[];
 }
 
 export interface ActivityStatementResponse {
+  period?: FinancialStatementPeriod | null;
+  start_date?: string | null;
+  end_date?: string | null;
   period_from?: string;
   period_to?: string;
-  start_date?: string;
-  end_date?: string;
-  revenues?: StatementSection[] | StatementLineItem[];
+  revenues: ActivityStatementAccount[];
   total_revenues: number;
   total_penerimaan?: number;
-  expenses?: StatementSection[] | StatementLineItem[];
+  expenses: ActivityStatementAccount[];
   total_expenses: number;
   total_beban?: number;
-  surplus_deficit?: number;
+  surplus_deficit: number;
   net_surplus_deficit?: number;
   is_surplus: boolean;
+  notes?: FinancialStatementNoteItem[];
+  financial_notes?: FinancialStatementNoteItem[];
 }
 
-export interface StatementFilterParams {
-  period_id?: number;
+export interface FinancialStatementFilterParams {
+  period_id?: number | '';
+  accounting_period_id?: number | '';
+  start_date?: string;
+  end_date?: string;
   as_of_date?: string;
   date_from?: string;
   date_to?: string;
-  start_date?: string;
-  end_date?: string;
 }
 
+export type StatementFilterParams = FinancialStatementFilterParams;
+
 // ==========================================
-// 6. WAQF ASSETS & DEPRECIATION
+// 6. WAQF ASSETS & DEPRECIATION (LRAW)
 // ==========================================
+export interface WaqfAssetSourceItem {
+  id: number;
+  source_type: string;
+  amount: number;
+  description?: string | null;
+}
+
+export interface WaqfAssetDepreciationItem {
+  id: number;
+  period_id: number;
+  period_name?: string | null;
+  period_end_date?: string | null;
+  depreciation_expense: number;
+  accumulated_depreciation: number;
+  book_value: number;
+}
+
 export interface WaqfAssetItem {
   id: number;
   asset_code: string;
-  name: string;
+  asset_name?: string;
+  name?: string;
+  category_id?: number;
   category: string;
-  acquisition_date: string;
-  acquisition_cost: number;
-  useful_life_years: number;
+  wakif_id?: number | null;
+  wakif?: string;
+  acquisition_date: string | null;
+  quantity?: number;
+  useful_life_month?: number;
+  useful_life_years?: number;
+  acquisition_value?: number;
+  acquisition_cost?: number;
   accumulated_depreciation: number;
   book_value: number;
   condition: string;
   location?: string | null;
-  status: 'active' | 'disposed' | 'under_maintenance';
+  status: string;
+  sources?: WaqfAssetSourceItem[];
+  depreciation_history?: WaqfAssetDepreciationItem[];
+}
+
+export type WaqfAssetRegisterItem = WaqfAssetItem;
+
+export interface WaqfAssetCategorySummary {
+  category: string;
+  count: number;
+  acquisition_value: number;
+  accumulated_depreciation: number;
+  book_value: number;
+}
+
+export interface WaqfAssetConditionSummary {
+  condition: string;
+  count: number;
+  book_value: number;
+}
+
+export interface WaqfAssetStatusSummary {
+  status: string;
+  count: number;
+  book_value: number;
+}
+
+export interface WaqfAssetReportSummary {
+  total_assets: number;
+  total_acquisition_value: number;
+  total_accumulated_depreciation: number;
+  total_book_value: number;
+  by_category: WaqfAssetCategorySummary[];
+  by_condition: WaqfAssetConditionSummary[];
+  by_status: WaqfAssetStatusSummary[];
+  // Legacy aliases
+  total_assets_count?: number;
+  total_acquisition_cost?: number;
 }
 
 export interface WaqfAssetReportResponse {
-  as_of_date: string;
-  summary: {
-    total_assets_count: number;
-    total_acquisition_cost: number;
-    total_accumulated_depreciation: number;
-    total_book_value: number;
+  period?: FinancialStatementPeriod | null;
+  filters?: {
+    category_id?: number | null;
+    period_id?: number | null;
+    status?: string | null;
   };
-  categories: Array<{
-    category: string;
-    count: number;
-    acquisition_cost: number;
-    book_value: number;
-  }>;
+  summary: WaqfAssetReportSummary;
+  assets: WaqfAssetItem[];
+  notes?: FinancialStatementNoteItem[];
+  financial_notes?: FinancialStatementNoteItem[];
+  as_of_date?: string;
 }
 
 export interface WaqfAssetRegisterResponse {
@@ -382,35 +492,84 @@ export interface WaqfAssetRegisterResponse {
   last_page: number;
 }
 
+export interface WaqfAssetFilterParams {
+  category_id?: number | '';
+  period_id?: number | '';
+  accounting_period_id?: number | '';
+  status?: string | '';
+}
+
 // ==========================================
-// 7. FINANCIAL NOTES (CALK)
+// 7. FINANCIAL NOTES (CLK)
 // ==========================================
+export type FinancialNoteCategory =
+  | 'accounting_policy'
+  | 'asset_note'
+  | 'revenue_note'
+  | 'expense_note'
+  | 'waqf_note'
+  | 'general_note';
+
+export type FinancialNoteStatus = 'draft' | 'published';
+
 export interface FinancialNote {
   id: number;
-  note_number: string;
+  accounting_period_id?: number | null;
+  period_id?: number | null;
+  period_name?: string | null;
+  note_number?: string;
   title: string;
-  category: string;
+  category: FinancialNoteCategory | string;
+  category_label?: string;
   content: string;
   related_account_id?: number | null;
   related_account?: Account;
-  order: number;
+  sort_order?: number;
+  order?: number;
+  status: FinancialNoteStatus | string;
+  created_by?: number | null;
+  creator_name?: string | null;
   created_at?: string;
   updated_at?: string;
 }
 
+export interface FinancialNoteCategoryCount {
+  category: string;
+  label: string;
+  count: number;
+}
+
 export interface FinancialNoteSummary {
+  period_id?: number | null;
   total_notes: number;
-  categories_count: number;
-  categories: string[];
+  categories_count?: number;
+  categories?: string[];
+  by_category: FinancialNoteCategoryCount[];
+  by_status: {
+    draft: number;
+    published: number;
+  };
 }
 
 export interface FinancialNotePayload {
-  note_number: string;
   title: string;
   category: string;
   content: string;
-  related_account_id?: number | null;
+  period_id?: number | null;
+  accounting_period_id?: number | null;
+  note_number?: string;
+  sort_order?: number;
   order?: number;
+  related_account_id?: number | null;
+  status?: FinancialNoteStatus;
+}
+
+export interface FinancialNoteFilterParams {
+  period_id?: number | '';
+  accounting_period_id?: number | '';
+  category?: string | '';
+  status?: string | '';
+  q?: string;
 }
 
 // ==========================================
@@ -487,44 +646,113 @@ export interface ReconciliationSummary {
 }
 
 // ==========================================
-// 10. IMPORT & EXPORT
+// 10. IMPORT & EXPORT MANAGEMENT
 // ==========================================
-export interface ImportBatch {
-  id: number;
-  batch_number: string;
-  type: 'accounts' | 'journals' | 'opening_balance';
-  filename: string;
-  status: 'pending' | 'previewed' | 'confirmed' | 'failed';
-  total_rows: number;
-  valid_rows: number;
-  error_rows: number;
-  created_by?: number | null;
-  creator?: { id: number; name: string } | null;
-  created_at: string;
-}
+export type ImportModule = 'accounts' | 'journals' | 'opening_balance';
+
+export type ImportBatchStatus = 'completed' | 'failed' | 'processing' | 'pending';
 
 export interface ImportErrorItem {
   row: number;
+  message: string;
+  data?: string | Record<string, unknown>;
   column?: string;
   value?: string;
-  message: string;
 }
 
-export interface ImportPreviewResponse {
-  batch_id: number;
-  batch_number: string;
+export interface AccountsImportPreviewData {
   total_rows: number;
   valid_rows: number;
-  error_rows: number;
+  failed_rows: number;
   errors: ImportErrorItem[];
-  preview_data: Record<string, unknown>[];
+  batch_token: string | null;
+  preview_token: string | null;
+}
+
+export interface JournalImportPreviewData {
+  total_rows: number;
+  total_journals: number;
+  valid_journals: number;
+  failed_journals: number;
+  errors: ImportErrorItem[];
+  batch_token: string | null;
+  preview_token: string | null;
+}
+
+export interface OpeningBalanceImportPreviewData {
+  total_rows: number;
+  valid_rows: number;
+  failed_rows: number;
+  total_debit: number;
+  total_credit: number;
+  errors: ImportErrorItem[];
+  batch_token: string | null;
+  preview_token: string | null;
+}
+
+export interface ImportPreviewResponse<T = unknown> {
+  status: 'success' | 'failed';
+  data: T;
+  message?: string;
 }
 
 export interface ImportConfirmResponse {
-  success: boolean;
-  message: string;
-  batch_id: number;
-  imported_count: number;
+  status: 'success' | 'failed';
+  message?: string;
+  batch_id?: number;
+  total_rows?: number;
+  total_journals?: number;
+  success_rows?: number;
+  failed_rows?: number;
+  errors?: ImportErrorItem[];
+  journal_id?: number;
+}
+
+export interface ImportHistoryItem {
+  id: number;
+  filename: string;
+  file_name?: string;
+  module: string;
+  status: ImportBatchStatus | string;
+  total_rows: number;
+  total_journals?: number;
+  success_rows: number;
+  failed_rows: number;
+  user: string;
+  created_at: string;
+  errors_count?: number;
+}
+
+export interface ImportHistoryDetail {
+  batch: {
+    id?: number;
+    filename?: string;
+    file_name?: string;
+    module?: string;
+    status: string;
+    total_rows: number;
+    total_journals?: number;
+    success_rows: number;
+    failed_rows: number;
+    user?: string;
+    created_at?: string;
+  };
+  errors: ImportErrorItem[];
+}
+
+export interface ImportBatch {
+  id: number;
+  batch_number?: string;
+  filename: string;
+  file_name?: string;
+  module: string;
+  status: string;
+  total_rows: number;
+  total_journals?: number;
+  success_rows: number;
+  failed_rows: number;
+  user?: string;
+  created_at: string;
 }
 
 // ==========================================

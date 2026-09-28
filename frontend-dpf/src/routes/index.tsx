@@ -48,6 +48,7 @@ const GeneralLedgerPage = lazy(() => import('../pages/management/finance/General
 const TrialBalancePage = lazy(() => import('../pages/management/finance/TrialBalancePage').then(m => ({ default: m.TrialBalancePage })))
 const BalanceSheetPage = lazy(() => import('../pages/management/finance/BalanceSheetPage').then(m => ({ default: m.BalanceSheetPage })))
 const ActivityStatementPage = lazy(() => import('../pages/management/finance/ActivityStatementPage').then(m => ({ default: m.ActivityStatementPage })))
+const FinancialStatementsPage = lazy(() => import('../pages/management/finance/FinancialStatementsPage').then(m => ({ default: m.FinancialStatementsPage })))
 const WaqfAssetsPage = lazy(() => import('../pages/management/finance/WaqfAssetsPage').then(m => ({ default: m.WaqfAssetsPage })))
 const FinancialNotesPage = lazy(() => import('../pages/management/finance/FinancialNotesPage').then(m => ({ default: m.FinancialNotesPage })))
 const AccountingPeriodsPage = lazy(() => import('../pages/management/finance/AccountingPeriodsPage').then(m => ({ default: m.AccountingPeriodsPage })))
@@ -273,6 +274,7 @@ export const router = createBrowserRouter([
           { path: 'journals', element: withSuspense(JournalsPage) },
           { path: 'general-ledger', element: withSuspense(GeneralLedgerPage) },
           { path: 'trial-balance', element: withSuspense(TrialBalancePage) },
+          { path: 'financial-statements', element: withSuspense(FinancialStatementsPage) },
           { path: 'balance-sheet', element: withSuspense(BalanceSheetPage) },
           { path: 'activity-statement', element: withSuspense(ActivityStatementPage) },
           { path: 'waqf-assets', element: withSuspense(WaqfAssetsPage) },
@@ -292,6 +294,7 @@ export const router = createBrowserRouter([
           { path: 'journals', element: withSuspense(JournalsPage) },
           { path: 'general-ledger', element: withSuspense(GeneralLedgerPage) },
           { path: 'trial-balance', element: withSuspense(TrialBalancePage) },
+          { path: 'financial-statements', element: withSuspense(FinancialStatementsPage) },
           { path: 'balance-sheet', element: withSuspense(BalanceSheetPage) },
           { path: 'activity-statement', element: withSuspense(ActivityStatementPage) },
           { path: 'waqf-assets', element: withSuspense(WaqfAssetsPage) },

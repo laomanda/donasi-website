@@ -18,15 +18,21 @@ import type {
   WaqfAssetReportResponse,
   WaqfAssetRegisterResponse,
   WaqfAssetItem,
+  WaqfAssetFilterParams,
   FinancialNote,
   FinancialNoteSummary,
   FinancialNotePayload,
+  FinancialNoteFilterParams,
   AccountingPeriod,
   PeriodCloseResult,
   ReconciliationSummary,
-  ImportBatch,
   ImportPreviewResponse,
   ImportConfirmResponse,
+  AccountsImportPreviewData,
+  JournalImportPreviewData,
+  OpeningBalanceImportPreviewData,
+  ImportHistoryItem,
+  ImportHistoryDetail,
   PaginatedFinanceResponse,
   ProgramOption,
 } from '../types/finance';
@@ -187,41 +193,55 @@ const financeService = {
   },
 
   // ==========================================
-  // 5. WAQF ASSETS & DEPRECIATION
+  // 5. WAQF ASSETS & DEPRECIATION (LRAW)
   // ==========================================
-  getWaqfAssetReport: async (params?: { as_of_date?: string }) => {
-    const res = await http.get<WaqfAssetReportResponse>('/finance/waqf-assets-report', {
+  getWaqfAssetReport: async (params?: WaqfAssetFilterParams) => {
+    const res = await http.get<{ data?: WaqfAssetReportResponse } & WaqfAssetReportResponse>('/finance/waqf-assets-report', {
       params,
     });
-    return res.data;
+    const data = res.data?.data ?? res.data;
+    return data as WaqfAssetReportResponse;
   },
 
-  getWaqfAssetRegister: async (params?: { page?: number; per_page?: number }) => {
-    const res = await http.get<WaqfAssetRegisterResponse>('/finance/waqf-assets-register', {
+  getWaqfAssetRegister: async (params?: WaqfAssetFilterParams & { page?: number; per_page?: number }) => {
+    const res = await http.get<{ data?: WaqfAssetItem[] } & WaqfAssetRegisterResponse>('/finance/waqf-assets-register', {
       params,
     });
-    return res.data;
+    const data = res.data?.data ?? res.data;
+    return data as WaqfAssetItem[];
   },
 
-  getWaqfAssetDetail: async (id: number) => {
-    const res = await http.get<{ data?: WaqfAssetItem } & Partial<WaqfAssetItem>>(`/finance/waqf-assets/${id}`);
-    const data = res.data.data ?? (res.data as WaqfAssetItem);
-    return data;
+  getWaqfAssetDetail: async (id: number, params?: { period_id?: number; accounting_period_id?: number }) => {
+    const res = await http.get<{ data?: WaqfAssetItem } & WaqfAssetItem>(`/finance/waqf-assets/${id}`, {
+      params,
+    });
+    const data = res.data?.data ?? res.data;
+    return data as WaqfAssetItem;
   },
 
   // ==========================================
-  // 6. FINANCIAL NOTES (CALK)
+  // 6. FINANCIAL NOTES (CLK)
   // ==========================================
-  getFinancialNotes: async (params?: { category?: string; q?: string }) => {
-    const res = await http.get<FinancialNote[]>('/finance/financial-notes', {
+  getFinancialNotes: async (params?: FinancialNoteFilterParams) => {
+    const res = await http.get<{ data?: FinancialNote[] } & FinancialNote[]>('/finance/financial-notes', {
       params,
     });
-    return res.data;
+    const data = (Array.isArray(res.data) ? res.data : (res.data as { data?: FinancialNote[] })?.data) || [];
+    return data as FinancialNote[];
   },
 
-  getFinancialNotesSummary: async () => {
-    const res = await http.get<FinancialNoteSummary>('/finance/financial-notes/summary');
-    return res.data;
+  getFinancialNotesSummary: async (params?: { period_id?: number | ''; accounting_period_id?: number | '' }) => {
+    const res = await http.get<{ data?: FinancialNoteSummary } & FinancialNoteSummary>('/finance/financial-notes/summary', {
+      params,
+    });
+    const data = res.data?.data ?? res.data;
+    return data as FinancialNoteSummary;
+  },
+
+  getFinancialNote: async (id: number) => {
+    const res = await http.get<{ data?: FinancialNote } & FinancialNote>(`/finance/financial-notes/${id}`);
+    const data = res.data?.data ?? res.data;
+    return data as FinancialNote;
   },
 
   createFinancialNote: async (payload: FinancialNotePayload) => {
@@ -352,17 +372,21 @@ const financeService = {
   },
 
   previewAccountsImport: async (formData: FormData) => {
-    const res = await http.post<ImportPreviewResponse>('/finance/import/accounts/preview', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      skipErrorRedirect: true,
-    });
+    const res = await http.post<ImportPreviewResponse<AccountsImportPreviewData>>(
+      '/finance/import/accounts/preview',
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        skipErrorRedirect: true,
+      }
+    );
     return res.data;
   },
 
-  confirmAccountsImport: async (batchId: number) => {
+  confirmAccountsImport: async (payload: { batch_token: string } | FormData) => {
     const res = await http.post<ImportConfirmResponse>(
       '/finance/import/accounts/confirm',
-      { batch_id: batchId },
+      payload,
       { skipErrorRedirect: true }
     );
     return res.data;
@@ -374,17 +398,21 @@ const financeService = {
   },
 
   previewJournalsImport: async (formData: FormData) => {
-    const res = await http.post<ImportPreviewResponse>('/finance/import/journals/preview', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      skipErrorRedirect: true,
-    });
+    const res = await http.post<ImportPreviewResponse<JournalImportPreviewData>>(
+      '/finance/import/journals/preview',
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        skipErrorRedirect: true,
+      }
+    );
     return res.data;
   },
 
-  confirmJournalsImport: async (batchId: number) => {
+  confirmJournalsImport: async (payload: { batch_token: string } | FormData) => {
     const res = await http.post<ImportConfirmResponse>(
       '/finance/import/journals/confirm',
-      { batch_id: batchId },
+      payload,
       { skipErrorRedirect: true }
     );
     return res.data;
@@ -396,7 +424,7 @@ const financeService = {
   },
 
   previewOpeningBalanceImport: async (formData: FormData) => {
-    const res = await http.post<ImportPreviewResponse>(
+    const res = await http.post<ImportPreviewResponse<OpeningBalanceImportPreviewData>>(
       '/finance/import/opening-balance/preview',
       formData,
       {
@@ -407,24 +435,24 @@ const financeService = {
     return res.data;
   },
 
-  confirmOpeningBalanceImport: async (batchId: number) => {
+  confirmOpeningBalanceImport: async (payload: { batch_token: string; accounting_period_id?: number; period_id?: number } | FormData) => {
     const res = await http.post<ImportConfirmResponse>(
       '/finance/import/opening-balance/confirm',
-      { batch_id: batchId },
+      payload,
       { skipErrorRedirect: true }
     );
     return res.data;
   },
 
-  getImportHistory: async (params?: { page?: number; per_page?: number; type?: string }) => {
-    const res = await http.get<PaginatedFinanceResponse<ImportBatch>>('/finance/import/history', {
+  getImportHistory: async (params?: { page?: number; per_page?: number; type?: string; module?: string }) => {
+    const res = await http.get<ImportHistoryItem[] | PaginatedFinanceResponse<ImportHistoryItem>>('/finance/import/history', {
       params,
     });
     return res.data;
   },
 
   getImportHistoryDetail: async (id: number) => {
-    const res = await http.get<{ batch: ImportBatch; errors: Record<string, unknown>[] }>(
+    const res = await http.get<ImportHistoryDetail>(
       `/finance/import/history/${id}`
     );
     return res.data;

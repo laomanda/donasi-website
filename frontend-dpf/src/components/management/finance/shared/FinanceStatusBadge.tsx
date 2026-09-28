@@ -20,7 +20,11 @@ export type FinanceStatusType =
   | "warning"
   | "anomaly"
   | "pending"
-  | "active";
+  | "active"
+  | "completed"
+  | "failed"
+  | "processing"
+  | "previewed";
 
 interface BadgeConfig {
   label: string;
@@ -44,6 +48,34 @@ const BADGE_CONFIGS: Record<FinanceStatusType, BadgeConfig> = {
     text: "text-emerald-700",
     border: "border-emerald-200",
     icon: faCircleCheck,
+  },
+  completed: {
+    label: "Selesai",
+    bg: "bg-emerald-50",
+    text: "text-emerald-700",
+    border: "border-emerald-200",
+    icon: faCircleCheck,
+  },
+  failed: {
+    label: "Gagal",
+    bg: "bg-rose-50",
+    text: "text-rose-700",
+    border: "border-rose-200",
+    icon: faTriangleExclamation,
+  },
+  processing: {
+    label: "Memproses",
+    bg: "bg-blue-50",
+    text: "text-blue-700",
+    border: "border-blue-200",
+    icon: faClock,
+  },
+  previewed: {
+    label: "Tervalidasi",
+    bg: "bg-indigo-50",
+    text: "text-indigo-700",
+    border: "border-indigo-200",
+    icon: faCircleInfo,
   },
   void: {
     label: "Void",
