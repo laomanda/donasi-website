@@ -6,7 +6,6 @@ import {
   faCoins,
   faScaleUnbalanced,
   faVault,
-  faShieldHalved,
   faRotateRight,
   faArrowRight,
   faArrowTrendUp,
@@ -14,6 +13,9 @@ import {
   faChartPie,
   faCalendarDays,
   faPlus,
+  faBoxesStacked,
+  faFileLines,
+  faFolderTree,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   FinancePageHeader,
@@ -439,7 +441,7 @@ export function FinanceDashboardPage() {
 
           <div className="mt-5 border-t border-slate-100 pt-4">
             <Link
-              to="/finance/balance-sheet"
+              to={selectedPeriodId ? `/finance/balance-sheet?period_id=${selectedPeriodId}` : "/finance/balance-sheet"}
               className="group inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 transition hover:text-emerald-700"
             >
               Lihat Laporan Posisi Keuangan Lengkap
@@ -511,7 +513,7 @@ export function FinanceDashboardPage() {
 
           <div className="mt-5 border-t border-slate-100 pt-4">
             <Link
-              to="/finance/activity-statement"
+              to={selectedPeriodId ? `/finance/activity-statement?period_id=${selectedPeriodId}` : "/finance/activity-statement"}
               className="group inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 transition hover:text-emerald-700"
             >
               Lihat Laporan Aktivitas Lengkap
@@ -664,7 +666,7 @@ export function FinanceDashboardPage() {
             </p>
           </div>
           <Link
-            to="/finance/journals"
+            to={selectedPeriodId ? `/finance/journals?period_id=${selectedPeriodId}` : "/finance/journals"}
             className="group inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 transition hover:text-emerald-700"
           >
             Lihat Semua Jurnal
@@ -689,7 +691,7 @@ export function FinanceDashboardPage() {
             description="Belum terdapat jurnal transaksi yang dicatat pada periode akuntansi ini."
             action={
               <Link
-                to="/finance/journals"
+                to={selectedPeriodId ? `/finance/journals?period_id=${selectedPeriodId}` : "/finance/journals"}
                 className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95"
               >
                 <FontAwesomeIcon icon={faPlus} />
@@ -714,7 +716,6 @@ export function FinanceDashboardPage() {
                   const displayTotal =
                     journal.total_debit ??
                     journal.total_credit ??
-                    journal.lines?.reduce((sum, line) => sum + Number(line.debit || 0), 0) ??
                     0;
 
                   return (
@@ -754,7 +755,28 @@ export function FinanceDashboardPage() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Link
-            to="/finance/journals"
+            to="/finance/accounts"
+            className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/60 p-4 transition hover:border-slate-300 hover:bg-slate-100/50 hover:shadow-xs"
+          >
+            <div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-200 text-slate-700">
+                <FontAwesomeIcon icon={faFolderTree} />
+              </div>
+              <h3 className="mt-3 text-sm font-bold text-slate-800 group-hover:text-slate-900">
+                Bagan Akun (COA)
+              </h3>
+              <p className="mt-1 text-xs font-medium text-slate-500">
+                Struktur hirarki 4-level kode akun standar yayasan wakaf.
+              </p>
+            </div>
+            <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-bold text-slate-700">
+              Daftar Bagan Akun
+              <FontAwesomeIcon icon={faArrowRight} className="text-[9px] transition-transform group-hover:translate-x-1" />
+            </span>
+          </Link>
+
+          <Link
+            to={selectedPeriodId ? `/finance/journals?period_id=${selectedPeriodId}` : "/finance/journals"}
             className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/60 p-4 transition hover:border-emerald-200 hover:bg-emerald-50/30 hover:shadow-xs"
           >
             <div>
@@ -765,7 +787,7 @@ export function FinanceDashboardPage() {
                 Jurnal Umum
               </h3>
               <p className="mt-1 text-xs font-medium text-slate-500">
-                Kelola pencatatan transaksi berpasangan, posting, void & reversal.
+                Pencatatan transaksi berpasangan, posting, void & reversal.
               </p>
             </div>
             <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
@@ -775,7 +797,28 @@ export function FinanceDashboardPage() {
           </Link>
 
           <Link
-            to="/finance/trial-balance"
+            to={selectedPeriodId ? `/finance/general-ledger?period_id=${selectedPeriodId}` : "/finance/general-ledger"}
+            className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/60 p-4 transition hover:border-amber-200 hover:bg-amber-50/30 hover:shadow-xs"
+          >
+            <div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                <FontAwesomeIcon icon={faCoins} />
+              </div>
+              <h3 className="mt-3 text-sm font-bold text-slate-800 group-hover:text-amber-800">
+                Buku Besar
+              </h3>
+              <p className="mt-1 text-xs font-medium text-slate-500">
+                Kartu mutasi transaksi kronologis dan saldo berjalan per akun.
+              </p>
+            </div>
+            <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-bold text-amber-700">
+              Lihat Buku Besar
+              <FontAwesomeIcon icon={faArrowRight} className="text-[9px] transition-transform group-hover:translate-x-1" />
+            </span>
+          </Link>
+
+          <Link
+            to={selectedPeriodId ? `/finance/trial-balance?period_id=${selectedPeriodId}` : "/finance/trial-balance"}
             className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/60 p-4 transition hover:border-blue-200 hover:bg-blue-50/30 hover:shadow-xs"
           >
             <div>
@@ -796,7 +839,7 @@ export function FinanceDashboardPage() {
           </Link>
 
           <Link
-            to="/finance/balance-sheet"
+            to={selectedPeriodId ? `/finance/balance-sheet?period_id=${selectedPeriodId}` : "/finance/balance-sheet"}
             className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/60 p-4 transition hover:border-teal-200 hover:bg-teal-50/30 hover:shadow-xs"
           >
             <div>
@@ -811,28 +854,70 @@ export function FinanceDashboardPage() {
               </p>
             </div>
             <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-bold text-teal-600">
-              Buka Neraca Keuangan
+              Buka Posisi Keuangan
               <FontAwesomeIcon icon={faArrowRight} className="text-[9px] transition-transform group-hover:translate-x-1" />
             </span>
           </Link>
 
           <Link
-            to="/finance/reconciliation"
+            to={selectedPeriodId ? `/finance/activity-statement?period_id=${selectedPeriodId}` : "/finance/activity-statement"}
             className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/60 p-4 transition hover:border-emerald-200 hover:bg-emerald-50/30 hover:shadow-xs"
           >
             <div>
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-                <FontAwesomeIcon icon={faShieldHalved} />
+                <FontAwesomeIcon icon={faArrowTrendUp} />
               </div>
               <h3 className="mt-3 text-sm font-bold text-slate-800 group-hover:text-emerald-800">
-                Kontrol Rekonsiliasi
+                Laporan Aktivitas
               </h3>
               <p className="mt-1 text-xs font-medium text-slate-500">
-                Audit 14 titik kontrol kepatuhan integritas transaksi dan saldo.
+                Penerimaan, beban operasional, dan perubahan aset neto wakaf.
               </p>
             </div>
             <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-              Buka Kontrol Audit
+              Buka Laporan Aktivitas
+              <FontAwesomeIcon icon={faArrowRight} className="text-[9px] transition-transform group-hover:translate-x-1" />
+            </span>
+          </Link>
+
+          <Link
+            to={selectedPeriodId ? `/finance/waqf-assets?period_id=${selectedPeriodId}` : "/finance/waqf-assets"}
+            className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/60 p-4 transition hover:border-purple-200 hover:bg-purple-50/30 hover:shadow-xs"
+          >
+            <div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-100 text-purple-700">
+                <FontAwesomeIcon icon={faBoxesStacked} />
+              </div>
+              <h3 className="mt-3 text-sm font-bold text-slate-800 group-hover:text-purple-800">
+                Rincian Aset Wakaf
+              </h3>
+              <p className="mt-1 text-xs font-medium text-slate-500">
+                LRAW PSAK 112: aset wakaf bergerak & tidak bergerak.
+              </p>
+            </div>
+            <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-bold text-purple-600">
+              Buka LRAW
+              <FontAwesomeIcon icon={faArrowRight} className="text-[9px] transition-transform group-hover:translate-x-1" />
+            </span>
+          </Link>
+
+          <Link
+            to={selectedPeriodId ? `/finance/financial-notes?period_id=${selectedPeriodId}` : "/finance/financial-notes"}
+            className="group flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/60 p-4 transition hover:border-indigo-200 hover:bg-indigo-50/30 hover:shadow-xs"
+          >
+            <div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
+                <FontAwesomeIcon icon={faFileLines} />
+              </div>
+              <h3 className="mt-3 text-sm font-bold text-slate-800 group-hover:text-indigo-800">
+                Catatan Keuangan (CLK)
+              </h3>
+              <p className="mt-1 text-xs font-medium text-slate-500">
+                Pengungkapan narasi dan tabel pelengkap laporan keuangan.
+              </p>
+            </div>
+            <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600">
+              Buka Catatan Keuangan
               <FontAwesomeIcon icon={faArrowRight} className="text-[9px] transition-transform group-hover:translate-x-1" />
             </span>
           </Link>

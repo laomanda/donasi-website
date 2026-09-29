@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlus,
@@ -78,13 +78,26 @@ export function JournalsPage() {
   const [fromItem, setFromItem] = useState(0);
   const [toItem, setToItem] = useState(0);
 
+  const [searchParams] = useSearchParams();
+  const initialPeriodId = searchParams.get("period_id");
+
   // Filter & Search States
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<JournalStatus | "">("");
-  const [periodFilter, setPeriodFilter] = useState<number | "">("");
+  const [periodFilter, setPeriodFilter] = useState<number | "">(
+    initialPeriodId ? Number(initialPeriodId) : ""
+  );
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+
+  // Sync with URL searchParams if changed
+  useEffect(() => {
+    const pId = searchParams.get("period_id");
+    if (pId) {
+      setPeriodFilter(Number(pId));
+    }
+  }, [searchParams]);
 
   // Ancillary Master Data (loaded for filters and creation modal)
   const [periods, setPeriods] = useState<AccountingPeriod[]>([]);

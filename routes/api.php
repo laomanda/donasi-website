@@ -323,7 +323,10 @@ Route::prefix('v1')->group(function () {
             Route::get('waqf-assets-register', [WaqfAssetReportController::class, 'register']);
             Route::get('waqf-assets/{id}', [WaqfAssetReportController::class, 'show']);
             Route::get('financial-notes/summary', [FinancialNoteController::class, 'summary']);
-            Route::apiResource('financial-notes', FinancialNoteController::class);
+            Route::apiResource('financial-notes', FinancialNoteController::class)->only(['index', 'show']);
+            Route::middleware('role_or_permission:keuangan|superadmin')->group(function () {
+                Route::apiResource('financial-notes', FinancialNoteController::class)->only(['store', 'update', 'destroy']);
+            });
 
             // Accounting Periods
             Route::get('accounting-periods', [AccountingPeriodController::class, 'index']);

@@ -1,5 +1,6 @@
 import React, { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSitemap,
@@ -8,6 +9,7 @@ import {
   faFolderTree,
   faReceipt,
   faInfoCircle,
+  faBookOpen,
 } from "@fortawesome/free-solid-svg-icons";
 import type { Account } from "@/types/finance";
 import {
@@ -32,6 +34,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
   onEdit,
   canEdit = false,
 }) => {
+  const navigate = useNavigate();
   if (!account) return null;
 
   const hasTransactions = (account.journal_entry_lines_count ?? 0) > 0;
@@ -263,27 +266,40 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-6 py-4 bg-slate-50/50">
+                <div className="flex items-center justify-between border-t border-slate-100 px-6 py-4 bg-slate-50/50">
                   <button
                     type="button"
-                    onClick={onClose}
-                    className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition active:scale-95"
+                    onClick={() => {
+                      onClose();
+                      navigate(`/finance/general-ledger?account_id=${account.id}`);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition active:scale-95"
                   >
-                    Tutup
+                    <FontAwesomeIcon icon={faBookOpen} className="text-xs" />
+                    <span>Lihat Buku Besar</span>
                   </button>
-                  {canEdit && onEdit && (
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => {
-                        onClose();
-                        onEdit(account);
-                      }}
-                      className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition active:scale-95"
+                      onClick={onClose}
+                      className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 transition active:scale-95"
                     >
-                      <FontAwesomeIcon icon={faEdit} className="text-xs" />
-                      <span>Edit Akun</span>
+                      Tutup
                     </button>
-                  )}
+                    {canEdit && onEdit && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          onEdit(account);
+                        }}
+                        className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition active:scale-95"
+                      >
+                        <FontAwesomeIcon icon={faEdit} className="text-xs" />
+                        <span>Edit Akun</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </Dialog.Panel>
             </Transition.Child>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faRotateRight,
@@ -50,11 +50,24 @@ export function TrialBalancePage() {
   // Master Data
   const [periods, setPeriods] = useState<AccountingPeriod[]>([]);
 
+  const [searchParams] = useSearchParams();
+  const initialPeriodId = searchParams.get("period_id");
+
   // Filter States
-  const [periodFilter, setPeriodFilter] = useState<number | "">("");
+  const [periodFilter, setPeriodFilter] = useState<number | "">(
+    initialPeriodId ? Number(initialPeriodId) : ""
+  );
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [includeZeroBalance, setIncludeZeroBalance] = useState(false);
+
+  // Sync with URL searchParams if changed
+  useEffect(() => {
+    const pId = searchParams.get("period_id");
+    if (pId) {
+      setPeriodFilter(Number(pId));
+    }
+  }, [searchParams]);
 
   // Client Search & Table Pagination
   const [searchQuery, setSearchQuery] = useState("");
@@ -593,7 +606,11 @@ export function TrialBalancePage() {
                         {/* Aksi: Drilldown ke Buku Besar */}
                         <td className="px-4 py-3 text-center whitespace-nowrap">
                           <Link
-                            to={`/finance/general-ledger?account_id=${acc.account_id}`}
+                            to={
+                              periodFilter
+                                ? `/finance/general-ledger?account_id=${acc.account_id}&period_id=${periodFilter}`
+                                : `/finance/general-ledger?account_id=${acc.account_id}`
+                            }
                             className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition active:scale-95"
                             title={`Lihat Buku Besar Akun ${acc.code}`}
                           >

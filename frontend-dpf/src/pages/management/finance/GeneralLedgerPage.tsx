@@ -70,12 +70,15 @@ export function GeneralLedgerPage() {
 
   const [searchParams] = useSearchParams();
   const initialAccountId = searchParams.get("account_id");
+  const initialPeriodId = searchParams.get("period_id");
 
   // Filter States
   const [accountFilter, setAccountFilter] = useState<number | "">(
     initialAccountId ? Number(initialAccountId) : ""
   );
-  const [periodFilter, setPeriodFilter] = useState<number | "">("");
+  const [periodFilter, setPeriodFilter] = useState<number | "">(
+    initialPeriodId ? Number(initialPeriodId) : ""
+  );
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [includeZeroBalance, setIncludeZeroBalance] = useState(false);
@@ -85,6 +88,10 @@ export function GeneralLedgerPage() {
     const accId = searchParams.get("account_id");
     if (accId) {
       setAccountFilter(Number(accId));
+    }
+    const pId = searchParams.get("period_id");
+    if (pId) {
+      setPeriodFilter(Number(pId));
     }
   }, [searchParams]);
 

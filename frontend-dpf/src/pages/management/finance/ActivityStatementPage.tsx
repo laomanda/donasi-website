@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faRotateRight,
@@ -52,10 +52,23 @@ export function ActivityStatementPage() {
   // Master Data
   const [periods, setPeriods] = useState<AccountingPeriod[]>([]);
 
+  const [searchParams] = useSearchParams();
+  const initialPeriodId = searchParams.get("period_id");
+
   // Filter States
-  const [periodFilter, setPeriodFilter] = useState<number | "">("");
+  const [periodFilter, setPeriodFilter] = useState<number | "">(
+    initialPeriodId ? Number(initialPeriodId) : ""
+  );
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  // Sync with URL searchParams if changed
+  useEffect(() => {
+    const pId = searchParams.get("period_id");
+    if (pId) {
+      setPeriodFilter(Number(pId));
+    }
+  }, [searchParams]);
 
   // Load accounting periods on mount
   useEffect(() => {
@@ -300,21 +313,21 @@ export function ActivityStatementPage() {
           <div className="flex items-center gap-2">
             <span>Navigasi Cepat:</span>
             <Link
-              to="/finance/balance-sheet"
+              to={periodFilter ? `/finance/balance-sheet?period_id=${periodFilter}` : "/finance/balance-sheet"}
               className="font-bold text-emerald-700 hover:underline"
             >
               Posisi Keuangan (LP)
             </Link>
             <span className="text-slate-300">•</span>
             <Link
-              to="/finance/trial-balance"
+              to={periodFilter ? `/finance/trial-balance?period_id=${periodFilter}` : "/finance/trial-balance"}
               className="font-bold text-emerald-700 hover:underline"
             >
               Neraca Saldo
             </Link>
             <span className="text-slate-300">•</span>
             <Link
-              to="/finance/general-ledger"
+              to={periodFilter ? `/finance/general-ledger?period_id=${periodFilter}` : "/finance/general-ledger"}
               className="font-bold text-emerald-700 hover:underline"
             >
               Buku Besar
@@ -539,6 +552,7 @@ export function ActivityStatementPage() {
                 subtotalLabel="TOTAL PENERIMAAN"
                 subtotalAmount={totalRevenues}
                 highlightTone="emerald"
+                periodId={periodFilter}
               />
             </div>
 
@@ -564,6 +578,7 @@ export function ActivityStatementPage() {
                 subtotalLabel="TOTAL BEBAN & PENYALURAN"
                 subtotalAmount={totalExpenses}
                 highlightTone="rose"
+                periodId={periodFilter}
               />
             </div>
 
@@ -614,7 +629,9 @@ export function ActivityStatementPage() {
           </div>
 
           {/* 8. FINANCIAL NOTES SECTION (IF AVAILABLE) */}
-          {notesList.length > 0 && <FinancialNotesSection notes={notesList} />}
+          {notesList.length > 0 && (
+            <FinancialNotesSection notes={notesList} periodId={periodFilter} />
+          )}
         </div>
       )}
     </div>
@@ -630,6 +647,7 @@ interface ActivityTableProps {
   subtotalLabel: string;
   subtotalAmount: number;
   highlightTone?: "emerald" | "rose";
+  periodId?: number | "";
 }
 
 function ActivityTable({
@@ -638,6 +656,7 @@ function ActivityTable({
   subtotalLabel,
   subtotalAmount,
   highlightTone = "emerald",
+  periodId,
 }: ActivityTableProps) {
   if (items.length === 0) {
     return (
@@ -672,7 +691,11 @@ function ActivityTable({
             >
               <td className="py-3 px-6 font-mono font-bold text-slate-700">
                 <Link
-                  to={`/finance/general-ledger?account_id=${acc.account_id}`}
+                  to={
+                    periodId
+                      ? `/finance/general-ledger?account_id=${acc.account_id}&period_id=${periodId}`
+                      : `/finance/general-ledger?account_id=${acc.account_id}`
+                  }
                   className="hover:text-emerald-600 underline-offset-2 hover:underline transition"
                   title="Lihat Buku Besar Akun Ini"
                 >
@@ -692,7 +715,11 @@ function ActivityTable({
               </td>
               <td className="py-3 px-4 text-center print:hidden">
                 <Link
-                  to={`/finance/general-ledger?account_id=${acc.account_id}`}
+                  to={
+                    periodId
+                      ? `/finance/general-ledger?account_id=${acc.account_id}&period_id=${periodId}`
+                      : `/finance/general-ledger?account_id=${acc.account_id}`
+                  }
                   className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700 shadow-2xs hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 transition"
                 >
                   <FontAwesomeIcon icon={faBookOpen} className="text-[10px]" />
@@ -723,9 +750,10 @@ function ActivityTable({
 // ==========================================
 interface FinancialNotesSectionProps {
   notes: FinancialStatementNoteItem[];
+  periodId?: number | "";
 }
 
-function FinancialNotesSection({ notes }: FinancialNotesSectionProps) {
+function FinancialNotesSection({ notes, periodId }: FinancialNotesSectionProps) {
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-4">
       <div className="flex items-center justify-between border-b border-slate-100 pb-4">
@@ -744,7 +772,7 @@ function FinancialNotesSection({ notes }: FinancialNotesSectionProps) {
         </div>
 
         <Link
-          to="/finance/financial-notes"
+          to={periodId ? `/finance/financial-notes?period_id=${periodId}` : "/finance/financial-notes"}
           className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 print:hidden transition"
         >
           <span>Kelola Catatan (CLK)</span>

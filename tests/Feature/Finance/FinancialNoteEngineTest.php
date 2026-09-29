@@ -333,4 +333,72 @@ class FinancialNoteEngineTest extends TestCase
         $packageNoteIds = collect($package['financial_notes'])->pluck('id');
         $this->assertTrue($packageNoteIds->contains($note->id));
     }
+
+    /**
+     * Test 8: Authorization enforced - 401 unauthenticated, 403 unauthorized, view reports read-only, keuangan/superadmin write access.
+     */
+    public function test_authorization_enforced_for_financial_notes(): void
+    {
+        // 1. Unauthenticated request gets 401
+        $this->getJson('/api/v1/finance/financial-notes')->assertStatus(401);
+        $this->postJson('/api/v1/finance/financial-notes', [])->assertStatus(401);
+
+        // 2. User without finance roles/permissions gets 403
+        $unauthorizedUser = User::factory()->create(['is_active' => true]);
+        $unauthorizedUser->syncRoles([]);
+        $unauthorizedUser->syncPermissions([]);
+
+        $this->actingAs($unauthorizedUser, 'sanctum');
+        $this->getJson('/api/v1/finance/financial-notes')->assertStatus(403);
+        $this->postJson('/api/v1/finance/financial-notes', [
+            'title'    => 'Unauthorized',
+            'category' => 'general_note',
+            'content'  => 'Test',
+        ])->assertStatus(403);
+
+        // 3. User with 'view reports' permission can read but CANNOT mutate (gets 403 on store, update, destroy)
+        $viewerUser = User::factory()->create(['is_active' => true]);
+        $viewerUser->givePermissionTo('view reports');
+
+        $this->actingAs($viewerUser, 'sanctum');
+        $this->getJson('/api/v1/finance/financial-notes')->assertStatus(200);
+        $this->getJson('/api/v1/finance/financial-notes/summary')->assertStatus(200);
+
+        // Mutation attempts by view reports user must be rejected with 403
+        $storeResponse = $this->postJson('/api/v1/finance/financial-notes', [
+            'title'    => 'Malicious Write Attempt',
+            'category' => 'general_note',
+            'content'  => 'Should be forbidden',
+        ]);
+        $storeResponse->assertStatus(403);
+
+        $testNote = FinancialNote::create([
+            'accounting_period_id' => $this->period2026->id,
+            'title'                => 'Existing Note',
+            'category'             => FinancialNote::CATEGORY_GENERAL_NOTE,
+            'content'              => 'Content',
+            'status'               => FinancialNote::STATUS_DRAFT,
+        ]);
+
+        $this->putJson("/api/v1/finance/financial-notes/{$testNote->id}", [
+            'title' => 'Updated by Viewer',
+        ])->assertStatus(403);
+
+        $this->deleteJson("/api/v1/finance/financial-notes/{$testNote->id}")->assertStatus(403);
+
+        // 4. User with 'keuangan' role has full management access (read, write, delete)
+        $keuanganUser = User::factory()->create(['is_active' => true]);
+        $keuanganUser->assignRole('keuangan');
+
+        $this->actingAs($keuanganUser, 'sanctum');
+        $this->getJson('/api/v1/finance/financial-notes')->assertStatus(200);
+        $keuanganPost = $this->postJson('/api/v1/finance/financial-notes', [
+            'title'                => 'Note By Keuangan',
+            'category'             => FinancialNote::CATEGORY_GENERAL_NOTE,
+            'content'              => 'Legitimate content',
+            'accounting_period_id' => $this->period2026->id,
+        ]);
+        $keuanganPost->assertStatus(201);
+    }
 }
+

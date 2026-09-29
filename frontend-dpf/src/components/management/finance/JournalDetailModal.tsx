@@ -47,9 +47,9 @@ export const JournalDetailModal: React.FC<JournalDetailModalProps> = ({
   if (!journal) return null;
 
   const lines = journal.lines ?? [];
-  const totalDebit = lines.reduce((acc, l) => acc + Number(l.debit || 0), 0);
-  const totalCredit = lines.reduce((acc, l) => acc + Number(l.credit || 0), 0);
-  const isBalanced = Math.abs(totalDebit - totalCredit) < 0.001 && totalDebit > 0;
+  const totalDebit = journal.total_debit ?? lines.reduce((acc, l) => acc + Number(l.debit || 0), 0);
+  const totalCredit = journal.total_credit ?? lines.reduce((acc, l) => acc + Number(l.credit || 0), 0);
+  const isBalanced = journal.is_balanced ?? (Math.abs(totalDebit - totalCredit) < 0.001 && totalDebit > 0);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
