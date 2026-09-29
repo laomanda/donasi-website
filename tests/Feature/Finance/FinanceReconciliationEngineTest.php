@@ -18,10 +18,13 @@ use App\Services\JournalService;
 use Database\Seeders\AccountSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class FinanceReconciliationEngineTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected FinanceReconciliationService $reconciliationService;
 
     protected JournalService $journalService;
