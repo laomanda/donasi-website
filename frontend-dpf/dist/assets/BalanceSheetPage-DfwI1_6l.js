@@ -1,1 +1,0 @@
-import{j as t}from"./vendor-fontawesome-BCFtnawT.js";import{FinancialStatementsPage as e}from"./FinancialStatementsPage-ClwpgWRR.js";import"./vendor-react-nCGCgQFN.js";import"./index-Ba2fujLX.js";import"./financeService-nvs1MkJa.js";import"./FinanceTableSkeleton-CpTctpwM.js";function p(){return t.jsx(e,{defaultTab:"balance-sheet"})}export{p as BalanceSheetPage,p as default};
