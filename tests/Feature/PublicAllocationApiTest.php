@@ -82,4 +82,34 @@ class PublicAllocationApiTest extends TestCase
         $this->assertNotContains($draftAlloc->id, $returnedIds, 'Draft allocation must NOT be returned in public API');
         $this->assertNotContains($orphanedAlloc->id, $returnedIds, 'Allocation without journal must NOT be returned in public API');
     }
+
+    public function test_public_allocation_does_not_leak_accounting_internals(): void
+    {
+        Allocation::create([
+            'user_id' => $this->user->id,
+            'program_id' => $this->program->id,
+            'amount' => 2500000,
+            'description' => 'Bantuan Sarana Realized',
+            'allocated_at' => now()->toDateString(),
+        ]);
+
+        $response = $this->getJson('/api/v1/allocations');
+        $response->assertOk();
+
+        $firstItem = $response->json('data.0');
+        $this->assertNotNull($firstItem);
+
+        $allowedKeys = ['id', 'program_id', 'amount', 'description', 'allocated_at', 'created_at', 'program'];
+        $itemKeys = array_keys($firstItem);
+
+        foreach ($itemKeys as $key) {
+            $this->assertContains($key, $allowedKeys, "Unexpected field '{$key}' exposed in public allocation payload");
+        }
+
+        $forbiddenKeys = ['journal_entry', 'journal_id', 'journal_number', 'account_id', 'user_id', 'proof_path'];
+        foreach ($forbiddenKeys as $fk) {
+            $this->assertArrayNotHasKey($fk, $firstItem, "Sensitive internal field '{$fk}' must NOT be exposed");
+        }
+    }
 }
+

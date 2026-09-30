@@ -466,4 +466,59 @@ class PublicHomeFinanceIntegrationTest extends TestCase
         $this->assertEquals($res->json('finance.total_collected'), $stats['amount_collected']);
         $this->assertEquals($res->json('finance.total_distributed'), $stats['amount_allocated']);
     }
+
+    /**
+     * Test 17: direct value consistency between PublicFinanceReadService and GET /api/v1/home.
+     */
+    public function test_direct_value_consistency_between_service_and_api(): void
+    {
+        // 1. Post recognized waqf revenue
+        $this->postTestJournal('2026-03-10', $this->bankAccount, $this->waqfRevenueAccount, 15000000);
+
+        // 2. Post recognized infaq revenue
+        $this->postTestJournal('2026-03-11', $this->bankAccount, $this->infaqRevenueAccount, 5000000);
+
+        // 3. Post distribution expense
+        $this->postTestJournal('2026-03-15', $this->distributionAccount, $this->bankAccount, 8000000);
+
+        // 4. Create paid donation
+        Donation::create([
+            'donation_code'  => 'TEST-CONSIST-01',
+            'user_id' => $this->user->id,
+            'campaign_id' => Program::first()->id,
+            'donor_name' => 'Consistent Donor',
+            'amount' => 500000,
+            'status' => 'paid',
+            'paid_at' => '2026-03-10 10:00:00',
+            'payment_source' => 'manual',
+        ]);
+
+        // 5. Create allocation with posted journal
+        Allocation::create([
+            'user_id' => $this->user->id,
+            'program_id' => Program::first()->id,
+            'amount' => 8000000,
+            'description' => 'Direct Consistency Allocation',
+            'allocated_at' => '2026-03-15',
+        ]);
+
+        $service = app(\App\Services\PublicFinanceReadService::class);
+        $serviceSummary = $service->getPublicSummary(2026)['summary'];
+
+        Cache::flush();
+        $response = $this->getJson('/api/v1/home?year=2026');
+        $response->assertOk();
+        $apiFinance = $response->json('finance');
+
+        $this->assertEquals($serviceSummary['total_collected'], $apiFinance['total_collected']);
+        $this->assertEquals($serviceSummary['total_waqf_collected'], $apiFinance['total_waqf_collected']);
+        $this->assertEquals($serviceSummary['total_distributed'], $apiFinance['total_distributed']);
+        $this->assertEquals($serviceSummary['verified_donations'], $apiFinance['verified_donations']);
+        $this->assertEquals($serviceSummary['program_distributions'], $apiFinance['program_distributions']);
+        $this->assertEquals($serviceSummary['nazhir_expense'], $apiFinance['nazhir_expense']);
+        $this->assertEquals($serviceSummary['operational_expense'], $apiFinance['operational_expense']);
+        $this->assertNull($apiFinance['available_balance']);
+        $this->assertNull($apiFinance['rowa']);
+    }
 }
+
