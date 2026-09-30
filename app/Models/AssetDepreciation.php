@@ -33,6 +33,17 @@ class AssetDepreciation extends Model
         'book_value'               => 'decimal:2',
     ];
 
+    protected static function booted(): void
+    {
+        static::saved(function (AssetDepreciation $depreciation) {
+            app(\App\Services\PublicFinanceCacheService::class)->invalidateAll();
+        });
+
+        static::deleted(function (AssetDepreciation $depreciation) {
+            app(\App\Services\PublicFinanceCacheService::class)->invalidateAll();
+        });
+    }
+
     public function asset()
     {
         return $this->belongsTo(WaqfAsset::class, 'asset_id');

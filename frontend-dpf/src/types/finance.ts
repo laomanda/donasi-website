@@ -431,6 +431,8 @@ export interface WaqfAssetItem {
   condition: string;
   location?: string | null;
   status: string;
+  economic_use?: 'productive' | 'social' | 'mixed' | null;
+  productive_percentage?: number | null;
   sources?: WaqfAssetSourceItem[];
   depreciation_history?: WaqfAssetDepreciationItem[];
 }

@@ -25,12 +25,25 @@ class Allocation extends Model
     {
         parent::boot();
 
-        static::saved(function () {
-            \Illuminate\Support\Facades\Cache::forget('frontend.home');
+        static::saved(function (Allocation $allocation) {
+            $years = [];
+            $date = $allocation->allocation_date ?? $allocation->created_at;
+            if ($date) {
+                $years[] = (int) \Carbon\Carbon::parse($date)->year;
+            }
+            if ($allocation->isDirty('allocation_date') && $allocation->getOriginal('allocation_date')) {
+                $years[] = (int) \Carbon\Carbon::parse($allocation->getOriginal('allocation_date'))->year;
+            }
+            app(\App\Services\PublicFinanceCacheService::class)->invalidateYears($years);
         });
 
-        static::deleted(function () {
-            \Illuminate\Support\Facades\Cache::forget('frontend.home');
+        static::deleted(function (Allocation $allocation) {
+            $years = [];
+            $date = $allocation->allocation_date ?? $allocation->created_at;
+            if ($date) {
+                $years[] = (int) \Carbon\Carbon::parse($date)->year;
+            }
+            app(\App\Services\PublicFinanceCacheService::class)->invalidateYears($years);
         });
     }
 

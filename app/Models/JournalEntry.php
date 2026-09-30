@@ -52,6 +52,18 @@ class JournalEntry extends Model
                 throw new \DomainException('Posted journal is immutable');
             }
         });
+
+        static::saved(function (JournalEntry $journal) {
+            if ($journal->status === 'posted' || $journal->getOriginal('status') === 'posted') {
+                app(\App\Services\PublicFinanceCacheService::class)->invalidateForJournal($journal);
+            }
+        });
+
+        static::deleted(function (JournalEntry $journal) {
+            if ($journal->status === 'posted' || $journal->getOriginal('status') === 'posted') {
+                app(\App\Services\PublicFinanceCacheService::class)->invalidateForJournal($journal);
+            }
+        });
     }
 
     public function accountingPeriod()

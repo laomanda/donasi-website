@@ -10,20 +10,24 @@ use App\Models\Article;
 use App\Models\Donation;
 use App\Models\Partner;
 use App\Models\Program;
+use App\Services\PublicFinanceCacheService;
 use App\Services\PublicFinanceReadService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
     protected PublicFinanceReadService $financeService;
+    protected PublicFinanceCacheService $cacheService;
 
-    public function __construct(?PublicFinanceReadService $financeService = null)
-    {
+    public function __construct(
+        ?PublicFinanceReadService $financeService = null,
+        ?PublicFinanceCacheService $cacheService = null
+    ) {
         $this->financeService = $financeService ?? app(PublicFinanceReadService::class);
+        $this->cacheService = $cacheService ?? app(PublicFinanceCacheService::class);
     }
 
     public function __invoke(Request $request): JsonResponse
@@ -38,9 +42,7 @@ class HomeController extends Controller
         $isYearFiltered = !empty($yearParam) && $yearParam !== 'all';
         $filterYear = $isYearFiltered ? (int) $yearParam : null;
 
-        $cacheKey = $isYearFiltered ? "frontend.home.year_{$filterYear}" : 'frontend.home';
-
-        $data = Cache::remember($cacheKey, 120, function () use ($isYearFiltered, $filterYear) {
+        $data = $this->cacheService->remember($filterYear, 120, function () use ($isYearFiltered, $filterYear) {
             $highlights = Program::highlight()
                 ->orderByDesc(DB::raw('COALESCE(published_at, created_at)'))
                 ->limit(6)
@@ -81,8 +83,8 @@ class HomeController extends Controller
                     'nazhir_expense'      => $mReal['nazhir_expense'],
                     'operational_expense' => $mReal['operational_expense'],
                     'total_expense'       => $mReal['total_expense'],
-                    'expense'             => null, // Undefined single-expense policy held as null
-                    'rowa'                => null, // RoWA calculation not established
+                    'expense'             => $mReal['expense'],
+                    'rowa'                => $mReal['rowa'],
                 ];
             }
 
@@ -213,18 +215,20 @@ class HomeController extends Controller
                 'selected_year'   => $isYearFiltered ? (string) $filterYear : 'all',
                 'available_years' => $availableYears,
                 'finance'         => [
-                    'total_collected'          => $fin['total_collected'],
-                    'total_waqf_collected'     => $fin['total_waqf_collected'],
-                    'total_distributed'        => $fin['total_distributed'],
-                    'verified_donations'       => $fin['verified_donations'],
-                    'program_distributions'    => $fin['program_distributions'],
-                    'nazhir_expense'           => $fin['nazhir_expense'],
-                    'operational_expense'      => $fin['operational_expense'],
-                    'available_balance'        => null,
-                    'available_balance_status' => 'definition_required',
-                    'rowa'                     => null,
-                    'rowa_status'              => 'formula_not_defined',
-                    'monthly_realization'      => $monthlyRealization,
+                    'total_collected'             => $fin['total_collected'],
+                    'total_waqf_collected'        => $fin['total_waqf_collected'],
+                    'total_distributed'           => $fin['total_distributed'],
+                    'total_expense'               => $fin['total_expense'],
+                    'nazhir_expense'              => $fin['nazhir_expense'],
+                    'operational_expense'         => $fin['operational_expense'],
+                    'available_balance'           => $fin['available_balance'],
+                    'available_balance_status'    => $fin['available_balance_status'],
+                    'rowa'                        => $fin['rowa'],
+                    'rowa_status'                 => $fin['rowa_status'],
+                    'productive_asset_book_value' => $fin['productive_asset_book_value'],
+                    'verified_donations'          => $fin['verified_donations'],
+                    'program_distributions'       => $fin['program_distributions'],
+                    'monthly_realization'         => $monthlyRealization,
                 ],
                 'stats' => [
                     'total_programs'           => Program::active()->count(),
@@ -239,12 +243,12 @@ class HomeController extends Controller
                     'total_distributed'        => $fin['total_distributed'],
                     'nazhir_expense'           => $fin['nazhir_expense'],
                     'operational_expense'      => $fin['operational_expense'],
-                    'total_expense'            => null,
-                    'average_rowa'             => null,
-                    'rowa'                     => null,
-                    'rowa_status'              => 'formula_not_defined',
-                    'available_balance'        => null,
-                    'available_balance_status' => 'definition_required',
+                    'total_expense'            => $fin['total_expense'],
+                    'average_rowa'             => $fin['rowa'],
+                    'rowa'                     => $fin['rowa'],
+                    'rowa_status'              => $fin['rowa_status'],
+                    'available_balance'        => $fin['available_balance'],
+                    'available_balance_status' => $fin['available_balance_status'],
                     'collected_mom'            => $collectedMoM,
                     'allocated_mom'            => $allocatedMoM,
                     'program_allocations'      => $programAllocations,

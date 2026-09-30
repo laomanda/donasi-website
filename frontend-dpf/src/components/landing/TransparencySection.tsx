@@ -10,6 +10,9 @@ import {
     faBuildingColumns,
     faCalendarAlt,
     faChevronDown,
+    faScaleBalanced,
+    faVault,
+    faChartPie,
 } from "@fortawesome/free-solid-svg-icons";
 import {
     Chart as ChartJS,
@@ -109,6 +112,10 @@ export function TransparencySection({
     const totalDistributed = Number(finance?.total_distributed ?? stats?.total_distributed ?? Number(stats?.amount_allocated ?? 0));
     const verifiedDonations = Number(finance?.verified_donations ?? stats?.verified_donations ?? stats?.total_donations ?? 0);
     const programDistributions = Number(finance?.program_distributions ?? stats?.program_distributions ?? 0);
+    const totalExpense = Number(finance?.total_expense ?? stats?.total_expense ?? 0);
+    const availableBalance = finance?.available_balance !== undefined ? finance.available_balance : (stats?.available_balance ?? null);
+    const rowa = finance?.rowa !== undefined ? finance.rowa : (stats?.rowa ?? null);
+    const rowaStatus = finance?.rowa_status ?? stats?.rowa_status ?? "productive_asset_base_unavailable";
 
     const momCollected = calculateMoM(stats?.monthly_trends, stats?.collected_mom);
 
@@ -348,7 +355,7 @@ export function TransparencySection({
                     )}
                 </div>
 
-                {/* 3 Main KPI Summary Cards - Verified Aggregate Numbers */}
+                {/* Mandatory Public KPI Summary Cards - Verified Aggregate Numbers */}
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     {/* Card 1: Penghimpunan */}
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
@@ -356,7 +363,7 @@ export function TransparencySection({
                             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                                 {locale === "en"
                                     ? "Waqf Funds Collected"
-                                    : "Dana Wakaf Dihimpun"}
+                                    : "Dana Dihimpun"}
                             </span>
                             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brandGreen-50 text-brandGreen-700 border border-brandGreen-100">
                                 <FontAwesomeIcon
@@ -459,7 +466,7 @@ export function TransparencySection({
                     </Link>
 
                     {/* Card 3: Total Wakaf Terhimpun */}
-                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300 sm:col-span-2 lg:col-span-1">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
                         <div className="flex items-center justify-between gap-4">
                             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                                 {locale === "en"
@@ -486,8 +493,126 @@ export function TransparencySection({
                             <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
                                 <span>
                                     {locale === "en"
-                                        ? "Penerimaan Wakaf (4100 series)"
+                                        ? "Official Waqf Corpus (4100 series)"
                                         : "Penerimaan Wakaf Resmi (Akun 4100)"}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Card 4: Biaya Pengeluaran (Beban Nazhir + Operasional) */}
+                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
+                        <div className="flex items-center justify-between gap-4">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                {locale === "en"
+                                    ? "Operating & Nazhir Expense"
+                                    : "Biaya Pengeluaran"}
+                            </span>
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700 border border-amber-100">
+                                <FontAwesomeIcon
+                                    icon={faScaleBalanced}
+                                    className="text-sm"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-5">
+                            <p className="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                                <AnimatedCounter
+                                    value={totalExpense}
+                                    formatter={(val) =>
+                                        formatCurrency(val, locale)
+                                    }
+                                />
+                            </p>
+                            <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                                <span>
+                                    {locale === "en"
+                                        ? "Beban Nazhir + Beban Operasional"
+                                        : "Beban Nazhir + Beban Operasional"}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Card 5: Saldo Siap Disalurkan */}
+                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
+                        <div className="flex items-center justify-between gap-4">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                {locale === "en"
+                                    ? "Available Distributable Balance"
+                                    : "Saldo Siap Disalurkan"}
+                            </span>
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-700 border border-teal-100">
+                                <FontAwesomeIcon
+                                    icon={faVault}
+                                    className="text-sm"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-5">
+                            <p className="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                                {availableBalance !== null ? (
+                                    <AnimatedCounter
+                                        value={availableBalance}
+                                        formatter={(val) =>
+                                            formatCurrency(val, locale)
+                                        }
+                                    />
+                                ) : (
+                                    <span className="text-slate-400 text-lg">Belum tersedia</span>
+                                )}
+                            </p>
+                            <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                                <span>
+                                    {locale === "en"
+                                        ? "Distributable revenue & program balances"
+                                        : "Dana program & hasil wakaf siap salur"}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Card 6: Rasio RoWA */}
+                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
+                        <div className="flex items-center justify-between gap-4">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                {locale === "en"
+                                    ? "RoWA Ratio"
+                                    : "Rasio RoWA"}
+                            </span>
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-700 border border-purple-100">
+                                <FontAwesomeIcon
+                                    icon={faChartPie}
+                                    className="text-sm"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-5">
+                            <div className="flex items-baseline gap-2">
+                                {rowa !== null && typeof rowa === "number" ? (
+                                    <p className="font-heading text-2xl sm:text-3xl font-extrabold text-purple-700 tracking-tight">
+                                        {rowa.toFixed(2)}%
+                                    </p>
+                                ) : (
+                                    <p className="font-heading text-base sm:text-lg font-bold text-slate-600 tracking-tight">
+                                        {rowaStatus === "asset_classification_incomplete"
+                                            ? (locale === "en" ? "Data asset incomplete" : "Data aset belum lengkap")
+                                            : rowaStatus === "productive_asset_base_unavailable"
+                                            ? (locale === "en" ? "Asset base unavailable" : "Data aset produktif belum tersedia")
+                                            : rowaStatus === "period_required"
+                                            ? (locale === "en" ? "Select year" : "Pilih periode tahun")
+                                            : (locale === "en" ? "Not available" : "Belum tersedia")}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                                <span>
+                                    {locale === "en"
+                                        ? "Return on Waqf Assets (Annual)"
+                                        : "Hasil Pengelolaan / Aset Produktif (Tahunan)"}
                                 </span>
                             </div>
                         </div>

@@ -54,6 +54,17 @@ class AccountingPeriod extends Model
                 $period->attributes['status'] = 'open';
             }
         });
+
+        static::saved(function (AccountingPeriod $period) {
+            $years = [];
+            if ($period->start_date) {
+                $years[] = (int) \Carbon\Carbon::parse($period->start_date)->year;
+            }
+            if ($period->end_date) {
+                $years[] = (int) \Carbon\Carbon::parse($period->end_date)->year;
+            }
+            app(\App\Services\PublicFinanceCacheService::class)->invalidateYears(array_unique($years));
+        });
     }
 
     public function getPeriodNameAttribute(): string

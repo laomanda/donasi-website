@@ -45,12 +45,25 @@ class Donation extends Model
     {
         parent::boot();
 
-        static::saved(function () {
-            \Illuminate\Support\Facades\Cache::forget('frontend.home');
+        static::saved(function (Donation $donation) {
+            $years = [];
+            $date = $donation->paid_at ?? $donation->created_at;
+            if ($date) {
+                $years[] = (int) \Carbon\Carbon::parse($date)->year;
+            }
+            if ($donation->isDirty('paid_at') && $donation->getOriginal('paid_at')) {
+                $years[] = (int) \Carbon\Carbon::parse($donation->getOriginal('paid_at'))->year;
+            }
+            app(\App\Services\PublicFinanceCacheService::class)->invalidateYears($years);
         });
 
-        static::deleted(function () {
-            \Illuminate\Support\Facades\Cache::forget('frontend.home');
+        static::deleted(function (Donation $donation) {
+            $years = [];
+            $date = $donation->paid_at ?? $donation->created_at;
+            if ($date) {
+                $years[] = (int) \Carbon\Carbon::parse($date)->year;
+            }
+            app(\App\Services\PublicFinanceCacheService::class)->invalidateYears($years);
         });
     }
 

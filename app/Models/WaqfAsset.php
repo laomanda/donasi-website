@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $location
  * @property string $condition
  * @property string $status
+ * @property string|null $economic_use
+ * @property float|null $productive_percentage
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\WaqfAssetCategory|null $category
@@ -47,15 +49,53 @@ class WaqfAsset extends Model
         'location',
         'condition',
         'status',
+        'economic_use',
+        'productive_percentage',
     ];
 
     protected $casts = [
-        'acquisition_date'  => 'date',
-        'quantity'          => 'decimal:2',
-        'useful_life_month' => 'integer',
-        'acquisition_value' => 'decimal:2',
-        'current_value'     => 'decimal:2',
+        'acquisition_date'      => 'date',
+        'quantity'              => 'decimal:2',
+        'useful_life_month'     => 'integer',
+        'acquisition_value'     => 'decimal:2',
+        'current_value'         => 'decimal:2',
+        'productive_percentage' => 'decimal:2',
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(function (WaqfAsset $asset) {
+            app(\App\Services\PublicFinanceCacheService::class)->invalidateAll();
+        });
+
+        static::deleted(function (WaqfAsset $asset) {
+            app(\App\Services\PublicFinanceCacheService::class)->invalidateAll();
+        });
+    }
+
+    /**
+     * Validation rules for waqf asset creation/updating.
+     */
+    public static function validationRules(array $data = [], bool $isUpdate = false): array
+    {
+        return [
+            'economic_use'          => [$isUpdate ? 'sometimes' : 'required', 'string', 'in:productive,social,mixed'],
+            'productive_percentage' => [
+                'nullable',
+                'numeric',
+                'required_if:economic_use,mixed',
+                function ($attribute, $value, $fail) use ($data) {
+                    $economicUse = $data['economic_use'] ?? request()->input('economic_use');
+                    if ($economicUse === 'mixed') {
+                        $val = (float) $value;
+                        if ($val <= 0 || $val >= 100) {
+                            $fail('Persentase produktif untuk aset campuran harus antara 0.01% dan 99.99%.');
+                        }
+                    }
+                },
+            ],
+        ];
+    }
 
     public function category()
     {

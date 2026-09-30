@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Allocation;
 use App\Models\Donation;
 use App\Models\JournalEntryLine;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -26,6 +27,12 @@ use Illuminate\Support\Facades\DB;
  */
 class PublicFinanceReadService
 {
+    public function __construct(
+        protected ?WaqfAssetReportService $waqfAssetReportService = null
+    ) {
+        $this->waqfAssetReportService = $waqfAssetReportService ?? app(WaqfAssetReportService::class);
+    }
+
     /**
      * Get base query for posted journal entry lines joined with journal entries and accounts.
      * Guarantees that each posted line is joined to exactly one account, preventing double counting.
@@ -46,6 +53,18 @@ class PublicFinanceReadService
         }
 
         return $query;
+    }
+
+    /**
+     * Get base query for cumulative posted journal entry lines up to a specified cutoff date.
+     */
+    protected function baseCumulativeJournalLineQuery(string $cutoffDate): Builder
+    {
+        return JournalEntryLine::query()
+            ->join('journal_entries', 'journal_entry_lines.journal_entry_id', '=', 'journal_entries.id')
+            ->join('accounts', 'journal_entry_lines.account_id', '=', 'accounts.id')
+            ->where('journal_entries.status', '=', 'posted')
+            ->whereDate('journal_entries.transaction_date', '<=', $cutoffDate);
     }
 
     /**
@@ -194,9 +213,10 @@ class PublicFinanceReadService
                 'distributed'         => $distributed,
                 'nazhir_expense'      => $nazhirExpense,
                 'operational_expense' => $operationalExpense,
+                'expense'             => $totalExpense,
                 'total_expense'       => $totalExpense,
                 'rowa'                => null,
-                'rowa_status'         => 'formula_not_defined',
+                'rowa_status'         => 'monthly_asset_basis_unavailable',
             ];
         }
 
@@ -242,26 +262,157 @@ class PublicFinanceReadService
     }
 
     /**
-     * 10. Public Presentation Summary DTO
+     * 10. Saldo Siap Disalurkan (Available Distributable Balance)
      *
-     * Provides aggregated verified metrics while explicitly holding undefined policies as null.
+     * Point-in-time cumulative balance from genesis up to selected cutoff date:
+     * Inflows (4200 Hasil Pengelolaan + 4310 Infaq Terikat + 4130 Wakaf Melalui Uang)
+     * - Realized Distributions (5100 series / report_category Penyaluran Manfaat)
+     * - Committed Distribution Liabilities (2120 Hutang Penyaluran Manfaat Wakaf)
+     *
+     * Invariant: Does NOT reset on January 1st. Does NOT apply Math.max(0, ...).
+     */
+    public function getAvailableBalance(?int $year = null, ?int $accountingPeriodId = null): array
+    {
+        if ($year !== null) {
+            $cutoff = ($year === (int) date('Y'))
+                ? min(now()->toDateString(), "{$year}-12-31")
+                : "{$year}-12-31";
+        } else {
+            $cutoff = now()->toDateString();
+        }
+
+        // 1. Distributable Recognized Inflows (Credit - Debit):
+        // 4200 series (Hasil Pengelolaan), 4310 (Infaq Terikat), 4130 (Wakaf Melalui Uang)
+        $inflows = (float) $this->baseCumulativeJournalLineQuery($cutoff)
+            ->where('accounts.account_type', '=', 'revenue')
+            ->where(function (Builder $q) {
+                $q->where('accounts.report_category', '=', 'Hasil Pengelolaan')
+                  ->orWhere('accounts.code', '=', '4310')
+                  ->orWhere('accounts.code', '=', '4130');
+            })
+            ->selectRaw('COALESCE(SUM(journal_entry_lines.credit - journal_entry_lines.debit), 0) as total')
+            ->value('total');
+
+        // 2. Realized Distributions (Debit - Credit):
+        // 5100 series (report_category = 'Penyaluran Manfaat')
+        $distributions = (float) $this->baseCumulativeJournalLineQuery($cutoff)
+            ->where('accounts.account_type', '=', 'expense')
+            ->where('accounts.report_category', '=', 'Penyaluran Manfaat')
+            ->selectRaw('COALESCE(SUM(journal_entry_lines.debit - journal_entry_lines.credit), 0) as total')
+            ->value('total');
+
+        // 3. Outstanding Committed Distribution Liabilities (Credit - Debit):
+        // Account 2120 (Hutang Penyaluran Manfaat Wakaf)
+        $liability2120 = (float) $this->baseCumulativeJournalLineQuery($cutoff)
+            ->where('accounts.account_type', '=', 'liability')
+            ->where(function (Builder $q) {
+                $q->where('accounts.code', '=', '2120')
+                  ->orWhere('accounts.code', 'like', '2120%');
+            })
+            ->selectRaw('COALESCE(SUM(journal_entry_lines.credit - journal_entry_lines.debit), 0) as total')
+            ->value('total');
+
+        $balance = round($inflows - $distributions - $liability2120, 2);
+
+        return [
+            'available_balance'        => $balance,
+            'available_balance_status' => 'available',
+            'distributable_inflows'    => round($inflows, 2),
+            'realized_distributions'   => round($distributions, 2),
+            'distribution_liabilities' => round($liability2120, 2),
+            'cutoff_date'              => $cutoff,
+        ];
+    }
+
+    /**
+     * 11. Rasio RoWA (Return on Waqf Assets)
+     *
+     * Annual Period Metric:
+     * Numerator: Net Hasil Pengelolaan Wakaf Produktif (report_category = 'Hasil Pengelolaan') within the requested year.
+     * Denominator: Verified Productive Waqf Asset Book Value as of cutoff date.
+     *
+     * Invariants:
+     * - Returns null if year is not provided (period_required).
+     * - Returns null if any relevant asset is unclassified (asset_classification_incomplete).
+     * - Returns null if productive asset base <= 0 (productive_asset_base_unavailable).
+     * - NEVER returns 0% when asset base is missing.
+     */
+    public function getRoWA(?int $year = null): array
+    {
+        if ($year === null) {
+            return [
+                'rowa'                        => null,
+                'rowa_status'                 => 'period_required',
+                'productive_asset_book_value' => null,
+            ];
+        }
+
+        // Numerator: Net Credit (Credit - Debit) on Hasil Pengelolaan within requested year
+        $hasilPengelolaan = (float) $this->baseJournalLineQuery($year, null)
+            ->where('accounts.account_type', '=', 'revenue')
+            ->where('accounts.report_category', '=', 'Hasil Pengelolaan')
+            ->selectRaw('COALESCE(SUM(journal_entry_lines.credit - journal_entry_lines.debit), 0) as total')
+            ->value('total');
+
+        $cutoff = ($year === (int) date('Y'))
+            ? min(now()->toDateString(), "{$year}-12-31")
+            : "{$year}-12-31";
+
+        $assetResult = $this->waqfAssetReportService->getProductiveAssetBookValueAsOf($cutoff);
+
+        if (!$assetResult['is_complete']) {
+            return [
+                'rowa'                        => null,
+                'rowa_status'                 => 'asset_classification_incomplete',
+                'productive_asset_book_value' => null,
+            ];
+        }
+
+        $productiveBookValue = (float) ($assetResult['productive_asset_book_value'] ?? 0.0);
+
+        if ($productiveBookValue <= 0.0) {
+            return [
+                'rowa'                        => null,
+                'rowa_status'                 => 'productive_asset_base_unavailable',
+                'productive_asset_book_value' => null,
+            ];
+        }
+
+        $rowa = round(($hasilPengelolaan / $productiveBookValue) * 100.0, 2);
+
+        return [
+            'rowa'                        => $rowa,
+            'rowa_status'                 => 'available',
+            'productive_asset_book_value' => $productiveBookValue,
+        ];
+    }
+
+    /**
+     * 12. Public Presentation Summary DTO
+     *
+     * Provides aggregated verified metrics strictly from double-entry posted journals
+     * and verified asset classifications.
      */
     public function getPublicSummary(?int $year = null, ?int $accountingPeriodId = null): array
     {
+        $availableData = $this->getAvailableBalance($year, $accountingPeriodId);
+        $rowaData = $this->getRoWA($year);
+
         return [
             'summary' => [
-                'total_collected'          => $this->getTotalCollected($year, $accountingPeriodId),
-                'total_waqf_collected'     => $this->getTotalWaqfCollected($year, $accountingPeriodId),
-                'total_distributed'        => $this->getTotalDistributed($year, $accountingPeriodId),
-                'verified_donations'       => $this->getVerifiedDonationsCount($year),
-                'program_distributions'    => $this->getProgramDistributionsCount($year, $accountingPeriodId),
-                'nazhir_expense'           => $this->getNazhirExpense($year, $accountingPeriodId),
-                'operational_expense'      => $this->getOperationalExpense($year, $accountingPeriodId),
-                'total_expense'            => $this->getTotalExpense($year, $accountingPeriodId),
-                'available_balance'        => null,
-                'available_balance_status' => 'definition_required',
-                'rowa'                     => null,
-                'rowa_status'              => 'formula_not_defined',
+                'total_collected'             => $this->getTotalCollected($year, $accountingPeriodId),
+                'total_waqf_collected'        => $this->getTotalWaqfCollected($year, $accountingPeriodId),
+                'total_distributed'           => $this->getTotalDistributed($year, $accountingPeriodId),
+                'verified_donations'          => $this->getVerifiedDonationsCount($year),
+                'program_distributions'       => $this->getProgramDistributionsCount($year, $accountingPeriodId),
+                'nazhir_expense'              => $this->getNazhirExpense($year, $accountingPeriodId),
+                'operational_expense'         => $this->getOperationalExpense($year, $accountingPeriodId),
+                'total_expense'               => $this->getTotalExpense($year, $accountingPeriodId),
+                'available_balance'           => $availableData['available_balance'],
+                'available_balance_status'    => $availableData['available_balance_status'],
+                'rowa'                        => $rowaData['rowa'],
+                'rowa_status'                 => $rowaData['rowa_status'],
+                'productive_asset_book_value' => $rowaData['productive_asset_book_value'],
             ],
             'monthly' => $year !== null ? $this->getMonthlyRealization($year) : [],
         ];

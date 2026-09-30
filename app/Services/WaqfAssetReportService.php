@@ -114,6 +114,8 @@ class WaqfAssetReportService
                 'location'                 => $asset->location,
                 'condition'                => $asset->condition,
                 'status'                   => $asset->status,
+                'economic_use'             => $asset->economic_use,
+                'productive_percentage'    => $asset->productive_percentage !== null ? (float) $asset->productive_percentage : null,
                 'sources'                  => $sourcesList,
             ];
         }
@@ -261,4 +263,106 @@ class WaqfAssetReportService
             'depreciation_history' => $depreciationHistory,
         ]);
     }
+
+    /**
+     * Get verified productive waqf asset book value as of a given cutoff date.
+     *
+     * Classification rules:
+     * - economic_use = 'productive' -> 100% of book value
+     * - economic_use = 'social' -> 0%
+     * - economic_use = 'mixed' -> productive_percentage % of book value
+     * - economic_use = null (unclassified) -> BLOCKS calculation (is_complete = false)
+     *
+     * Book value calculation follows existing asset reporting:
+     * Book Value = acquisition_value - accumulated_depreciation applicable up to cutoff.
+     *
+     * @param Carbon|string $cutoff
+     * @return array
+     */
+    public function getProductiveAssetBookValueAsOf(Carbon|string $cutoff): array
+    {
+        $cutoffDate = Carbon::parse($cutoff)->toDateString();
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\WaqfAsset> $assets */
+        $assets = WaqfAsset::with(['depreciations.period'])
+            ->where('status', 'active')
+            ->whereDate('acquisition_date', '<=', $cutoffDate)
+            ->get();
+
+        if ($assets->isEmpty()) {
+            return [
+                'is_complete'                 => true,
+                'status'                      => 'productive_asset_base_unavailable',
+                'productive_asset_book_value' => 0.0,
+                'total_assets_count'          => 0,
+                'unclassified_count'          => 0,
+            ];
+        }
+
+        $unclassifiedCount = 0;
+        $totalProductiveBookValue = 0.0;
+
+        foreach ($assets as $asset) {
+            if ($asset->economic_use === null) {
+                $unclassifiedCount++;
+                continue;
+            }
+
+            // Determine accumulated depreciation and book value up to cutoff date
+            $priorDepreciation = $asset->depreciations
+                ->filter(function ($d) use ($cutoffDate) {
+                    $endDate = $d->period?->end_date ? Carbon::parse($d->period->end_date)->toDateString() : null;
+                    return $endDate !== null && $endDate <= $cutoffDate;
+                })
+                ->sortByDesc(function ($d) {
+                    return $d->period?->end_date ? Carbon::parse($d->period->end_date)->timestamp : 0;
+                })
+                ->first();
+
+            if ($priorDepreciation) {
+                $bookValue = (float) $priorDepreciation->book_value;
+            } else {
+                $bookValue = (float) $asset->acquisition_value;
+            }
+
+            $bookValue = max(0.0, $bookValue);
+
+            if ($asset->economic_use === 'productive') {
+                $totalProductiveBookValue += $bookValue;
+            } elseif ($asset->economic_use === 'mixed') {
+                $percentage = $asset->productive_percentage !== null ? (float) $asset->productive_percentage : 0.0;
+                $totalProductiveBookValue += $bookValue * ($percentage / 100.0);
+            }
+            // 'social' contributes 0.0
+        }
+
+        if ($unclassifiedCount > 0) {
+            return [
+                'is_complete'                 => false,
+                'status'                      => 'asset_classification_incomplete',
+                'productive_asset_book_value' => null,
+                'total_assets_count'          => $assets->count(),
+                'unclassified_count'          => $unclassifiedCount,
+            ];
+        }
+
+        if ($totalProductiveBookValue <= 0.0) {
+            return [
+                'is_complete'                 => true,
+                'status'                      => 'productive_asset_base_unavailable',
+                'productive_asset_book_value' => 0.0,
+                'total_assets_count'          => $assets->count(),
+                'unclassified_count'          => 0,
+            ];
+        }
+
+        return [
+            'is_complete'                 => true,
+            'status'                      => 'available',
+            'productive_asset_book_value' => round($totalProductiveBookValue, 2),
+            'total_assets_count'          => $assets->count(),
+            'unclassified_count'          => 0,
+        ];
+    }
 }
+

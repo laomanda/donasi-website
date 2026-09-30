@@ -93,6 +93,8 @@ class FinanceJournalImportService
 
             DB::commit();
 
+            app(\App\Services\PublicFinanceCacheService::class)->invalidateAll();
+
             // Update batch status
             $batch->update(['status' => 'completed']);
 

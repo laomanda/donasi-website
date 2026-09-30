@@ -367,7 +367,7 @@ class PublicFinanceReadServiceTest extends TestCase
         $summary = $this->service->getPublicSummary(2026);
 
         $this->assertNull($summary['summary']['rowa']);
-        $this->assertEquals('formula_not_defined', $summary['summary']['rowa_status']);
+        $this->assertEquals('productive_asset_base_unavailable', $summary['summary']['rowa_status']);
     }
 
     /**
@@ -380,19 +380,19 @@ class PublicFinanceReadServiceTest extends TestCase
         $this->assertCount(12, $monthly);
         foreach ($monthly as $monthData) {
             $this->assertNull($monthData['rowa'], "Month {$monthData['month']} RoWA must be null");
-            $this->assertEquals('formula_not_defined', $monthData['rowa_status']);
+            $this->assertEquals('monthly_asset_basis_unavailable', $monthData['rowa_status']);
         }
     }
 
     /**
-     * Test 14: available balance returns null / definition required.
+     * Test 14: available balance returns verified numeric balance and available status.
      */
     public function test_available_balance_returns_null(): void
     {
         $summary = $this->service->getPublicSummary(2026);
 
-        $this->assertNull($summary['summary']['available_balance']);
-        $this->assertEquals('definition_required', $summary['summary']['available_balance_status']);
+        $this->assertNotNull($summary['summary']['available_balance']);
+        $this->assertEquals('available', $summary['summary']['available_balance_status']);
     }
 
     /**

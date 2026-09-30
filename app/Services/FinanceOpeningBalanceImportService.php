@@ -127,6 +127,8 @@ class FinanceOpeningBalanceImportService
 
             DB::commit();
 
+            app(\App\Services\PublicFinanceCacheService::class)->invalidateAll();
+
             // 6. Update batch status to completed
             $batch->update([
                 'status' => 'completed',

@@ -685,6 +685,7 @@ export function WaqfAssetsPage() {
                       <th scope="col" className="py-3.5 px-6 w-36">Kode Aset</th>
                       <th scope="col" className="py-3.5 px-4 min-w-[200px]">Nama Aset</th>
                       <th scope="col" className="py-3.5 px-4 w-32">Kategori</th>
+                      <th scope="col" className="py-3.5 px-4 w-32">Penggunaan</th>
                       <th scope="col" className="py-3.5 px-4 w-36">Wakif</th>
                       <th scope="col" className="py-3.5 px-4 w-28">Perolehan</th>
                       <th scope="col" className="py-3.5 px-4 text-right w-36">Nilai Perolehan</th>
@@ -727,6 +728,9 @@ export function WaqfAssetsPage() {
                               {asset.category || "-"}
                             </span>
                           </td>
+                          <td className="py-3.5 px-4">
+                            <EconomicUseBadge economicUse={asset.economic_use} percentage={asset.productive_percentage} />
+                          </td>
                           <td className="py-3.5 px-4 text-slate-600 print:text-slate-800">
                             {asset.wakif || "Hamba Allah"}
                           </td>
@@ -765,7 +769,7 @@ export function WaqfAssetsPage() {
                   </tbody>
                   <tfoot>
                     <tr className="border-t-2 border-slate-300 bg-slate-100/80 font-bold text-xs text-slate-900 print:bg-slate-200 print:text-[10px]">
-                      <td colSpan={5} className="py-4 px-6 uppercase tracking-wider">
+                      <td colSpan={6} className="py-4 px-6 uppercase tracking-wider">
                         GRAND TOTAL INVENTARIS ASET WAKAF
                       </td>
                       <td className="py-4 px-4 text-right font-mono tabular-nums">
@@ -1026,6 +1030,18 @@ function AssetDetailModal({
                       <AssetStatusBadge status={assetDetail.status} />
                     </div>
                   </div>
+
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      Penggunaan Ekonomi (RoWA)
+                    </span>
+                    <div className="mt-1">
+                      <EconomicUseBadge
+                        economicUse={assetDetail.economic_use}
+                        percentage={assetDetail.productive_percentage}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1221,6 +1237,41 @@ function AssetStatusBadge({ status }: { status: string }) {
   return (
     <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-[10px] font-bold text-slate-600 uppercase">
       {status || "-"}
+    </span>
+  );
+}
+
+function EconomicUseBadge({
+  economicUse,
+  percentage,
+}: {
+  economicUse?: "productive" | "social" | "mixed" | null;
+  percentage?: number | null;
+}) {
+  if (economicUse === "productive") {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+        Produktif (100%)
+      </span>
+    );
+  }
+  if (economicUse === "social") {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-200">
+        Sosial
+      </span>
+    );
+  }
+  if (economicUse === "mixed") {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+        Campuran ({percentage ? Number(percentage).toFixed(0) : "0"}%)
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+      Belum Klasifikasi
     </span>
   );
 }

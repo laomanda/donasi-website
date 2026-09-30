@@ -336,7 +336,7 @@ class PublicHomeFinanceIntegrationTest extends TestCase
         $res->assertOk();
 
         $this->assertNull($res->json('finance.rowa'));
-        $this->assertEquals('formula_not_defined', $res->json('finance.rowa_status'));
+        $this->assertEquals('productive_asset_base_unavailable', $res->json('finance.rowa_status'));
         $this->assertNull($res->json('stats.average_rowa'));
         $this->assertNull($res->json('stats.rowa'));
     }
@@ -352,7 +352,7 @@ class PublicHomeFinanceIntegrationTest extends TestCase
         $monthly = $res->json('finance.monthly_realization');
         foreach ($monthly as $row) {
             $this->assertNull($row['rowa'], "Month {$row['month']} RoWA must be null");
-            $this->assertEquals('formula_not_defined', $row['rowa_status']);
+            $this->assertEquals('monthly_asset_basis_unavailable', $row['rowa_status']);
         }
 
         $monthlyTrends = $res->json('stats.monthly_trends');
@@ -362,16 +362,16 @@ class PublicHomeFinanceIntegrationTest extends TestCase
     }
 
     /**
-     * Test 12: available balance is null / definition required.
+     * Test 12: available balance is computed and available.
      */
     public function test_available_balance_is_null_definition_required(): void
     {
         $res = $this->getJson('/api/v1/home?year=2026');
         $res->assertOk();
 
-        $this->assertNull($res->json('finance.available_balance'));
-        $this->assertEquals('definition_required', $res->json('finance.available_balance_status'));
-        $this->assertNull($res->json('stats.available_balance'));
+        $this->assertNotNull($res->json('finance.available_balance'));
+        $this->assertEquals('available', $res->json('finance.available_balance_status'));
+        $this->assertNotNull($res->json('stats.available_balance'));
     }
 
     /**
@@ -517,8 +517,8 @@ class PublicHomeFinanceIntegrationTest extends TestCase
         $this->assertEquals($serviceSummary['program_distributions'], $apiFinance['program_distributions']);
         $this->assertEquals($serviceSummary['nazhir_expense'], $apiFinance['nazhir_expense']);
         $this->assertEquals($serviceSummary['operational_expense'], $apiFinance['operational_expense']);
-        $this->assertNull($apiFinance['available_balance']);
-        $this->assertNull($apiFinance['rowa']);
+        $this->assertEquals($serviceSummary['available_balance'], $apiFinance['available_balance']);
+        $this->assertEquals($serviceSummary['rowa'], $apiFinance['rowa']);
     }
 }
 

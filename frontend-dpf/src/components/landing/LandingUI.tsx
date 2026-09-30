@@ -142,6 +142,7 @@ export type MonthlyRealizationItem = {
   distributed: number;
   nazhir_expense: number;
   operational_expense: number;
+  expense?: number;
   total_expense: number;
   rowa: number | null;
   rowa_status: string;
@@ -151,6 +152,7 @@ export type PublicFinancePayload = {
   total_collected: number;
   total_waqf_collected: number;
   total_distributed: number;
+  total_expense: number;
   verified_donations: number;
   program_distributions: number;
   nazhir_expense: number;
@@ -159,6 +161,7 @@ export type PublicFinancePayload = {
   available_balance_status: string;
   rowa: number | null;
   rowa_status: string;
+  productive_asset_book_value?: number | null;
   monthly_realization: MonthlyRealizationItem[];
 };
 
