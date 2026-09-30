@@ -1,18 +1,21 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCoins } from "@fortawesome/free-solid-svg-icons";
+import type { PublicFinancePayload } from "./LandingUI";
 
 interface AnimatedWakafBadgeProps {
+  finance?: PublicFinancePayload | null;
   stats?: {
     total_programs?: number;
     total_donations?: number;
     amount_collected?: string | number;
+    total_waqf_collected?: string | number;
   } | null;
   locale?: "id" | "en";
 }
 
-export function AnimatedWakafBadge({ stats, locale = "id" }: AnimatedWakafBadgeProps) {
-  const targetAmount = Math.max(0, Number(stats?.amount_collected ?? 0));
+export function AnimatedWakafBadge({ finance, stats, locale = "id" }: AnimatedWakafBadgeProps) {
+  const targetAmount = Number(finance?.total_waqf_collected ?? stats?.total_waqf_collected ?? 0);
   const [currentValue, setCurrentValue] = useState<number>(0);
   const animationRef = useRef<number | null>(null);
 

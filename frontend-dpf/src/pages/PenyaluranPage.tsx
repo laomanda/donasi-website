@@ -28,6 +28,7 @@ import {
 export function PenyaluranPage() {
   const { locale } = useLang();
   const [data, setData] = useState<HomePayload | null>(null);
+  const [periodData, setPeriodData] = useState<HomePayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [allocations, setAllocations] = useState<AllocationItem[]>([]);
   const [loadingAllocations, setLoadingAllocations] = useState(true);
@@ -74,7 +75,30 @@ export function PenyaluranPage() {
     };
   }, []);
 
-  const totalAllocated = Number(data?.stats?.amount_allocated ?? 0);
+  // Fetch period-specific home finance summary when year filter is active
+  useEffect(() => {
+    if (selectedYear === "all") return;
+
+    let isMounted = true;
+    http
+      .get<HomePayload>(`/home?year=${selectedYear}`)
+      .then((res) => {
+        if (!isMounted) return;
+        setPeriodData(res.data);
+      })
+      .catch((err) => console.error("Error loading period finance stats:", err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedYear]);
+
+  // Authoritative all-time distributed total from canonical finance engine
+  const totalAllocated = Number(
+    data?.finance?.total_distributed ??
+    data?.stats?.total_distributed ??
+    0
+  );
 
   // Available Years: automatically generates from highest year (current year / 2027+ in DB) down to 2020
   const availableYears = useMemo(() => {
@@ -128,12 +152,24 @@ export function PenyaluranPage() {
     });
   }, [allocations, selectedYear]);
 
-  // Yearly summary metrics
+  // Authoritative finance metrics for active period (all-time or specific year)
+  const activeFinance = selectedYear === "all" ? data?.finance : periodData?.finance;
+  const activeStats = selectedYear === "all" ? data?.stats : periodData?.stats;
+
+  const periodTotalDistributed = Number(
+    activeFinance?.total_distributed ??
+    activeStats?.total_distributed ??
+    0
+  );
+
+  const periodProgramDistributions = Number(
+    activeFinance?.program_distributions ??
+    activeStats?.program_distributions ??
+    filteredAllocations.length
+  );
+
+  // Operational metrics for displayed allocation cards
   const yearStats = useMemo(() => {
-    const totalAmount = filteredAllocations.reduce(
-      (acc, curr) => acc + Number(curr.amount || 0),
-      0
-    );
     const totalCount = filteredAllocations.length;
     const uniquePrograms = new Set(
       filteredAllocations
@@ -142,7 +178,6 @@ export function PenyaluranPage() {
     ).size;
 
     return {
-      totalAmount,
       totalCount,
       uniquePrograms,
     };
@@ -465,7 +500,7 @@ export function PenyaluranPage() {
                 </div>
               </div>
               <p className="font-heading text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                {formatCurrency(yearStats.totalAmount, locale)}
+                {formatCurrency(periodTotalDistributed, locale)}
               </p>
               <p className="text-xs text-slate-500 mt-1">
                 {locale === "en" ? "Verified realization funds" : "Realisasi dana tepat sasaran"}
@@ -490,7 +525,7 @@ export function PenyaluranPage() {
                 </div>
               </div>
               <p className="font-heading text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                {yearStats.totalCount}{" "}
+                {periodProgramDistributions}{" "}
                 <span className="text-sm font-semibold text-slate-500">
                   {locale === "en" ? "Activities" : "Kegiatan"}
                 </span>

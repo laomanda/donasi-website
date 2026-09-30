@@ -4,19 +4,23 @@ import { faHandHoldingHeart, faArrowRight } from "@fortawesome/free-solid-svg-ic
 import { heroImg } from "@/assets/brand";
 import { imagePlaceholder } from "@/lib/placeholder";
 import { AnimatedWakafBadge } from "./AnimatedWakafBadge";
+import type { PublicFinancePayload } from "./LandingUI";
 
 export function HeroSection({ 
     error, 
     t,
+    finance,
     stats,
     locale = "id"
 }: { 
     error: string | null; 
     t: (k: string, f?: string) => string;
+    finance?: PublicFinancePayload | null;
     stats?: {
       total_programs?: number;
       total_donations?: number;
       amount_collected?: string | number;
+      total_waqf_collected?: string | number;
     } | null;
     locale?: "id" | "en";
 }) {
@@ -69,7 +73,7 @@ export function HeroSection({
 
               {/* Floating Stat Badge: Total Wakaf Terhimpun with Interactive Animation */}
               <div className="absolute -bottom-2 left-2 sm:bottom-4 sm:left-4 lg:bottom-8 lg:-left-4 z-10">
-                <AnimatedWakafBadge stats={stats} locale={locale} />
+                <AnimatedWakafBadge finance={finance} stats={stats} locale={locale} />
               </div>
 
             </div>
