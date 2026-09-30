@@ -133,13 +133,45 @@ export type ProgramAllocation = {
   thumbnail_path?: string | null;
 };
 
+export type MonthlyRealizationItem = {
+  month: number;
+  month_key: string;
+  month_name?: string;
+  collected: number;
+  waqf_collected: number;
+  distributed: number;
+  nazhir_expense: number;
+  operational_expense: number;
+  total_expense: number;
+  rowa: number | null;
+  rowa_status: string;
+};
+
+export type PublicFinancePayload = {
+  total_collected: number;
+  total_waqf_collected: number;
+  total_distributed: number;
+  verified_donations: number;
+  program_distributions: number;
+  nazhir_expense: number;
+  operational_expense: number;
+  available_balance: number | null;
+  available_balance_status: string;
+  rowa: number | null;
+  rowa_status: string;
+  monthly_realization: MonthlyRealizationItem[];
+};
+
 export type MonthlyTrend = {
   month_key: string;
   label: string;
   month_name: string;
   collected: number;
   allocated: number;
-  expense?: number;
+  nazhir_expense?: number;
+  operational_expense?: number;
+  total_expense?: number;
+  expense?: number | null;
   rowa?: number | null;
 };
 
@@ -149,12 +181,24 @@ export type HomeStats = {
   amount_collected: string | number;
   total_allocations?: number;
   amount_allocated?: string | number;
-  total_expense?: string | number;
+  total_expense?: string | number | null;
   average_rowa?: number | null;
   collected_mom?: number | null;
   allocated_mom?: number | null;
   program_allocations?: ProgramAllocation[];
   monthly_trends?: MonthlyTrend[];
+  total_collected?: number;
+  total_waqf_collected?: number;
+  total_distributed?: number;
+  verified_donations?: number;
+  program_distributions?: number;
+  nazhir_expense?: number;
+  operational_expense?: number;
+  available_balance?: number | null;
+  available_balance_status?: string;
+  rowa?: number | null;
+  rowa_status?: string;
+  monthly_realization?: MonthlyRealizationItem[];
 };
 
 export type HomePayload = {
@@ -163,6 +207,7 @@ export type HomePayload = {
   partners: Partner[];
   selected_year?: string;
   available_years?: number[];
+  finance?: PublicFinancePayload;
   stats: HomeStats;
 };
 

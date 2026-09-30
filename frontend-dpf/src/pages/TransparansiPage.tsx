@@ -69,10 +69,11 @@ export function TransparansiPage() {
     };
   }, [selectedYear]);
 
-  const totalCollected = Number(data?.stats?.amount_collected ?? 0);
-  const totalAllocated = Number(data?.stats?.amount_allocated ?? 0);
-  const totalDonations = data?.stats?.total_donations ?? 0;
-  const totalAllocations = data?.stats?.total_allocations ?? 0;
+  const totalCollected = Number(data?.finance?.total_collected ?? data?.stats?.total_collected ?? data?.stats?.amount_collected ?? 0);
+  const totalWaqfCollected = Number(data?.finance?.total_waqf_collected ?? data?.stats?.total_waqf_collected ?? 0);
+  const totalDistributed = Number(data?.finance?.total_distributed ?? data?.stats?.total_distributed ?? data?.stats?.amount_allocated ?? 0);
+  const totalDonations = Number(data?.finance?.verified_donations ?? data?.stats?.verified_donations ?? data?.stats?.total_donations ?? 0);
+  const programDistributions = Number(data?.finance?.program_distributions ?? data?.stats?.program_distributions ?? 0);
 
   // MoM (Month-over-Month) Growth Percentage
   const momCollected = calculateMoM(data?.stats?.monthly_trends, data?.stats?.collected_mom);
@@ -110,8 +111,8 @@ export function TransparansiPage() {
               : "Djalaludin Pane Foundation (DPF) berkomitmen mewujudkan keterbukaan dan tata kelola wakaf yang amanah, akuntabel, dan produktif. Pantau seluruh alur dana dari wakif hingga penyaluran ke program."}
           </p>
 
-          {/* Harmonious Quick Metrics Strip */}
-          <div className="pt-4 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto text-left">
+          {/* Harmonious Quick Metrics Strip: 5 Verified Public Metrics */}
+          <div className="pt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 max-w-6xl mx-auto text-left">
             {/* Card 1: Dana Dihimpun */}
             <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-brandGreen-500/40 hover:bg-slate-900/85">
               <div className="flex items-center gap-3">
@@ -154,13 +155,37 @@ export function TransparansiPage() {
               </div>
             </div>
 
-            {/* Card 2: Dana Disalurkan (Clickable to /penyaluran) */}
+            {/* Card 2: Total Wakaf Terhimpun */}
+            <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-emerald-500/40 hover:bg-slate-900/85">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 group-hover:scale-105 transition">
+                  <FontAwesomeIcon icon={faBuildingColumns} className="text-sm" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="text-[11px] font-medium text-slate-300 block truncate">
+                    {locale === "en" ? "Waqf Revenue" : "Wakaf Terhimpun"}
+                  </span>
+                  <p className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white tracking-tight truncate">
+                    {loading ? "..." : (
+                      <AnimatedCounter
+                        value={totalWaqfCollected}
+                        formatter={(val) => formatCurrency(val, locale)}
+                      />
+                    )}
+                  </p>
+                  <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400 font-medium">
+                    <span>{locale === "en" ? "Penerimaan Wakaf" : "Penerimaan wakaf"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Dana Disalurkan (Clickable to /penyaluran) */}
             <Link
               to="/penyaluran"
               className="group relative rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition-all duration-300 hover:border-sky-500/50 hover:bg-slate-900/85 hover:scale-[1.02] cursor-pointer block text-left"
               title={locale === "en" ? "Click to view distribution details" : "Klik untuk melihat detail penyaluran"}
             >
-              {/* Subtle link indicator on top right */}
               <div className="absolute top-3.5 right-3.5 flex h-5 w-5 items-center justify-center rounded-full bg-white/5 text-slate-400 group-hover:bg-sky-500/20 group-hover:text-sky-400 transition-all">
                 <FontAwesomeIcon icon={faArrowRight} className="text-[9px] -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
               </div>
@@ -176,7 +201,7 @@ export function TransparansiPage() {
                   <p className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white tracking-tight truncate">
                     {loading ? "..." : (
                       <AnimatedCounter
-                        value={totalAllocated}
+                        value={totalDistributed}
                         formatter={(val) => formatCurrency(val, locale)}
                       />
                     )}
@@ -188,7 +213,7 @@ export function TransparansiPage() {
               </div>
             </Link>
 
-            {/* Card 3: Donasi Terverifikasi */}
+            {/* Card 4: Donasi Terverifikasi */}
             <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-teal-500/40 hover:bg-slate-900/85">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 text-teal-300 border border-teal-500/20 group-hover:scale-105 transition">
@@ -208,7 +233,7 @@ export function TransparansiPage() {
               </div>
             </div>
 
-            {/* Card 4: Penyaluran Program */}
+            {/* Card 5: Penyaluran Program */}
             <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-indigo-500/40 hover:bg-slate-900/85">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/20 group-hover:scale-105 transition">
@@ -216,13 +241,13 @@ export function TransparansiPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-[11px] font-medium text-slate-300 block truncate">
-                    {locale === "en" ? "Active Programs" : "Penyaluran Program"}
+                    {locale === "en" ? "Program Distributions" : "Penyaluran Program"}
                   </span>
                   <p className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white tracking-tight truncate">
-                    {loading ? "..." : <AnimatedCounter value={totalAllocations} />}
+                    {loading ? "..." : <AnimatedCounter value={programDistributions} />}
                   </p>
                   <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400 font-medium">
-                    <span>{locale === "en" ? "Beneficiaries" : "Program aktif"}</span>
+                    <span>{locale === "en" ? "Disbursement transactions" : "Transaksi penyaluran"}</span>
                   </div>
                 </div>
               </div>
@@ -233,6 +258,7 @@ export function TransparansiPage() {
 
       {/* Main Interactive Transparency Section with Year Filter */}
       <TransparencySection
+        finance={data?.finance}
         stats={data?.stats}
         locale={locale}
         selectedYear={selectedYear}
@@ -241,8 +267,9 @@ export function TransparansiPage() {
         t={t}
       />
 
-      {/* Monthly Realization & RoWA Section */}
+      {/* Monthly Realization Section */}
       <MonthlyRowaSection
+        finance={data?.finance}
         stats={data?.stats}
         locale={locale}
         selectedYear={selectedYear}
