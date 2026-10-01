@@ -205,18 +205,30 @@ class PublicFinanceReadService
             $operationalExpense = $row ? round((float) $row->operational_expense, 2) : 0.0;
             $totalExpense = round($nazhirExpense + $operationalExpense, 2);
 
+            // Monthly YWDP Ratio: (monthly waqf collected / monthly total expense) * 100%
+            if ($totalExpense > 0.0) {
+                $monthlyYwdpRatio = round(($waqfCollected / $totalExpense) * 100.0, 2);
+                $monthlyYwdpRatioStatus = 'available';
+            } else {
+                $monthlyYwdpRatio = null;
+                $monthlyYwdpRatioStatus = 'expense_base_unavailable';
+            }
+
             $result[] = [
-                'month'               => $m,
-                'month_key'           => sprintf('%04d-%02d', $year, $m),
-                'collected'           => $collected,
-                'waqf_collected'      => $waqfCollected,
-                'distributed'         => $distributed,
-                'nazhir_expense'      => $nazhirExpense,
-                'operational_expense' => $operationalExpense,
-                'expense'             => $totalExpense,
-                'total_expense'       => $totalExpense,
-                'rowa'                => null,
-                'rowa_status'         => 'monthly_asset_basis_unavailable',
+                'month'                => $m,
+                'month_key'            => sprintf('%04d-%02d', $year, $m),
+                'collected'            => $collected,
+                'waqf_collected'       => $waqfCollected,
+                'total_waqf_collected' => $waqfCollected,
+                'distributed'          => $distributed,
+                'nazhir_expense'       => $nazhirExpense,
+                'operational_expense'  => $operationalExpense,
+                'expense'              => $totalExpense,
+                'total_expense'        => $totalExpense,
+                'ywdp_ratio'           => $monthlyYwdpRatio,
+                'ywdp_ratio_status'    => $monthlyYwdpRatioStatus,
+                'rowa'                 => null,
+                'rowa_status'          => 'monthly_asset_basis_unavailable',
             ];
         }
 
@@ -388,7 +400,41 @@ class PublicFinanceReadService
     }
 
     /**
-     * 12. Public Presentation Summary DTO
+     * 12. Rasio Internal YWDP (YWDP Ratio)
+     *
+     * Internal operational/fundraising ratio defined by YWDP management:
+     * (Total Wakaf Terhimpun / Biaya Pengeluaran) * 100%
+     *
+     * NOTE: This is NOT an industry-standard Return on Waqf Assets (RoWA = Hasil Pengelolaan / Nilai Buku Aset Produktif).
+     * It is YWDP's internal ratio measuring fundraising performance against organizational overhead.
+     *
+     * Invariants:
+     * - Numerator and denominator use the exact same period (year or all-time).
+     * - Returns null and 'expense_base_unavailable' if total_expense <= 0.
+     * - Returned value is in percentage points (e.g., 250.75 means 250.75%).
+     */
+    public function getYwdpRatio(?int $year = null, ?int $accountingPeriodId = null): array
+    {
+        $waqf = $this->getTotalWaqfCollected($year, $accountingPeriodId);
+        $expense = $this->getTotalExpense($year, $accountingPeriodId);
+
+        if ($expense <= 0.0) {
+            return [
+                'ywdp_ratio'        => null,
+                'ywdp_ratio_status' => 'expense_base_unavailable',
+            ];
+        }
+
+        $ratio = round(($waqf / $expense) * 100.0, 2);
+
+        return [
+            'ywdp_ratio'        => $ratio,
+            'ywdp_ratio_status' => 'available',
+        ];
+    }
+
+    /**
+     * 13. Public Presentation Summary DTO
      *
      * Provides aggregated verified metrics strictly from double-entry posted journals
      * and verified asset classifications.
@@ -397,6 +443,7 @@ class PublicFinanceReadService
     {
         $availableData = $this->getAvailableBalance($year, $accountingPeriodId);
         $rowaData = $this->getRoWA($year);
+        $ywdpData = $this->getYwdpRatio($year, $accountingPeriodId);
 
         return [
             'summary' => [
@@ -410,6 +457,8 @@ class PublicFinanceReadService
                 'total_expense'               => $this->getTotalExpense($year, $accountingPeriodId),
                 'available_balance'           => $availableData['available_balance'],
                 'available_balance_status'    => $availableData['available_balance_status'],
+                'ywdp_ratio'                  => $ywdpData['ywdp_ratio'],
+                'ywdp_ratio_status'           => $ywdpData['ywdp_ratio_status'],
                 'rowa'                        => $rowaData['rowa'],
                 'rowa_status'                 => $rowaData['rowa_status'],
                 'productive_asset_book_value' => $rowaData['productive_asset_book_value'],

@@ -2,7 +2,6 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    faHandHoldingHeart,
     faReceipt,
     faArrowRight,
     faArrowTrendUp,
@@ -107,15 +106,14 @@ export function TransparencySection({
     }, [availableYears, currentYear]);
 
     // Aggregate Verified Numeric Metrics (Presentation Only, No Synthetic Calculations)
-    const totalCollected = Number(finance?.total_collected ?? stats?.total_collected ?? Number(stats?.amount_collected ?? 0));
     const totalWaqfCollected = Number(finance?.total_waqf_collected ?? 0);
     const totalDistributed = Number(finance?.total_distributed ?? stats?.total_distributed ?? Number(stats?.amount_allocated ?? 0));
     const verifiedDonations = Number(finance?.verified_donations ?? stats?.verified_donations ?? stats?.total_donations ?? 0);
     const programDistributions = Number(finance?.program_distributions ?? stats?.program_distributions ?? 0);
     const totalExpense = Number(finance?.total_expense ?? stats?.total_expense ?? 0);
     const availableBalance = finance?.available_balance !== undefined ? finance.available_balance : (stats?.available_balance ?? null);
-    const rowa = finance?.rowa !== undefined ? finance.rowa : (stats?.rowa ?? null);
-    const rowaStatus = finance?.rowa_status ?? stats?.rowa_status ?? "productive_asset_base_unavailable";
+    const ywdpRatio = finance?.ywdp_ratio !== undefined ? finance.ywdp_ratio : (finance?.rowa !== undefined ? finance.rowa : (stats?.ywdp_ratio ?? stats?.rowa ?? null));
+    const ywdpRatioStatus = finance?.ywdp_ratio_status ?? stats?.ywdp_ratio_status ?? "expense_base_unavailable";
 
     const momCollected = calculateMoM(stats?.monthly_trends, stats?.collected_mom);
 
@@ -124,7 +122,7 @@ export function TransparencySection({
         if (finance?.monthly_realization && finance.monthly_realization.length > 0) {
             return finance.monthly_realization.map((item) => ({
                 label: getShortMonthLabel(item.month, locale),
-                collected: Number(item.collected) || 0,
+                collected: Number(item.total_waqf_collected ?? item.waqf_collected ?? item.collected) || 0,
                 distributed: Number(item.distributed) || 0,
             }));
         }
@@ -132,7 +130,7 @@ export function TransparencySection({
         if (stats?.monthly_trends && stats.monthly_trends.length > 0) {
             return stats.monthly_trends.map((item) => ({
                 label: item.label ? item.label.split(" ")[0] : item.month_key,
-                collected: Number(item.collected) || 0,
+                collected: Number(item.total_waqf_collected ?? item.waqf_collected ?? item.collected) || 0,
                 distributed: Number(item.allocated) || 0,
             }));
         }
@@ -148,7 +146,7 @@ export function TransparencySection({
             datasets: [
                 {
                     label:
-                        locale === "en" ? "Funds Collected" : "Dana Dihimpun",
+                        locale === "en" ? "Waqf Collected" : "Wakaf Terhimpun",
                     data: trendItems.map((m) => m.collected),
                     borderColor: "#059669",
                     backgroundColor: (context: ScriptableContext<"line">) => {
@@ -355,19 +353,19 @@ export function TransparencySection({
                     )}
                 </div>
 
-                {/* Mandatory Public KPI Summary Cards - Verified Aggregate Numbers */}
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                    {/* Card 1: Penghimpunan */}
+                {/* Mandatory Public KPI Summary Cards - 5 Verified Canonical Aggregate Metrics */}
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                    {/* Card 1: Total Wakaf Terhimpun */}
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
                         <div className="flex items-center justify-between gap-4">
                             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                                 {locale === "en"
-                                    ? "Waqf Funds Collected"
-                                    : "Dana Dihimpun"}
+                                    ? "Total Waqf Collected"
+                                    : "Total Wakaf Terhimpun"}
                             </span>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brandGreen-50 text-brandGreen-700 border border-brandGreen-100">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
                                 <FontAwesomeIcon
-                                    icon={faHandHoldingHeart}
+                                    icon={faBuildingColumns}
                                     className="text-sm"
                                 />
                             </div>
@@ -376,7 +374,7 @@ export function TransparencySection({
                         <div className="mt-5">
                             <p className="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                                 <AnimatedCounter
-                                    value={totalCollected}
+                                    value={totalWaqfCollected}
                                     formatter={(val) =>
                                         formatCurrency(val, locale)
                                     }
@@ -465,42 +463,7 @@ export function TransparencySection({
                         </div>
                     </Link>
 
-                    {/* Card 3: Total Wakaf Terhimpun */}
-                    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
-                        <div className="flex items-center justify-between gap-4">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                                {locale === "en"
-                                    ? "Waqf Revenue Recognized"
-                                    : "Total Wakaf Terhimpun"}
-                            </span>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                <FontAwesomeIcon
-                                    icon={faBuildingColumns}
-                                    className="text-sm"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="mt-5">
-                            <p className="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                                <AnimatedCounter
-                                    value={totalWaqfCollected}
-                                    formatter={(val) =>
-                                        formatCurrency(val, locale)
-                                    }
-                                />
-                            </p>
-                            <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
-                                <span>
-                                    {locale === "en"
-                                        ? "Official Waqf Corpus (4100 series)"
-                                        : "Penerimaan Wakaf Resmi (Akun 4100)"}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Card 4: Biaya Pengeluaran (Beban Nazhir + Operasional) */}
+                    {/* Card 3: Biaya Pengeluaran (Beban Nazhir + Operasional) */}
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
                         <div className="flex items-center justify-between gap-4">
                             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -535,7 +498,7 @@ export function TransparencySection({
                         </div>
                     </div>
 
-                    {/* Card 5: Saldo Siap Disalurkan */}
+                    {/* Card 4: Saldo Siap Disalurkan */}
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
                         <div className="flex items-center justify-between gap-4">
                             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -574,13 +537,16 @@ export function TransparencySection({
                         </div>
                     </div>
 
-                    {/* Card 6: Rasio RoWA */}
+                    {/* Card 5: Rasio YWDP (RoWA) */}
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
                         <div className="flex items-center justify-between gap-4">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                            <span
+                                className="text-xs font-semibold uppercase tracking-wider text-slate-500 cursor-help"
+                                title="Rasio internal YWDP: total wakaf terhimpun dibanding biaya pengeluaran."
+                            >
                                 {locale === "en"
-                                    ? "RoWA Ratio"
-                                    : "Rasio RoWA"}
+                                    ? "YWDP Ratio (RoWA)"
+                                    : "Rasio YWDP (RoWA)"}
                             </span>
                             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-700 border border-purple-100">
                                 <FontAwesomeIcon
@@ -592,27 +558,23 @@ export function TransparencySection({
 
                         <div className="mt-5">
                             <div className="flex items-baseline gap-2">
-                                {rowa !== null && typeof rowa === "number" ? (
+                                {ywdpRatio !== null && typeof ywdpRatio === "number" ? (
                                     <p className="font-heading text-2xl sm:text-3xl font-extrabold text-purple-700 tracking-tight">
-                                        {rowa.toFixed(2)}%
+                                        {ywdpRatio.toFixed(2)}%
                                     </p>
                                 ) : (
                                     <p className="font-heading text-base sm:text-lg font-bold text-slate-600 tracking-tight">
-                                        {rowaStatus === "asset_classification_incomplete"
-                                            ? (locale === "en" ? "Data asset incomplete" : "Data aset belum lengkap")
-                                            : rowaStatus === "productive_asset_base_unavailable"
-                                            ? (locale === "en" ? "Asset base unavailable" : "Data aset produktif belum tersedia")
-                                            : rowaStatus === "period_required"
-                                            ? (locale === "en" ? "Select year" : "Pilih periode tahun")
+                                        {ywdpRatioStatus === "expense_base_unavailable"
+                                            ? (locale === "en" ? "Expense base unavailable" : "Belum ada beban pengeluaran")
                                             : (locale === "en" ? "Not available" : "Belum tersedia")}
                                     </p>
                                 )}
                             </div>
                             <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
-                                <span>
+                                <span title="Rasio internal YWDP: total wakaf terhimpun dibanding biaya pengeluaran.">
                                     {locale === "en"
-                                        ? "Return on Waqf Assets (Annual)"
-                                        : "Hasil Pengelolaan / Aset Produktif (Tahunan)"}
+                                        ? "Waqf collections to expenses ratio"
+                                        : "Perbandingan wakaf terhadap biaya"}
                                 </span>
                             </div>
                         </div>
@@ -644,8 +606,8 @@ export function TransparencySection({
                                 </span>
                                 <span className="text-slate-700">
                                     {locale === "en"
-                                        ? "Funds Collected"
-                                        : "Dana Dihimpun"}
+                                        ? "Waqf Collected"
+                                        : "Wakaf Terhimpun"}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">

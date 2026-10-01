@@ -9,11 +9,14 @@ use App\Services\FinancialStatementService;
 use App\Services\JournalService;
 use Database\Seeders\AccountSeeder;
 use Database\Seeders\AccountingPeriodSeeder;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class FinancialStatementEngineTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected FinancialStatementService $fsService;
     protected JournalService $journalService;
     protected User $user;

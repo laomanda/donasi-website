@@ -139,11 +139,14 @@ export type MonthlyRealizationItem = {
   month_name?: string;
   collected: number;
   waqf_collected: number;
+  total_waqf_collected?: number;
   distributed: number;
   nazhir_expense: number;
   operational_expense: number;
   expense?: number;
   total_expense: number;
+  ywdp_ratio?: number | null;
+  ywdp_ratio_status?: string;
   rowa: number | null;
   rowa_status: string;
 };
@@ -159,6 +162,8 @@ export type PublicFinancePayload = {
   operational_expense: number;
   available_balance: number | null;
   available_balance_status: string;
+  ywdp_ratio?: number | null;
+  ywdp_ratio_status?: string;
   rowa: number | null;
   rowa_status: string;
   productive_asset_book_value?: number | null;
@@ -175,6 +180,10 @@ export type MonthlyTrend = {
   operational_expense?: number;
   total_expense?: number;
   expense?: number | null;
+  waqf_collected?: number;
+  total_waqf_collected?: number;
+  ywdp_ratio?: number | null;
+  ywdp_ratio_status?: string;
   rowa?: number | null;
 };
 
@@ -199,6 +208,8 @@ export type HomeStats = {
   operational_expense?: number;
   available_balance?: number | null;
   available_balance_status?: string;
+  ywdp_ratio?: number | null;
+  ywdp_ratio_status?: string;
   rowa?: number | null;
   rowa_status?: string;
   monthly_realization?: MonthlyRealizationItem[];

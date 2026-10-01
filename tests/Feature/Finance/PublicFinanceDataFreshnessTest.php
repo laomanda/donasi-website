@@ -211,11 +211,12 @@ class PublicFinanceDataFreshnessTest extends TestCase
     public function test_allocation_counter_invalidates_cache_immediately(): void
     {
         $program = Program::first() ?? Program::create([
-            'title'       => 'Program Freshness',
-            'slug'        => 'program-freshness',
-            'description' => 'Test Freshness',
-            'status'      => 'active',
-            'target_amount' => 10000000,
+            'title'             => 'Program Freshness',
+            'slug'              => 'program-freshness',
+            'short_description' => 'Test Freshness',
+            'description'       => 'Test Freshness',
+            'status'            => 'active',
+            'target_amount'     => 10000000,
         ]);
 
         // 1. Cache public home

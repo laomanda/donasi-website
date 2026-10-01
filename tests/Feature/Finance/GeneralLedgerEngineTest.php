@@ -11,11 +11,14 @@ use App\Services\GeneralLedgerService;
 use App\Services\JournalService;
 use Database\Seeders\AccountSeeder;
 use Database\Seeders\AccountingPeriodSeeder;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class GeneralLedgerEngineTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected GeneralLedgerService $glService;
     protected JournalService $journalService;
     protected User $user;

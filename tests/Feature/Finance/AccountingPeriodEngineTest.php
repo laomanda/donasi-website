@@ -24,12 +24,15 @@ use Database\Seeders\AccountSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Tests\TestCase;
 
 class AccountingPeriodEngineTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected AccountingPeriodService $periodService;
 
     protected JournalService $journalService;

@@ -69,9 +69,9 @@ export function TransparansiPage() {
     };
   }, [selectedYear]);
 
-  const totalCollected = Number(data?.finance?.total_collected ?? data?.stats?.total_collected ?? data?.stats?.amount_collected ?? 0);
   const totalWaqfCollected = Number(data?.finance?.total_waqf_collected ?? data?.stats?.total_waqf_collected ?? 0);
   const totalDistributed = Number(data?.finance?.total_distributed ?? data?.stats?.total_distributed ?? data?.stats?.amount_allocated ?? 0);
+  const totalExpense = Number(data?.finance?.total_expense ?? data?.stats?.total_expense ?? 0);
   const totalDonations = Number(data?.finance?.verified_donations ?? data?.stats?.verified_donations ?? data?.stats?.total_donations ?? 0);
   const programDistributions = Number(data?.finance?.program_distributions ?? data?.stats?.program_distributions ?? 0);
 
@@ -113,20 +113,20 @@ export function TransparansiPage() {
 
           {/* Harmonious Quick Metrics Strip: 5 Verified Public Metrics */}
           <div className="pt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 max-w-6xl mx-auto text-left">
-            {/* Card 1: Dana Dihimpun */}
-            <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-brandGreen-500/40 hover:bg-slate-900/85">
+            {/* Card 1: Total Wakaf Terhimpun */}
+            <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-emerald-500/40 hover:bg-slate-900/85">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brandGreen-500/15 text-brandGreen-400 border border-brandGreen-500/20 group-hover:scale-105 transition">
-                  <FontAwesomeIcon icon={faHandHoldingHeart} className="text-sm" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 group-hover:scale-105 transition">
+                  <FontAwesomeIcon icon={faBuildingColumns} className="text-sm" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-[11px] font-medium text-slate-300 block truncate">
-                    {locale === "en" ? "Total Collected" : "Dana Dihimpun"}
+                    {locale === "en" ? "Total Waqf Collected" : "Total Wakaf Terhimpun"}
                   </span>
                   <p className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white tracking-tight truncate">
                     {loading ? "..." : (
                       <AnimatedCounter
-                        value={totalCollected}
+                        value={totalWaqfCollected}
                         formatter={(val) => formatCurrency(val, locale)}
                       />
                     )}
@@ -155,32 +155,7 @@ export function TransparansiPage() {
               </div>
             </div>
 
-            {/* Card 2: Total Wakaf Terhimpun */}
-            <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-emerald-500/40 hover:bg-slate-900/85">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 group-hover:scale-105 transition">
-                  <FontAwesomeIcon icon={faBuildingColumns} className="text-sm" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span className="text-[11px] font-medium text-slate-300 block truncate">
-                    {locale === "en" ? "Waqf Revenue" : "Wakaf Terhimpun"}
-                  </span>
-                  <p className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white tracking-tight truncate">
-                    {loading ? "..." : (
-                      <AnimatedCounter
-                        value={totalWaqfCollected}
-                        formatter={(val) => formatCurrency(val, locale)}
-                      />
-                    )}
-                  </p>
-                  <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400 font-medium">
-                    <span>{locale === "en" ? "Penerimaan Wakaf" : "Penerimaan wakaf"}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3: Dana Disalurkan (Clickable to /penyaluran) */}
+            {/* Card 2: Dana Disalurkan (Clickable to /penyaluran) */}
             <Link
               to="/penyaluran"
               className="group relative rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition-all duration-300 hover:border-sky-500/50 hover:bg-slate-900/85 hover:scale-[1.02] cursor-pointer block text-left"
@@ -212,6 +187,31 @@ export function TransparansiPage() {
                 </div>
               </div>
             </Link>
+
+            {/* Card 3: Biaya Pengeluaran */}
+            <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-amber-500/40 hover:bg-slate-900/85">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/20 group-hover:scale-105 transition">
+                  <FontAwesomeIcon icon={faScaleBalanced} className="text-sm" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="text-[11px] font-medium text-slate-300 block truncate">
+                    {locale === "en" ? "Operating Expenses" : "Biaya Pengeluaran"}
+                  </span>
+                  <p className="font-heading text-sm sm:text-base lg:text-lg font-bold text-white tracking-tight truncate">
+                    {loading ? "..." : (
+                      <AnimatedCounter
+                        value={totalExpense}
+                        formatter={(val) => formatCurrency(val, locale)}
+                      />
+                    )}
+                  </p>
+                  <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400 font-medium">
+                    <span>{locale === "en" ? "Beban Nazhir + Operasional" : "Beban Nazhir + Operasional"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Card 4: Donasi Terverifikasi */}
             <div className="group rounded-2xl bg-slate-900/70 border border-white/10 p-4 sm:p-4.5 backdrop-blur-md shadow-xl transition hover:border-teal-500/40 hover:bg-slate-900/85">

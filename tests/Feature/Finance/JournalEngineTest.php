@@ -8,11 +8,14 @@ use App\Models\AuditLog;
 use App\Models\JournalEntry;
 use App\Models\User;
 use App\Services\JournalService;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class JournalEngineTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected JournalService $journalService;
     protected User $user;
     protected AccountingPeriod $period;

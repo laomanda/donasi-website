@@ -9,11 +9,14 @@ use App\Services\JournalService;
 use App\Services\TrialBalanceService;
 use Database\Seeders\AccountSeeder;
 use Database\Seeders\AccountingPeriodSeeder;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class TrialBalanceEngineTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected TrialBalanceService $tbService;
     protected JournalService $journalService;
     protected User $user;

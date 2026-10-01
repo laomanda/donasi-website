@@ -10,10 +10,13 @@ use App\Models\Program;
 use App\Models\User;
 use Database\Seeders\AccountSeeder;
 use Database\Seeders\AccountingPeriodSeeder;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class DonationJournalIntegrationTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected User $user;
     protected Program $program;
 
