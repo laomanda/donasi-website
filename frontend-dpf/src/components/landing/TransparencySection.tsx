@@ -111,8 +111,9 @@ export function TransparencySection({
     const programDistributions = Number(finance?.program_distributions ?? stats?.program_distributions ?? 0);
     const totalExpense = Number(finance?.total_expense ?? stats?.total_expense ?? 0);
     const availableBalance = finance?.available_balance !== undefined ? finance.available_balance : (stats?.available_balance ?? null);
-    const ywdpRatio = finance?.ywdp_ratio !== undefined ? finance.ywdp_ratio : (stats?.ywdp_ratio ?? null);
-    const rowaValue = finance?.rowa !== undefined && finance.rowa !== null ? Number(finance.rowa) : (stats?.rowa ? Number(stats.rowa) : (totalExpense > 0 && totalDistributed > 0 ? Number((totalDistributed / totalExpense).toFixed(2)) : null));
+    const rowaValue = finance?.rowa !== undefined && finance.rowa !== null
+        ? Number(finance.rowa)
+        : (stats?.rowa !== undefined && stats?.rowa !== null ? Number(stats.rowa) : null);
 
     const momCollected = calculateMoM(stats?.monthly_trends, stats?.collected_mom);
 
@@ -539,10 +540,7 @@ export function TransparencySection({
                     {/* Card 5: Rasio RoWA */}
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-slate-300">
                         <div className="flex items-center justify-between gap-4">
-                            <span
-                                className="text-xs font-semibold uppercase tracking-wider text-slate-500 cursor-help"
-                                title="Rasio RoWA: perbandingan dana disalurkan terhadap biaya operasional & nazhir."
-                            >
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                                 {locale === "en"
                                     ? "RoWA Ratio"
                                     : "Rasio RoWA"}
@@ -559,23 +557,17 @@ export function TransparencySection({
                             <div className="flex items-baseline gap-2">
                                 {rowaValue !== null && rowaValue > 0 ? (
                                     <p className="font-heading text-2xl sm:text-3xl font-extrabold text-emerald-800 tracking-tight">
-                                        {rowaValue}x
-                                    </p>
-                                ) : ywdpRatio !== null && typeof ywdpRatio === "number" ? (
-                                    <p className="font-heading text-2xl sm:text-3xl font-extrabold text-purple-700 tracking-tight">
-                                        {ywdpRatio.toFixed(2)}%
+                                        {Number(rowaValue).toFixed(2)}x
                                     </p>
                                 ) : (
                                     <p className="font-heading text-base sm:text-lg font-bold text-slate-600 tracking-tight">
-                                        {locale === "en" ? "Not available" : "Belum tersedia"}
+                                        {locale === "en" ? "Unavailable" : "Belum Tersedia"}
                                     </p>
                                 )}
                             </div>
                             <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
-                                <span title="Rasio RoWA: perbandingan dana disalurkan terhadap biaya operasional & nazhir.">
-                                    {rowaValue !== null && rowaValue > 0
-                                        ? (locale === "en" ? "Distribution to overhead ratio" : "Rasio efektivitas penyaluran")
-                                        : (locale === "en" ? "Waqf collections to expenses ratio" : "Perbandingan wakaf terhadap biaya")}
+                                <span>
+                                    {locale === "en" ? "Waqf to distribution ratio" : "Perbandingan wakaf terhadap penyaluran"}
                                 </span>
                             </div>
                         </div>

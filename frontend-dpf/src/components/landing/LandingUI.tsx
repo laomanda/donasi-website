@@ -185,6 +185,7 @@ export type MonthlyTrend = {
   ywdp_ratio?: number | null;
   ywdp_ratio_status?: string;
   rowa?: number | null;
+  rowa_status?: string;
 };
 
 export type HomeStats = {

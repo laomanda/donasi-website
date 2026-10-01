@@ -328,21 +328,32 @@ class PublicHomeFinanceIntegrationTest extends TestCase
     }
 
     /**
-     * Test 10: RoWA is null / unavailable.
+     * Test 10: RoWA follows canonical formula or zero-distribution safe fallback.
      */
     public function test_rowa_is_null_or_unavailable(): void
     {
         $res = $this->getJson('/api/v1/home?year=2026');
         $res->assertOk();
 
-        $this->assertNull($res->json('finance.rowa'));
-        $this->assertEquals('productive_asset_base_unavailable', $res->json('finance.rowa_status'));
-        $this->assertNull($res->json('stats.average_rowa'));
-        $this->assertNull($res->json('stats.rowa'));
+        $dist = (float) $res->json('finance.total_distributed');
+        $waqf = (float) $res->json('finance.total_waqf_collected');
+
+        if ($dist > 0) {
+            $expected = round($waqf / $dist, 4);
+            $this->assertEquals($expected, $res->json('finance.rowa'));
+            $this->assertEquals('available', $res->json('finance.rowa_status'));
+            $this->assertEquals($expected, $res->json('stats.average_rowa'));
+            $this->assertEquals($expected, $res->json('stats.rowa'));
+        } else {
+            $this->assertNull($res->json('finance.rowa'));
+            $this->assertEquals('distribution_base_unavailable', $res->json('finance.rowa_status'));
+            $this->assertNull($res->json('stats.average_rowa'));
+            $this->assertNull($res->json('stats.rowa'));
+        }
     }
 
     /**
-     * Test 11: monthly RoWA is null / unavailable.
+     * Test 11: monthly RoWA handles distribution > 0 or returns null with distribution_base_unavailable.
      */
     public function test_monthly_rowa_is_null_across_all_months(): void
     {
@@ -351,13 +362,24 @@ class PublicHomeFinanceIntegrationTest extends TestCase
 
         $monthly = $res->json('finance.monthly_realization');
         foreach ($monthly as $row) {
-            $this->assertNull($row['rowa'], "Month {$row['month']} RoWA must be null");
-            $this->assertEquals('monthly_asset_basis_unavailable', $row['rowa_status']);
+            if ((float) $row['distributed'] > 0) {
+                $expected = round((float) $row['total_waqf_collected'] / (float) $row['distributed'], 4);
+                $this->assertEquals($expected, $row['rowa']);
+                $this->assertEquals('available', $row['rowa_status']);
+            } else {
+                $this->assertNull($row['rowa'], "Month {$row['month']} RoWA must be null");
+                $this->assertEquals('distribution_base_unavailable', $row['rowa_status']);
+            }
         }
 
         $monthlyTrends = $res->json('stats.monthly_trends');
         foreach ($monthlyTrends as $trend) {
-            $this->assertNull($trend['rowa'], "Monthly trend {$trend['month_key']} RoWA must be null");
+            if ((float) $trend['allocated'] > 0) {
+                $expected = round((float) $trend['total_waqf_collected'] / (float) $trend['allocated'], 4);
+                $this->assertEquals($expected, $trend['rowa']);
+            } else {
+                $this->assertNull($trend['rowa'], "Monthly trend {$trend['month_key']} RoWA must be null");
+            }
         }
     }
 

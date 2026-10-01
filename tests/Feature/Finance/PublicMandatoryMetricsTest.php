@@ -25,6 +25,8 @@ class PublicMandatoryMetricsTest extends TestCase
     protected WaqfAssetReportService $assetReportService;
     protected AccountingPeriod $period2025;
     protected AccountingPeriod $period2026;
+    protected AccountingPeriod $period2030;
+    protected AccountingPeriod $period2031;
     protected Account $bankAccount;
     protected Account $hasilPengelolaanAccount;
     protected Account $infaqTerikatAccount;
@@ -93,12 +95,35 @@ class PublicMandatoryMetricsTest extends TestCase
                 'status'     => 'open',
             ]
         );
+
+        $this->period2030 = AccountingPeriod::firstOrCreate(
+            ['name' => 'Tahun 2030 Test PMM'],
+            [
+                'start_date' => '2030-01-01',
+                'end_date'   => '2030-12-31',
+                'status'     => 'open',
+            ]
+        );
+
+        $this->period2031 = AccountingPeriod::firstOrCreate(
+            ['name' => 'Tahun 2031 Test PMM'],
+            [
+                'start_date' => '2031-01-01',
+                'end_date'   => '2031-12-31',
+                'status'     => 'open',
+            ]
+        );
     }
 
     protected function createPostedJournal(Account $debitAcc, Account $creditAcc, float $amount, string $date, string $status = 'posted'): JournalEntry
     {
         $year = (int) substr($date, 0, 4);
-        $period = $year === 2025 ? $this->period2025 : $this->period2026;
+        $period = match ($year) {
+            2025 => $this->period2025,
+            2030 => $this->period2030,
+            2031 => $this->period2031,
+            default => $this->period2026,
+        };
 
         $entry = JournalEntry::create([
             'accounting_period_id' => $period->id,
@@ -129,128 +154,179 @@ class PublicMandatoryMetricsTest extends TestCase
     }
 
     // ==========================================
-    // PART Y: RoWA TESTS
+    // ==========================================
+    // PART Y: Rasio RoWA TESTS (Phase 8.6.4.2)
+    // Formula: Total Wakaf Terhimpun / Total Penyaluran
     // ==========================================
 
-    public function test_rowa_calculates_with_productive_asset_and_posted_hasil(): void
+    /**
+     * TEST 1 — NORMAL CASE
+     * total_waqf_collected = 200,000,000
+     * total_distributed = 100,000,000
+     * Expected: rowa = 2.0
+     */
+    public function test_rowa_normal_case(): void
     {
-        // 1. Create 100m productive asset
-        WaqfAsset::create([
-            'asset_code'            => 'AST-ROWA-001',
-            'asset_name'            => 'Ruko Hasil Sewa',
-            'category_id'           => $this->categoryBangunan->id,
-            'wakif_id'              => $this->wakif->id,
-            'acquisition_date'      => '2026-01-01',
-            'quantity'              => 1.0,
-            'useful_life_month'     => 120,
-            'acquisition_value'     => 100_000_000,
-            'current_value'         => 100_000_000,
-            'condition'             => 'good',
-            'status'                => 'active',
-            'economic_use'          => 'productive',
-            'productive_percentage' => null,
-        ]);
+        $this->createPostedJournal($this->bankAccount, $this->wakafAbadiAccount, 200_000_000, '2030-02-15');
+        $this->createPostedJournal($this->penyaluranAccount, $this->bankAccount, 100_000_000, '2030-02-20');
 
-        // 2. Post 5m Hasil Pengelolaan in 2026
-        $this->createPostedJournal($this->bankAccount, $this->hasilPengelolaanAccount, 5_000_000, '2026-03-15');
-
-        $rowaData = $this->service->getRoWA(2026);
+        $rowaData = $this->service->getRoWA(2030);
 
         $this->assertEquals('available', $rowaData['rowa_status']);
-        $this->assertEquals(100_000_000.0, $rowaData['productive_asset_book_value']);
-        // 5m / 100m * 100% = 5.00%
-        $this->assertEquals(5.00, $rowaData['rowa']);
+        $this->assertEquals(2.0, $rowaData['rowa']);
     }
 
-    public function test_rowa_excludes_draft_hasil_pengelolaan(): void
+    /**
+     * TEST 2 — DECIMAL CASE
+     * total_waqf_collected = 4,539,500,000
+     * total_distributed = 2,378,500,000
+     * Expected approximately: 1.908555...
+     */
+    public function test_rowa_decimal_case(): void
     {
-        WaqfAsset::create([
-            'asset_code'            => 'AST-ROWA-002',
-            'asset_name'            => 'Ruko Produktif 2',
-            'category_id'           => $this->categoryBangunan->id,
-            'wakif_id'              => $this->wakif->id,
-            'acquisition_date'      => '2026-01-01',
-            'quantity'              => 1.0,
-            'useful_life_month'     => 120,
-            'acquisition_value'     => 100_000_000,
-            'current_value'         => 100_000_000,
-            'condition'             => 'good',
-            'status'                => 'active',
-            'economic_use'          => 'productive',
-            'productive_percentage' => null,
-        ]);
+        $this->createPostedJournal($this->bankAccount, $this->wakafAbadiAccount, 4_539_500_000, '2030-03-01');
+        $this->createPostedJournal($this->penyaluranAccount, $this->bankAccount, 2_378_500_000, '2030-03-10');
 
-        // Draft journal for 10m
-        $this->createPostedJournal($this->bankAccount, $this->hasilPengelolaanAccount, 10_000_000, '2026-04-01', 'draft');
-
-        $rowaData = $this->service->getRoWA(2026);
+        $rowaData = $this->service->getRoWA(2030);
 
         $this->assertEquals('available', $rowaData['rowa_status']);
-        // Draft not included -> 0%
-        $this->assertEquals(0.00, $rowaData['rowa']);
+        $this->assertEqualsWithDelta(1.908555, $rowaData['rowa'], 0.001);
     }
 
-    public function test_rowa_uses_requested_year_numerator(): void
+    /**
+     * TEST 3 — ZERO DISTRIBUTION
+     * total_waqf_collected > 0
+     * total_distributed = 0
+     * Expected: rowa = null, rowa_status = 'distribution_base_unavailable'
+     */
+    public function test_rowa_zero_distribution(): void
     {
-        WaqfAsset::create([
-            'asset_code'            => 'AST-ROWA-003',
-            'asset_name'            => 'Ruko Multi Year',
-            'category_id'           => $this->categoryBangunan->id,
-            'wakif_id'              => $this->wakif->id,
-            'acquisition_date'      => '2025-01-01',
-            'quantity'              => 1.0,
-            'useful_life_month'     => 120,
-            'acquisition_value'     => 100_000_000,
-            'current_value'         => 100_000_000,
-            'condition'             => 'good',
-            'status'                => 'active',
-            'economic_use'          => 'productive',
-            'productive_percentage' => null,
-        ]);
+        $this->createPostedJournal($this->bankAccount, $this->wakafAbadiAccount, 150_000_000, '2030-04-01');
 
-        // 2025 Hasil: 8m
-        $this->createPostedJournal($this->bankAccount, $this->hasilPengelolaanAccount, 8_000_000, '2025-06-15');
-        // 2026 Hasil: 4m
-        $this->createPostedJournal($this->bankAccount, $this->hasilPengelolaanAccount, 4_000_000, '2026-06-15');
-
-        $rowa2025 = $this->service->getRoWA(2025);
-        $rowa2026 = $this->service->getRoWA(2026);
-
-        $this->assertEquals(8.00, $rowa2025['rowa']);
-        $this->assertEquals(4.00, $rowa2026['rowa']);
-    }
-
-    public function test_unclassified_asset_blocks_rowa(): void
-    {
-        WaqfAsset::create([
-            'asset_code'            => 'AST-UNCLASS-001',
-            'asset_name'            => 'Aset Belum Klasifikasi',
-            'category_id'           => $this->categoryBangunan->id,
-            'wakif_id'              => $this->wakif->id,
-            'acquisition_date'      => '2026-01-01',
-            'quantity'              => 1.0,
-            'useful_life_month'     => 0,
-            'acquisition_value'     => 50_000_000,
-            'current_value'         => 50_000_000,
-            'condition'             => 'good',
-            'status'                => 'active',
-            'economic_use'          => null, // unclassified!
-        ]);
-
-        $rowaData = $this->service->getRoWA(2026);
+        $rowaData = $this->service->getRoWA(2030);
 
         $this->assertNull($rowaData['rowa']);
-        $this->assertEquals('asset_classification_incomplete', $rowaData['rowa_status']);
+        $this->assertEquals('distribution_base_unavailable', $rowaData['rowa_status']);
     }
 
-    public function test_monthly_rowa_is_explicitly_unavailable(): void
+    /**
+     * TEST 4 — EXPENSE INDEPENDENCE
+     * Create/change legitimate expense.
+     * Keep total_waqf_collected and total_distributed unchanged.
+     * Expected: rowa unchanged.
+     */
+    public function test_rowa_expense_independence(): void
     {
-        $monthly = $this->service->getMonthlyRealization(2026);
+        // Base: 200m wakaf, 100m distributed => rowa = 2.0
+        $this->createPostedJournal($this->bankAccount, $this->wakafAbadiAccount, 200_000_000, '2030-05-01');
+        $this->createPostedJournal($this->penyaluranAccount, $this->bankAccount, 100_000_000, '2030-05-05');
 
-        foreach ($monthly as $row) {
-            $this->assertNull($row['rowa']);
-            $this->assertEquals('monthly_asset_basis_unavailable', $row['rowa_status']);
-        }
+        $rowaBefore = $this->service->getRoWA(2030);
+        $this->assertEquals(2.0, $rowaBefore['rowa']);
+
+        // Post legitimate expenses (nazhir + operational)
+        $this->createPostedJournal($this->bebanNazhirAccount, $this->bankAccount, 20_000_000, '2030-05-10');
+        $this->createPostedJournal($this->bebanOperasionalAccount, $this->bankAccount, 30_000_000, '2030-05-12');
+
+        $rowaAfter = $this->service->getRoWA(2030);
+
+        // RoWA MUST remain exactly unchanged
+        $this->assertEquals(2.0, $rowaAfter['rowa']);
+        $this->assertEquals($rowaBefore['rowa'], $rowaAfter['rowa']);
+    }
+
+    /**
+     * TEST 5 — DISTRIBUTION CHANGE
+     * Keep total wakaf constant.
+     * Increase authoritative posted distribution.
+     * Expected: RoWA recalculates based on the new denominator.
+     */
+    public function test_rowa_distribution_change(): void
+    {
+        // Initial: 300m wakaf, 100m distributed => rowa = 3.0
+        $this->createPostedJournal($this->bankAccount, $this->wakafAbadiAccount, 300_000_000, '2030-06-01');
+        $this->createPostedJournal($this->penyaluranAccount, $this->bankAccount, 100_000_000, '2030-06-05');
+
+        $rowa1 = $this->service->getRoWA(2030);
+        $this->assertEquals(3.0, $rowa1['rowa']);
+
+        // Increase distribution by 50m (total 150m) => rowa = 300m / 150m = 2.0
+        $this->createPostedJournal($this->penyaluranAccount, $this->bankAccount, 50_000_000, '2030-06-15');
+
+        $rowa2 = $this->service->getRoWA(2030);
+        $this->assertEquals(2.0, $rowa2['rowa']);
+    }
+
+    /**
+     * TEST 6 — WAKAF CHANGE
+     * Keep distribution constant.
+     * Increase authoritative posted wakaf receipt.
+     * Expected: RoWA recalculates based on the new numerator.
+     */
+    public function test_rowa_wakaf_change(): void
+    {
+        // Initial: 200m wakaf, 100m distributed => rowa = 2.0
+        $this->createPostedJournal($this->bankAccount, $this->wakafAbadiAccount, 200_000_000, '2030-07-01');
+        $this->createPostedJournal($this->penyaluranAccount, $this->bankAccount, 100_000_000, '2030-07-05');
+
+        $rowa1 = $this->service->getRoWA(2030);
+        $this->assertEquals(2.0, $rowa1['rowa']);
+
+        // Increase wakaf by 100m (total 300m) => rowa = 300m / 100m = 3.0
+        $this->createPostedJournal($this->bankAccount, $this->wakafAbadiAccount, 100_000_000, '2030-07-15');
+
+        $rowa2 = $this->service->getRoWA(2030);
+        $this->assertEquals(3.0, $rowa2['rowa']);
+    }
+
+    /**
+     * TEST 7 — YEAR CONSISTENCY
+     * Create transactions in 2030 and 2031.
+     * Verify ?year=2030 uses only 2030 wakaf / 2030 distribution
+     * and ?year=2031 uses only 2031 wakaf / 2031 distribution.
+     */
+    public function test_rowa_year_consistency(): void
+    {
+        // 2030: 400m wakaf, 100m distribution => rowa = 4.0
+        $this->createPostedJournal($this->bankAccount, $this->wakafAbadiAccount, 400_000_000, '2030-05-01');
+        $this->createPostedJournal($this->penyaluranAccount, $this->bankAccount, 100_000_000, '2030-05-10');
+
+        // 2031: 250m wakaf, 100m distribution => rowa = 2.5
+        $this->createPostedJournal($this->bankAccount, $this->wakafAbadiAccount, 250_000_000, '2031-05-01');
+        $this->createPostedJournal($this->penyaluranAccount, $this->bankAccount, 100_000_000, '2031-05-10');
+
+        $rowa2030 = $this->service->getRoWA(2030);
+        $rowa2031 = $this->service->getRoWA(2031);
+
+        $this->assertEquals(4.0, $rowa2030['rowa']);
+        $this->assertEquals(2.5, $rowa2031['rowa']);
+    }
+
+    /**
+     * TEST 8 — MONTHLY ROWA
+     * January: wakaf 200M, distribution 100M => rowa = 2.0
+     * February: wakaf 150M, distribution 0 => rowa = null
+     */
+    public function test_monthly_rowa_calculation(): void
+    {
+        // January 2030: 200m wakaf, 100m distributed
+        $this->createPostedJournal($this->bankAccount, $this->wakafAbadiAccount, 200_000_000, '2030-01-10');
+        $this->createPostedJournal($this->penyaluranAccount, $this->bankAccount, 100_000_000, '2030-01-20');
+
+        // February 2030: 150m wakaf, 0 distributed
+        $this->createPostedJournal($this->bankAccount, $this->wakafAbadiAccount, 150_000_000, '2030-02-10');
+
+        $monthly = $this->service->getMonthlyRealization(2030);
+        $jan = collect($monthly)->firstWhere('month', 1);
+        $feb = collect($monthly)->firstWhere('month', 2);
+
+        $this->assertNotNull($jan);
+        $this->assertEquals(2.0, $jan['rowa']);
+        $this->assertEquals('available', $jan['rowa_status']);
+
+        $this->assertNotNull($feb);
+        $this->assertNull($feb['rowa']);
+        $this->assertEquals('distribution_base_unavailable', $feb['rowa_status']);
     }
 
     // ==========================================

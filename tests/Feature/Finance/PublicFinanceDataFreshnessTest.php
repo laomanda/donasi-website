@@ -33,6 +33,7 @@ class PublicFinanceDataFreshnessTest extends TestCase
     protected User $user;
     protected AccountingPeriod $period2025;
     protected AccountingPeriod $period2026;
+    protected AccountingPeriod $period2030;
     protected Account $bankAccount;
     protected Account $waqfRevenueAccount;
     protected Account $infaqTerikatAccount;
@@ -80,6 +81,16 @@ class PublicFinanceDataFreshnessTest extends TestCase
             [
                 'start_date' => '2026-01-01',
                 'end_date'   => '2026-12-31',
+                'status'     => 'open',
+                'is_closed'  => 0,
+            ]
+        );
+
+        $this->period2030 = AccountingPeriod::firstOrCreate(
+            ['name' => 'Tahun Buku 2030'],
+            [
+                'start_date' => '2030-01-01',
+                'end_date'   => '2030-12-31',
                 'status'     => 'open',
                 'is_closed'  => 0,
             ]
@@ -259,77 +270,111 @@ class PublicFinanceDataFreshnessTest extends TestCase
     }
 
     /**
-     * Test 5: Waqf asset creation and classification invalidates RoWA cache.
+     * Test 5: Posted distribution journal recalculates RoWA and invalidates cache.
      */
-    public function test_waqf_asset_creation_invalidates_rowa_cache(): void
+    /**
+     * Test 5: Posted distribution journal recalculates RoWA and invalidates cache.
+     */
+    public function test_posted_distribution_recalculates_rowa_and_invalidates_cache(): void
     {
-        // 1. Request 2026 when no assets exist
-        $res1 = $this->getJson('/api/v1/home?year=2026');
+        // 1. Post waqf journal: 200m in 2030
+        $waqfJournal = $this->journalService->createJournal([
+            'transaction_date'     => '2030-02-10',
+            'accounting_period_id' => $this->period2030->id,
+            'description'          => 'Initial Waqf for RoWA Cache Test',
+            'status'               => 'draft',
+            'journal_lines'        => [
+                ['account_id' => $this->bankAccount->id, 'debit' => 200000000, 'credit' => 0],
+                ['account_id' => $this->waqfRevenueAccount->id, 'debit' => 0, 'credit' => 200000000],
+            ],
+        ], $this->user);
+        $this->journalService->postJournal($waqfJournal, $this->user);
+
+        // 2. Initial request caches response: total_distributed is 0, so rowa is null
+        $res1 = $this->getJson('/api/v1/home?year=2030');
         $res1->assertStatus(200);
-        $this->assertEquals('productive_asset_base_unavailable', $res1->json('finance.rowa_status'));
+        $this->assertEquals('distribution_base_unavailable', $res1->json('finance.rowa_status'));
+        $this->assertNull($res1->json('finance.rowa'));
+        $this->assertTrue(Cache::has('frontend.home.year_2030'));
 
-        $category = WaqfAssetCategory::firstOrFail();
-        $wakif = Wakif::first() ?? Wakif::create(['name' => 'Wakif Freshness', 'type' => 'individual']);
+        // 3. Post distribution journal: 100m in 2030
+        $distJournal = $this->journalService->createJournal([
+            'transaction_date'     => '2030-02-15',
+            'accounting_period_id' => $this->period2030->id,
+            'description'          => 'Distribution for RoWA Cache Test',
+            'status'               => 'draft',
+            'journal_lines'        => [
+                ['account_id' => $this->distributionAccount->id, 'debit' => 100000000, 'credit' => 0],
+                ['account_id' => $this->bankAccount->id, 'debit' => 0, 'credit' => 100000000],
+            ],
+        ], $this->user);
+        $this->journalService->postJournal($distJournal, $this->user);
 
-        // 2. Create a productive asset
-        WaqfAsset::create([
-            'asset_code'        => 'AST-FRESH-001',
-            'asset_name'        => 'Gedung Produktif Freshness',
-            'category_id'       => $category->id,
-            'wakif_id'          => $wakif->id,
-            'acquisition_date'  => '2026-01-10',
-            'acquisition_value' => 500000000,
-            'condition'         => 'good',
-            'status'            => 'active',
-            'economic_use'      => 'productive',
-        ]);
+        // 4. Cache must be cleared
+        $this->assertFalse(Cache::has('frontend.home.year_2030'));
 
-        // 3. Cache must be cleared
-        $this->assertFalse(Cache::has('frontend.home.year_2026'));
-
-        // 4. Immediate second request recomputes asset base
-        $res2 = $this->getJson('/api/v1/home?year=2026');
+        // 5. Immediate second request recomputes RoWA = 200m / 100m = 2.0
+        $res2 = $this->getJson('/api/v1/home?year=2030');
         $res2->assertStatus(200);
-        // With productive asset created and 0 hasil pengelolaan, RoWA is computed as 0.00% with available status
         $this->assertEquals('available', $res2->json('finance.rowa_status'));
-        $this->assertEquals(0.0, (float) $res2->json('finance.rowa'));
+        $this->assertEquals(2.0, (float) $res2->json('finance.rowa'));
     }
 
     /**
-     * Test 6: Asset classification update immediately refreshes RoWA.
+     * Test 6: Additional posted waqf journal recalculates RoWA immediately.
      */
-    public function test_asset_classification_update_refreshes_rowa(): void
+    public function test_posted_waqf_recalculates_rowa_immediately(): void
     {
-        $category = WaqfAssetCategory::firstOrFail();
-        $wakif = Wakif::first() ?? Wakif::create(['name' => 'Wakif Freshness 2', 'type' => 'individual']);
+        // 1. Post initial waqf (200m) and distribution (100m) in 2030
+        $waqfJournal = $this->journalService->createJournal([
+            'transaction_date'     => '2030-03-01',
+            'accounting_period_id' => $this->period2030->id,
+            'description'          => 'Initial Waqf Test 6',
+            'status'               => 'draft',
+            'journal_lines'        => [
+                ['account_id' => $this->bankAccount->id, 'debit' => 200000000, 'credit' => 0],
+                ['account_id' => $this->waqfRevenueAccount->id, 'debit' => 0, 'credit' => 200000000],
+            ],
+        ], $this->user);
+        $this->journalService->postJournal($waqfJournal, $this->user);
 
-        $asset = WaqfAsset::create([
-            'asset_code'        => 'AST-FRESH-002',
-            'asset_name'        => 'Aset Test Reclassification',
-            'category_id'       => $category->id,
-            'wakif_id'          => $wakif->id,
-            'acquisition_date'  => '2026-01-10',
-            'acquisition_value' => 100000000,
-            'condition'         => 'good',
-            'status'            => 'active',
-            'economic_use'      => 'productive',
-        ]);
+        $distJournal = $this->journalService->createJournal([
+            'transaction_date'     => '2030-03-05',
+            'accounting_period_id' => $this->period2030->id,
+            'description'          => 'Initial Distribution Test 6',
+            'status'               => 'draft',
+            'journal_lines'        => [
+                ['account_id' => $this->distributionAccount->id, 'debit' => 100000000, 'credit' => 0],
+                ['account_id' => $this->bankAccount->id, 'debit' => 0, 'credit' => 100000000],
+            ],
+        ], $this->user);
+        $this->journalService->postJournal($distJournal, $this->user);
 
-        // 1. Cache response
-        $res1 = $this->getJson('/api/v1/home?year=2026');
+        // Cache initial RoWA (2.0)
+        $res1 = $this->getJson('/api/v1/home?year=2030');
         $res1->assertStatus(200);
-        $this->assertEquals('available', $res1->json('finance.rowa_status'));
+        $this->assertEquals(2.0, (float) $res1->json('finance.rowa'));
 
-        // 2. Reclassify to social (0% productive base)
-        $asset->update(['economic_use' => 'social']);
+        // 2. Post additional waqf of 100m (total 300m) in 2030
+        $waqfJournal2 = $this->journalService->createJournal([
+            'transaction_date'     => '2030-03-10',
+            'accounting_period_id' => $this->period2030->id,
+            'description'          => 'Additional Waqf Test 6',
+            'status'               => 'draft',
+            'journal_lines'        => [
+                ['account_id' => $this->bankAccount->id, 'debit' => 100000000, 'credit' => 0],
+                ['account_id' => $this->waqfRevenueAccount->id, 'debit' => 0, 'credit' => 100000000],
+            ],
+        ], $this->user);
+        $this->journalService->postJournal($waqfJournal2, $this->user);
 
         // 3. Cache must be cleared
-        $this->assertFalse(Cache::has('frontend.home.year_2026'));
+        $this->assertFalse(Cache::has('frontend.home.year_2030'));
 
-        // 4. Immediate request returns updated unavailable status
-        $res2 = $this->getJson('/api/v1/home?year=2026');
+        // 4. Immediate request returns updated RoWA = 300m / 100m = 3.0
+        $res2 = $this->getJson('/api/v1/home?year=2030');
         $res2->assertStatus(200);
-        $this->assertEquals('productive_asset_base_unavailable', $res2->json('finance.rowa_status'));
+        $this->assertEquals(3.0, (float) $res2->json('finance.rowa'));
     }
 
     /**

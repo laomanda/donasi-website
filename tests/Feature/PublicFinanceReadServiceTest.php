@@ -360,18 +360,24 @@ class PublicFinanceReadServiceTest extends TestCase
     }
 
     /**
-     * Test 12: RoWA returns null / unavailable in summary.
+     * Test 12: RoWA calculation follows canonical formula or zero-distribution safe fallback.
      */
     public function test_rowa_returns_null_in_summary(): void
     {
         $summary = $this->service->getPublicSummary(2026);
 
-        $this->assertNull($summary['summary']['rowa']);
-        $this->assertEquals('productive_asset_base_unavailable', $summary['summary']['rowa_status']);
+        if ((float) $summary['summary']['total_distributed'] > 0) {
+            $expectedRowa = round((float) $summary['summary']['total_waqf_collected'] / (float) $summary['summary']['total_distributed'], 4);
+            $this->assertEquals($expectedRowa, $summary['summary']['rowa']);
+            $this->assertEquals('available', $summary['summary']['rowa_status']);
+        } else {
+            $this->assertNull($summary['summary']['rowa']);
+            $this->assertEquals('distribution_base_unavailable', $summary['summary']['rowa_status']);
+        }
     }
 
     /**
-     * Test 13: monthly RoWA returns null / unavailable across all months.
+     * Test 13: monthly RoWA handles distribution > 0 or returns null with distribution_base_unavailable across all months.
      */
     public function test_monthly_rowa_returns_null_across_all_months(): void
     {
@@ -379,8 +385,14 @@ class PublicFinanceReadServiceTest extends TestCase
 
         $this->assertCount(12, $monthly);
         foreach ($monthly as $monthData) {
-            $this->assertNull($monthData['rowa'], "Month {$monthData['month']} RoWA must be null");
-            $this->assertEquals('monthly_asset_basis_unavailable', $monthData['rowa_status']);
+            if ((float) $monthData['distributed'] > 0) {
+                $expected = round((float) $monthData['total_waqf_collected'] / (float) $monthData['distributed'], 4);
+                $this->assertEquals($expected, $monthData['rowa']);
+                $this->assertEquals('available', $monthData['rowa_status']);
+            } else {
+                $this->assertNull($monthData['rowa'], "Month {$monthData['month']} RoWA must be null");
+                $this->assertEquals('distribution_base_unavailable', $monthData['rowa_status']);
+            }
         }
     }
 

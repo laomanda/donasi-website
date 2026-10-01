@@ -214,6 +214,15 @@ class PublicFinanceReadService
                 $monthlyYwdpRatioStatus = 'expense_base_unavailable';
             }
 
+            // Monthly RoWA: monthly_total_waqf_collected / monthly_total_distributed
+            if ($distributed > 0.0) {
+                $monthlyRowa = round($waqfCollected / $distributed, 4);
+                $monthlyRowaStatus = 'available';
+            } else {
+                $monthlyRowa = null;
+                $monthlyRowaStatus = 'distribution_base_unavailable';
+            }
+
             $result[] = [
                 'month'                => $m,
                 'month_key'            => sprintf('%04d-%02d', $year, $m),
@@ -227,8 +236,8 @@ class PublicFinanceReadService
                 'total_expense'        => $totalExpense,
                 'ywdp_ratio'           => $monthlyYwdpRatio,
                 'ywdp_ratio_status'    => $monthlyYwdpRatioStatus,
-                'rowa'                 => null,
-                'rowa_status'          => 'monthly_asset_basis_unavailable',
+                'rowa'                 => $monthlyRowa,
+                'rowa_status'          => $monthlyRowaStatus,
             ];
         }
 
@@ -337,65 +346,36 @@ class PublicFinanceReadService
     }
 
     /**
-     * 11. Rasio RoWA (Return on Waqf Assets)
+     * 11. Rasio RoWA
      *
-     * Annual Period Metric:
-     * Numerator: Net Hasil Pengelolaan Wakaf Produktif (report_category = 'Hasil Pengelolaan') within the requested year.
-     * Denominator: Verified Productive Waqf Asset Book Value as of cutoff date.
+     * Canonical Public Metric:
+     * Rasio RoWA = Total Wakaf Terhimpun / Total Penyaluran
      *
      * Invariants:
-     * - Returns null if year is not provided (period_required).
-     * - Returns null if any relevant asset is unclassified (asset_classification_incomplete).
-     * - Returns null if productive asset base <= 0 (productive_asset_base_unavailable).
-     * - NEVER returns 0% when asset base is missing.
+     * - Multiplier ratio (e.g. 1.91, 2.0). NOT multiplied by 100.
+     * - Returns null and 'distribution_base_unavailable' if total_distributed <= 0.
+     * - Both numerator and denominator use the exact same period (year or all-time).
+     * - Biaya Pengeluaran is NOT part of RoWA formula.
      */
-    public function getRoWA(?int $year = null): array
+    public function getRoWA(?int $year = null, ?int $accountingPeriodId = null): array
     {
-        if ($year === null) {
+        $waqf = $this->getTotalWaqfCollected($year, $accountingPeriodId);
+        $distributed = $this->getTotalDistributed($year, $accountingPeriodId);
+
+        if ($distributed <= 0.0) {
             return [
                 'rowa'                        => null,
-                'rowa_status'                 => 'period_required',
+                'rowa_status'                 => 'distribution_base_unavailable',
                 'productive_asset_book_value' => null,
             ];
         }
 
-        // Numerator: Net Credit (Credit - Debit) on Hasil Pengelolaan within requested year
-        $hasilPengelolaan = (float) $this->baseJournalLineQuery($year, null)
-            ->where('accounts.account_type', '=', 'revenue')
-            ->where('accounts.report_category', '=', 'Hasil Pengelolaan')
-            ->selectRaw('COALESCE(SUM(journal_entry_lines.credit - journal_entry_lines.debit), 0) as total')
-            ->value('total');
-
-        $cutoff = ($year === (int) date('Y'))
-            ? min(now()->toDateString(), "{$year}-12-31")
-            : "{$year}-12-31";
-
-        $assetResult = $this->waqfAssetReportService->getProductiveAssetBookValueAsOf($cutoff);
-
-        if (!$assetResult['is_complete']) {
-            return [
-                'rowa'                        => null,
-                'rowa_status'                 => 'asset_classification_incomplete',
-                'productive_asset_book_value' => null,
-            ];
-        }
-
-        $productiveBookValue = (float) ($assetResult['productive_asset_book_value'] ?? 0.0);
-
-        if ($productiveBookValue <= 0.0) {
-            return [
-                'rowa'                        => null,
-                'rowa_status'                 => 'productive_asset_base_unavailable',
-                'productive_asset_book_value' => null,
-            ];
-        }
-
-        $rowa = round(($hasilPengelolaan / $productiveBookValue) * 100.0, 2);
+        $rowa = round($waqf / $distributed, 4);
 
         return [
             'rowa'                        => $rowa,
             'rowa_status'                 => 'available',
-            'productive_asset_book_value' => $productiveBookValue,
+            'productive_asset_book_value' => null,
         ];
     }
 
@@ -442,7 +422,7 @@ class PublicFinanceReadService
     public function getPublicSummary(?int $year = null, ?int $accountingPeriodId = null): array
     {
         $availableData = $this->getAvailableBalance($year, $accountingPeriodId);
-        $rowaData = $this->getRoWA($year);
+        $rowaData = $this->getRoWA($year, $accountingPeriodId);
         $ywdpData = $this->getYwdpRatio($year, $accountingPeriodId);
 
         return [
