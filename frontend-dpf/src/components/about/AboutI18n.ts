@@ -1,7 +1,6 @@
 import type { Dict } from "../../lib/i18n-utils";
 
 export const aboutDict: Dict = {
-    "about.hero.badge": { id: "Pintu Pemberdayaan", en: "Empowerment Gateway" },
     "about.hero.title.leading": { id: "Djalaludin Pane Foundation", en: "Djalaludin Pane Foundation" },
     "about.hero.title.highlight": { id: "Arsitek", en: "Architect" },
     "about.hero.title.trailing": { id: "Masa Depan Abadi", en: "of Eternal Future" },

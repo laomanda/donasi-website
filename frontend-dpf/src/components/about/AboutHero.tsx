@@ -14,7 +14,6 @@ type AboutHeroProps = {
 export function AboutHero({ t }: AboutHeroProps) {
   return (
     <PageHero
-      badge={t("about.hero.badge")}
       title={
         <>
           {t("about.hero.title.leading")}{" "}

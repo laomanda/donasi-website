@@ -40,9 +40,11 @@ export function AboutVisionMission({ t, missionList, missionItemKeys, valueCards
             </div>
             <ul className="mt-4 space-y-3 text-sm leading-relaxed text-slate-700">
               {missionItemKeys.map((key, idx) => (
-                <li key={key} className="flex gap-3">
-                  <FontAwesomeIcon icon={faCheckCircle} className="mt-1 text-primary-600" />
-                  <span>{missionList[idx]}</span>
+                <li key={key} className="flex items-start gap-3">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center text-primary-600 mt-0.5">
+                    <FontAwesomeIcon icon={faCheckCircle} className="text-base" />
+                  </span>
+                  <span className="min-w-0 flex-1">{missionList[idx]}</span>
                 </li>
               ))}
             </ul>

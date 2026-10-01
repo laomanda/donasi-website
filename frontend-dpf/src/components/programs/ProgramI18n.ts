@@ -1,7 +1,6 @@
 import type { Dict } from "../../lib/i18n-utils";
 
 export const programDict: Dict = {
-    "program.list.badge": { id: "Katalog Kebaikan", en: "Catalog of Goodness" },
     "program.list.title.leading": { id: "Program", en: "Programs" },
     "program.list.title.highlight": { id: "Pilihan", en: "Highlights" },
     "program.list.subtitle": {

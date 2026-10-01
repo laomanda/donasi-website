@@ -8,15 +8,15 @@ type Step = {
 
 type ServiceStepsProps = {
   steps: Step[];
-  badge: string;
   heading: string;
   translate: (key: string) => string;
   icon: any;
   cols?: number;
   id?: string;
+  badge?: string;
 };
 
-export function ServiceSteps({ steps, badge, heading, translate, icon, cols = 5, id }: ServiceStepsProps) {
+export function ServiceSteps({ steps, heading, translate, icon, cols = 5, id }: ServiceStepsProps) {
   const gridColsClass = {
     3: "lg:grid-cols-3",
     4: "lg:grid-cols-4",
@@ -31,7 +31,6 @@ export function ServiceSteps({ steps, badge, heading, translate, icon, cols = 5,
             <FontAwesomeIcon icon={icon} />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-brandGreen-700">{badge}</p>
             <h2 className="text-2xl font-heading font-semibold text-slate-900">{heading}</h2>
           </div>
         </div>

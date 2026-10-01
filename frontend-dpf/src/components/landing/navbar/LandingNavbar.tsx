@@ -53,7 +53,6 @@ export function LandingNavbar() {
         ? "text-white/80 hover:text-white hover:bg-white/10"
         : "text-slate-600 hover:text-primary-700 hover:bg-slate-50/80";
     
-    const navIconClass = heroMode ? "text-white/70" : "text-slate-400";
     const brandTitleClass = heroMode ? "text-white" : "text-slate-800";
     const brandTaglineClass = heroMode ? "text-white/70" : "text-slate-500";
     
@@ -147,19 +146,11 @@ export function LandingNavbar() {
                                         key={it.href}
                                         to={it.href}
                                         className={({ isActive }) => `
-                                            flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-all duration-200
+                                            rounded-full px-3.5 py-2 text-sm font-semibold transition-all duration-200
                                             ${isActive ? navItemActiveClass : navItemIdleClass}
                                         `}
                                     >
-                                        {({ isActive }) => (
-                                            <>
-                                                <FontAwesomeIcon
-                                                    icon={it.icon}
-                                                    className={`text-[13px] ${isActive ? (heroMode ? "text-white" : "text-primary-600") : navIconClass}`}
-                                                />
-                                                <span>{it.label}</span>
-                                            </>
-                                        )}
+                                        {it.label}
                                     </NavLink>
                                 ))}
                             </nav>

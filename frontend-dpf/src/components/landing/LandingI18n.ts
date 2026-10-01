@@ -91,7 +91,6 @@ export const landingDict: Dict = {
     },
 
     // Programs section (landing)
-    "landing.programs.badge": { id: "Misi Utama", en: "Main Missions" },
     "landing.programs.title": {
         id: "Pilih Rute Penjelajahan",
         en: "Choose Your Route of Exploration",
@@ -143,7 +142,6 @@ export const landingDict: Dict = {
     "literasi.articles.author": { id: "Penulis", en: "Author" },
 
     // Articles section (landing)
-    "landing.articles.badge": { id: "Catatan Misi", en: "Mission Notes" },
     "landing.articles.title": {
         id: "Logbook Penjelajahan",
         en: "Exploration Logbook",
@@ -167,10 +165,6 @@ export const landingDict: Dict = {
     },
 
     // Partners section (landing)
-    "landing.trioCta.badge": {
-        id: "Eksplorasi & Galeri",
-        en: "Exploration & Gallery",
-    },
     "landing.trioCta.title": {
         id: "Aktivitas & Produk DPF",
         en: "DPF Activities & Products",
@@ -179,11 +173,6 @@ export const landingDict: Dict = {
         id: "Lihat wujud nyata dampak wakaf dan produk pemberdayaan UMKM mitra DPF.",
         en: "See the real impact of waqf and empowered products from DPF partners.",
     },
-    "landing.partners.badge": {
-        id: "Jejak Mitra",
-        en: "Partner Trail",
-    },
-
     "landing.partners.title": {
         id: "Menapaki Jejak Bersama Mitra",
         en: "Walking the Trail Together",

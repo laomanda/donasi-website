@@ -136,13 +136,12 @@ export function MobileMenu({
                             <button
                                 key={it.href}
                                 onClick={() => { setOpen(false); navigate(it.href); }}
-                                className={`flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-semibold transition
+                                className={`flex w-full items-center rounded-xl px-4 py-3.5 text-sm font-semibold transition
                               ${location.pathname === it.href
                                         ? "bg-primary-50 text-primary-700 border border-primary-100"
                                         : "text-slate-700 hover:bg-slate-50"
                                     }`}
                             >
-                                <FontAwesomeIcon icon={it.icon} className={`${location.pathname === it.href ? "text-primary-600" : "text-slate-400"} w-5`} />
                                 {it.label}
                             </button>
                         ))}

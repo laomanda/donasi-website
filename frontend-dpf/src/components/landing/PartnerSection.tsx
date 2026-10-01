@@ -36,9 +36,6 @@ export function PartnerSection({
     <section className="bg-slate-50 py-24 overflow-hidden border-t border-slate-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <p className="text-xs font-accent font-bold uppercase tracking-[0.2em] text-brandGreen-600/80">
-            {t("landing.partners.badge")}
-          </p>
           <h2 className="mt-3 text-3xl font-heading font-bold text-slate-900 sm:text-4xl">
             {t("landing.partners.title")}
           </h2>

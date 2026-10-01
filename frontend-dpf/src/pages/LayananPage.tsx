@@ -48,7 +48,6 @@ function LayananPage() {
     <LandingLayout>
       {/* HERO */}
       <PageHero
-        badge={t("layanan.hero.badge")}
         title={
           <>
             {t("layanan.hero.title.leading")}{" "}
@@ -98,8 +97,7 @@ function LayananPage() {
 
       {/* GRID LAYANAN */}
       <ServiceGrid 
-        translate={t} 
-        badge={t("layanan.services.badge")}
+        translate={t}
         heading={t("layanan.services.heading")}
         subtitle={t("layanan.services.subtitle")}
       />
@@ -107,7 +105,6 @@ function LayananPage() {
       {/* ALUR */}
       <ServiceSteps 
         steps={LAYANAN_STEPS}
-        badge={t("layanan.steps.badge")}
         heading={t("layanan.steps.heading")}
         translate={t}
         icon={faClock}

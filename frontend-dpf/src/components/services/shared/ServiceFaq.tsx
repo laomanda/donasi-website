@@ -17,7 +17,7 @@ export function ServiceFaq({ faqs, badge, heading, translate }: ServiceFaqProps)
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 shadow-sm">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-600 text-white shadow-sm">
           <FontAwesomeIcon icon={faHeadset} />
         </div>
         <div>

@@ -1,7 +1,6 @@
 import type { Dict } from "../../lib/i18n-utils";
 
 export const literasiDict: Dict = {
-    "literasi.hero.badge": { id: "Pustaka WAKAF", en: "WAKAF Library" },
     "literasi.hero.title.leading": { id: "Wawasan &", en: "Insights &" },
     "literasi.hero.title.highlight": { id: "Berita", en: "News" },
     "literasi.hero.subtitle": {

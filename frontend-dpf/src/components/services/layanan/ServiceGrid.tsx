@@ -46,18 +46,15 @@ type ServiceGridProps = {
   translate: (key: string) => string;
   heading: string;
   subtitle: string;
-  badge: string;
+  badge?: string;
 };
 
-export function ServiceGrid({ translate, heading, subtitle, badge }: ServiceGridProps) {
+export function ServiceGrid({ translate, heading, subtitle }: ServiceGridProps) {
   return (
     <section id="layanan" className="bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
-            <p className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-primary-700 shadow-sm">
-              {badge}
-            </p>
             <h2 className="text-3xl font-heading font-semibold text-slate-900 sm:text-4xl">{heading}</h2>
             <p className="text-sm text-slate-600 max-w-xl">
               {subtitle}
@@ -84,16 +81,24 @@ export function ServiceGrid({ translate, heading, subtitle, badge }: ServiceGrid
                     {serviceBadge}
                   </span>
                 </div>
-                <div className="p-5 space-y-3">
-                  <h3 className="text-lg font-heading font-semibold text-slate-900">{title}</h3>
-                  <p className="text-sm leading-relaxed text-slate-600">{desc}</p>
-                  <Link
-                    to={service.link}
-                    className="inline-flex items-center gap-2 text-sm font-bold text-primary-700 transition hover:gap-3"
-                  >
-                    {cta}
-                    <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
-                  </Link>
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div className="space-y-2.5">
+                    <h3 className="text-lg font-heading font-semibold text-slate-900 line-clamp-2 min-h-[3.25rem]">
+                      {title}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-slate-600 line-clamp-3 min-h-[4.25rem]">
+                      {desc}
+                    </p>
+                  </div>
+                  <div className="pt-4 mt-auto">
+                    <Link
+                      to={service.link}
+                      className="inline-flex items-center gap-2 text-sm font-bold text-primary-700 transition hover:gap-3"
+                    >
+                      {cta}
+                      <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
+                    </Link>
+                  </div>
                 </div>
               </article>
             );

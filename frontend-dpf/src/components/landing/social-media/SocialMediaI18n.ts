@@ -1,7 +1,6 @@
 import type { Dict } from "@/lib/i18n-utils";
 
 export const socialMediaDict: Dict = {
-  "social.badge": { id: "Media Sosial", en: "Social Media" },
   "social.title": { id: "Ikuti Jejak Kebaikan", en: "Follow the Journey" },
   "social.subtitle": {
     id: "Kabar terbaru dari Instagram dan YouTube resmi DPF.",

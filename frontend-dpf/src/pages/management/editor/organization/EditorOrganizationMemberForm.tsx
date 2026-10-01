@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
@@ -44,6 +44,52 @@ const emptyForm: FormState = {
   is_active: true,
 };
 
+const STANDARD_POSITION_TRANSLATIONS: Record<string, string> = {
+  ketua: "Chairperson",
+  "ketua umum": "General Chairperson",
+  "wakil ketua": "Vice Chairperson",
+  "ketua pembina": "Head of Patrons",
+  "anggota pembina": "Member of Patrons",
+  "ketua pengawas": "Head of Supervisors",
+  "anggota pengawas": "Member of Supervisors",
+  "ketua pengurus": "Head of Management",
+  "anggota pengurus": "Member of Management",
+  "ketua yayasan": "Head of Foundation",
+  sekretaris: "Secretary",
+  "sekretaris jenderal": "Secretary General",
+  bendahara: "Treasurer",
+  direktur: "Director",
+  "direktur utama": "President Director",
+  "direktur eksekutif": "Executive Director",
+  manajer: "Manager",
+  "manajer operasional": "Operations Manager",
+  "kepala divisi": "Head of Division",
+  "kepala bagian": "Head of Section",
+  staf: "Staff",
+  anggota: "Member",
+  relawan: "Volunteer",
+  penasihat: "Advisor",
+  pembina: "Patron",
+  pengawas: "Supervisor",
+};
+
+const STANDARD_POSITIONS = [
+  "Ketua Yayasan",
+  "Ketua Pembina",
+  "Anggota Pembina",
+  "Ketua Pengawas",
+  "Anggota Pengawas",
+  "Ketua Pengurus",
+  "Sekretaris",
+  "Bendahara",
+  "Direktur",
+  "Kepala Divisi",
+  "Manajer",
+  "Anggota",
+  "Staf",
+  "Relawan",
+];
+
 const normalizeErrors = (error: any): string[] => {
   const errors = error?.response?.data?.errors;
   if (!errors || typeof errors !== "object") {
@@ -70,50 +116,153 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
-  const [groupPeers, setGroupPeers] = useState<OrganizationMember[]>([]);
-  const [groupPeersLoading, setGroupPeersLoading] = useState(false);
-  const [groupPeersError, setGroupPeersError] = useState<string | null>(null);
+  const [allMembers, setAllMembers] = useState<OrganizationMember[]>([]);
+
   const initialGroupRef = useRef<string>("");
+  const lastSyncedGroupRef = useRef<string>("");
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [dynamicGroups, setDynamicGroups] = useState<string[]>([]);
-  const [dynamicGroupTranslations, setDynamicGroupTranslations] = useState<Record<string, string>>({});
 
-  const isEditIdValid = typeof memberId === "number" && Number.isFinite(memberId) && memberId > 0;
-  const canSubmit = !loading && !saving && !deleting;
-  const canDelete = mode === "edit" && isEditIdValid && !saving && !deleting;
-
+  // 1. Fetch all members once to provide rich suggestions from existing database data
   useEffect(() => {
-    // Fetch all members once to get unique group options
-    http.get<{ data: OrganizationMember[] }>("/editor/organization-members", { params: { per_page: 500 } })
-      .then(res => {
+    http
+      .get<{ data: OrganizationMember[] }>("/editor/organization-members", { params: { per_page: 500 } })
+      .then((res) => {
         const list = res.data?.data ?? [];
-        const unique = Array.from(new Set(
-          list.map(m => {
-            const raw = String(m.group ?? "").trim();
-            if (!raw) return "";
-            return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-          }).filter(Boolean)
-        ));
-
-        // Build a dictionary of translations for dynamic groups
-        const translations: Record<string, string> = {};
-        for (let i = list.length - 1; i >= 0; i--) {
-          const m = list[i];
-          const rawId = String(m.group ?? "").trim().toLowerCase();
-          const rawEn = String(m.group_en ?? "").trim();
-          if (rawId && rawEn && !translations[rawId]) {
-            translations[rawId] = rawEn;
-          }
-        }
-        
-        setDynamicGroups(unique);
-        setDynamicGroupTranslations(translations);
+        setAllMembers(list);
       })
       .catch(() => {});
   }, []);
 
+  // 2. Derive unique positions and translations from DB + standard fallback
+  const { allAvailablePositions, positionTranslations } = useMemo(() => {
+    const translations: Record<string, string> = { ...STANDARD_POSITION_TRANSLATIONS };
+    const seen = new Set<string>();
+    const positions: string[] = [];
+
+    // Prioritize existing positions from real database records
+    for (const m of allMembers) {
+      const rawTitle = String(m.position_title ?? "").trim();
+      if (!rawTitle) continue;
+      const lower = rawTitle.toLowerCase();
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        positions.push(rawTitle);
+      }
+      const rawEn = String(m.position_title_en ?? "").trim();
+      if (rawEn && !translations[lower]) {
+        translations[lower] = rawEn;
+      }
+    }
+
+    // Add standard positions if not yet included
+    for (const std of STANDARD_POSITIONS) {
+      const lower = std.toLowerCase();
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        positions.push(std);
+      }
+    }
+
+    return { allAvailablePositions: positions, positionTranslations: translations };
+  }, [allMembers]);
+
+  // 3. Derive unique groups, translations, and existing group orders
+  const { allAvailableGroups, groupTranslations, groupOrders, nextAvailableOrder } = useMemo(() => {
+    const translations: Record<string, string> = {};
+    const orders: Record<string, number> = {};
+    const seen = new Set<string>();
+    const groups: string[] = [];
+    const usedOrdersList: number[] = [];
+
+    // Prioritize existing groups from real database records
+    for (const m of allMembers) {
+      const rawGroup = String(m.group ?? "").trim();
+      if (!rawGroup) continue;
+      const lower = rawGroup.toLowerCase();
+      const capitalized = rawGroup.charAt(0).toUpperCase() + rawGroup.slice(1);
+
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        groups.push(capitalized);
+      }
+
+      const rawEn = String(m.group_en ?? "").trim();
+      if (rawEn && !translations[lower]) {
+        translations[lower] = rawEn;
+      }
+
+      const ord = typeof m.order === "number" ? m.order : parseInt(String(m.order));
+      if (!isNaN(ord)) {
+        usedOrdersList.push(ord);
+        if (orders[lower] === undefined || ord < orders[lower]) {
+          orders[lower] = ord;
+        }
+      }
+    }
+
+    // Include standard groups
+    for (const std of ORGANIZATION_GROUPS) {
+      const lower = std.toLowerCase();
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        groups.push(std);
+      }
+      const stdEn = translateGroupToEn(std);
+      if (stdEn && !translations[lower]) {
+        translations[lower] = stdEn;
+      }
+    }
+
+    // Next order is strictly higher than any currently used order so it NEVER interferes with existing groups!
+    let nextOrder = usedOrdersList.length > 0 ? Math.max(...usedOrdersList) + 1 : 1;
+    const usedSet = new Set(Object.values(orders));
+    while (usedSet.has(nextOrder)) {
+      nextOrder++;
+    }
+
+    return {
+      allAvailableGroups: groups,
+      groupTranslations: translations,
+      groupOrders: orders,
+      nextAvailableOrder: nextOrder,
+    };
+  }, [allMembers]);
+
+  // Check collision between current group's order and other groups
+  const currentGroupNorm = form.group.trim().toLowerCase();
+  const currentOrderNum = parseInt(form.order);
+
+  const conflictingGroups = useMemo(() => {
+    if (isNaN(currentOrderNum) || !currentGroupNorm) return [];
+    return Object.entries(groupOrders)
+      .filter(([grp, ord]) => ord === currentOrderNum && grp !== currentGroupNorm)
+      .map(([grp]) => grp);
+  }, [groupOrders, currentOrderNum, currentGroupNorm]);
+
+  const hasOrderCollision = conflictingGroups.length > 0;
+
+  const isEditIdValid = typeof memberId === "number" && Number.isFinite(memberId) && memberId > 0;
+  // Button Simpan disabled if saving, loading, deleting, or if order collides with another group!
+  const canSubmit = !loading && !saving && !deleting && !hasOrderCollision;
+  const canDelete = mode === "edit" && isEditIdValid && !saving && !deleting;
+
+  // 4. In create mode, sync to safe next available order if current order collides or is not yet set
+  useEffect(() => {
+    if (mode !== "create") return;
+    const currentGroup = form.group.trim().toLowerCase();
+    // If group is empty or group has no existing order in DB:
+    if (!currentGroup || groupOrders[currentGroup] === undefined) {
+      const ordNum = parseInt(form.order);
+      const isColliding = !isNaN(ordNum) && Object.entries(groupOrders).some(([grp, ord]) => ord === ordNum && grp !== currentGroup);
+      if (form.order === "" || form.order === "0" || isColliding || !lastSyncedGroupRef.current) {
+        setForm((s) => ({ ...s, order: String(nextAvailableOrder) }));
+      }
+    }
+  }, [mode, nextAvailableOrder, groupOrders]);
+
+  // 5. In edit mode, load member data
   useEffect(() => {
     if (mode !== "edit") return;
     if (!isEditIdValid) {
@@ -130,7 +279,9 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
       .then((res) => {
         if (!active) return;
         const m = res.data;
-        initialGroupRef.current = String(m.group ?? "");
+        const grp = String(m.group ?? "").trim();
+        initialGroupRef.current = grp;
+        lastSyncedGroupRef.current = grp;
         setForm({
           name: m.name ?? "",
           position_title: m.position_title ?? "",
@@ -154,57 +305,60 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
     };
   }, [isEditIdValid, memberId, mode]);
 
-  useEffect(() => {
-    const groupValue = form.group.trim();
-    setGroupPeersError(null);
+  // Handle position change with auto-translation
+  const handlePositionChange = (newPos: string) => {
+    const trimmed = newPos.trim();
+    const normalized = trimmed.toLowerCase();
+    const en = positionTranslations[normalized] || "";
 
-    if (!groupValue) {
-      setGroupPeers([]);
-      setGroupPeersLoading(false);
-      if (mode === "create") {
-        setForm((s) => ({ ...s, order: "0" }));
+    setForm((s) => {
+      const next = { ...s, position_title: newPos };
+      const currentEn = s.position_title_en.trim();
+      const prevAutoEn = positionTranslations[s.position_title.trim().toLowerCase()] || "";
+      if (en && (!currentEn || currentEn === prevAutoEn)) {
+        next.position_title_en = en;
       }
-      return;
+      return next;
+    });
+  };
+
+  // Handle group change with auto-translation and safe order suggestion
+  const handleGroupChange = (newGroup: string) => {
+    const trimmed = newGroup.trim();
+    const normalized = trimmed.toLowerCase();
+
+    // 1. English translation
+    let autoEn: string | undefined = undefined;
+    const stdEn = translateGroupToEn(trimmed);
+    if (stdEn) {
+      autoEn = stdEn;
+    } else if (groupTranslations[normalized]) {
+      autoEn = groupTranslations[normalized];
     }
 
-    let active = true;
-    const timer = window.setTimeout(() => {
-      setGroupPeersLoading(true);
-      http
-        .get<{ data: OrganizationMember[] }>("/editor/organization-members", {
-          params: { group: groupValue, per_page: 200, page: 1 },
-        })
-        .then((res) => {
-          if (!active) return;
-          const list = res.data?.data ?? [];
-          setGroupPeers(list);
+    // 2. Order suggestion (only auto-updates order when the group changes)
+    let suggestedOrder = form.order;
+    if (normalized !== lastSyncedGroupRef.current.toLowerCase()) {
+      if (groupOrders[normalized] !== undefined) {
+        // Existing group: align with the group's registered position
+        suggestedOrder = String(groupOrders[normalized]);
+      } else if (trimmed !== "") {
+        // Brand new group: suggest nextAvailableOrder (safe from collision!)
+        suggestedOrder = String(nextAvailableOrder);
+      }
+      lastSyncedGroupRef.current = trimmed;
+    }
 
-          const groupOrder = list.length > 0 ? list[0].order : null;
-          const groupChanged = mode === "edit" && groupValue !== initialGroupRef.current.trim();
-          const shouldAutoSync = mode === "create" || groupChanged;
-
-          if (shouldAutoSync && groupOrder !== null && String(groupOrder) !== String(form.order)) {
-            setForm((s) => ({ ...s, order: String(groupOrder) }));
-          } else if (shouldAutoSync && groupOrder === null && mode === "create") {
-            setForm((s) => ({ ...s, order: "1" }));
-          }
-        })
-        .catch(() => {
-          if (!active) return;
-          setGroupPeers([]);
-          setGroupPeersError("Gagal memuat urutan grup. Coba lagi.");
-        })
-        .finally(() => {
-          if (!active) return;
-          setGroupPeersLoading(false);
-        });
-    }, 250);
-
-    return () => {
-      active = false;
-      window.clearTimeout(timer);
-    };
-  }, [form.group, mode, memberId]);
+    setForm((s) => {
+      const next = { ...s, group: newGroup, order: suggestedOrder };
+      const currentGroupEn = s.group_en.trim();
+      const prevGroupEn = groupTranslations[s.group.trim().toLowerCase()] || translateGroupToEn(s.group.trim()) || "";
+      if (autoEn !== undefined && (!currentGroupEn || currentGroupEn === prevGroupEn)) {
+        next.group_en = autoEn;
+      }
+      return next;
+    });
+  };
 
   const payloadForRequest = (state: FormState) => {
     return {
@@ -222,6 +376,12 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
   const onSubmit = async () => {
     if (mode === "edit" && !isEditIdValid) {
       setErrors(["ID anggota tidak valid."]);
+      return;
+    }
+
+    if (hasOrderCollision) {
+      const names = conflictingGroups.map((g) => g.charAt(0).toUpperCase() + g.slice(1)).join(", ");
+      setErrors([`Nomor urut ${currentOrderNum} sudah digunakan oleh grup "${names}". Silakan ganti nomor urut sebelum menyimpan.`]);
       return;
     }
 
@@ -303,8 +463,13 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
             <button
               type="button"
               onClick={() => void onSubmit()}
-              className="inline-flex items-center justify-center rounded-2xl bg-brandGreen-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex items-center justify-center rounded-2xl bg-brandGreen-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:opacity-70"
               disabled={!canSubmit}
+              title={
+                hasOrderCollision
+                  ? `Nomor urut ${currentOrderNum} sudah digunakan oleh grup ${conflictingGroups.join(", ")}. Tombol simpan dinonaktifkan.`
+                  : undefined
+              }
             >
               {saving ? "Menyimpan..." : "Simpan"}
             </button>
@@ -349,12 +514,46 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                 </span>
                 <input
                   value={form.position_title}
-                  onChange={(e) => setForm((s) => ({ ...s, position_title: e.target.value }))}
+                  onChange={(e) => handlePositionChange(e.target.value)}
                   placeholder="Mis. Direktur, Ketua, Anggota Pembina."
+                  list="org-position-options"
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
+                <datalist id="org-position-options">
+                  {allAvailablePositions.map((pos) => (
+                    <option key={pos} value={pos} />
+                  ))}
+                </datalist>
               </label>
+
+              {/* Quick suggestion chips for Jabatan from DB */}
+              {allAvailablePositions.length > 0 && (
+                <div className="-mt-1">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 mb-1.5">
+                    <span>Pilihan dari data:</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                    {allAvailablePositions.map((pos) => {
+                      const isSelected = form.position_title.trim().toLowerCase() === pos.trim().toLowerCase();
+                      return (
+                        <button
+                          key={pos}
+                          type="button"
+                          onClick={() => handlePositionChange(pos)}
+                          className={`rounded-xl px-3 py-1 text-xs font-semibold transition ${
+                            isSelected
+                              ? "bg-brandGreen-100 text-brandGreen-800 ring-1 ring-brandGreen-500 font-bold"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
+                          }`}
+                        >
+                          {pos}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <label className="block">
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
@@ -462,38 +661,46 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                 </span>
                 <input
                   value={form.group}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setForm((s) => {
-                      const next = { ...s, group: val };
-                      const en = translateGroupToEn(val);
-                      if (en) {
-                        next.group_en = en;
-                      } else {
-                        const dynamicEn = dynamicGroupTranslations[val.trim().toLowerCase()];
-                        if (dynamicEn) {
-                          next.group_en = dynamicEn;
-                        }
-                      }
-                      return next;
-                    });
-                  }}
+                  onChange={(e) => handleGroupChange(e.target.value)}
                   placeholder="Mis. pengurus, pembina, pengawas"
                   list="org-group-options"
                   className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
                   disabled={loading || saving || deleting}
                 />
                 <datalist id="org-group-options">
-                  {(() => {
-                    const standardLower = ORGANIZATION_GROUPS.map(g => g.toLowerCase());
-                    const filteredDynamic = dynamicGroups.filter(g => !standardLower.includes(g.toLowerCase()));
-                    const allGroups = [...ORGANIZATION_GROUPS, ...filteredDynamic].sort((a, b) => a.localeCompare(b));
-                    return allGroups.map((g) => (
-                      <option key={g} value={g} />
-                    ));
-                  })()}
+                  {allAvailableGroups.map((g) => (
+                    <option key={g} value={g} />
+                  ))}
                 </datalist>
               </label>
+
+              {/* Quick suggestion chips for Grup from DB */}
+              {allAvailableGroups.length > 0 && (
+                <div className="-mt-1">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 mb-1.5">
+                    <span>Pilihan dari data:</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                    {allAvailableGroups.map((grp) => {
+                      const isSelected = form.group.trim().toLowerCase() === grp.trim().toLowerCase();
+                      return (
+                        <button
+                          key={grp}
+                          type="button"
+                          onClick={() => handleGroupChange(grp)}
+                          className={`rounded-xl px-3 py-1 text-xs font-semibold transition ${
+                            isSelected
+                              ? "bg-brandGreen-100 text-brandGreen-800 ring-1 ring-brandGreen-500 font-bold"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
+                          }`}
+                        >
+                          {grp}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <label className="block">
                 <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
@@ -508,43 +715,105 @@ export function EditorOrganizationMemberForm({ mode, memberId }: { mode: Mode; m
                 />
               </label>
 
+              {/* Nomor Urut Posisi Grup - Always visible and editable */}
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <label className="block">
-                  <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Nomor Urut Posisi Grup</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                      Nomor Urut Posisi Grup
+                    </span>
+                  </div>
                   
-                  {!(groupPeers.length > 0) && (
-                    <input
-                      type="number"
-                      min="0"
-                      value={form.order}
-                      onChange={(e) => setForm((s) => ({ ...s, order: e.target.value }))}
-                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none"
-                      disabled={loading || saving || deleting || groupPeersLoading}
-                    />
-                  )}
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.order}
+                    onChange={(e) => setForm((s) => ({ ...s, order: e.target.value }))}
+                    className={`mt-2 w-full rounded-xl border bg-white px-3 py-2.5 text-sm font-bold shadow-sm transition focus:outline-none focus:ring-2 ${
+                      hasOrderCollision
+                        ? "border-rose-300 text-rose-900 focus:border-rose-400 focus:ring-rose-400"
+                        : "border-slate-300 text-slate-900 focus:border-slate-400 focus:ring-brandGreen-400"
+                    }`}
+                    disabled={loading || saving || deleting}
+                    placeholder="0"
+                  />
                   <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
                     Semua anggota dalam grup yang sama akan berada di posisi yang sama. 
-                    <br />Nomor lebih kecil (misal: 1) akan tampil lebih tinggi di halaman.
+                    <br />Nomor lebih kecil (misal: 0 atau 1) akan tampil lebih tinggi di halaman.
                   </p>
                 </label>
                 
-                {groupPeersLoading ? (
-                  <p className="mt-3 text-[10px] font-semibold text-slate-400 animate-pulse">Memeriksa posisi grup...</p>
-                ) : groupPeers.length > 0 ? (
-                  <div className="mt-3 rounded-xl bg-sky-100/50 p-3 text-xs font-semibold text-sky-800 ring-1 ring-sky-200">
-                    <p>Grup <span className="font-bold underline">"{form.group}"</span> sudah terdaftar di posisi: <span className="text-sm font-bold">{groupPeers[0].order}</span></p>
-                    <p className="mt-1 text-[10px] font-normal text-sky-600">Nomor urut dikunci untuk menyamakan dengan anggota grup lainnya.</p>
-                  </div>
-                ) : (
-                  <p
-                    className={[
-                      "mt-3 text-[10px] font-semibold",
-                      groupPeersError ? "text-red-700" : "text-slate-500",
-                    ].join(" ")}
-                  >
-                    {groupPeersError || (form.group.trim() ? "Grup baru akan dibuat." : "Pilih grup untuk melihat posisi.") }
-                  </p>
-                )}
+                {(() => {
+                  const currentGroup = form.group.trim();
+                  if (!currentGroup) {
+                    return (
+                      <p className="mt-3 text-[10px] font-semibold text-slate-500">
+                        Pilih atau isi nama grup untuk menentukan posisi urutan.
+                      </p>
+                    );
+                  }
+
+                  // 1. If there's an order collision with another group, show warning & disable save
+                  if (hasOrderCollision) {
+                    return (
+                      <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs text-rose-800">
+                        <div className="flex items-start gap-2.5">
+                          <span className="text-base leading-none">⚠️</span>
+                          <div className="flex-1">
+                            <p className="font-bold text-rose-900">
+                              Nomor urut bentrok dengan grup lain!
+                            </p>
+                            <p className="mt-1 leading-relaxed text-rose-700">
+                              Posisi <strong>{currentOrderNum}</strong> sudah digunakan oleh grup:{" "}
+                              <strong className="underline">
+                                {conflictingGroups.map((g) => g.charAt(0).toUpperCase() + g.slice(1)).join(", ")}
+                              </strong>.
+                              <br />
+                              Tombol <strong>Simpan</strong> dinonaktifkan agar urutan grup yang sudah ada tidak terganggu. Silakan gunakan nomor urut yang berbeda.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => setForm((s) => ({ ...s, order: String(nextAvailableOrder) }))}
+                              className="mt-2.5 inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-rose-700"
+                            >
+                              Gunakan Nomor Urut {nextAvailableOrder} (Bebas Bentrok)
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // 2. Existing group matching
+                  const normalized = currentGroup.toLowerCase();
+                  const existingOrder = groupOrders[normalized];
+                  const isExistingGroup = existingOrder !== undefined;
+
+                  if (isExistingGroup) {
+                    return (
+                      <div className="mt-3 rounded-xl bg-sky-50 border border-sky-200 p-3 text-xs text-sky-800">
+                        <p>
+                          Grup <span className="font-bold underline">"{currentGroup}"</span> sudah terdaftar di posisi: <span className="text-sm font-bold">{existingOrder}</span>
+                        </p>
+                        <p className="mt-1 text-[10px] text-sky-600">
+                          Nomor urut disesuaikan otomatis dengan anggota grup ini. Anda tetap dapat mengubah nilainya jika diperlukan.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  // 3. New group without collision
+                  return (
+                    <div className="mt-3 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800">
+                      <p>
+                        Grup baru terdeteksi. Otomatis disarankan urutan ke-<span className="text-sm font-bold">{form.order}</span> agar tidak bertabrakan dengan grup lain.
+                      </p>
+                      <p className="mt-1 text-[10px] text-emerald-600">
+                        Nomor urut ini dapat Anda ubah sesuai hierarki struktur organisasi.
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
 
               <button

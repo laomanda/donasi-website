@@ -73,11 +73,11 @@ export function SuggestionForm({ translate: t }: SuggestionFormProps) {
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brandGreen-600 text-white shadow-sm">
           <FontAwesomeIcon icon={faCommentDots} />
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-600">{t("layanan.suggestion.badge")}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-brandGreen-600">{t("layanan.suggestion.badge")}</p>
           <h2 className="text-2xl font-heading font-semibold text-slate-900">{t("layanan.suggestion.heading")}</h2>
         </div>
       </div>

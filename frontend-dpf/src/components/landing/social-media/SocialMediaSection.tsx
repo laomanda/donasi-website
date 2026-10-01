@@ -55,9 +55,6 @@ export default function SocialMediaSection() {
     <section className="bg-slate-50 py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-brandGreen-600">
-            {t("social.badge")}
-          </p>
           <h2 className="mt-3 font-heading text-3xl font-bold text-slate-900 sm:text-4xl">
             {t("social.title")}
           </h2>

@@ -24,8 +24,10 @@ export function AboutLegal({ t, legalItems }: AboutLegalProps) {
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {legalItems.map((item) => (
               <div key={item} className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 shadow-sm">
-                <FontAwesomeIcon icon={faCheckCircle} className="mt-1 text-primary-600" />
-                <span>{item}</span>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center text-primary-600 mt-0.5">
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-base" />
+                </span>
+                <span className="min-w-0 flex-1">{item}</span>
               </div>
             ))}
           </div>

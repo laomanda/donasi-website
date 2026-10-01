@@ -16,9 +16,6 @@ export function TrioCtaSection({ locale }: { locale: Locale }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mb-10 text-center space-y-3">
-          <span className="inline-flex items-center rounded-full bg-brandGreen-50 px-3.5 py-1 text-xs font-semibold text-brandGreen-700 ring-1 ring-brandGreen-100">
-            {t("landing.trioCta.badge", "Eksplorasi & Galeri")}
-          </span>
           <h2 className="text-3xl font-heading font-bold text-slate-900 sm:text-4xl">
             {t("landing.trioCta.title", "Aktivitas & Produk DPF")}
           </h2>

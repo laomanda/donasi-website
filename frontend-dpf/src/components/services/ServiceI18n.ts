@@ -2,7 +2,6 @@ import type { Dict } from "../../lib/i18n-utils";
 
 export const serviceDict: Dict = {
     // Layanan page context
-    "layanan.hero.badge": { id: "Layanan WAKAF", en: "WAKAF Services" },
     "layanan.hero.title.leading": { id: "Jelajahi Peluang Kebaikan & Jemput Amanah", en: "Explore Goodness & Pickup Your Trust" },
     "layanan.hero.title.highlight": { id: "Warisan Abadi", en: "Everlasting Legacy" },
     "layanan.hero.subtitle": {
@@ -21,7 +20,6 @@ export const serviceDict: Dict = {
     "layanan.hero.stats.3.value": { id: "Bukti & laporan", en: "Receipts & reports" },
     "layanan.hero.stats.4.label": { id: "Sertifikasi", en: "Certified" },
     "layanan.hero.stats.4.value": { id: "Nazhir Wakaf", en: "Waqf Nazhir" },
-    "layanan.services.badge": { id: "Pilihan Penjelajahan", en: "Exploration options" },
     "layanan.services.heading": { id: "Tentukan Peran Anda", en: "Define Your Role" },
     "layanan.services.subtitle": { id: "Jadilah arsitek kebaikan. Jelajahi pilihan layanan kami yang dirancang untuk kenyamanan khidmat Anda.", en: "Be the architect of goodness. Explore our service options designed for your dedicated comfort." },
     "layanan.services.cta.donate": { id: "Cara Salurkan Wakaf & Rekening", en: "How to Donate Waqf & Accounts" },

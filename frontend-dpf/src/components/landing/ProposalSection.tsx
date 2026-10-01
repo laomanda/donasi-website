@@ -21,9 +21,6 @@ export function ProposalSection() {
             {/* Text Content */}
             <div className="flex-1 text-center lg:text-left text-white space-y-6">
               <div>
-                <span className="inline-block rounded-full bg-white/20 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-sm">
-                  {locale === "id" ? "Program Wakaf" : "Waqf Program"}
-                </span>
                 <h2 className="mt-4 font-heading text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
                   {locale === "id" 
                     ? "Pelajari Lebih Lanjut Tentang Program Wakaf Kami" 
