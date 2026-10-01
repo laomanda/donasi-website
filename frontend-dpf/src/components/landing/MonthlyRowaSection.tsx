@@ -3,12 +3,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faReceipt,
   faBuildingColumns,
-  faShareNodes,
   faCircleCheck,
   faChevronLeft,
   faChevronRight,
   faFilter,
-  faScaleBalanced,
+  faCoins,
+  faArrowTrendUp,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   type HomeStats,
@@ -117,8 +117,23 @@ export function MonthlyRowaSection({
   const totalWaqfCollected = Number(finance?.total_waqf_collected ?? 0);
   const totalDistributed = Number(finance?.total_distributed ?? stats?.total_distributed ?? Number(stats?.amount_allocated ?? 0));
   const totalExpense = Number(finance?.total_expense ?? stats?.total_expense ?? 0);
-  const programDistributions = Number(finance?.program_distributions ?? stats?.program_distributions ?? 0);
-  const ywdpRatio = finance?.ywdp_ratio !== undefined ? finance.ywdp_ratio : (finance?.rowa !== undefined ? finance.rowa : (stats?.ywdp_ratio ?? stats?.rowa ?? null));
+
+  // Compute RoWA ratio multiplier
+  const overallRowa = useMemo(() => {
+    if (finance?.rowa && typeof finance.rowa === "number" && finance.rowa > 0) {
+      return finance.rowa;
+    }
+    if (stats?.average_rowa && typeof stats.average_rowa === "number" && stats.average_rowa > 0) {
+      return stats.average_rowa;
+    }
+    if (stats?.rowa && typeof stats.rowa === "number" && stats.rowa > 0) {
+      return stats.rowa;
+    }
+    if (totalExpense > 0 && totalDistributed > 0) {
+      return Number((totalDistributed / totalExpense).toFixed(2));
+    }
+    return 0;
+  }, [finance?.rowa, stats?.average_rowa, stats?.rowa, totalExpense, totalDistributed]);
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(sortedTrends.length / itemsPerPage));
@@ -179,7 +194,7 @@ export function MonthlyRowaSection({
           </div>
         </div>
 
-        {/* 4 Executive KPI Cards (Verified Canonical Metrics Only) */}
+        {/* 4 Executive KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {/* Card 1: Total Wakaf Terhimpun */}
           <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs hover:border-emerald-300 transition space-y-4">
@@ -199,7 +214,7 @@ export function MonthlyRowaSection({
                 />
               </p>
               <p className="mt-0.5 text-[11px] text-slate-500">
-                {locale === "en" ? "Official waqf collections (4100 series)" : "Penerimaan wakaf resmi (Akun 4100)"}
+                {locale === "en" ? "Official waqf collections" : "Penerimaan wakaf resmi"}
               </p>
             </div>
           </div>
@@ -227,14 +242,14 @@ export function MonthlyRowaSection({
             </div>
           </div>
 
-          {/* Card 3: Biaya Pengeluaran (Beban Nazhir + Operasional) */}
+          {/* Card 3: Biaya Pengeluaran */}
           <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs hover:border-amber-300 transition space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {locale === "en" ? "Operating & Nazhir Expense" : "Biaya Pengeluaran"}
+                {locale === "en" ? "Operating Expenses" : "Biaya Pengeluaran"}
               </span>
               <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700 border border-amber-100">
-                <FontAwesomeIcon icon={faScaleBalanced} className="text-xs sm:text-sm" />
+                <FontAwesomeIcon icon={faCoins} className="text-xs sm:text-sm" />
               </div>
             </div>
             <div>
@@ -245,30 +260,35 @@ export function MonthlyRowaSection({
                 />
               </p>
               <p className="mt-0.5 text-[11px] text-slate-500">
-                {locale === "en" ? "Beban Nazhir + Operasional" : "Beban Nazhir + Operasional"}
+                {locale === "en" ? "Operations & nazhir" : "Operasional & hak amil"}
               </p>
             </div>
           </div>
 
-          {/* Card 4: Penyaluran Program (Disbursement Transactions Count) */}
-          <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs hover:border-indigo-300 transition space-y-4">
+          {/* Card 4: Rasio RoWA */}
+          <div className="rounded-3xl border border-brandGreen-800 bg-gradient-to-br from-brandGreen-800 via-brandGreen-900 to-slate-950 text-white p-6 sm:p-8 shadow-md space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {locale === "en" ? "Disbursements" : "Penyaluran Program"}
+              <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-brandGreen-200">
+                {locale === "en" ? "RoWA Ratio" : "Rasio RoWA"}
               </span>
-              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100">
-                <FontAwesomeIcon icon={faShareNodes} className="text-xs sm:text-sm" />
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-white/10 text-white border border-white/20">
+                <FontAwesomeIcon icon={faArrowTrendUp} className="text-xs sm:text-sm" />
               </div>
             </div>
             <div>
-              <p className="font-heading text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">
-                <AnimatedCounter
-                  value={programDistributions}
-                />
+              <p className="font-heading text-lg sm:text-2xl font-black tracking-tight text-white">
+                {overallRowa > 0 ? `${overallRowa}x` : "-"}
               </p>
-              <p className="mt-0.5 text-[11px] text-slate-500">
-                {locale === "en" ? "Disbursement transactions" : "Transaksi penyaluran"}
-              </p>
+              <div className="mt-1 flex items-center gap-1.5 text-[11px] text-brandGreen-200">
+                <FontAwesomeIcon icon={faCircleCheck} className="text-emerald-400 text-xs" />
+                <span className="truncate">
+                  {overallRowa >= 5
+                    ? locale === "en" ? "Highly Productive" : "Sangat Produktif"
+                    : overallRowa > 0
+                    ? locale === "en" ? "Optimal" : "Optimal"
+                    : locale === "en" ? "Preparing" : "Masa Penghimpunan"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -314,12 +334,12 @@ export function MonthlyRowaSection({
                   <th className="py-5 px-6 sm:px-8 w-[20%] text-right">
                     {locale === "en" ? "Expenses" : "Biaya Pengeluaran"}
                   </th>
-                  <th className="py-5 px-6 sm:px-8 w-[20%] text-right">
+                  <th className="py-5 px-6 sm:px-8 w-[20%] text-center">
                     <span
                       className="cursor-help inline-flex items-center gap-1"
-                      title="Rasio internal YWDP: total wakaf terhimpun dibanding biaya pengeluaran."
+                      title="Rasio RoWA: perbandingan dana disalurkan terhadap biaya pengeluaran operasional & nazhir."
                     >
-                      {locale === "en" ? "YWDP Ratio (RoWA)" : "Rasio YWDP (RoWA)"}
+                      {locale === "en" ? "RoWA Ratio" : "Rasio RoWA"}
                     </span>
                   </th>
                 </tr>
@@ -388,19 +408,24 @@ export function MonthlyRowaSection({
                           )}
                         </td>
 
-                        {/* Rasio YWDP (RoWA) */}
-                        <td className="py-5 px-6 sm:px-8 text-right font-medium whitespace-nowrap font-mono tabular-nums">
-                          {item.ywdp_ratio !== null && item.ywdp_ratio !== undefined ? (
-                            <span className="text-purple-700 font-bold">
+                        {/* Rasio RoWA */}
+                        <td className="py-5 px-6 sm:px-8 text-center whitespace-nowrap">
+                          {item.rowa && item.rowa > 0 ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-brandGreen-50 border border-brandGreen-200/80 px-2.5 py-0.5 text-xs font-extrabold text-brandGreen-800 font-heading">
+                              <FontAwesomeIcon icon={faArrowTrendUp} className="text-[9px]" />
+                              <span>{item.rowa}x</span>
+                            </span>
+                          ) : alloc > 0 && exp > 0 ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-brandGreen-50 border border-brandGreen-200/80 px-2.5 py-0.5 text-xs font-extrabold text-brandGreen-800 font-heading">
+                              <FontAwesomeIcon icon={faArrowTrendUp} className="text-[9px]" />
+                              <span>{(alloc / exp).toFixed(2)}x</span>
+                            </span>
+                          ) : item.ywdp_ratio !== null && item.ywdp_ratio !== undefined ? (
+                            <span className="text-purple-700 font-bold font-mono text-xs">
                               {item.ywdp_ratio.toFixed(2)}%
                             </span>
                           ) : (
-                            <span
-                              className="inline-flex items-center gap-1 text-slate-400 text-xs italic cursor-help"
-                              title="Belum ada beban pengeluaran pada bulan ini."
-                            >
-                              {locale === "en" ? "Unavailable" : "Belum tersedia"}
-                            </span>
+                            <span className="text-slate-300 font-mono text-sm">-</span>
                           )}
                         </td>
                       </tr>
@@ -425,12 +450,10 @@ export function MonthlyRowaSection({
                     <td className="py-5 px-6 sm:px-8 text-right text-amber-800 font-extrabold font-mono tabular-nums">
                       {formatCurrency(totalExpense, locale)}
                     </td>
-                    <td className="py-5 px-6 sm:px-8 text-right text-purple-800 font-extrabold font-mono tabular-nums">
-                      {ywdpRatio !== null && ywdpRatio !== undefined ? (
-                        `${ywdpRatio.toFixed(2)}%`
-                      ) : (
-                        <span className="text-slate-400 text-xs italic">—</span>
-                      )}
+                    <td className="py-5 px-6 sm:px-8 text-center">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-brandGreen-800 text-white px-3 py-1 font-heading text-xs font-black shadow-2xs">
+                        {overallRowa > 0 ? `${overallRowa}x` : "-"}
+                      </span>
                     </td>
                   </tr>
                 </tfoot>
@@ -480,8 +503,16 @@ export function MonthlyRowaSection({
                         </span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-500 block">Rasio YWDP</span>
-                        {item.ywdp_ratio !== null && item.ywdp_ratio !== undefined ? (
+                        <span className="text-[10px] text-slate-500 block">Rasio RoWA</span>
+                        {item.rowa && item.rowa > 0 ? (
+                          <span className="font-mono font-bold text-brandGreen-700">
+                            {item.rowa}x
+                          </span>
+                        ) : alloc > 0 && exp > 0 ? (
+                          <span className="font-mono font-bold text-brandGreen-700">
+                            {(alloc / exp).toFixed(2)}x
+                          </span>
+                        ) : item.ywdp_ratio !== null && item.ywdp_ratio !== undefined ? (
                           <span className="font-mono font-bold text-purple-700">
                             {item.ywdp_ratio.toFixed(2)}%
                           </span>
@@ -520,9 +551,9 @@ export function MonthlyRowaSection({
                     <span className="font-mono font-bold text-amber-800">{formatCurrency(totalExpense, locale)}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-500 block">Rasio YWDP (RoWA)</span>
-                    <span className="font-mono font-bold text-purple-800">
-                      {ywdpRatio !== null && ywdpRatio !== undefined ? `${ywdpRatio.toFixed(2)}%` : "—"}
+                    <span className="text-[10px] text-slate-500 block">Rasio RoWA</span>
+                    <span className="font-mono font-bold text-brandGreen-800">
+                      {overallRowa > 0 ? `${overallRowa}x` : "—"}
                     </span>
                   </div>
                 </div>

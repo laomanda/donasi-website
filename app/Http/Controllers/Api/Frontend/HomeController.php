@@ -70,7 +70,115 @@ class HomeController extends Controller
             $targetYearForMonthly = $filterYear ?? (int) date('Y');
             $monthlyRealization = $this->financeService->getMonthlyRealization($targetYearForMonthly);
 
-            // Backward-compatible Monthly Trend representation using real journal semantics
+            // If posted journal expenses are 0, integrate operational website data (Donations & Allocations)
+            // using the standard 7% operational/amil cost basis
+            $hasJournalExpenses = ((float) $fin['total_expense']) > 0;
+
+            if (!$hasJournalExpenses) {
+                // Fetch monthly donations and allocations from website operational tables
+                $donationsMonthlyQuery = Donation::paid()
+                    ->selectRaw("DATE_FORMAT(COALESCE(paid_at, created_at), '%Y-%m') as m_key, SUM(amount) as total");
+                $allocationsMonthlyQuery = Allocation::query()
+                    ->selectRaw("DATE_FORMAT(COALESCE(allocated_at, created_at), '%Y-%m') as m_key, SUM(amount) as total");
+
+                if ($isYearFiltered) {
+                    $donationsMonthlyQuery->whereRaw('YEAR(COALESCE(paid_at, created_at)) = ?', [$filterYear]);
+                    $allocationsMonthlyQuery->whereRaw('YEAR(COALESCE(allocated_at, created_at)) = ?', [$filterYear]);
+                }
+
+                $monthlyDonationsMap = $donationsMonthlyQuery->groupBy('m_key')->pluck('total', 'm_key')->all();
+                $monthlyAllocationsMap = $allocationsMonthlyQuery->groupBy('m_key')->pluck('total', 'm_key')->all();
+
+                $computedMonthlyTotalExpense = 0.0;
+                foreach ($monthlyRealization as &$mReal) {
+                    $mKey = $mReal['month_key'];
+                    $opColl = (float) ($monthlyDonationsMap[$mKey] ?? 0.0);
+                    $opAlloc = (float) ($monthlyAllocationsMap[$mKey] ?? 0.0);
+
+                    $effectiveColl = max((float) $mReal['collected'], $opColl);
+                    $effectiveAlloc = max((float) $mReal['distributed'], $opAlloc);
+                    $basis = max($effectiveColl, $effectiveAlloc);
+                    $opExpense = $basis > 0 ? round($basis * 0.07, 2) : 0.0;
+
+                    if ($opExpense > 0) {
+                        $mReal['expense'] = $opExpense;
+                        $mReal['total_expense'] = $opExpense;
+                        $mReal['operational_expense'] = $opExpense;
+                        $computedMonthlyTotalExpense += $opExpense;
+
+                        if ($effectiveAlloc > 0) {
+                            $mReal['rowa'] = round($effectiveAlloc / $opExpense, 2);
+                            $mReal['rowa_status'] = 'available';
+                        }
+
+                        $effectiveWaqf = max((float) $mReal['waqf_collected'], (float) $mReal['total_waqf_collected'], $opColl);
+                        if ($effectiveWaqf > 0) {
+                            $mReal['ywdp_ratio'] = round(($effectiveWaqf / $opExpense) * 100.0, 2);
+                            $mReal['ywdp_ratio_status'] = 'available';
+                        }
+                    }
+                }
+                unset($mReal);
+
+                if ($isYearFiltered) {
+                    if ($computedMonthlyTotalExpense > 0) {
+                        $fin['total_expense'] = round($computedMonthlyTotalExpense, 2);
+                        $fin['operational_expense'] = round($computedMonthlyTotalExpense, 2);
+                    }
+                } else {
+                    // For all-time, calculate total operational activity across all years
+                    $allTimeOpRows = DB::select("
+                        SELECT m, SUM(c) as c, SUM(a) as a FROM (
+                            SELECT DATE_FORMAT(COALESCE(paid_at, created_at), '%Y-%m') as m, amount as c, 0 as a FROM donations WHERE status = 'paid'
+                            UNION ALL
+                            SELECT DATE_FORMAT(COALESCE(allocated_at, created_at), '%Y-%m') as m, 0 as c, amount as a FROM allocations
+                        ) raw_m GROUP BY m
+                    ");
+
+                    $allTimeOpExpense = 0.0;
+                    foreach ($allTimeOpRows as $row) {
+                        $b = max((float) $row->c, (float) $row->a);
+                        if ($b > 0) {
+                            $allTimeOpExpense += round($b * 0.07, 2);
+                        }
+                    }
+
+                    if ($allTimeOpExpense > 0) {
+                        $fin['total_expense'] = round($allTimeOpExpense, 2);
+                        $fin['operational_expense'] = round($allTimeOpExpense, 2);
+                    }
+                }
+            }
+
+            // Calculate operational RoWA multiplier when RoWA is not yet determined by accounting asset base
+            $opRowa = null;
+            if ((float) $fin['total_expense'] > 0) {
+                $effectiveDistributed = (float) $fin['total_distributed'];
+                if ($effectiveDistributed <= 0) {
+                    $effectiveDistributed = (float) Allocation::query()
+                        ->when($isYearFiltered, fn($q) => $q->whereRaw('YEAR(COALESCE(allocated_at, created_at)) = ?', [$filterYear]))
+                        ->sum('amount');
+                }
+                if ($effectiveDistributed > 0) {
+                    $opRowa = round($effectiveDistributed / (float) $fin['total_expense'], 2);
+                }
+            }
+
+            // Calculate overall YWDP Ratio when not yet provided
+            if ($fin['ywdp_ratio'] === null && (float) $fin['total_expense'] > 0) {
+                $effectiveWaqf = (float) $fin['total_waqf_collected'];
+                if ($effectiveWaqf <= 0) {
+                    $effectiveWaqf = (float) Donation::paid()
+                        ->when($isYearFiltered, fn($q) => $q->whereRaw('YEAR(COALESCE(paid_at, created_at)) = ?', [$filterYear]))
+                        ->sum('amount');
+                }
+                if ($effectiveWaqf > 0) {
+                    $fin['ywdp_ratio'] = round(($effectiveWaqf / (float) $fin['total_expense']) * 100.0, 2);
+                    $fin['ywdp_ratio_status'] = 'available';
+                }
+            }
+
+            // Backward-compatible Monthly Trend representation
             $monthlyTrends = [];
             foreach ($monthlyRealization as $mReal) {
                 $dt = Carbon::createFromFormat('Y-m', $mReal['month_key'])->startOfMonth();
@@ -81,14 +189,15 @@ class HomeController extends Controller
                     'collected'           => $mReal['collected'],
                     'allocated'           => $mReal['distributed'],
                     'nazhir_expense'      => $mReal['nazhir_expense'],
-                    'operational_expense'  => $mReal['operational_expense'],
-                    'total_expense'        => $mReal['total_expense'],
-                    'expense'              => $mReal['expense'],
-                    'ywdp_ratio'           => $mReal['ywdp_ratio'],
-                    'ywdp_ratio_status'    => $mReal['ywdp_ratio_status'],
-                    'waqf_collected'       => $mReal['waqf_collected'],
-                    'total_waqf_collected' => $mReal['total_waqf_collected'],
-                    'rowa'                 => $mReal['rowa'],
+                    'operational_expense' => $mReal['operational_expense'],
+                    'total_expense'       => $mReal['total_expense'],
+                    'expense'             => $mReal['expense'],
+                    'ywdp_ratio'          => $mReal['ywdp_ratio'],
+                    'ywdp_ratio_status'   => $mReal['ywdp_ratio_status'],
+                    'waqf_collected'      => $mReal['waqf_collected'],
+                    'total_waqf_collected'=> $mReal['total_waqf_collected'],
+                    'rowa'                => $mReal['rowa'],
+                    'rowa_status'         => $mReal['rowa_status'] ?? null,
                 ];
             }
 
@@ -252,8 +361,8 @@ class HomeController extends Controller
                     'total_expense'            => $fin['total_expense'],
                     'ywdp_ratio'               => $fin['ywdp_ratio'],
                     'ywdp_ratio_status'        => $fin['ywdp_ratio_status'],
-                    'average_rowa'             => $fin['rowa'],
-                    'rowa'                     => $fin['rowa'],
+                    'average_rowa'             => $opRowa ?? $fin['rowa'],
+                    'rowa'                     => $opRowa ?? $fin['rowa'],
                     'rowa_status'              => $fin['rowa_status'],
                     'available_balance'        => $fin['available_balance'],
                     'available_balance_status' => $fin['available_balance_status'],
