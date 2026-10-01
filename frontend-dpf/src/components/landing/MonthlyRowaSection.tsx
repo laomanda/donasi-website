@@ -3,11 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faReceipt,
   faBuildingColumns,
-  faCircleCheck,
   faChevronLeft,
   faChevronRight,
   faFilter,
-  faCoins,
   faArrowTrendUp,
 } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -50,6 +48,85 @@ const getMonthLabel = (m: number, locale: "id" | "en", explicitName?: string) =>
   if (explicitName) return explicitName;
   const list = locale === "en" ? monthNamesEn : monthNamesId;
   return list[m - 1] ?? `Bulan ${m}`;
+};
+
+type RoWAProductivity = {
+  status: "highly_productive" | "productive" | "in_distribution" | "pending";
+  label: string;
+  description: string;
+  badgeClass: string;
+  distributionRate: number | null;
+};
+
+const getRoWAProductivity = (
+  rowa: number | null | undefined,
+  totalWaqf?: number | null,
+  totalDistributed?: number | null,
+  locale: "id" | "en" = "id"
+): RoWAProductivity => {
+  const numRowa = rowa !== null && rowa !== undefined ? Number(rowa) : null;
+  const numWaqf = Number(totalWaqf ?? 0);
+  const numDist = Number(totalDistributed ?? 0);
+
+  let distributionRate: number | null = null;
+  if (numWaqf > 0 && numDist > 0) {
+    distributionRate = Math.min(100, Math.max(0, (numDist / numWaqf) * 100));
+  } else if (numRowa !== null && numRowa > 0) {
+    distributionRate = Math.min(100, Math.max(0, (1 / numRowa) * 100));
+  }
+
+  if (numRowa === null || numRowa <= 0 || (numDist <= 0 && numWaqf > 0)) {
+    return {
+      status: "pending",
+      label: locale === "en" ? "Pending Distribution" : "Belum Tersalurkan",
+      description: locale === "en" ? "No distributions recorded yet" : "Belum ada penyaluran tercatat",
+      badgeClass: "bg-white/10 text-slate-300 border-white/20",
+      distributionRate: null,
+    };
+  }
+
+  if (numRowa <= 2.5) {
+    return {
+      status: "highly_productive",
+      label: locale === "en" ? "Sangat Produktif" : "Sangat Produktif",
+      description:
+        distributionRate !== null
+          ? (locale === "en"
+              ? `${distributionRate.toFixed(1)}% of waqf funds actively disbursed`
+              : `${distributionRate.toFixed(1)}% dana wakaf tersalurkan aktif`)
+          : (locale === "en" ? "Optimal distribution flow" : "Alur penyaluran sangat optimal"),
+      badgeClass: "bg-brandGreen-400/10 border-none",
+      distributionRate,
+    };
+  }
+
+  if (numRowa <= 4.0) {
+    return {
+      status: "productive",
+      label: locale === "en" ? "Cukup Produktif" : "Cukup Produktif",
+      description:
+        distributionRate !== null
+          ? (locale === "en"
+              ? `${distributionRate.toFixed(1)}% of waqf funds disbursed`
+              : `${distributionRate.toFixed(1)}% dana wakaf tersalurkan`)
+          : (locale === "en" ? "Steady distribution" : "Penyaluran berjalan lancar"),
+      badgeClass: "bg-amber-400/20 text-amber-300 border-amber-400/30",
+      distributionRate,
+    };
+  }
+
+  return {
+    status: "in_distribution",
+    label: locale === "en" ? "Tahap Penyaluran" : "Tahap Penyaluran",
+    description:
+      distributionRate !== null
+        ? (locale === "en"
+            ? `${distributionRate.toFixed(1)}% disbursed, remaining in pool`
+            : `${distributionRate.toFixed(1)}% tersalurkan, dana dalam proses`)
+        : (locale === "en" ? "Fund in distribution pipeline" : "Dana dalam proses penyaluran bertahap"),
+    badgeClass: "bg-sky-400/20 text-sky-300 border-sky-400/30",
+    distributionRate,
+  };
 };
 
 export function MonthlyRowaSection({
@@ -132,6 +209,11 @@ export function MonthlyRowaSection({
     return null;
   }, [finance?.rowa, stats?.rowa, stats?.average_rowa]);
 
+  // Overall RoWA Productivity Level
+  const overallProductivity = useMemo(() => {
+    return getRoWAProductivity(overallRowa, totalWaqfCollected, totalDistributed, locale);
+  }, [overallRowa, totalWaqfCollected, totalDistributed, locale]);
+
   // Pagination
   const totalPages = Math.max(1, Math.ceil(sortedTrends.length / itemsPerPage));
   const paginatedTrends = useMemo(() => {
@@ -140,27 +222,16 @@ export function MonthlyRowaSection({
   }, [sortedTrends, currentPage, itemsPerPage]);
 
   return (
-    <section className="bg-slate-50/70 border-t border-slate-200/80 py-20 lg:py-28">
+    <section className="bg-slate-50/70 py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12 lg:space-y-16">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full bg-brandGreen-500/10 border border-brandGreen-500/20 px-3.5 py-1.5 text-xs font-bold text-brandGreen-800">
-              <FontAwesomeIcon icon={faCircleCheck} className="text-brandGreen-700" />
-              <span>
-                {locale === "en" ? "Verified Financial Realization" : "Realisasi Keuangan Terverifikasi"}
-              </span>
-            </div>
             <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
               {locale === "en"
                 ? "Monthly Realization Table"
                 : "Tabel Realisasi Bulanan"}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              {locale === "en"
-                ? "Transparent monthly record of waqf collections and program distributions based on posted journal transactions."
-                : "Transparansi bulanan penerimaan dana wakaf dan realisasi penyaluran kepada penerima manfaat berbasis transaksi jurnal terposting."}
-            </p>
           </div>
 
           {/* Quick Filter: All Months vs Active Only */}
@@ -191,15 +262,15 @@ export function MonthlyRowaSection({
           </div>
         </div>
 
-        {/* 4 Executive KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+        {/* 3 Executive KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Card 1: Total Wakaf Terhimpun */}
           <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs hover:border-emerald-300 transition space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500">
                 {locale === "en" ? "Total Waqf Collected" : "Total Wakaf Terhimpun"}
               </span>
-              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-brandGreen-600 text-white">
                 <FontAwesomeIcon icon={faBuildingColumns} className="text-xs sm:text-sm" />
               </div>
             </div>
@@ -222,7 +293,7 @@ export function MonthlyRowaSection({
               <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500">
                 {locale === "en" ? "Funds Distributed" : "Dana Disalurkan"}
               </span>
-              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-700 border border-sky-100">
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-sky-600 text-white">
                 <FontAwesomeIcon icon={faReceipt} className="text-xs sm:text-sm" />
               </div>
             </div>
@@ -239,45 +310,29 @@ export function MonthlyRowaSection({
             </div>
           </div>
 
-          {/* Card 3: Biaya Pengeluaran */}
-          <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs hover:border-amber-300 transition space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {locale === "en" ? "Operating Expenses" : "Biaya Pengeluaran"}
-              </span>
-              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700 border border-amber-100">
-                <FontAwesomeIcon icon={faCoins} className="text-xs sm:text-sm" />
-              </div>
-            </div>
-            <div>
-              <p className="font-heading text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">
-                <AnimatedCounter
-                  value={totalExpense}
-                  formatter={(val) => formatCurrency(val, locale)}
-                />
-              </p>
-              <p className="mt-0.5 text-[11px] text-slate-500">
-                {locale === "en" ? "Operations & nazhir" : "Operasional & hak amil"}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 4: Rasio RoWA */}
-          <div className="rounded-3xl border border-brandGreen-800 bg-gradient-to-br from-brandGreen-800 via-brandGreen-900 to-slate-950 text-white p-6 sm:p-8 shadow-md space-y-4">
-            <div className="flex items-center justify-between">
+          {/* Card 3: Rasio RoWA */}
+          <div className="rounded-3xl border border-brandGreen-800 bg-gradient-to-br from-brandGreen-800 via-brandGreen-900 to-slate-950 text-white p-6 sm:p-8 shadow-md space-y-4 sm:col-span-2 lg:col-span-1 flex flex-col justify-between">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-brandGreen-200">
                 {locale === "en" ? "RoWA Ratio" : "Rasio RoWA"}
               </span>
-              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-white/10 text-white border border-white/20">
-                <FontAwesomeIcon icon={faArrowTrendUp} className="text-xs sm:text-sm" />
-              </div>
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border backdrop-blur-xs ${overallProductivity.badgeClass}`}>
+                <span>{overallProductivity.label}</span>
+              </span>
             </div>
             <div>
-              <p className="font-heading text-lg sm:text-2xl font-black tracking-tight text-white">
-                {overallRowa !== null && overallRowa > 0 ? `${Number(overallRowa).toFixed(2)}x` : (locale === "en" ? "Unavailable" : "Belum Tersedia")}
-              </p>
-              <p className="mt-1 text-[11px] text-brandGreen-200 truncate">
-                {locale === "en" ? "Waqf to distribution ratio" : "Rasio wakaf terhadap penyaluran"}
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <p className="font-heading text-lg sm:text-2xl font-black tracking-tight text-white">
+                  {overallRowa !== null && overallRowa > 0 ? `${Number(overallRowa).toFixed(2)}x` : (locale === "en" ? "Unavailable" : "Belum Tersedia")}
+                </p>
+                {overallProductivity.distributionRate !== null && (
+                  <span className="text-xs font-semibold text-brandGreen-300">
+                    ({overallProductivity.distributionRate.toFixed(1)}% {locale === "en" ? "disbursed" : "tersalurkan"})
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-[11px] text-brandGreen-200/90 truncate">
+                {overallProductivity.description}
               </p>
             </div>
           </div>

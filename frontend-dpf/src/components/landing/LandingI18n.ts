@@ -61,10 +61,6 @@ export const landingDict: Dict = {
         id: "Laporan Penghimpunan & Penyaluran Wakaf",
         en: "Waqf Collection & Distribution Report",
     },
-    "landing.transparency.subtitle": {
-        id: "Keterbukaan data riil pengelolaan dana wakaf DPF yang amanah, produktif, dan berdampak nyata bagi umat.",
-        en: "Real-time openness in DPF's waqf management: trustworthy, productive, and impactful for the community.",
-    },
     "landing.transparency.collected": {
         id: "Dana Wakaf Dihimpun",
         en: "Waqf Funds Collected",

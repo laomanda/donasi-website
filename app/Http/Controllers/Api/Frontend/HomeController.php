@@ -104,17 +104,23 @@ class HomeController extends Controller
                 $currCollected = (float) $monthlyRealization[$targetMonth - 1]['collected'];
                 $prevCollected = (float) $monthlyRealization[$targetMonth - 2]['collected'];
                 if ($prevCollected > 0) {
-                    $collectedMoM = round((($currCollected - $prevCollected) / $prevCollected) * 100, 1);
+                    $raw = (($currCollected - $prevCollected) / $prevCollected) * 100;
+                    $collectedMoM = round(min(100.0, max(-100.0, $raw)), 1);
                 } elseif ($currCollected > 0) {
                     $collectedMoM = 100.0;
+                } else {
+                    $collectedMoM = 0.0;
                 }
 
                 $currAlloc = (float) $monthlyRealization[$targetMonth - 1]['distributed'];
                 $prevAlloc = (float) $monthlyRealization[$targetMonth - 2]['distributed'];
                 if ($prevAlloc > 0) {
-                    $allocatedMoM = round((($currAlloc - $prevAlloc) / $prevAlloc) * 100, 1);
+                    $raw = (($currAlloc - $prevAlloc) / $prevAlloc) * 100;
+                    $allocatedMoM = round(min(100.0, max(-100.0, $raw)), 1);
                 } elseif ($currAlloc > 0) {
                     $allocatedMoM = 100.0;
+                } else {
+                    $allocatedMoM = 0.0;
                 }
             }
 
@@ -162,6 +168,8 @@ class HomeController extends Controller
                         'target_amount'    => $progTarget,
                         'allocation_count' => $progAllocCount,
                         'slug'             => $prog->slug,
+                        'status'           => $prog->status,
+                        'is_published'     => in_array($prog->status, ['active', 'completed']) && !empty($prog->slug),
                         'thumbnail_path'   => $prog->thumbnail_path,
                     ];
                 }
@@ -189,6 +197,8 @@ class HomeController extends Controller
                     'target_amount'    => 0,
                     'allocation_count' => $generalAllocCount,
                     'slug'             => null,
+                    'status'           => null,
+                    'is_published'     => false,
                     'thumbnail_path'   => null,
                 ];
             }

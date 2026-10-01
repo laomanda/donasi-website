@@ -130,6 +130,8 @@ export type ProgramAllocation = {
   target_amount: number | string;
   allocation_count: number;
   slug?: string | null;
+  status?: string | null;
+  is_published?: boolean;
   thumbnail_path?: string | null;
 };
 
@@ -240,7 +242,8 @@ export const calculateMoM = (
   explicitMoM?: number | null
 ): number | null => {
   if (explicitMoM !== undefined && explicitMoM !== null) {
-    return explicitMoM;
+    const clamped = Math.min(100, Math.max(-100, Number(explicitMoM)));
+    return Number(clamped.toFixed(1));
   }
   if (!monthlyTrends || monthlyTrends.length < 2) {
     return null;
@@ -251,7 +254,9 @@ export const calculateMoM = (
     const prev = Number(monthlyTrends[i - 1]?.collected ?? 0);
     if (current > 0 || prev > 0) {
       if (prev > 0) {
-        return Number((((current - prev) / prev) * 100).toFixed(1));
+        const raw = ((current - prev) / prev) * 100;
+        const clamped = Math.min(100, Math.max(-100, raw));
+        return Number(clamped.toFixed(1));
       }
       return 100.0;
     }
@@ -265,7 +270,8 @@ export const calculateAllocMoM = (
   explicitMoM?: number | null
 ): number | null => {
   if (explicitMoM !== undefined && explicitMoM !== null) {
-    return explicitMoM;
+    const clamped = Math.min(100, Math.max(-100, Number(explicitMoM)));
+    return Number(clamped.toFixed(1));
   }
   if (!monthlyTrends || monthlyTrends.length < 2) {
     return null;
@@ -276,7 +282,9 @@ export const calculateAllocMoM = (
     const prev = Number(monthlyTrends[i - 1]?.allocated ?? 0);
     if (current > 0 || prev > 0) {
       if (prev > 0) {
-        return Number((((current - prev) / prev) * 100).toFixed(1));
+        const raw = ((current - prev) / prev) * 100;
+        const clamped = Math.min(100, Math.max(-100, raw));
+        return Number(clamped.toFixed(1));
       }
       return 100.0;
     }
