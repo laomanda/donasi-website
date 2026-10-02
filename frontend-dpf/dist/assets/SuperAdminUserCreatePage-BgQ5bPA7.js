@@ -1,1 +1,0 @@
-import{j as r}from"./vendor-fontawesome-CLK-HPlJ.js";import{S as e}from"./SuperAdminUserForm-BlSymOe-.js";import"./vendor-react-nCGCgQFN.js";import"./index-W92b3zcx.js";import"./PhoneInput-YwciN2QK.js";function s(){return r.jsx(e,{mode:"create"})}export{s as SuperAdminUserCreatePage,s as default};

@@ -5,3 +5,4 @@ export * from "./CurrencyDisplay";
 export * from "./FinanceTableSkeleton";
 export * from "./FinanceEmptyState";
 export * from "./FinanceErrorState";
+export * from "./SearchableSelect";

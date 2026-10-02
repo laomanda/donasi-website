@@ -12,6 +12,14 @@ import {
   setPeriodsInFlight,
 } from "@/utils/financeDashboardCache";
 
+function normalizePeriods(list: AccountingPeriod[]): AccountingPeriod[] {
+  return (list || []).map((p) => ({
+    ...p,
+    name: p.name || p.period_name || `Periode #${p.id}`,
+    period_name: p.period_name || p.name || `Periode #${p.id}`,
+  }));
+}
+
 async function fetchAuthoritativePeriods(): Promise<AccountingPeriod[]> {
   const existingInFlight = getPeriodsInFlight();
   if (existingInFlight) {
@@ -20,7 +28,8 @@ async function fetchAuthoritativePeriods(): Promise<AccountingPeriod[]> {
 
   const promise = (async () => {
     try {
-      const list = await financeService.getAccountingPeriods();
+      const rawList = await financeService.getAccountingPeriods();
+      const list = normalizePeriods(rawList);
       setPeriodsCache(list);
       return list;
     } finally {

@@ -5,8 +5,10 @@ import {
   faTimes,
   faRotateRight,
   faFilter,
+  faCalendarAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import type { AccountingPeriod, JournalStatus } from "@/types/finance";
+import { SearchableSelect } from "@/components/management/finance/shared";
 import { JournalStatusFilters } from "./JournalStatusFilters";
 
 export interface JournalsToolbarProps {
@@ -122,21 +124,31 @@ export const JournalsToolbar: React.FC<JournalsToolbarProps> = ({
             <label htmlFor="journal-period-select" className="text-slate-500 font-semibold text-[11px] whitespace-nowrap">
               Periode:
             </label>
-            <select
-              id="journal-period-select"
-              value={activePeriod}
-              onChange={(e) =>
-                onPeriodChange(e.target.value === "" ? "" : Number(e.target.value))
-              }
-              className="w-full sm:w-auto rounded-xl border border-slate-300 bg-white py-1.5 px-3 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 focus:border-primary-500 focus:outline-hidden cursor-pointer"
-            >
-              <option value="">Semua Periode</option>
-              {periods.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} {p.status === "open" ? "(Aktif)" : "(Tutup)"}
-                </option>
-              ))}
-            </select>
+            <div className="w-full sm:w-56">
+              <SearchableSelect<number | "">
+                id="journal-period-select"
+                value={activePeriod}
+                onChange={(val) =>
+                  onPeriodChange(val === "" ? "" : Number(val))
+                }
+                options={[
+                  { value: "", label: "Semua Periode" },
+                  ...periods.map((p) => ({
+                    value: p.id,
+                    label: p.period_name || p.name || `Periode #${p.id}`,
+                    badge: p.status === "open" ? "Aktif" : "Tutup",
+                    badgeColor:
+                      p.status === "open"
+                        ? "bg-brandGreen-500 text-white"
+                        : "bg-slate-200 text-slate-700",
+                  })),
+                ]}
+                placeholder="Semua Periode"
+                searchPlaceholder="Cari periode..."
+                icon={faCalendarAlt}
+                size="sm"
+              />
+            </div>
           </div>
 
           {/* Date From */}

@@ -1,7 +1,7 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarDays } from "@fortawesome/free-solid-svg-icons";
-import { FinanceStatusBadge } from "@/components/management/finance/shared";
+import { FinanceStatusBadge, SearchableSelect } from "@/components/management/finance/shared";
 import { formatFinanceDate } from "@/utils/financeUtils";
 import type { AccountingPeriod } from "@/types/finance";
 
@@ -36,20 +36,26 @@ export const FinancePeriodSelector: React.FC<FinancePeriodSelectorProps> = ({
           </label>
         </div>
 
-        <select
-          id="dashboard-period-select"
-          aria-label="Pilih Periode Akuntansi"
-          value={selectedPeriodId ?? ""}
-          onChange={(e) => onSelectPeriod(Number(e.target.value))}
-          className="w-full sm:w-auto cursor-pointer rounded-xl border border-slate-300 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-900 transition hover:border-slate-400 focus:border-brandGreen-500 focus:outline-hidden shadow-2xs"
-        >
-          {periods.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.period_name || p.name || `Periode #${p.id}`} (
-              {p.status === "open" ? "Terbuka" : "Ditutup"})
-            </option>
-          ))}
-        </select>
+        <div className="w-full sm:w-64">
+          <SearchableSelect<number>
+            id="dashboard-period-select"
+            ariaLabel="Pilih Periode Akuntansi"
+            value={selectedPeriodId ?? ""}
+            onChange={(val) => onSelectPeriod(Number(val))}
+            options={periods.map((p) => ({
+              value: p.id,
+              label: p.period_name || p.name || `Periode #${p.id}`,
+              badge: p.status === "open" ? "Terbuka" : "Ditutup",
+              badgeColor:
+                p.status === "open"
+                  ? "bg-brandGreen-500 text-white"
+                  : "bg-slate-200 text-slate-700",
+            }))}
+            placeholder="Pilih Periode..."
+            searchPlaceholder="Ketik nama atau tahun periode..."
+            size="sm"
+          />
+        </div>
       </div>
 
       {selectedPeriod && (

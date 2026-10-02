@@ -17,6 +17,7 @@ import type {
   JournalEntryPayload,
 } from "@/types/finance";
 import { formatRupiah } from "@/utils/financeUtils";
+import { SearchableSelect } from "@/components/management/finance/shared";
 
 export interface LineItemState {
   account_id: number | "";
@@ -262,23 +263,21 @@ export const JournalForm: React.FC<JournalFormProps> = ({
             <label htmlFor="period-id" className="block text-xs font-bold text-slate-700">
               Periode Akuntansi <span className="text-rose-500">*</span>
             </label>
-            <select
+            <SearchableSelect<number | "">
               id="period-id"
-              required
               disabled={isSubmitting}
               value={periodId}
-              onChange={(e) =>
-                setPeriodId(e.target.value === "" ? "" : Number(e.target.value))
-              }
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 py-2 px-3 text-xs text-slate-900 shadow-2xs focus:border-primary-500 focus:bg-white focus:outline-hidden cursor-pointer"
-            >
-              <option value="">-- Pilih Periode Aktif --</option>
-              {openPeriods.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} ({p.start_date} s/d {p.end_date})
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setPeriodId(val === "" ? "" : Number(val))}
+              options={openPeriods.map((p) => ({
+                value: p.id,
+                label: p.name || p.period_name || `Periode #${p.id}`,
+                sublabel: `${p.start_date} s/d ${p.end_date}`,
+                badge: "Aktif",
+                badgeColor: "bg-brandGreen-500 text-white",
+              }))}
+              placeholder="-- Pilih Periode Aktif --"
+              searchPlaceholder="Ketik nama periode..."
+            />
           </div>
 
           {/* Program Terkait (Optional) */}
@@ -286,22 +285,21 @@ export const JournalForm: React.FC<JournalFormProps> = ({
             <label htmlFor="program-id" className="block text-xs font-bold text-slate-700">
               Program Penyaluran <span className="text-slate-400 font-normal">(Opsional)</span>
             </label>
-            <select
+            <SearchableSelect<number | "">
               id="program-id"
               disabled={isSubmitting}
               value={programId}
-              onChange={(e) =>
-                setProgramId(e.target.value === "" ? "" : Number(e.target.value))
-              }
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 py-2 px-3 text-xs text-slate-900 shadow-2xs focus:border-primary-500 focus:bg-white focus:outline-hidden cursor-pointer"
-            >
-              <option value="">-- Tanpa Program (Umum / Operasional) --</option>
-              {programs.map((prog) => (
-                <option key={prog.id} value={prog.id}>
-                  {prog.title}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setProgramId(val === "" ? "" : Number(val))}
+              options={[
+                { value: "", label: "-- Tanpa Program (Umum / Operasional) --" },
+                ...programs.map((prog) => ({
+                  value: prog.id,
+                  label: prog.title,
+                })),
+              ]}
+              placeholder="-- Tanpa Program (Umum / Operasional) --"
+              searchPlaceholder="Ketik nama program..."
+            />
           </div>
 
           {/* Keterangan Jurnal */}
@@ -407,20 +405,20 @@ export const JournalForm: React.FC<JournalFormProps> = ({
                 <tr key={idx} className="hover:bg-slate-50 transition">
                   {/* Account Selector */}
                   <td className="py-2 px-3">
-                    <select
-                      required
+                    <SearchableSelect<number | "">
                       disabled={isSubmitting}
                       value={line.account_id}
-                      onChange={(e) => handleLineChange(idx, "account_id", e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 bg-white py-1.5 px-2 text-xs font-medium text-slate-900 shadow-2xs focus:border-primary-500 focus:outline-hidden cursor-pointer"
-                    >
-                      <option value="">-- Pilih Akun --</option>
-                      {activeAccounts.map((acc) => (
-                        <option key={acc.id} value={acc.id}>
-                          {acc.code} — {acc.name} ({acc.account_type})
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => handleLineChange(idx, "account_id", val)}
+                      options={activeAccounts.map((acc) => ({
+                        value: acc.id,
+                        label: `[${acc.code}] ${acc.name}`,
+                        badge: acc.account_type,
+                        badgeColor: "bg-slate-200 text-slate-700",
+                      }))}
+                      placeholder="-- Pilih Akun --"
+                      searchPlaceholder="Ketik kode atau nama akun..."
+                      size="sm"
+                    />
                   </td>
 
                   {/* Memo */}

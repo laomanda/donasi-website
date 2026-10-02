@@ -217,7 +217,7 @@ export interface GeneralLedgerFilterParams {
   accounting_period_id?: number | '';
   start_date?: string;
   end_date?: string;
-  include_zero_balance?: boolean;
+  include_zero_balance?: boolean | number | string;
 }
 
 // ==========================================

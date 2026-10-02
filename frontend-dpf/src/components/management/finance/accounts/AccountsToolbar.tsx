@@ -7,6 +7,7 @@ import {
   faFolderTree,
   faTable,
 } from "@fortawesome/free-solid-svg-icons";
+import { SearchableSelect } from "@/components/management/finance/shared";
 import type { AccountType } from "@/types/finance";
 
 interface AccountsToolbarProps {
@@ -78,36 +79,38 @@ export const AccountsToolbar: React.FC<AccountsToolbarProps> = ({
         {/* Filters and View Toggle Wrapper */}
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
           {/* Filter Jenis */}
-          <div className="w-1/2 sm:w-40 flex-1 sm:flex-none">
-            <select
+          <div className="w-1/2 sm:w-44 flex-1 sm:flex-none">
+            <SearchableSelect<AccountType | "">
               value={typeFilter}
-              onChange={(e) => onTypeFilterChange(e.target.value as AccountType | "")}
-              aria-label="Filter jenis akun"
-              className="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-800 transition focus:border-primary-500 focus:outline-hidden focus:ring-1 focus:ring-primary-500"
-            >
-              <option value="">Semua Jenis</option>
-              <option value="asset">Aset</option>
-              <option value="liability">Liabilitas</option>
-              <option value="net_asset">Aset Neto</option>
-              <option value="revenue">Penerimaan</option>
-              <option value="expense">Beban</option>
-            </select>
+              onChange={(val) => onTypeFilterChange(val)}
+              options={[
+                { value: "", label: "Semua Jenis" },
+                { value: "asset", label: "Aset" },
+                { value: "liability", label: "Liabilitas" },
+                { value: "net_asset", label: "Aset Neto" },
+                { value: "revenue", label: "Penerimaan" },
+                { value: "expense", label: "Beban" },
+              ]}
+              placeholder="Semua Jenis"
+              searchPlaceholder="Cari jenis..."
+              size="sm"
+            />
           </div>
 
           {/* Filter Status */}
-          <div className="w-1/2 sm:w-32 flex-1 sm:flex-none">
-            <select
+          <div className="w-1/2 sm:w-36 flex-1 sm:flex-none">
+            <SearchableSelect<"" | "active" | "inactive">
               value={statusFilter}
-              onChange={(e) =>
-                onStatusFilterChange(e.target.value as "" | "active" | "inactive")
-              }
-              aria-label="Filter status akun"
-              className="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-800 transition focus:border-primary-500 focus:outline-hidden focus:ring-1 focus:ring-primary-500"
-            >
-              <option value="">Semua Status</option>
-              <option value="active">Aktif</option>
-              <option value="inactive">Tidak Aktif</option>
-            </select>
+              onChange={(val) => onStatusFilterChange(val)}
+              options={[
+                { value: "", label: "Semua Status" },
+                { value: "active", label: "Aktif" },
+                { value: "inactive", label: "Tidak Aktif" },
+              ]}
+              placeholder="Semua Status"
+              searchPlaceholder="Cari status..."
+              size="sm"
+            />
           </div>
 
           {/* View Mode Toggle */}
