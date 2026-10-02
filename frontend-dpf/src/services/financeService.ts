@@ -26,6 +26,7 @@ import type {
   AccountingPeriod,
   PeriodCloseResult,
   ReconciliationSummary,
+  ReconciliationReport,
   ImportPreviewResponse,
   ImportConfirmResponse,
   AccountsImportPreviewData,
@@ -304,12 +305,15 @@ const financeService = {
     return data as ReconciliationSummary;
   },
 
-  getReconciliationReport: async (params?: { period_id?: number; date?: string }) => {
-    const res = await http.get<{ data: ReconciliationSummary }>('/finance/reconciliation', {
+  getReconciliationReport: async (params?: { period_id?: number; start_date?: string; end_date?: string }): Promise<ReconciliationReport> => {
+    const res = await http.get<{ data?: ReconciliationReport } & ReconciliationReport>('/finance/reconciliation', {
       params,
     });
-    const data = res.data?.data ?? res.data;
-    return data as ReconciliationSummary;
+    const data = (res.data?.data ?? res.data) as ReconciliationReport;
+    if (!data.last_checked_at) {
+      data.last_checked_at = new Date().toISOString();
+    }
+    return data;
   },
 
   // ==========================================

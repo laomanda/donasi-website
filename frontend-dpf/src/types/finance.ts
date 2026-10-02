@@ -613,15 +613,68 @@ export interface PeriodCloseResult {
 // ==========================================
 // 9. FINANCE RECONCILIATION & CONTROL (14 Controls)
 // ==========================================
+export type ReconciliationSeverity = 'critical' | 'high' | 'warning' | null;
+export type ReconciliationCheckStatus = 'passed' | 'failed';
 export type ReconciliationControlStatus = 'balanced' | 'warning' | 'anomaly';
+export type ReconciliationOverallStatus =
+  | 'critical'
+  | 'needs_review'
+  | 'reconciled_with_warnings'
+  | 'reconciled'
+  | 'healthy'
+  | 'needs_attention';
+
+export interface ReconciliationScope {
+  accounting_period_id?: number | null;
+  start_date?: string | null;
+  end_date?: string | null;
+}
+
+export interface ReconciliationPeriodInfo {
+  id: number;
+  name: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  status?: string;
+  is_closed?: boolean;
+}
+
+export interface ReconciliationErrorItem {
+  journal_id?: number;
+  journal_number?: string;
+  reference_type?: string;
+  reference_id?: number;
+  donor_name?: string;
+  amount?: number;
+  transaction_date?: string | null;
+  total_debit?: number;
+  total_credit?: number;
+  difference?: number;
+  reason?: string;
+  period_id?: number | null;
+  period_status?: string | null;
+  period_start?: string | null;
+  period_end?: string | null;
+  created_at?: string;
+  closed_at?: string;
+  severity?: string;
+  [key: string]: unknown;
+}
 
 export interface ReconciliationControlItem {
+  check_code: string;
+  name: string;
+  status: ReconciliationCheckStatus | string;
+  severity: ReconciliationSeverity | string;
+  message: string;
+  total_checked: number;
+  total_failed: number;
+  errors: ReconciliationErrorItem[];
+  // Legacy compatibility fields
   key?: string;
   id?: string;
   code?: string;
-  name: string;
   description?: string;
-  status: ReconciliationControlStatus | string;
   source_amount?: number;
   ledger_amount?: number;
   variance?: number;
@@ -629,20 +682,33 @@ export interface ReconciliationControlItem {
   notes?: string | null;
 }
 
+export interface ReconciliationReport {
+  period?: ReconciliationPeriodInfo | null;
+  scope?: ReconciliationScope;
+  overall_status: ReconciliationOverallStatus | string;
+  total_checks: number;
+  passed_checks: number;
+  failed_checks: number;
+  critical_errors: number;
+  high_errors: number;
+  warnings: number;
+  last_checked_at?: string;
+  checks: ReconciliationControlItem[];
+}
+
 export interface ReconciliationSummary {
-  total_controls?: number;
-  total_checks?: number;
+  overall_status: ReconciliationOverallStatus | string;
+  critical_errors: number;
+  high_errors: number;
+  warnings: number;
+  failed_checks: number;
+  total_checks: number;
   passed_checks?: number;
-  failed_checks?: number;
+  last_checked_at?: string;
+  checked_at?: string;
   balanced_controls?: number;
   warning_controls?: number;
   anomaly_controls?: number;
-  critical_errors?: number;
-  high_errors?: number;
-  warnings?: number;
-  overall_status: 'healthy' | 'needs_attention' | 'critical' | 'reconciled' | 'reconciled_with_warnings' | 'critical_unreconciled' | string;
-  checked_at?: string;
-  last_checked_at?: string;
   controls?: ReconciliationControlItem[];
   checks?: ReconciliationControlItem[];
 }

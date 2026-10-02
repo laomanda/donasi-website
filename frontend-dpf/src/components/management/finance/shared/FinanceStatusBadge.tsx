@@ -36,101 +36,101 @@ interface BadgeConfig {
 
 const BADGE_CONFIGS: Record<FinanceStatusType, BadgeConfig> = {
   draft: {
-    label: "Draft",
-    bg: "bg-slate-100",
-    text: "text-slate-700",
-    border: "border-slate-200",
+    label: "Draf",
+    bg: "bg-slate-600",
+    text: "text-white",
+    border: "border-slate-600",
     icon: faClock,
   },
   posted: {
-    label: "Posted",
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    border: "border-emerald-200",
+    label: "Terbuku",
+    bg: "bg-emerald-600",
+    text: "text-white",
+    border: "border-emerald-600",
     icon: faCircleCheck,
   },
   completed: {
     label: "Selesai",
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    border: "border-emerald-200",
+    bg: "bg-emerald-600",
+    text: "text-white",
+    border: "border-emerald-600",
     icon: faCircleCheck,
   },
   failed: {
     label: "Gagal",
-    bg: "bg-rose-50",
-    text: "text-rose-700",
-    border: "border-rose-200",
+    bg: "bg-rose-600",
+    text: "text-white",
+    border: "border-rose-600",
     icon: faTriangleExclamation,
   },
   processing: {
-    label: "Memproses",
-    bg: "bg-blue-50",
-    text: "text-blue-700",
-    border: "border-blue-200",
+    label: "Diproses",
+    bg: "bg-brandBlueTeal-600",
+    text: "text-white",
+    border: "border-brandBlueTeal-600",
     icon: faClock,
   },
   previewed: {
     label: "Tervalidasi",
-    bg: "bg-indigo-50",
-    text: "text-indigo-700",
-    border: "border-indigo-200",
+    bg: "bg-indigo-600",
+    text: "text-white",
+    border: "border-indigo-600",
     icon: faCircleInfo,
   },
   void: {
-    label: "Void",
-    bg: "bg-rose-50",
-    text: "text-rose-700",
-    border: "border-rose-200",
+    label: "Batal",
+    bg: "bg-rose-600",
+    text: "text-white",
+    border: "border-rose-600",
     icon: faBan,
   },
   open: {
     label: "Terbuka",
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    border: "border-emerald-200",
+    bg: "bg-emerald-600",
+    text: "text-white",
+    border: "border-emerald-600",
     icon: faLockOpen,
   },
   closed: {
     label: "Ditutup",
-    bg: "bg-slate-100",
-    text: "text-slate-700",
-    border: "border-slate-300",
+    bg: "bg-slate-700",
+    text: "text-white",
+    border: "border-slate-700",
     icon: faLock,
   },
   balanced: {
     label: "Seimbang",
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    border: "border-emerald-200",
+    bg: "bg-emerald-600",
+    text: "text-white",
+    border: "border-emerald-600",
     icon: faCircleCheck,
   },
   warning: {
     label: "Perhatian",
-    bg: "bg-amber-50",
-    text: "text-amber-700",
-    border: "border-amber-200",
+    bg: "bg-amber-500",
+    text: "text-white",
+    border: "border-amber-500",
     icon: faTriangleExclamation,
   },
   anomaly: {
     label: "Anomali",
-    bg: "bg-rose-50",
-    text: "text-rose-700",
-    border: "border-rose-200",
+    bg: "bg-rose-600",
+    text: "text-white",
+    border: "border-rose-600",
     icon: faTriangleExclamation,
   },
   pending: {
     label: "Menunggu",
-    bg: "bg-amber-50",
-    text: "text-amber-700",
-    border: "border-amber-200",
+    bg: "bg-amber-500",
+    text: "text-white",
+    border: "border-amber-500",
     icon: faClock,
   },
   active: {
     label: "Aktif",
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    border: "border-emerald-200",
+    bg: "bg-emerald-600",
+    text: "text-white",
+    border: "border-emerald-600",
     icon: faCircleCheck,
   },
 };
@@ -151,9 +151,9 @@ export function FinanceStatusBadge({
   const normalized = (status || "").toLowerCase() as FinanceStatusType;
   const config = BADGE_CONFIGS[normalized] ?? {
     label: status || "-",
-    bg: "bg-slate-100",
-    text: "text-slate-700",
-    border: "border-slate-200",
+    bg: "bg-slate-700",
+    text: "text-white",
+    border: "border-slate-700",
     icon: faCircleInfo,
   };
 
@@ -161,10 +161,10 @@ export function FinanceStatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-bold tracking-wide uppercase shadow-xs ${config.bg} ${config.text} ${config.border} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold tracking-wide uppercase whitespace-nowrap shrink-0 shadow-xs ${config.bg} ${config.text} ${config.border} ${className}`}
     >
-      <FontAwesomeIcon icon={config.icon} className="text-[9px]" />
-      <span>{children ?? displayLabel}</span>
+      <FontAwesomeIcon icon={config.icon} className="text-[9px] shrink-0" />
+      <span className="whitespace-nowrap">{children ?? displayLabel}</span>
     </span>
   );
 }

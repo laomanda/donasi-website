@@ -56,7 +56,7 @@ export function FinanceStatCard({
 
         {icon && (
           <div
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${styles.iconBg} ${styles.iconText} shadow-xs ring-1 ring-white/20`}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${styles.iconBg} ${styles.iconText} shadow-sm`}
           >
             <FontAwesomeIcon icon={icon} className="text-base" />
           </div>

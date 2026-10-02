@@ -112,7 +112,7 @@ export function KeuanganDashboardPage() {
                 Dashboard Keuangan & Arus Kas
               </h1>
               <p className="text-sm font-medium text-slate-600">
-                Pantau arus masuk donasi (Cash In), realisasi penyaluran (Cash Out), dan rekonsiliasi kas yayasan.
+                Pantau arus masuk donasi (kas masuk), realisasi penyaluran (kas keluar), dan rekonsiliasi kas yayasan.
               </p>
             </div>
           </div>
@@ -146,7 +146,7 @@ export function KeuanganDashboardPage() {
               </div>
               <div>
                 <p className="font-heading text-lg font-semibold">Gagal memuat data keuangan</p>
-                <p className="text-sm font-medium text-white/80">{error}</p>
+                <p className="text-sm font-medium text-rose-100">{error}</p>
               </div>
             </div>
             <button
@@ -172,7 +172,7 @@ export function KeuanganDashboardPage() {
           loading={loading}
         />
         <StatCard
-          title="Total Penyaluran (Cash Out)"
+          title="Total Penyaluran (Kas Keluar)"
           value={formatCurrency(stats.allocationsTotal)}
           helper="Tersalurkan ke program & mitra"
           icon={faHandHoldingDollar}
@@ -208,7 +208,7 @@ export function KeuanganDashboardPage() {
             </div>
             <Link
               to="/keuangan/donations"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-brandGreen-200 bg-brandGreen-50 px-3 py-1.5 text-xs font-semibold text-brandGreen-700 transition-all duration-200 hover:bg-brandGreen-500 hover:text-white hover:border-brandGreen-500 hover:shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-brandGreen-600 bg-white px-3 py-1.5 text-xs font-bold text-brandGreen-600 transition-all duration-200 hover:bg-brandGreen-600 hover:text-white hover:shadow-sm"
             >
               <span>Lihat Semua</span>
               <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
@@ -267,7 +267,7 @@ export function KeuanganDashboardPage() {
             </div>
             <Link
               to="/keuangan/allocations"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-brandBlueTeal-500/20 bg-brandBlueTeal-100 px-3 py-1.5 text-xs font-semibold text-brandBlueTeal-500 transition-all duration-200 hover:bg-brandBlueTeal-500 hover:text-white hover:border-brandBlueTeal-500 hover:shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-brandBlueTeal-600 bg-white px-3 py-1.5 text-xs font-bold text-brandBlueTeal-600 transition-all duration-200 hover:bg-brandBlueTeal-600 hover:text-white hover:shadow-sm"
             >
               <span>Lihat Semua</span>
               <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
