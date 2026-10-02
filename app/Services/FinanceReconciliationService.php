@@ -264,7 +264,7 @@ class FinanceReconciliationService
         })->get(['id', 'journal_entry_id', 'account_id', 'debit', 'credit']);
 
         $totalFailed = $orphanLines->count();
-        $errors = $orphanLines->map(fn ($line) => [
+        $errors = $orphanLines->map(fn($line) => [
             'line_id' => $line->id,
             'journal_entry_id' => $line->journal_entry_id,
             'account_id' => $line->account_id,
@@ -316,7 +316,7 @@ class FinanceReconciliationService
             ->get();
 
         $totalFailed = $invalidLines->count();
-        $errors = $invalidLines->map(fn ($line) => [
+        $errors = $invalidLines->map(fn($line) => [
             'line_id' => $line->line_id,
             'journal_entry_id' => $line->journal_entry_id,
             'account_id' => $line->account_id,
@@ -349,7 +349,7 @@ class FinanceReconciliationService
             ->get();
 
         $totalFailed = $duplicates->count();
-        $errors = $duplicates->map(fn ($row) => [
+        $errors = $duplicates->map(fn($row) => [
             'journal_number' => $row->journal_number,
             'journal_ids' => array_map('intval', explode(',', (string) $row->journal_ids)),
             'count' => (int) $row->count,
@@ -407,7 +407,7 @@ class FinanceReconciliationService
             ->get();
 
         $totalFailed = $inconsistentJournals->count();
-        $errors = $inconsistentJournals->map(fn ($j) => [
+        $errors = $inconsistentJournals->map(fn($j) => [
             'journal_id' => $j->journal_id,
             'journal_number' => $j->journal_number,
             'transaction_date' => $j->transaction_date ? Carbon::parse($j->transaction_date)->toDateString() : null,
@@ -458,10 +458,22 @@ class FinanceReconciliationService
 
         $totalChecked = (clone $closedJournalsQuery)->count();
 
-        // Detect any journal created after closed_at
-        $illegalJournals = (clone $closedJournalsQuery)
+        // Detect any journal created while the period was closed:
+        // 1. Created after current closed_at, OR
+        // 2. Created after an earlier close_period audit log
+        $candidateJournals = (clone $closedJournalsQuery)
             ->whereNotNull('accounting_periods.closed_at')
-            ->whereColumn('journal_entries.created_at', '>', 'accounting_periods.closed_at')
+            ->where(function ($q) {
+                $q->whereColumn('journal_entries.created_at', '>', 'accounting_periods.closed_at')
+                    ->orWhereExists(function ($sub) {
+                        $sub->select(DB::raw(1))
+                            ->from('audit_logs')
+                            ->where('module', 'finance_period')
+                            ->whereColumn('reference_id', 'accounting_periods.id')
+                            ->where('action', 'close_period')
+                            ->whereColumn('created_at', '<', 'journal_entries.created_at');
+                    });
+            })
             ->select([
                 'journal_entries.id as journal_id',
                 'journal_entries.journal_number',
@@ -473,8 +485,31 @@ class FinanceReconciliationService
             ])
             ->get();
 
+        $illegalJournals = $candidateJournals->filter(function ($j) {
+            // If journal was created within an authorized canonical reopen window, it is legitimate
+            if ($this->isWithinAuthorizedReopenWindow((int) $j->period_id, $j->journal_created_at)) {
+                return false;
+            }
+
+            $jCreated = Carbon::parse($j->journal_created_at);
+            $pClosed = Carbon::parse($j->period_closed_at);
+
+            // Flag if created strictly after current closed_at
+            if ($jCreated->greaterThan($pClosed)) {
+                return true;
+            }
+
+            // Flag if created after a historical close_period without an authorized reopen window covering it
+            return DB::table('audit_logs')
+                ->where('module', 'finance_period')
+                ->where('reference_id', $j->period_id)
+                ->where('action', 'close_period')
+                ->where('created_at', '<', $jCreated)
+                ->exists();
+        })->values();
+
         $totalFailed = $illegalJournals->count();
-        $errors = $illegalJournals->map(fn ($j) => [
+        $errors = $illegalJournals->map(fn($j) => [
             'journal_id' => $j->journal_id,
             'journal_number' => $j->journal_number,
             'transaction_date' => $j->transaction_date ? Carbon::parse($j->transaction_date)->toDateString() : null,
@@ -496,6 +531,51 @@ class FinanceReconciliationService
             'total_failed' => $totalFailed,
             'errors' => $errors,
         ];
+    }
+
+    /**
+     * Determine whether a journal created_at timestamp falls within an authorized reopen window.
+     */
+    protected function isWithinAuthorizedReopenWindow(int $periodId, mixed $journalCreatedAt): bool
+    {
+        $jTime = Carbon::parse($journalCreatedAt);
+
+        $reopenLogs = DB::table('audit_logs')
+            ->where('module', 'finance_period')
+            ->where('reference_id', $periodId)
+            ->where('action', 'reopen_period')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        if ($reopenLogs->isEmpty()) {
+            return false;
+        }
+
+        foreach ($reopenLogs as $reopenLog) {
+            $reopenTime = Carbon::parse($reopenLog->created_at);
+
+            // Find matching close_period after this reopen
+            $closeLog = DB::table('audit_logs')
+                ->where('module', 'finance_period')
+                ->where('reference_id', $periodId)
+                ->where('action', 'close_period')
+                ->where('created_at', '>=', $reopenTime)
+                ->orderBy('created_at', 'asc')
+                ->first();
+
+            // Window end is either the close_period timestamp, or current time
+            $windowEnd = $closeLog ? Carbon::parse($closeLog->created_at) : Carbon::now();
+
+            // Strict condition: reopened_at <= journal.created_at <= reclosed_at
+            if (
+                $jTime->greaterThanOrEqualTo($reopenTime) &&
+                $jTime->lessThanOrEqualTo($windowEnd)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /*
@@ -537,7 +617,7 @@ class FinanceReconciliationService
             ->get(['id', 'amount', 'paid_at', 'created_at', 'donor_name']);
 
         $totalFailed = $unjournaled->count();
-        $errors = $unjournaled->map(fn ($d) => [
+        $errors = $unjournaled->map(fn($d) => [
             'reference_type' => 'donation',
             'reference_id' => $d->id,
             'donor_name' => $d->donor_name,
@@ -599,7 +679,7 @@ class FinanceReconciliationService
             ->get(['id', 'amount', 'allocated_at', 'created_at']);
 
         $totalFailed = $unjournaled->count();
-        $errors = $unjournaled->map(fn ($a) => [
+        $errors = $unjournaled->map(fn($a) => [
             'reference_type' => 'allocation',
             'reference_id' => $a->id,
             'amount' => (float) $a->amount,
@@ -638,7 +718,7 @@ class FinanceReconciliationService
             ->get();
 
         $totalFailed = $duplicates->count();
-        $errors = $duplicates->map(fn ($row) => [
+        $errors = $duplicates->map(fn($row) => [
             'reference_type' => $row->reference_type,
             'reference_id' => (int) $row->reference_id,
             'journal_count' => (int) $row->count,

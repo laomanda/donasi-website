@@ -308,6 +308,7 @@ class AccountingPeriodService
             }
 
             $userId = $user?->id ?? auth()->id() ?? User::query()->first()?->id ?? 1;
+            $previousClosedAt = $lockedPeriod->closed_at;
 
             $lockedPeriod->update([
                 'is_closed' => false,
@@ -324,6 +325,7 @@ class AccountingPeriodService
                 'old_data' => [
                     'status' => 'closed',
                     'is_closed' => true,
+                    'closed_at' => $previousClosedAt ? ($previousClosedAt instanceof CarbonInterface ? $previousClosedAt->toDateTimeString() : (string) $previousClosedAt) : null,
                 ],
                 'new_data' => [
                     'period_id' => $lockedPeriod->id,
