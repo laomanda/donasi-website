@@ -1,0 +1,1 @@
+import{j as r}from"./vendor-fontawesome-CF263nuw.js";import{E as t}from"./EditorMitraProductForm-C4UVae65.js";import"./vendor-react-nCGCgQFN.js";import"./index-FPDK5Sl7.js";import"./PhoneInput-CZzOp3sN.js";import"./MitraProductTypes-DJ42V7Uj.js";function d(){return r.jsx(t,{mode:"create"})}export{d as default};
