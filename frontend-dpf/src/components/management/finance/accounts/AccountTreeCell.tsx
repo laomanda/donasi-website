@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronDown,
@@ -15,7 +16,7 @@ interface AccountTreeCellProps {
   hasChildren: boolean;
   isExpanded: boolean;
   onToggleExpand: (id: number) => void;
-  onView: (account: Account) => void;
+  onView?: (account: Account) => void;
 }
 
 export const AccountTreeCell: React.FC<AccountTreeCellProps> = ({
@@ -90,15 +91,15 @@ export const AccountTreeCell: React.FC<AccountTreeCellProps> = ({
 
       <span className="text-slate-300">|</span>
 
-      {/* Name */}
-      <button
-        type="button"
-        onClick={() => onView(account)}
+      {/* Name as declarative Link */}
+      <Link
+        to={`/finance/accounts/${account.id}`}
+        onClick={onView ? () => onView(account) : undefined}
         className="text-left font-medium text-slate-900 hover:text-primary-600 hover:underline transition truncate max-w-[280px] lg:max-w-md"
         title={account.name}
       >
         {account.name}
-      </button>
+      </Link>
     </div>
   );
 };

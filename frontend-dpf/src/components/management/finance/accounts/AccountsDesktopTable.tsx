@@ -15,6 +15,7 @@ interface AccountsDesktopTableProps {
   onView: (account: Account) => void;
   onEdit: (account: Account) => void;
   onDelete: (account: Account) => void;
+  pagination?: React.ReactNode;
 }
 
 export const AccountsDesktopTable: React.FC<AccountsDesktopTableProps> = ({
@@ -26,6 +27,7 @@ export const AccountsDesktopTable: React.FC<AccountsDesktopTableProps> = ({
   onView,
   onEdit,
   onDelete,
+  pagination,
 }) => {
   return (
     <div className="hidden md:block overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200 bg-white shadow-xs">
@@ -207,6 +209,7 @@ export const AccountsDesktopTable: React.FC<AccountsDesktopTableProps> = ({
           </tbody>
         </table>
       </div>
+      {pagination}
     </div>
   );
 };

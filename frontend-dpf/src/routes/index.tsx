@@ -42,8 +42,13 @@ const ManagementShell = lazy(() => import('../layouts/dashboard/RoleShells').the
 
 // Finance Pages
 const FinanceDashboardPage = lazy(() => import('../pages/management/finance/FinanceDashboardPage').then(m => ({ default: m.FinanceDashboardPage })))
-const AccountsPage = lazy(() => import('../pages/management/finance/AccountsPage').then(m => ({ default: m.AccountsPage })))
+const AccountsPage = lazy(() => import('../pages/management/finance/accounts/AccountsPage').then(m => ({ default: m.AccountsPage })))
+const AccountCreatePage = lazy(() => import('../pages/management/finance/accounts/AccountCreatePage').then(m => ({ default: m.AccountCreatePage })))
+const AccountDetailPage = lazy(() => import('../pages/management/finance/accounts/AccountDetailPage').then(m => ({ default: m.AccountDetailPage })))
+const AccountEditPage = lazy(() => import('../pages/management/finance/accounts/AccountEditPage').then(m => ({ default: m.AccountEditPage })))
 const JournalsPage = lazy(() => import('../pages/management/finance/JournalsPage').then(m => ({ default: m.JournalsPage })))
+const JournalCreatePage = lazy(() => import('../pages/management/finance/journals/JournalCreatePage').then(m => ({ default: m.JournalCreatePage })))
+const JournalDetailPage = lazy(() => import('../pages/management/finance/journals/JournalDetailPage').then(m => ({ default: m.JournalDetailPage })))
 const GeneralLedgerPage = lazy(() => import('../pages/management/finance/GeneralLedgerPage').then(m => ({ default: m.GeneralLedgerPage })))
 const TrialBalancePage = lazy(() => import('../pages/management/finance/TrialBalancePage').then(m => ({ default: m.TrialBalancePage })))
 const BalanceSheetPage = lazy(() => import('../pages/management/finance/BalanceSheetPage').then(m => ({ default: m.BalanceSheetPage })))
@@ -271,7 +276,12 @@ export const router = createBrowserRouter([
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="keuangan" /></Suspense> },
           // Finance aliases within keuangan
           { path: 'accounts', element: withSuspense(AccountsPage) },
+          { path: 'accounts/create', element: withSuspense(AccountCreatePage) },
+          { path: 'accounts/:id/edit', element: withSuspense(AccountEditPage) },
+          { path: 'accounts/:id', element: withSuspense(AccountDetailPage) },
           { path: 'journals', element: withSuspense(JournalsPage) },
+          { path: 'journals/create', element: withSuspense(JournalCreatePage) },
+          { path: 'journals/:id', element: withSuspense(JournalDetailPage) },
           { path: 'general-ledger', element: withSuspense(GeneralLedgerPage) },
           { path: 'trial-balance', element: withSuspense(TrialBalancePage) },
           { path: 'neraca-saldo', element: withSuspense(TrialBalancePage) },
@@ -298,7 +308,12 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', element: withSuspense(FinanceDashboardPage) },
           { path: 'accounts', element: withSuspense(AccountsPage) },
+          { path: 'accounts/create', element: withSuspense(AccountCreatePage) },
+          { path: 'accounts/:id/edit', element: withSuspense(AccountEditPage) },
+          { path: 'accounts/:id', element: withSuspense(AccountDetailPage) },
           { path: 'journals', element: withSuspense(JournalsPage) },
+          { path: 'journals/create', element: withSuspense(JournalCreatePage) },
+          { path: 'journals/:id', element: withSuspense(JournalDetailPage) },
           { path: 'general-ledger', element: withSuspense(GeneralLedgerPage) },
           { path: 'trial-balance', element: withSuspense(TrialBalancePage) },
           { path: 'neraca-saldo', element: withSuspense(TrialBalancePage) },

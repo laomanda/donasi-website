@@ -25,6 +25,7 @@ let inFlightRequest: Promise<{ accounts: Account[]; summary: AccountSummary | nu
 export function invalidateAccountsCache(): void {
   accountsModuleCache = null;
 }
+export const invalidateAccountsDataCache = invalidateAccountsCache;
 
 /**
  * Authoritative fetcher with request deduplication.

@@ -22,6 +22,7 @@ interface AccountsMobileListProps {
   onView: (account: Account) => void;
   onEdit: (account: Account) => void;
   onDelete: (account: Account) => void;
+  pagination?: React.ReactNode;
 }
 
 export const AccountsMobileList: React.FC<AccountsMobileListProps> = ({
@@ -33,6 +34,7 @@ export const AccountsMobileList: React.FC<AccountsMobileListProps> = ({
   onView,
   onEdit,
   onDelete,
+  pagination,
 }) => {
   return (
     <div className="md:hidden space-y-2.5">
@@ -215,6 +217,12 @@ export const AccountsMobileList: React.FC<AccountsMobileListProps> = ({
               />
             </div>
           ))}
+
+      {pagination && (
+        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-2xs">
+          {pagination}
+        </div>
+      )}
     </div>
   );
 };
