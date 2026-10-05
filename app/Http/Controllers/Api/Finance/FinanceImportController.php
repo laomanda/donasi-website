@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Finance;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Rules\FinanceExcelFileRule;
 use App\Services\FinanceImportPreviewService;
 use App\Services\FinanceImportService;
 use App\Services\FinanceImportTemplateService;
@@ -37,11 +38,15 @@ class FinanceImportController extends Controller
     {
         $request->validate([
             'file' => [
+                'bail',
                 'required',
                 'file',
-                'mimes:xlsx,xls',
-                'max:10240',
+                'max:15360',
+                new FinanceExcelFileRule(),
             ],
+        ], [
+            'file.required' => 'File Excel wajib diunggah.',
+            'file.max' => 'Ukuran file melebihi batas maksimum 15 MB.',
         ]);
 
         $file = $request->file('file');
@@ -62,7 +67,9 @@ class FinanceImportController extends Controller
     {
         $request->validate([
             'batch_token' => ['nullable', 'string'],
-            'file'        => ['nullable', 'file', 'mimes:xlsx,xls', 'max:10240'],
+            'file'        => ['bail', 'nullable', 'file', 'max:15360', new FinanceExcelFileRule()],
+        ], [
+            'file.max' => 'Ukuran file melebihi batas maksimum 15 MB.',
         ]);
 
         $user = $request->user();
@@ -134,11 +141,15 @@ class FinanceImportController extends Controller
     {
         $request->validate([
             'file' => [
+                'bail',
                 'required',
                 'file',
-                'mimes:xlsx,xls',
-                'max:10240',
+                'max:15360',
+                new FinanceExcelFileRule(),
             ],
+        ], [
+            'file.required' => 'File Excel wajib diunggah.',
+            'file.max' => 'Ukuran file melebihi batas maksimum 15 MB.',
         ]);
 
         $file = $request->file('file');

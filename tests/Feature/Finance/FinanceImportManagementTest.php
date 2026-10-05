@@ -67,6 +67,81 @@ class FinanceImportManagementTest extends TestCase
         );
     }
 
+    protected function createRawUpload(string $contents, string $originalName, ?int $size = null): UploadedFile
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_finance_upload_');
+        $this->tempFiles[] = $tempFile;
+
+        if ($size !== null) {
+            $handle = fopen($tempFile, 'wb');
+            ftruncate($handle, $size);
+            fclose($handle);
+        } else {
+            file_put_contents($tempFile, $contents);
+        }
+
+        return new UploadedFile(
+            $tempFile,
+            $originalName,
+            'application/octet-stream',
+            null,
+            true
+        );
+    }
+
+    public function test_invalid_original_extension_is_rejected_in_indonesian(): void
+    {
+        $file = $this->createExcelFile([
+            ['Kode Akun', 'Nama Akun', 'Level', 'Parent Akun', 'Jenis Akun', 'Saldo Normal', 'Kategori Laporan', 'Status'],
+        ]);
+        $file = new UploadedFile(
+            $file->getRealPath(),
+            'accounts.csv',
+            $file->getClientMimeType(),
+            null,
+            true
+        );
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson('/api/v1/finance/import/accounts/preview', ['file' => $file]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.file.0', 'File harus berformat Excel (.xlsx atau .xls).');
+    }
+
+    public function test_corrupt_excel_is_rejected_with_specific_message(): void
+    {
+        $file = $this->createRawUpload('not an excel workbook', 'accounts.xlsx');
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson('/api/v1/finance/import/accounts/preview', ['file' => $file]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.file.0', 'File Excel tidak valid atau rusak. Gunakan template resmi dan unggah kembali file yang dapat dibuka.');
+    }
+
+    public function test_password_protected_xlsx_is_rejected_with_specific_message(): void
+    {
+        $file = $this->createRawUpload("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1EncryptedPackage", 'accounts.xlsx');
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson('/api/v1/finance/import/accounts/preview', ['file' => $file]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.file.0', 'File Excel dilindungi password dan tidak dapat diproses. Hapus password dokumen terlebih dahulu, lalu unggah kembali file yang dapat dibuka.');
+    }
+
+    public function test_oversized_excel_is_rejected_at_fifteen_mb(): void
+    {
+        $file = $this->createRawUpload('', 'accounts.xlsx', 15 * 1024 * 1024 + 1);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson('/api/v1/finance/import/accounts/preview', ['file' => $file]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.file.0', 'Ukuran file melebihi batas maksimum 15 MB.');
+    }
+
     /**
      * Test 1: Template berhasil dibuat.
      */

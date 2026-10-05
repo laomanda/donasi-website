@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileImport, faEye } from "@fortawesome/free-solid-svg-icons";
+import { faFileImport, faEye, faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import {
   FinanceTableSkeleton,
   FinanceEmptyState,
@@ -29,6 +29,8 @@ export function ImportHistory({
   onFilterModuleChange,
   onOpenDetail,
 }: ImportHistoryProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
   const filteredHistory = useMemo(() => {
     if (filterModule === "all") return history;
     return history.filter((item) => {
@@ -39,24 +41,40 @@ export function ImportHistory({
       return true;
     });
   }, [history, filterModule]);
+  const totalPages = Math.max(1, Math.ceil(filteredHistory.length / perPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const pageStart = (safePage - 1) * perPage;
+  const paginatedHistory = filteredHistory.slice(pageStart, pageStart + perPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterModule, history]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
+
+  const selectFilter = (module: string) => {
+    setCurrentPage(1);
+    onFilterModuleChange(module);
+  };
 
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-5">
+    <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
           <h3 className="font-heading text-base font-bold text-slate-900">
-            Riwayat Batch Import
+            Riwayat Impor
           </h3>
           <p className="text-xs font-medium text-slate-500 mt-0.5">
-            Daftar seluruh proses import data keuangan yang tercatat di audit log.
+            Catatan batch impor yang telah diproses.
           </p>
         </div>
 
-        {/* Module Filter Chips */}
         <div className="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
-            onClick={() => onFilterModuleChange("all")}
+            onClick={() => selectFilter("all")}
             className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
               filterModule === "all"
                 ? "bg-slate-900 text-white shadow-2xs"
@@ -67,7 +85,7 @@ export function ImportHistory({
           </button>
           <button
             type="button"
-            onClick={() => onFilterModuleChange("accounts")}
+            onClick={() => selectFilter("accounts")}
             className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
               filterModule === "accounts"
                 ? "bg-slate-900 text-white shadow-2xs"
@@ -78,7 +96,7 @@ export function ImportHistory({
           </button>
           <button
             type="button"
-            onClick={() => onFilterModuleChange("journals")}
+            onClick={() => selectFilter("journals")}
             className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
               filterModule === "journals"
                 ? "bg-slate-900 text-white shadow-2xs"
@@ -89,7 +107,7 @@ export function ImportHistory({
           </button>
           <button
             type="button"
-            onClick={() => onFilterModuleChange("opening_balance")}
+            onClick={() => selectFilter("opening_balance")}
             className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
               filterModule === "opening_balance"
                 ? "bg-slate-900 text-white shadow-2xs"
@@ -98,13 +116,16 @@ export function ImportHistory({
           >
             Saldo Awal
           </button>
+          <button type="button" onClick={onRetry} disabled={loading} className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50" title="Segarkan riwayat">
+            <FontAwesomeIcon icon={faRotateRight} className={loading ? "animate-spin" : ""} /> Segarkan
+          </button>
         </div>
       </div>
 
       {/* History Table Content */}
       {error ? (
         <FinanceErrorState
-          title="Tidak dapat memuat histori import"
+          title="Tidak dapat memuat riwayat impor"
           message={error}
           onRetry={onRetry}
         />
@@ -114,14 +135,15 @@ export function ImportHistory({
         </div>
       ) : filteredHistory.length === 0 ? (
         <FinanceEmptyState
-          title="Belum Ada Riwayat Import"
-          description="Belum ada proses import file Excel yang tercatat pada filter ini. Mulai dengan memilih modul dan mengunggah template."
+          title="Belum Ada Riwayat Impor"
+          description="Belum ada proses impor file Excel yang tercatat pada filter ini."
           icon={faFileImport}
         />
       ) : (
-        <div className="overflow-x-auto">
+        <>
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-slate-200 bg-slate-50 font-bold text-slate-700">
+            <thead className="border-b border-slate-800 bg-slate-900 font-bold text-white">
               <tr>
                 <th className="px-3.5 py-3">ID Batch</th>
                 <th className="px-3.5 py-3">Nama Berkas</th>
@@ -136,7 +158,7 @@ export function ImportHistory({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium text-slate-600">
-              {filteredHistory.map((item) => {
+              {paginatedHistory.map((item) => {
                 const modLabel =
                   item.module === "accounts"
                     ? "Daftar Akun"
@@ -171,7 +193,7 @@ export function ImportHistory({
                     <td className="px-3.5 py-3 text-right font-mono tabular-nums text-rose-700 font-bold">
                       {item.failed_rows ?? item.errors_count ?? 0}
                     </td>
-                    <td className="px-3.5 py-3 text-slate-700">{item.user || "Admin Finance"}</td>
+                    <td className="px-3.5 py-3 text-slate-700">{item.user || "-"}</td>
                     <td className="px-3.5 py-3 text-slate-500 whitespace-nowrap">
                       {item.created_at ? formatFinanceDate(item.created_at) : "-"}
                     </td>
@@ -191,6 +213,31 @@ export function ImportHistory({
             </tbody>
           </table>
         </div>
+        <div className="space-y-3 md:hidden">
+          {paginatedHistory.map((item) => (
+            <button key={item.id} type="button" onClick={() => onOpenDetail(item.id)} className="w-full rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm hover:bg-slate-50">
+              <div className="flex items-start justify-between gap-3"><span className="font-mono text-xs font-bold text-slate-900">#{item.id}</span><FinanceStatusBadge status={item.status} /></div>
+              <p className="mt-2 truncate text-sm font-bold text-slate-900">{item.filename || item.file_name || "-"}</p>
+              <p className="mt-1 text-xs text-slate-500">{item.module} · {formatFinanceDate(item.created_at)}</p>
+              <p className="mt-2 text-xs font-semibold text-slate-600">{item.success_rows} berhasil · {item.failed_rows} gagal</p>
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-col gap-3 border-t border-slate-200 pt-3 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            Menampilkan {filteredHistory.length === 0 ? 0 : pageStart + 1}–{Math.min(pageStart + perPage, filteredHistory.length)} dari {filteredHistory.length} batch
+          </p>
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            <label htmlFor="import-history-per-page" className="font-semibold">Tampilkan</label>
+            <select id="import-history-per-page" value={perPage} onChange={(event) => { setPerPage(Number(event.target.value)); setCurrentPage(1); }} className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700">
+              {[10, 25, 50].map((size) => <option key={size} value={size}>{size}</option>)}
+            </select>
+            <button type="button" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={safePage <= 1} className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">Sebelumnya</button>
+            <span className="whitespace-nowrap font-semibold">Halaman {safePage} dari {totalPages}</span>
+            <button type="button" onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} disabled={safePage >= totalPages} className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">Selanjutnya</button>
+          </div>
+        </div>
+        </>
       )}
     </div>
   );

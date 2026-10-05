@@ -31,8 +31,8 @@ export function ImportHistoryDetail({
   if (!batchId) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4" role="dialog" aria-modal="true" aria-labelledby="import-detail-title">
+      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col space-y-4 rounded-xl bg-white p-5 shadow-xl sm:p-6">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
@@ -40,10 +40,10 @@ export function ImportHistoryDetail({
             </div>
             <div>
               <h3 className="font-heading text-base font-bold text-slate-900">
-                Detail Batch Import #{batchId}
+                <span id="import-detail-title">Detail Batch Impor #{batchId}</span>
               </h3>
               <p className="text-xs font-medium text-slate-500">
-                Informasi audit dan log validasi baris batch import.
+                Informasi audit dan log validasi baris batch impor.
               </p>
             </div>
           </div>
@@ -83,15 +83,15 @@ export function ImportHistoryDetail({
                     <FinanceStatusBadge status={batchDetail.batch?.status || "completed"} />
                   </div>
                 </div>
-                <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3">
-                  <p className="text-[11px] font-bold text-emerald-700">Berhasil</p>
-                  <p className="text-sm font-extrabold text-emerald-800 tabular-nums mt-0.5">
+                <div className="rounded-xl border border-slate-200 bg-white p-3">
+                  <p className="text-[11px] font-bold text-slate-500">Berhasil</p>
+                  <p className="mt-0.5 text-sm font-extrabold text-slate-900 tabular-nums">
                     {batchDetail.batch?.success_rows ?? 0}
                   </p>
                 </div>
-                <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-3">
-                  <p className="text-[11px] font-bold text-rose-700">Gagal</p>
-                  <p className="text-sm font-extrabold text-rose-800 tabular-nums mt-0.5">
+                <div className="rounded-xl border border-slate-200 bg-white p-3">
+                  <p className="text-[11px] font-bold text-slate-500">Gagal</p>
+                  <p className="mt-0.5 text-sm font-extrabold text-red-600 tabular-nums">
                     {batchDetail.batch?.failed_rows ?? 0}
                   </p>
                 </div>
@@ -105,7 +105,7 @@ export function ImportHistoryDetail({
                   </p>
                   <div className="overflow-hidden rounded-xl border border-rose-200">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-rose-50 font-bold text-rose-900 border-b border-rose-100">
+                      <thead className="border-b border-slate-800 bg-slate-900 font-bold text-white">
                         <tr>
                           <th className="w-20 px-3 py-2">Baris</th>
                           <th className="px-3 py-2">Pesan Error</th>
@@ -117,7 +117,7 @@ export function ImportHistoryDetail({
                             <td className="px-3 py-2 font-mono font-bold text-slate-800">
                               {err.row > 0 ? `Baris ${err.row}` : "-"}
                             </td>
-                            <td className="px-3 py-2 font-medium text-rose-700">{err.message}</td>
+                            <td className="px-3 py-2 font-medium text-slate-700">{err.message || "Tidak tersedia"}</td>
                           </tr>
                         ))}
                       </tbody>

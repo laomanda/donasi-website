@@ -169,6 +169,20 @@ class FinanceJournalImportEngineTest extends TestCase
         $this->assertNotEmpty($response->json('data.batch_token'));
     }
 
+    public function test_accounts_template_on_journal_endpoint_reaches_schema_validation(): void
+    {
+        $file = $this->createJournalExcel([
+            ['Kode Akun', 'Nama Akun', 'Level', 'Parent Akun', 'Jenis Akun', 'Saldo Normal', 'Kategori Laporan', 'Status'],
+            ['1000', 'Aset', 1, '', 'asset', 'debit', 'Aset', 'Aktif'],
+        ], 'AD');
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson('/api/v1/finance/import/journals/preview', ['file' => $file]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('data.errors.0.message', 'Format header Excel tidak sesuai. Kolom wajib: Nomor Jurnal, Tanggal, Kode Akun, Debit, Kredit.');
+    }
+
     /**
      * Test 3: Preview tidak insert database.
      */

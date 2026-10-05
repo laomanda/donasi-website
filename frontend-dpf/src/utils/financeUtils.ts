@@ -88,7 +88,7 @@ export const formatFinanceDateTime = (dateStr: string | null | undefined): strin
  */
 export const extractFinanceErrorMessage = (error: unknown, fallback = 'Terjadi kesalahan sistem.'): string => {
   if (!error) return fallback;
-  if (typeof error === 'string') return error;
+  if (typeof error === 'string') return normalizeFinanceImportErrorMessage(error);
 
   const errObj = error as {
     response?: {
@@ -103,16 +103,30 @@ export const extractFinanceErrorMessage = (error: unknown, fallback = 'Terjadi k
   if (errors && typeof errors === 'object') {
     const firstField = Object.keys(errors)[0];
     if (firstField && Array.isArray(errors[firstField]) && errors[firstField].length > 0) {
-      return String(errors[firstField][0]);
+      return normalizeFinanceImportErrorMessage(String(errors[firstField][0]));
     }
   }
 
   const serverMessage = errObj?.response?.data?.message || errObj?.message;
   if (typeof serverMessage === 'string' && serverMessage.trim()) {
-    return serverMessage.trim();
+    return normalizeFinanceImportErrorMessage(serverMessage.trim());
   }
 
   return fallback;
+};
+
+const normalizeFinanceImportErrorMessage = (message: string): string => {
+  const normalized = message.trim();
+
+  if (/must be a file of type:\s*xlsx,?\s*xls/i.test(normalized)) {
+    return 'File harus berformat Excel (.xlsx atau .xls).';
+  }
+
+  if (/may not be greater than\s*(10240|15360)\s*kilobytes|file.*too large/i.test(normalized)) {
+    return 'Ukuran file melebihi batas maksimum 15 MB.';
+  }
+
+  return normalized;
 };
 
 /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Finance;
 
+use App\Rules\FinanceExcelFileRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class JournalImportRequest extends FormRequest
@@ -24,17 +25,18 @@ class JournalImportRequest extends FormRequest
         if ($this->routeIs('*preview*')) {
             return [
                 'file' => [
+                    'bail',
                     'required',
                     'file',
-                    'mimes:xlsx,xls',
                     'max:15360', // 15MB
+                    new FinanceExcelFileRule(),
                 ],
             ];
         }
 
         return [
             'batch_token' => ['nullable', 'string'],
-            'file'        => ['nullable', 'file', 'mimes:xlsx,xls', 'max:15360'],
+            'file'        => ['bail', 'nullable', 'file', 'max:15360', new FinanceExcelFileRule()],
         ];
     }
 
@@ -46,7 +48,7 @@ class JournalImportRequest extends FormRequest
         return [
             'file.required' => 'File Excel wajib diunggah.',
             'file.mimes'    => 'Format file harus berupa Excel (.xlsx atau .xls).',
-            'file.max'      => 'Ukuran file tidak boleh melebihi 15 MB.',
+            'file.max'      => 'Ukuran file melebihi batas maksimum 15 MB.',
         ];
     }
 }

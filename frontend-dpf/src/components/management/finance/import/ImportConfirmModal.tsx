@@ -14,6 +14,7 @@ interface ImportConfirmModalProps {
   previewResult: CombinedPreviewData | null;
   periods: AccountingPeriod[];
   selectedPeriodId: number | "";
+  canConfirm: boolean;
 }
 
 export function ImportConfirmModal({
@@ -27,27 +28,30 @@ export function ImportConfirmModal({
   previewResult,
   periods,
   selectedPeriodId,
+  canConfirm,
 }: ImportConfirmModalProps) {
   if (!isOpen) return null;
 
+  const failed = previewResult ? (previewResult.type === "journals" ? previewResult.data.failed_journals : previewResult.data.failed_rows) : 0;
+  const valid = previewResult ? (previewResult.type === "journals" ? previewResult.data.valid_journals : previewResult.data.valid_rows) : 0;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4" role="dialog" aria-modal="true" aria-labelledby="confirm-import-title">
+      <div className="flex max-h-[90vh] w-full max-w-md flex-col gap-4 overflow-y-auto rounded-xl bg-white p-5 shadow-xl sm:p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white">
             <FontAwesomeIcon icon={faCheckCircle} className="text-lg" />
           </div>
           <div>
             <h3 className="font-heading text-base font-bold text-slate-900">
-              Konfirmasi Import {activeModuleConfig.shortName}
+              <span id="confirm-import-title">Konfirmasi Impor Data</span>
             </h3>
             <p className="text-xs font-medium text-slate-500">
-              Pastikan data telah divalidasi sebelum commit ke database.
+              Pastikan modul, periode, dan file sudah benar.
             </p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-xs space-y-2">
+        <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs">
           <div className="flex justify-between">
             <span className="text-slate-500">Modul:</span>
             <span className="font-bold text-slate-900">{activeModuleConfig.title}</span>
@@ -59,12 +63,10 @@ export function ImportConfirmModal({
             </span>
           </div>
           {previewResult && (
-            <div className="flex justify-between">
-              <span className="text-slate-500">Total Baris:</span>
-              <span className="font-bold text-slate-900 tabular-nums">
-                {previewResult.data.total_rows} baris
-              </span>
-            </div>
+            <>
+              <div className="flex justify-between"><span className="text-slate-500">Valid:</span><span className="font-bold text-slate-900">{valid}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Bermasalah:</span><span className="font-bold text-slate-900">{failed}</span></div>
+            </>
           )}
           {selectedModule === "opening_balance" && (
             <div className="flex justify-between">
@@ -78,7 +80,7 @@ export function ImportConfirmModal({
         </div>
 
         <p className="text-[11px] font-medium text-slate-500">
-          Data yang telah dimasukkan akan secara otomatis memperbarui buku besar dan laporan keuangan terkait.
+          Pastikan data hasil validasi telah diperiksa sebelum melanjutkan.
         </p>
 
         <div className="flex items-center justify-end gap-2.5 pt-2">
@@ -88,15 +90,15 @@ export function ImportConfirmModal({
             disabled={confirming}
             className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 active:scale-95 disabled:opacity-50"
           >
-            Batalkan
+            Batal
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            disabled={confirming}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-2xs hover:bg-emerald-700 active:scale-95 disabled:opacity-50"
+            disabled={confirming || !canConfirm}
+            className="inline-flex items-center gap-2 rounded-xl bg-primary-500 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-primary-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {confirming ? "Mengimport..." : "Import Sekarang"}
+            {confirming ? "Memproses..." : "Konfirmasi Impor"}
           </button>
         </div>
       </div>

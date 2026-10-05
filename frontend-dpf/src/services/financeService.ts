@@ -380,7 +380,6 @@ const financeService = {
       '/finance/import/accounts/preview',
       formData,
       {
-        headers: { 'Content-Type': 'multipart/form-data' },
         skipErrorRedirect: true,
       }
     );
@@ -406,7 +405,6 @@ const financeService = {
       '/finance/import/journals/preview',
       formData,
       {
-        headers: { 'Content-Type': 'multipart/form-data' },
         skipErrorRedirect: true,
       }
     );
@@ -432,7 +430,6 @@ const financeService = {
       '/finance/import/opening-balance/preview',
       formData,
       {
-        headers: { 'Content-Type': 'multipart/form-data' },
         skipErrorRedirect: true,
       }
     );

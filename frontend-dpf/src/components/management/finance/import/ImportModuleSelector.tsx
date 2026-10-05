@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import type { ImportModule } from "@/types/finance";
-import { MODULE_CONFIGS, type ModuleConfig } from "./importTypes";
+import { MODULE_CONFIGS } from "./importTypes";
 
 interface ImportModuleSelectorProps {
   selectedModule: ImportModule;
@@ -9,49 +9,36 @@ interface ImportModuleSelectorProps {
   disabled?: boolean;
 }
 
-export function ImportModuleSelector({
-  selectedModule,
-  onSelectModule,
-  disabled = false,
-}: ImportModuleSelectorProps) {
+export function ImportModuleSelector({ selectedModule, onSelectModule, disabled = false }: ImportModuleSelectorProps) {
+  const active = MODULE_CONFIGS.find((item) => item.id === selectedModule) ?? MODULE_CONFIGS[0];
+
   return (
-    <div className="grid gap-3.5 sm:grid-cols-3">
-      {MODULE_CONFIGS.map((mod: ModuleConfig) => {
-        const isSelected = selectedModule === mod.id;
-        return (
-          <button
-            key={mod.id}
-            type="button"
-            disabled={disabled}
-            onClick={() => onSelectModule(mod.id)}
-            className={`group relative flex flex-col items-start rounded-2xl border p-4.5 text-left transition-all ${
-              isSelected
-                ? "border-emerald-600 bg-emerald-50/50 shadow-xs ring-2 ring-emerald-600/20"
-                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80"
-            } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
-          >
-            <div className="flex w-full items-center justify-between gap-2 mb-2">
-              <div
-                className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
-                  isSelected ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-600 group-hover:bg-slate-200"
-                }`}
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Modul Impor</p>
+          <p className="mt-0.5 text-xs text-slate-600">{active.description}</p>
+        </div>
+        <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 sm:justify-end [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {MODULE_CONFIGS.map((module) => {
+            const selected = module.id === selectedModule;
+            return (
+              <button
+                key={module.id}
+                type="button"
+                disabled={disabled}
+                onClick={() => onSelectModule(module.id)}
+                aria-pressed={selected}
+                className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border px-3.5 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-60 ${selected ? "border-slate-900 bg-slate-900 text-white" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"}`}
               >
-                <FontAwesomeIcon icon={mod.icon} className="text-sm" />
-              </div>
-              {isSelected && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-                  <FontAwesomeIcon icon={faCheckCircle} className="text-[9px]" /> Aktif
-                </span>
-              )}
-            </div>
-            <p className="font-heading text-sm font-bold text-slate-900">{mod.shortName}</p>
-            <p className="text-xs font-medium text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-              {mod.description}
-            </p>
-          </button>
-        );
-      })}
-    </div>
+                {selected && <FontAwesomeIcon icon={faCheck} className="text-[10px]" />}
+                {module.shortName}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 

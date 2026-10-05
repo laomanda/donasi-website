@@ -6,6 +6,7 @@ use App\Exports\Finance\OpeningBalanceTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\ImportBatch;
+use App\Rules\FinanceExcelFileRule;
 use App\Services\FinanceOpeningBalanceImportService;
 use App\Services\FinanceOpeningBalancePreviewService;
 use Illuminate\Http\JsonResponse;
@@ -50,9 +51,12 @@ class FinanceOpeningBalanceImportController extends Controller
     public function preview(Request $request): JsonResponse
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:xlsx,xls'],
+            'file' => ['bail', 'required', 'file', 'max:15360', new FinanceExcelFileRule()],
             'accounting_period_id' => ['nullable', 'integer', 'exists:accounting_periods,id'],
             'period_id' => ['nullable', 'integer', 'exists:accounting_periods,id'],
+        ], [
+            'file.required' => 'File Excel wajib diunggah.',
+            'file.max' => 'Ukuran file melebihi batas maksimum 15 MB.',
         ]);
 
         $periodId = (int) ($request->input('accounting_period_id') ?: $request->input('period_id'));
@@ -80,10 +84,12 @@ class FinanceOpeningBalanceImportController extends Controller
     public function confirm(Request $request): JsonResponse
     {
         $request->validate([
-            'file' => ['nullable', 'file', 'mimes:xlsx,xls'],
+            'file' => ['bail', 'nullable', 'file', 'max:15360', new FinanceExcelFileRule()],
             'batch_token' => ['nullable', 'string'],
             'accounting_period_id' => ['nullable', 'integer', 'exists:accounting_periods,id'],
             'period_id' => ['nullable', 'integer', 'exists:accounting_periods,id'],
+        ], [
+            'file.max' => 'Ukuran file melebihi batas maksimum 15 MB.',
         ]);
 
         $periodId = (int) ($request->input('accounting_period_id') ?: $request->input('period_id'));

@@ -170,6 +170,7 @@ class FinanceJournalImportService
                 'vouchers' => [],
                 'errors' => [['row' => 1, 'message' => 'Sheet JU kosong.']],
                 'total_rows' => 0,
+                'total_journals' => 0,
             ];
         }
 
@@ -196,6 +197,7 @@ class FinanceJournalImportService
                     ],
                 ],
                 'total_rows' => 0,
+                'total_journals' => 0,
             ];
         }
 
