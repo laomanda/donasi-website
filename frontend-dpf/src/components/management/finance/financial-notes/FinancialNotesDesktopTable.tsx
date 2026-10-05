@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,
   faChevronRight,
-  faEye,
   faPenToSquare,
   faTrashCan,
   faInbox,
@@ -94,7 +93,9 @@ export const FinancialNotesDesktopTable: React.FC<FinancialNotesDesktopTableProp
               <th className="px-4 py-3.5 whitespace-nowrap">Penyusun</th>
               <th className="px-3 py-3.5 whitespace-nowrap text-center">Status</th>
               <th className="px-4 py-3.5 whitespace-nowrap text-slate-300">Diperbarui</th>
-              <th className="px-4 py-3.5 whitespace-nowrap text-center">Aksi</th>
+              {canManage && (
+                <th className="px-4 py-3.5 whitespace-nowrap text-center">Aksi</th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -102,24 +103,20 @@ export const FinancialNotesDesktopTable: React.FC<FinancialNotesDesktopTableProp
               const letter = getCategorySectionLetter(note.category);
               const orderLabel = formatNoteOrderLabel(note, letter, (currentPage - 1) * (perPage === -1 ? 0 : perPage) + idx + 1);
               const creator = formatCreatorLabel(note.creator_name);
-              const detailUrl = `/finance/financial-notes/${note.id}${periodParam}`;
               const editUrl = `/finance/financial-notes/${note.id}/edit${periodParam}`;
 
               return (
-                <tr key={note.id} className="hover:bg-slate-50/80 transition-colors">
+                <tr key={note.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-4 py-3 text-center whitespace-nowrap">
                     <span className="inline-flex h-6 px-2 items-center justify-center rounded-md bg-slate-100 font-mono text-[11px] font-bold text-slate-800">
                       {orderLabel}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <Link
-                      to={detailUrl}
-                      className="font-bold text-slate-900 hover:text-primary-600 transition block font-poppins line-clamp-1"
-                    >
+                  <td className="px-4 py-3 min-w-0 max-w-xs">
+                    <p className="font-bold text-slate-900 font-poppins line-clamp-1 break-words break-all [overflow-wrap:anywhere]">
                       {note.title}
-                    </Link>
-                    <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
+                    </p>
+                    <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5 break-words break-all [overflow-wrap:anywhere]">
                       {note.content}
                     </p>
                   </td>
@@ -138,38 +135,28 @@ export const FinancialNotesDesktopTable: React.FC<FinancialNotesDesktopTableProp
                   <td className="px-4 py-3 whitespace-nowrap text-slate-500 text-[11px]">
                     {note.updated_at ? formatFinanceDate(note.updated_at) : "-"}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-center">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <Link
-                        to={detailUrl}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 shadow-2xs"
-                        title="Lihat Detail"
-                      >
-                        <FontAwesomeIcon icon={faEye} className="text-[10px]" />
-                      </Link>
+                  {canManage && (
+                    <td className="px-4 py-3 whitespace-nowrap text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Link
+                          to={editUrl}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-2xs transition"
+                          title="Edit Catatan"
+                        >
+                          <FontAwesomeIcon icon={faPenToSquare} className="text-xs" />
+                        </Link>
 
-                      {canManage && (
-                        <>
-                          <Link
-                            to={editUrl}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 shadow-2xs"
-                            title="Edit Catatan"
-                          >
-                            <FontAwesomeIcon icon={faPenToSquare} className="text-[10px]" />
-                          </Link>
-
-                          <button
-                            type="button"
-                            onClick={() => onDeleteClick(note)}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-300 bg-white text-red-600 hover:bg-red-50 hover:border-red-300 shadow-2xs"
-                            title="Hapus Catatan"
-                          >
-                            <FontAwesomeIcon icon={faTrashCan} className="text-[10px]" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
+                        <button
+                          type="button"
+                          onClick={() => onDeleteClick(note)}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 bg-white text-red-600 hover:bg-red-50 hover:border-red-300 shadow-2xs transition"
+                          title="Hapus Catatan"
+                        >
+                          <FontAwesomeIcon icon={faTrashCan} className="text-xs" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
             })}
@@ -177,9 +164,9 @@ export const FinancialNotesDesktopTable: React.FC<FinancialNotesDesktopTableProp
         </table>
       </div>
 
-      {/* Pagination Bar - Hanya tampil jika data catatan melebihi 10 baris */}
-      {totalItems > 10 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/75 px-5 py-3 text-xs print:hidden">
+      {/* Pagination Bar - Selalu tampil jika ada data catatan */}
+      {totalItems > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-5 py-3 text-xs print:hidden">
           <div className="flex flex-wrap items-center gap-3 text-slate-600">
             <div>
               Menampilkan <strong className="text-slate-900">{startRecord}</strong> -{" "}
@@ -203,55 +190,53 @@ export const FinancialNotesDesktopTable: React.FC<FinancialNotesDesktopTableProp
             </div>
           </div>
 
-          {perPage !== -1 && totalPages > 1 && (
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage <= 1}
-                className="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Halaman Sebelumnya"
-              >
-                <FontAwesomeIcon icon={faChevronLeft} className="text-[10px]" />
-                <span>Sebelumnya</span>
-              </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage <= 1}
+              className="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Halaman Sebelumnya"
+            >
+              <FontAwesomeIcon icon={faChevronLeft} className="text-[10px]" />
+              <span>Sebelumnya</span>
+            </button>
 
-              {totalPages <= 7 ? (
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setCurrentPage(p)}
-                      className={`h-7 w-7 rounded-lg text-xs font-bold transition ${
-                        currentPage === p
-                          ? "bg-slate-900 text-white shadow-2xs"
-                          : "text-slate-700 hover:bg-slate-200"
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="px-2 text-xs font-medium text-slate-600">
-                  Halaman <strong className="text-slate-900">{currentPage}</strong> dari{" "}
-                  <strong className="text-slate-900">{totalPages}</strong>
-                </div>
-              )}
+            {totalPages <= 7 ? (
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setCurrentPage(p)}
+                    className={`h-7 w-7 rounded-lg text-xs font-bold transition ${
+                      currentPage === p
+                        ? "bg-slate-900 text-white shadow-2xs"
+                        : "text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="px-2 text-xs font-medium text-slate-600">
+                Halaman <strong className="text-slate-900">{currentPage}</strong> dari{" "}
+                <strong className="text-slate-900">{totalPages}</strong>
+              </div>
+            )}
 
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage >= totalPages}
-                className="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Halaman Selanjutnya"
-              >
-                <span>Selanjutnya</span>
-                <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
-              </button>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
+              className="inline-flex min-h-[32px] items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Halaman Selanjutnya"
+            >
+              <span>Selanjutnya</span>
+              <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
+            </button>
+          </div>
         </div>
       )}
     </div>

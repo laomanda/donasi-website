@@ -1,116 +1,100 @@
-import { useState, useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRotateRight, faCalendarCheck } from "@fortawesome/free-solid-svg-icons";
+import { useState, useMemo, useCallback } from "react";
+import { FinanceErrorState } from "@/components/management/finance/shared";
+import { useFinancePeriods } from "@/hooks/finance/useFinancePeriods";
 import {
-  FinancePageHeader,
-  FinanceTableSkeleton,
-  FinanceEmptyState,
-  FinanceErrorState,
-  FinanceStatusBadge,
-} from "@/components/management/finance/shared";
-import financeService from "@/services/financeService";
-import type { AccountingPeriod } from "@/types/finance";
-import { formatFinanceDate, extractFinanceErrorMessage } from "@/utils/financeUtils";
+  AccountingPeriodsHeader,
+  AccountingPeriodsOverview,
+  AccountingPeriodsToolbar,
+  AccountingPeriodsDesktopTable,
+  AccountingPeriodsMobileList,
+  type PeriodStatusFilterType,
+} from "@/components/management/finance/accounting-periods";
 
 export function AccountingPeriodsPage() {
-  const [periods, setPeriods] = useState<AccountingPeriod[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Shared finance period cache & hook
+  const { periods, initialLoading, refreshing, error, refresh } = useFinancePeriods();
 
-  const fetchPeriods = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await financeService.getAccountingPeriods();
-      setPeriods(res || []);
-    } catch (err) {
-      setError(extractFinanceErrorMessage(err, "Gagal memuat periode akuntansi."));
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Local presentation state for search & status filtering
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<PeriodStatusFilterType>("all");
 
-  useEffect(() => {
-    void fetchPeriods();
+  const handleResetFilters = useCallback(() => {
+    setSearchQuery("");
+    setStatusFilter("all");
   }, []);
+
+  const hasActiveFilters = Boolean(searchQuery.trim() || statusFilter !== "all");
+
+  // Client-side filtering via useMemo (dataset is small and authoritative)
+  const filteredPeriods = useMemo(() => {
+    return periods.filter((period) => {
+      // 1. Status Filter
+      const statusNorm = (period.status || "").toLowerCase().trim();
+      if (statusFilter === "open") {
+        if (statusNorm !== "open" && statusNorm !== "aktif") return false;
+      } else if (statusFilter === "closed") {
+        if (statusNorm !== "closed" && statusNorm !== "ditutup") return false;
+      }
+
+      // 2. Search Query (period_name, name, year)
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase().trim();
+      const name = (period.period_name || period.name || "").toLowerCase();
+      const year = period.year != null ? String(period.year).toLowerCase() : "";
+
+      return name.includes(q) || year.includes(q);
+    });
+  }, [periods, searchQuery, statusFilter]);
 
   return (
     <div className="space-y-6">
-      <FinancePageHeader
-        title="Periode Akuntansi & Kontrol Tutup Buku"
-        description="Pengendalian status pembukuan bulanan/tahunan. Periode yang telah ditutup (closed) dikunci secara permanen dan tidak dapat menerima mutasi transaksi."
-        actions={
-          <button
-            type="button"
-            onClick={fetchPeriods}
-            className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95"
-          >
-            <FontAwesomeIcon icon={faRotateRight} />
-            Segarkan
-          </button>
-        }
+      {/* Header with Title, Badge, Description, and Neutral Segarkan Action */}
+      <AccountingPeriodsHeader
+        refreshing={refreshing}
+        onRefresh={() => void refresh()}
       />
 
-      {error ? (
+      {/* Full Error State only when no cached data exists */}
+      {error && periods.length === 0 ? (
         <FinanceErrorState
-          title="Tidak dapat memuat periode"
+          title="Tidak dapat memuat periode akuntansi"
           message={error}
-          onRetry={fetchPeriods}
+          onRetry={() => void refresh()}
         />
       ) : (
-        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left">
-              <thead className="bg-slate-50 border-b border-slate-100">
-                <tr className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  <th className="px-6 py-4">Periode</th>
-                  <th className="px-6 py-4">Rentang Tanggal</th>
-                  <th className="px-6 py-4 text-center">Status</th>
-                  <th className="px-6 py-4">Waktu Penutupan</th>
-                  <th className="px-6 py-4">Catatan Penutupan</th>
-                </tr>
-              </thead>
+        <>
+          {/* Compact Overview Strip: [Periode Aktif] [Total Periode] [Ditutup] */}
+          <AccountingPeriodsOverview
+            periods={periods}
+            loading={initialLoading}
+          />
 
-              {loading ? (
-                <FinanceTableSkeleton rows={5} cols={5} />
-              ) : periods.length === 0 ? (
-                <tbody>
-                  <tr>
-                    <td colSpan={5} className="py-12">
-                      <FinanceEmptyState
-                        title="Belum Ada Periode Terbuka"
-                        description="Belum ada periode akuntansi yang dibuat di sistem."
-                        icon={faCalendarCheck}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              ) : (
-                <tbody className="divide-y divide-slate-100 text-xs">
-                  {periods.map((p) => (
-                    <tr key={p.id} className="transition hover:bg-slate-50/70">
-                      <td className="px-6 py-4 font-bold text-slate-900">
-                        {p.period_name} ({p.year})
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {formatFinanceDate(p.start_date)} - {formatFinanceDate(p.end_date)}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <FinanceStatusBadge status={p.status} />
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {p.closed_at ? formatFinanceDate(p.closed_at) : "-"}
-                      </td>
-                      <td className="px-6 py-4 text-slate-500 italic max-w-xs truncate">
-                        {p.closing_notes || "-"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              )}
-            </table>
-          </div>
-        </div>
+          {/* Compact Toolbar: Search + Segmented Status Filter */}
+          <AccountingPeriodsToolbar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            onResetFilters={handleResetFilters}
+            hasActiveFilters={hasActiveFilters}
+          />
+
+          {/* Desktop Table: Dark Header, Solid Badges, No Action Column */}
+          <AccountingPeriodsDesktopTable
+            periods={filteredPeriods}
+            totalPeriodsCount={periods.length}
+            loading={initialLoading}
+            onResetFilters={handleResetFilters}
+          />
+
+          {/* Dedicated Mobile List */}
+          <AccountingPeriodsMobileList
+            periods={filteredPeriods}
+            totalPeriodsCount={periods.length}
+            loading={initialLoading}
+            onResetFilters={handleResetFilters}
+          />
+        </>
       )}
     </div>
   );

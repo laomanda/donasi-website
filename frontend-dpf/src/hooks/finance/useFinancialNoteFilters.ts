@@ -26,7 +26,7 @@ export function useFinancialNoteFilters(): UseFinancialNoteFiltersReturn {
   const initialCategory = searchParams.get("category") || "";
   const initialStatus = searchParams.get("status") || "";
   const initialSearch = searchParams.get("q") || "";
-  const initialView = searchParams.get("view") === "table" ? "table" : "narrative";
+  const initialView = searchParams.get("view") === "narrative" ? "narrative" : "table";
 
   const [periodId, setPeriodIdState] = useState<number | "">(
     initialPeriodId ? Number(initialPeriodId) : ""
@@ -52,8 +52,8 @@ export function useFinancialNoteFilters(): UseFinancialNoteFiltersReturn {
     if (search.trim()) {
       nextParams.set("q", search.trim());
     }
-    if (viewMode === "table") {
-      nextParams.set("view", "table");
+    if (viewMode === "narrative") {
+      nextParams.set("view", "narrative");
     }
 
     if (nextParams.toString() !== searchParams.toString()) {
@@ -76,7 +76,7 @@ export function useFinancialNoteFilters(): UseFinancialNoteFiltersReturn {
     const nextSearch = searchParams.get("q") || "";
     if (nextSearch !== search) setSearchState(nextSearch);
 
-    const nextView = searchParams.get("view") === "table" ? "table" : "narrative";
+    const nextView = searchParams.get("view") === "narrative" ? "narrative" : "table";
     if (nextView !== viewMode) setViewModeState(nextView);
   }, [searchParams]);
 

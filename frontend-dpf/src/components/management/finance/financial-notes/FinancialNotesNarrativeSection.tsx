@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faEye,
   faPenToSquare,
   faTrashCan,
   faCalendarAlt,
@@ -59,13 +58,12 @@ export const FinancialNotesNarrativeSection: React.FC<FinancialNotesNarrativeSec
           group.notes.map((note, idx) => {
             const orderLabel = formatNoteOrderLabel(note, group.sectionLetter, idx + 1);
             const creator = formatCreatorLabel(note.creator_name);
-            const detailUrl = `/finance/financial-notes/${note.id}${periodParam}`;
             const editUrl = `/finance/financial-notes/${note.id}/edit${periodParam}`;
 
             return (
               <article
                 key={note.id}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3.5 transition hover:border-slate-300 print:border-none print:p-0 print:shadow-none"
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3.5 transition hover:border-slate-300 max-w-full overflow-hidden print:border-none print:p-0 print:shadow-none"
               >
                 {/* Note Top Bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 border-b border-slate-100 pb-3">
@@ -79,40 +77,29 @@ export const FinancialNotesNarrativeSection: React.FC<FinancialNotesNarrativeSec
                     <FinancialNoteStatusBadge status={note.status} />
                   </div>
 
-                  {/* Actions (Screen only) */}
-                  <div className="flex items-center gap-1.5 self-end sm:self-auto print:hidden">
-                    <Link
-                      to={detailUrl}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
-                      title="Lihat Detail Naskah"
-                    >
-                      <FontAwesomeIcon icon={faEye} className="text-slate-400 text-[10px]" />
-                      <span>Detail</span>
-                    </Link>
+                  {/* Actions (Screen only - only for canManage) */}
+                  {canManage && (
+                    <div className="flex items-center gap-1.5 self-end sm:self-auto print:hidden">
+                      <Link
+                        to={editUrl}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
+                        title="Edit Catatan"
+                      >
+                        <FontAwesomeIcon icon={faPenToSquare} className="text-slate-500 text-[10px]" />
+                        <span>Edit</span>
+                      </Link>
 
-                    {canManage && (
-                      <>
-                        <Link
-                          to={editUrl}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
-                          title="Edit Catatan"
-                        >
-                          <FontAwesomeIcon icon={faPenToSquare} className="text-slate-400 text-[10px]" />
-                          <span>Edit</span>
-                        </Link>
-
-                        <button
-                          type="button"
-                          onClick={() => onDeleteClick(note)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-red-600 shadow-2xs transition hover:bg-red-50 hover:border-red-300"
-                          title="Hapus Catatan"
-                        >
-                          <FontAwesomeIcon icon={faTrashCan} className="text-red-500 text-[10px]" />
-                          <span>Hapus</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
+                      <button
+                        type="button"
+                        onClick={() => onDeleteClick(note)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-red-600 shadow-2xs transition hover:bg-red-50 hover:border-red-300"
+                        title="Hapus Catatan"
+                      >
+                        <FontAwesomeIcon icon={faTrashCan} className="text-red-500 text-[10px]" />
+                        <span>Hapus</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Metadata Row */}
@@ -142,8 +129,8 @@ export const FinancialNotesNarrativeSection: React.FC<FinancialNotesNarrativeSec
                   )}
                 </div>
 
-                {/* Narrative Content Body */}
-                <div className="text-xs sm:text-sm leading-relaxed text-slate-700 whitespace-pre-line rounded-xl bg-slate-50/50 p-4 border border-slate-100 font-sans print:bg-white print:border-none print:p-0">
+                {/* Narrative Content Body - Clean divider, no card inside card */}
+                <div className="pt-3 border-t border-slate-100 text-xs sm:text-sm leading-relaxed text-slate-800 whitespace-pre-line font-sans break-words break-all [overflow-wrap:anywhere] overflow-hidden print:border-none print:pt-0">
                   {note.content}
                 </div>
               </article>

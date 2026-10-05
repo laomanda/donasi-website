@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,
   faChevronRight,
-  faEye,
   faPenToSquare,
   faTrashCan,
   faInbox,
@@ -91,7 +90,6 @@ export const FinancialNotesMobileList: React.FC<FinancialNotesMobileListProps> =
           (currentPage - 1) * (perPage === -1 ? 0 : perPage) + idx + 1
         );
         const creator = formatCreatorLabel(note.creator_name);
-        const detailUrl = `/finance/financial-notes/${note.id}${periodParam}`;
         const editUrl = `/finance/financial-notes/${note.id}/edit${periodParam}`;
 
         return (
@@ -109,12 +107,9 @@ export const FinancialNotesMobileList: React.FC<FinancialNotesMobileListProps> =
 
             {/* Note Title */}
             <div>
-              <Link
-                to={detailUrl}
-                className="text-sm font-bold text-slate-900 font-poppins hover:text-primary-600 transition line-clamp-2"
-              >
+              <p className="text-sm font-bold text-slate-900 font-poppins line-clamp-2">
                 {note.title}
-              </Link>
+              </p>
               <div className="mt-1.5 flex flex-wrap items-center gap-2">
                 <FinancialNoteCategoryBadge category={note.category} />
               </div>
@@ -140,43 +135,33 @@ export const FinancialNotesMobileList: React.FC<FinancialNotesMobileListProps> =
               )}
             </div>
 
-            {/* Action buttons */}
-            <div className="flex items-center gap-2 pt-1">
-              <Link
-                to={detailUrl}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-2 text-xs font-bold text-white shadow-xs hover:bg-slate-800 transition"
-              >
-                <FontAwesomeIcon icon={faEye} className="text-xs" />
-                <span>Lihat Detail</span>
-              </Link>
+            {/* Action buttons (only for canManage) */}
+            {canManage && (
+              <div className="flex items-center gap-2 pt-1 border-t border-slate-100">
+                <Link
+                  to={editUrl}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
+                >
+                  <FontAwesomeIcon icon={faPenToSquare} className="text-xs" />
+                  <span>Edit Catatan</span>
+                </Link>
 
-              {canManage && (
-                <>
-                  <Link
-                    to={editUrl}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 shadow-2xs hover:bg-slate-50 transition"
-                    title="Edit Catatan"
-                  >
-                    <FontAwesomeIcon icon={faPenToSquare} className="text-xs" />
-                  </Link>
-
-                  <button
-                    type="button"
-                    onClick={() => onDeleteClick(note)}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-slate-300 bg-white text-red-600 shadow-2xs hover:bg-red-50 hover:border-red-300 transition"
-                    title="Hapus Catatan"
-                  >
-                    <FontAwesomeIcon icon={faTrashCan} className="text-xs" />
-                  </button>
-                </>
-              )}
-            </div>
+                <button
+                  type="button"
+                  onClick={() => onDeleteClick(note)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 bg-white text-red-600 shadow-2xs hover:bg-red-50 hover:border-red-300 transition"
+                  title="Hapus Catatan"
+                >
+                  <FontAwesomeIcon icon={faTrashCan} className="text-xs" />
+                </button>
+              </div>
+            )}
           </div>
         );
       })}
 
-      {/* Pagination Bar - Hanya tampil jika data catatan melebihi 10 baris */}
-      {totalItems > 10 && (
+      {/* Pagination Bar - Selalu tampil jika ada data catatan */}
+      {totalItems > 0 && (
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-600">
             <div>
@@ -196,31 +181,29 @@ export const FinancialNotesMobileList: React.FC<FinancialNotesMobileListProps> =
             </select>
           </div>
 
-          {perPage !== -1 && totalPages > 1 && (
-            <div className="flex items-center justify-between gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage <= 1}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white py-2 text-xs font-semibold text-slate-700 disabled:opacity-40"
-              >
-                <FontAwesomeIcon icon={faChevronLeft} className="text-[10px]" />
-                <span>Sebelumnya</span>
-              </button>
-              <span className="text-xs font-bold text-slate-800 px-2">
-                {currentPage} / {totalPages}
-              </span>
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage >= totalPages}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white py-2 text-xs font-semibold text-slate-700 disabled:opacity-40"
-              >
-                <span>Selanjutnya</span>
-                <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
-              </button>
-            </div>
-          )}
+          <div className="flex items-center justify-between gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage <= 1}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white py-2 text-xs font-semibold text-slate-700 disabled:opacity-40"
+            >
+              <FontAwesomeIcon icon={faChevronLeft} className="text-[10px]" />
+              <span>Sebelumnya</span>
+            </button>
+            <span className="text-xs font-bold text-slate-800 px-2">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white py-2 text-xs font-semibold text-slate-700 disabled:opacity-40"
+            >
+              <span>Selanjutnya</span>
+              <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -207,7 +207,9 @@ export function FinancialNotesPage() {
       {(!loading || notes.length > 0) && (
         <div className="space-y-6">
           {/* Formal Print Banner & Narrative Screen Header */}
-          <FinancialNotesReportHeader period={selectedPeriodObj} />
+          <div className={viewMode === "narrative" ? "block" : "hidden print:block"}>
+            <FinancialNotesReportHeader period={selectedPeriodObj} />
+          </div>
 
           {/* Narrative View Mode (Default & Always used in Print) */}
           <div className={viewMode === "narrative" ? "block" : "hidden print:block"}>

@@ -47,6 +47,8 @@ export interface UseFinancePeriodsReturn {
   setSelectedPeriodId: (id: number | null) => void;
   selectedPeriod: AccountingPeriod | null;
   loading: boolean;
+  initialLoading: boolean;
+  refreshing: boolean;
   error: string | null;
   refresh: () => Promise<void>;
 }
@@ -72,6 +74,7 @@ export function useFinancePeriods(): UseFinancePeriodsReturn {
     return null;
   });
   const [loading, setLoading] = useState<boolean>(!initialCacheValid);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadPeriods = useCallback(async (force = false) => {
@@ -89,16 +92,29 @@ export function useFinancePeriods(): UseFinancePeriodsReturn {
       if (isMountedRef.current) {
         setPeriods(cachedEntry!.data);
         setLoading(false);
+        setRefreshing(false);
         setError(null);
       }
       return;
     }
 
-    // If usable stale, show cached data without blocking with skeleton
-    if (isUsableStale && !force) {
+    if (force) {
+      if (isMountedRef.current) {
+        setRefreshing(true);
+        // Only set blocking loading if there is currently no data
+        setPeriods((prev) => {
+          if (prev.length === 0) {
+            setLoading(true);
+          }
+          return prev;
+        });
+      }
+    } else if (isUsableStale) {
+      // If usable stale, show cached data without blocking with skeleton
       if (isMountedRef.current) {
         setPeriods(cachedEntry!.data);
         setLoading(false);
+        setRefreshing(true);
       }
     } else {
       if (isMountedRef.current) {
@@ -137,6 +153,7 @@ export function useFinancePeriods(): UseFinancePeriodsReturn {
     } finally {
       if (isMountedRef.current) {
         setLoading(false);
+        setRefreshing(false);
       }
     }
   }, []);
@@ -158,12 +175,16 @@ export function useFinancePeriods(): UseFinancePeriodsReturn {
     return periods.find((p) => p.id === selectedPeriodId) ?? null;
   }, [periods, selectedPeriodId]);
 
+  const initialLoading = loading && periods.length === 0;
+
   return {
     periods,
     selectedPeriodId,
     setSelectedPeriodId,
     selectedPeriod,
     loading,
+    initialLoading,
+    refreshing,
     error,
     refresh,
   };
