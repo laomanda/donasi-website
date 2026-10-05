@@ -55,7 +55,11 @@ const BalanceSheetPage = lazy(() => import('../pages/management/finance/BalanceS
 const ActivityStatementPage = lazy(() => import('../pages/management/finance/ActivityStatementPage').then(m => ({ default: m.ActivityStatementPage })))
 const FinancialStatementsPage = lazy(() => import('../pages/management/finance/FinancialStatementsPage').then(m => ({ default: m.FinancialStatementsPage })))
 const WaqfAssetsPage = lazy(() => import('../pages/management/finance/WaqfAssetsPage').then(m => ({ default: m.WaqfAssetsPage })))
+const WaqfAssetDetailPage = lazy(() => import('../pages/management/finance/WaqfAssetDetailPage').then(m => ({ default: m.WaqfAssetDetailPage })))
 const FinancialNotesPage = lazy(() => import('../pages/management/finance/FinancialNotesPage').then(m => ({ default: m.FinancialNotesPage })))
+const FinancialNoteCreatePage = lazy(() => import('../pages/management/finance/FinancialNoteCreatePage').then(m => ({ default: m.FinancialNoteCreatePage })))
+const FinancialNoteDetailPage = lazy(() => import('../pages/management/finance/FinancialNoteDetailPage').then(m => ({ default: m.FinancialNoteDetailPage })))
+const FinancialNoteEditPage = lazy(() => import('../pages/management/finance/FinancialNoteEditPage').then(m => ({ default: m.FinancialNoteEditPage })))
 const AccountingPeriodsPage = lazy(() => import('../pages/management/finance/AccountingPeriodsPage').then(m => ({ default: m.AccountingPeriodsPage })))
 const ReconciliationPage = lazy(() => import('../pages/management/finance/ReconciliationPage').then(m => ({ default: m.ReconciliationPage })))
 const FinanceImportExportPage = lazy(() => import('../pages/management/finance/FinanceImportExportPage').then(m => ({ default: m.FinanceImportExportPage })))
@@ -291,11 +295,23 @@ export const router = createBrowserRouter([
           { path: 'activity-statement', element: withSuspense(ActivityStatementPage) },
           { path: 'laporan-aktivitas', element: withSuspense(ActivityStatementPage) },
           { path: 'waqf-assets', element: withSuspense(WaqfAssetsPage) },
+          { path: 'waqf-assets/:id', element: withSuspense(WaqfAssetDetailPage) },
           { path: 'laporan-aset-wakaf', element: withSuspense(WaqfAssetsPage) },
+          { path: 'laporan-aset-wakaf/:id', element: withSuspense(WaqfAssetDetailPage) },
           { path: 'lraw', element: withSuspense(WaqfAssetsPage) },
+          { path: 'lraw/:id', element: withSuspense(WaqfAssetDetailPage) },
           { path: 'financial-notes', element: withSuspense(FinancialNotesPage) },
+          { path: 'financial-notes/create', element: withSuspense(FinancialNoteCreatePage) },
+          { path: 'financial-notes/:id', element: withSuspense(FinancialNoteDetailPage) },
+          { path: 'financial-notes/:id/edit', element: withSuspense(FinancialNoteEditPage) },
           { path: 'catatan-keuangan', element: withSuspense(FinancialNotesPage) },
+          { path: 'catatan-keuangan/create', element: withSuspense(FinancialNoteCreatePage) },
+          { path: 'catatan-keuangan/:id', element: withSuspense(FinancialNoteDetailPage) },
+          { path: 'catatan-keuangan/:id/edit', element: withSuspense(FinancialNoteEditPage) },
           { path: 'clk', element: withSuspense(FinancialNotesPage) },
+          { path: 'clk/create', element: withSuspense(FinancialNoteCreatePage) },
+          { path: 'clk/:id', element: withSuspense(FinancialNoteDetailPage) },
+          { path: 'clk/:id/edit', element: withSuspense(FinancialNoteEditPage) },
           { path: 'accounting-periods', element: withSuspense(AccountingPeriodsPage) },
           { path: 'reconciliation', element: withSuspense(ReconciliationPage) },
           { path: 'import', element: withSuspense(FinanceImportExportPage) },
@@ -323,11 +339,23 @@ export const router = createBrowserRouter([
           { path: 'activity-statement', element: withSuspense(ActivityStatementPage) },
           { path: 'laporan-aktivitas', element: withSuspense(ActivityStatementPage) },
           { path: 'waqf-assets', element: withSuspense(WaqfAssetsPage) },
+          { path: 'waqf-assets/:id', element: withSuspense(WaqfAssetDetailPage) },
           { path: 'laporan-aset-wakaf', element: withSuspense(WaqfAssetsPage) },
+          { path: 'laporan-aset-wakaf/:id', element: withSuspense(WaqfAssetDetailPage) },
           { path: 'lraw', element: withSuspense(WaqfAssetsPage) },
+          { path: 'lraw/:id', element: withSuspense(WaqfAssetDetailPage) },
           { path: 'financial-notes', element: withSuspense(FinancialNotesPage) },
+          { path: 'financial-notes/create', element: withSuspense(FinancialNoteCreatePage) },
+          { path: 'financial-notes/:id', element: withSuspense(FinancialNoteDetailPage) },
+          { path: 'financial-notes/:id/edit', element: withSuspense(FinancialNoteEditPage) },
           { path: 'catatan-keuangan', element: withSuspense(FinancialNotesPage) },
+          { path: 'catatan-keuangan/create', element: withSuspense(FinancialNoteCreatePage) },
+          { path: 'catatan-keuangan/:id', element: withSuspense(FinancialNoteDetailPage) },
+          { path: 'catatan-keuangan/:id/edit', element: withSuspense(FinancialNoteEditPage) },
           { path: 'clk', element: withSuspense(FinancialNotesPage) },
+          { path: 'clk/create', element: withSuspense(FinancialNoteCreatePage) },
+          { path: 'clk/:id', element: withSuspense(FinancialNoteDetailPage) },
+          { path: 'clk/:id/edit', element: withSuspense(FinancialNoteEditPage) },
           { path: 'accounting-periods', element: withSuspense(AccountingPeriodsPage) },
           { path: 'reconciliation', element: withSuspense(ReconciliationPage) },
           { path: 'import', element: withSuspense(FinanceImportExportPage) },

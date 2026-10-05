@@ -1,1463 +1,256 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faRotateRight,
-  faFileExcel,
-  faPrint,
-  faPlus,
-  faFileLines,
-  faSearch,
-  faTimes,
-  faPenToSquare,
-  faTrashCan,
-  faEye,
-  faCheckCircle,
-  faFolderOpen,
-  faUser,
-  faXmark,
-  faClock,
-  faBuilding,
-  faCalendarDays,
-  faTable,
-  faAlignLeft,
-} from "@fortawesome/free-solid-svg-icons";
+import { useState, useMemo, useCallback } from "react";
 import { toast } from "react-hot-toast";
-
-import {
-  FinancePageHeader,
-  FinanceTableSkeleton,
-  FinanceEmptyState,
-  FinanceErrorState,
-} from "@/components/management/finance/shared";
+import { getAuthUser } from "@/lib/auth";
 import financeService from "@/services/financeService";
 import {
-  formatFinanceDate,
-  formatFinanceDateTime,
   extractFinanceErrorMessage,
   downloadBlobFile,
 } from "@/utils/financeUtils";
-import { getAuthUser } from "@/lib/auth";
-import type {
-  AccountingPeriod,
-  FinancialNote,
-  FinancialNoteSummary,
-  FinancialNotePayload,
-  FinancialNoteFilterParams,
-  FinancialNoteCategory,
-  FinancialNoteStatus,
-} from "@/types/finance";
-
-// Canonical Categories aligned 100% with backend App\Models\FinancialNote::CATEGORIES
-const CLK_CATEGORIES: Array<{ key: FinancialNoteCategory; label: string; sectionLetter: string }> = [
-  { key: "accounting_policy", label: "Kebijakan Akuntansi", sectionLetter: "A" },
-  { key: "asset_note", label: "Catatan Aset Wakaf & Lancar", sectionLetter: "B" },
-  { key: "revenue_note", label: "Catatan Penerimaan / Pendapatan", sectionLetter: "C" },
-  { key: "expense_note", label: "Catatan Beban & Penyaluran", sectionLetter: "D" },
-  { key: "waqf_note", label: "Catatan Pengelolaan Wakaf", sectionLetter: "E" },
-  { key: "general_note", label: "Catatan Umum & Lain-Lain", sectionLetter: "F" },
-];
+import { FinanceErrorState } from "@/components/management/finance/shared";
+import { useFinancePeriods } from "@/hooks/finance/useFinancePeriods";
+import { useFinancialNoteFilters } from "@/hooks/finance/useFinancialNoteFilters";
+import { useFinancialNotes } from "@/hooks/finance/useFinancialNotes";
+import { useFinancialNoteActions } from "@/hooks/finance/useFinancialNoteActions";
+import { buildFinancialNoteExportParams } from "@/utils/finance/financialNotesQuery";
+import { groupFinancialNotesByCategory } from "@/utils/finance/financialNotesDisplay";
+import type { FinancialNote } from "@/types/finance";
+import {
+  FinancialNotesHeader,
+  FinancialNotesFilters,
+  FinancialNotesSummary,
+  FinancialNotesToolbar,
+  FinancialNotesReportHeader,
+  FinancialNotesNarrative,
+  FinancialNotesDesktopTable,
+  FinancialNotesMobileList,
+  FinancialNoteDeleteDialog,
+} from "@/components/management/finance/financial-notes";
 
 export function FinancialNotesPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [exporting, setExporting] = useState<boolean>(false);
+  const [deletingNote, setDeletingNote] = useState<FinancialNote | null>(null);
 
   // RBAC Permission Check
   const currentUser = getAuthUser();
-  const userRoles = useMemo(() => {
+  const canManage = useMemo(() => {
     const roles = (currentUser?.roles ?? []).map((r) => r.name.toLowerCase());
     if (currentUser?.role_label) {
       roles.push(currentUser.role_label.toLowerCase());
     }
-    return roles;
+    return roles.includes("keuangan") || roles.includes("superadmin");
   }, [currentUser]);
 
-  const canManage = userRoles.includes("keuangan") || userRoles.includes("superadmin");
+  // 1. Shared Accounting Periods Cache
+  const { periods } = useFinancePeriods();
 
-  // Filter States initialized from URL query params
-  const initialPeriod = searchParams.get("period_id") || searchParams.get("accounting_period_id");
-  const [periodFilter, setPeriodFilter] = useState<number | "">(
-    initialPeriod && !isNaN(Number(initialPeriod)) ? Number(initialPeriod) : ""
-  );
-  const [categoryFilter, setCategoryFilter] = useState<string>(searchParams.get("category") || "");
-  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") || "");
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  // 2. URL Synchronized Filters
+  const {
+    filters,
+    periodId,
+    category,
+    status,
+    search,
+    viewMode,
+    isFilterActive,
+    setPeriodId,
+    setCategory,
+    setStatus,
+    setSearch,
+    setViewMode,
+    resetFilters,
+  } = useFinancialNoteFilters();
 
-  // View Mode: 'narrative' (official report view) | 'table' (register table view)
-  const [viewMode, setViewMode] = useState<"narrative" | "table">("narrative");
+  // 3. SWR Cached Notes List & Summary Query
+  const {
+    notes,
+    summary,
+    loading,
+    refreshing,
+    error,
+    refresh,
+  } = useFinancialNotes({ periodId, category, status });
 
-  // Data States
-  const [notes, setNotes] = useState<FinancialNote[]>([]);
-  const [summary, setSummary] = useState<FinancialNoteSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [exporting, setExporting] = useState(false);
+  // 4. Delete Action Hook
+  const { deleting, deleteNote } = useFinancialNoteActions();
 
-  // Master Data
-  const [periods, setPeriods] = useState<AccountingPeriod[]>([]);
+  // 5. Client Search Filtering
+  const filteredNotes = useMemo(() => {
+    if (!search.trim()) return notes;
+    const q = search.toLowerCase().trim();
+    return notes.filter((n) => {
+      const titleMatch = (n.title || "").toLowerCase().includes(q);
+      const contentMatch = (n.content || "").toLowerCase().includes(q);
+      const catMatch = (n.category_label || n.category || "").toLowerCase().includes(q);
+      const creatorMatch = (n.creator_name || "").toLowerCase().includes(q);
+      return titleMatch || contentMatch || catMatch || creatorMatch;
+    });
+  }, [notes, search]);
 
-  // Modal States
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingNote, setEditingNote] = useState<FinancialNote | null>(null);
-  const [viewingNote, setViewingNote] = useState<FinancialNote | null>(null);
-  const [deletingNote, setDeletingNote] = useState<FinancialNote | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  // 6. Grouped Notes for Narrative Report View
+  const groupedNotes = useMemo(() => {
+    return groupFinancialNotesByCategory(filteredNotes, category);
+  }, [filteredNotes, category]);
 
-  // Update URL Search Params when filter state changes
-  const syncQueryParams = useCallback(
-    (newPeriod: number | "", newCategory: string, newStatus: string, newSearch: string) => {
-      const nextParams = new URLSearchParams();
-      if (newPeriod !== "") {
-        nextParams.set("period_id", String(newPeriod));
-      }
-      if (newCategory) {
-        nextParams.set("category", newCategory);
-      }
-      if (newStatus) {
-        nextParams.set("status", newStatus);
-      }
-      if (newSearch.trim()) {
-        nextParams.set("q", newSearch.trim());
-      }
-      setSearchParams(nextParams, { replace: true });
-    },
-    [setSearchParams]
-  );
-
-  // Load accounting periods on mount
-  useEffect(() => {
-    let isMounted = true;
-    const loadPeriods = async () => {
-      try {
-        const periodList = await financeService.getAccountingPeriods();
-        if (isMounted) {
-          setPeriods(periodList || []);
-        }
-      } catch {
-        // Fallback silently if periods endpoint has issue
-      }
-    };
-
-    void loadPeriods();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // Fetch Notes and Summary directly from backend
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params: FinancialNoteFilterParams = {};
-      if (periodFilter !== "") {
-        params.period_id = periodFilter;
-        params.accounting_period_id = periodFilter;
-      }
-      if (categoryFilter) {
-        params.category = categoryFilter;
-      }
-      if (statusFilter) {
-        params.status = statusFilter;
-      }
-
-      const [notesRes, summaryRes] = await Promise.all([
-        financeService.getFinancialNotes(params),
-        financeService.getFinancialNotesSummary({
-          period_id: periodFilter !== "" ? periodFilter : undefined,
-          accounting_period_id: periodFilter !== "" ? periodFilter : undefined,
-        }),
-      ]);
-
-      setNotes(notesRes || []);
-      setSummary(summaryRes || null);
-    } catch (err) {
-      setError(extractFinanceErrorMessage(err, "Gagal memuat catatan atas laporan keuangan (CLK)."));
-    } finally {
-      setLoading(false);
-    }
-  }, [periodFilter, categoryFilter, statusFilter]);
-
-  useEffect(() => {
-    void fetchData();
-  }, [fetchData]);
-
-  // Selected period info object
+  // Active Period Object
   const selectedPeriodObj = useMemo(() => {
-    if (periodFilter === "") return null;
-    return periods.find((p) => p.id === periodFilter) || null;
-  }, [periods, periodFilter]);
+    if (periodId === "") return null;
+    return periods.find((p) => p.id === Number(periodId)) || null;
+  }, [periods, periodId]);
 
-  // Check if any filter is actively applied
-  const isFilterActive = useMemo(() => {
-    return Boolean(periodFilter !== "" || categoryFilter !== "" || statusFilter !== "" || searchQuery.trim() !== "");
-  }, [periodFilter, categoryFilter, statusFilter, searchQuery]);
-
-  const handlePeriodChange = (val: number | "") => {
-    setPeriodFilter(val);
-    syncQueryParams(val, categoryFilter, statusFilter, searchQuery);
-  };
-
-  const handleCategoryChange = (val: string) => {
-    setCategoryFilter(val);
-    syncQueryParams(periodFilter, val, statusFilter, searchQuery);
-  };
-
-  const handleStatusChange = (val: string) => {
-    setStatusFilter(val);
-    syncQueryParams(periodFilter, categoryFilter, val, searchQuery);
-  };
-
-  const handleSearchChange = (val: string) => {
-    setSearchQuery(val);
-    syncQueryParams(periodFilter, categoryFilter, statusFilter, val);
-  };
-
-  const handleResetFilter = () => {
-    setPeriodFilter("");
-    setCategoryFilter("");
-    setStatusFilter("");
-    setSearchQuery("");
-    setSearchParams(new URLSearchParams(), { replace: true });
-  };
-
-  // Export Excel
-  const handleExport = async () => {
+  // 7. Handle Excel Export
+  const handleExport = useCallback(async () => {
     setExporting(true);
     try {
-      const exportParams: Record<string, string> = {};
-      if (periodFilter !== "") {
-        exportParams.period_id = String(periodFilter);
-        exportParams.accounting_period_id = String(periodFilter);
-      }
-      if (categoryFilter) exportParams.category = categoryFilter;
-      if (statusFilter) exportParams.status = statusFilter;
-
+      const exportParams = buildFinancialNoteExportParams(filters);
       const blob = await financeService.exportFinancialNotes(exportParams);
-      const periodName = selectedPeriodObj ? (selectedPeriodObj.name || selectedPeriodObj.period_name || "Periode").replace(/\s+/g, "_") : "Semua_Periode";
+      const pName = selectedPeriodObj
+        ? (selectedPeriodObj.name || selectedPeriodObj.period_name || "Periode").replace(/\s+/g, "_")
+        : "Semua_Periode";
       const today = new Date().toISOString().slice(0, 10);
       downloadBlobFile(
         blob as unknown as BlobPart,
-        `Catatan_Atas_Laporan_Keuangan_${periodName}_${today}.xlsx`
+        `Catatan_Atas_Laporan_Keuangan_${pName}_${today}.xlsx`
       );
       toast.success("Catatan Keuangan (CLK) Excel berhasil diunduh.");
     } catch (err) {
-      toast.error(extractFinanceErrorMessage(err, "Gagal mengunduh catatan laporan keuangan."));
+      toast.error(
+        extractFinanceErrorMessage(err, "Gagal mengunduh catatan laporan keuangan.")
+      );
     } finally {
       setExporting(false);
     }
-  };
+  }, [filters, selectedPeriodObj]);
 
-  // Print function
-  const handlePrint = () => {
+  // 8. Handle Browser Print
+  const handlePrint = useCallback(() => {
     window.print();
-  };
+  }, []);
 
-  // Presentation-level search filtering of the already returned dataset
-  const filteredNotes = useMemo(() => {
-    if (!searchQuery.trim()) return notes;
-    const q = searchQuery.toLowerCase().trim();
-    return notes.filter((n) => {
-      const title = (n.title || "").toLowerCase();
-      const content = (n.content || "").toLowerCase();
-      const cat = (n.category_label || n.category || "").toLowerCase();
-      const creator = (n.creator_name || "").toLowerCase();
-      return title.includes(q) || content.includes(q) || cat.includes(q) || creator.includes(q);
-    });
-  }, [notes, searchQuery]);
-
-  // Grouped notes for official narrative presentation
-  const groupedNotes = useMemo(() => {
-    const groups: Array<{
-      categoryKey: string;
-      categoryLabel: string;
-      sectionLetter: string;
-      notes: FinancialNote[];
-    }> = [];
-
-    // Group according to canonical categories
-    CLK_CATEGORIES.forEach((cat) => {
-      const matching = filteredNotes.filter((n) => n.category === cat.key);
-      if (matching.length > 0 || (categoryFilter === cat.key && filteredNotes.length > 0)) {
-        groups.push({
-          categoryKey: cat.key,
-          categoryLabel: cat.label,
-          sectionLetter: cat.sectionLetter,
-          notes: matching,
-        });
-      }
-    });
-
-    // Check for any custom categories not in canonical list
-    const customNotes = filteredNotes.filter(
-      (n) => !CLK_CATEGORIES.some((c) => c.key === n.category)
-    );
-    if (customNotes.length > 0) {
-      groups.push({
-        categoryKey: "custom",
-        categoryLabel: "Catatan Tambahan Lainnya",
-        sectionLetter: "G",
-        notes: customNotes,
-      });
-    }
-
-    return groups;
-  }, [filteredNotes, categoryFilter]);
-
-  // Save (Create or Update)
-  const handleSaveNote = async (payload: FinancialNotePayload) => {
-    setSubmitting(true);
-    try {
-      if (editingNote) {
-        await financeService.updateFinancialNote(editingNote.id, payload);
-        toast.success("Catatan keuangan berhasil diperbarui.");
-      } else {
-        await financeService.createFinancialNote(payload);
-        toast.success("Catatan keuangan berhasil ditambahkan.");
-      }
-      setIsFormOpen(false);
-      setEditingNote(null);
-      await fetchData();
-    } catch (err) {
-      toast.error(extractFinanceErrorMessage(err, "Gagal menyimpan catatan keuangan."));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Delete Note
-  const handleDeleteNote = async () => {
+  // 9. Handle Delete Confirmation
+  const handleDeleteConfirm = async () => {
     if (!deletingNote) return;
-    setDeleting(true);
     try {
-      await financeService.deleteFinancialNote(deletingNote.id);
+      await deleteNote(deletingNote.id);
       toast.success("Catatan keuangan berhasil dihapus.");
       setDeletingNote(null);
-      await fetchData();
+      await refresh();
     } catch (err) {
-      toast.error(extractFinanceErrorMessage(err, "Gagal menghapus catatan keuangan."));
-    } finally {
-      setDeleting(false);
+      toast.error(
+        extractFinanceErrorMessage(err, "Gagal menghapus catatan keuangan.")
+      );
     }
   };
 
+  const createUrl = `/finance/financial-notes/create${periodId ? `?period_id=${periodId}` : ""}`;
+
   return (
-    <div className="space-y-6">
-      {/* 1. SCREEN-ONLY TOP HEADER */}
-      <div className="print:hidden">
-        <FinancePageHeader
-          title="Catatan Atas Laporan Keuangan"
-          description="Catatan dan informasi penjelas atas laporan keuangan berdasarkan periode akuntansi."
-          actions={
-            <div className="flex flex-wrap items-center gap-2">
-              {canManage && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingNote(null);
-                    setIsFormOpen(true);
-                  }}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95"
-                >
-                  <FontAwesomeIcon icon={faPlus} />
-                  <span>Tambah Catatan (CLK)</span>
-                </button>
-              )}
+    <div className="space-y-6 print:space-y-4 print:p-0 max-w-[1440px] mx-auto">
+      {/* Page Header */}
+      <FinancialNotesHeader
+        totalNotesCount={summary?.total_notes ?? notes.length}
+        canManage={canManage}
+        refreshing={refreshing}
+        exporting={exporting}
+        createUrl={createUrl}
+        onRefresh={() => void refresh()}
+        onExport={() => void handleExport()}
+        onPrint={handlePrint}
+      />
 
-              <button
-                type="button"
-                onClick={handlePrint}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-xs transition hover:bg-slate-50 active:scale-95"
-                title="Cetak Laporan"
-              >
-                <FontAwesomeIcon icon={faPrint} className="text-slate-500" />
-                <span className="hidden sm:inline">Cetak</span>
-              </button>
+      {/* Filter Toolbar */}
+      <FinancialNotesFilters
+        periods={periods}
+        periodId={periodId}
+        category={category}
+        status={status}
+        searchQuery={search}
+        isFilterActive={isFilterActive}
+        onPeriodChange={setPeriodId}
+        onCategoryChange={setCategory}
+        onStatusChange={setStatus}
+        onSearchChange={setSearch}
+        onReset={resetFilters}
+      />
 
-              <button
-                type="button"
-                onClick={fetchData}
-                disabled={loading}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 shadow-xs transition hover:bg-slate-50 active:scale-95 disabled:opacity-50"
-                title="Segarkan Data"
-              >
-                <FontAwesomeIcon
-                  icon={faRotateRight}
-                  className={loading ? "animate-spin text-slate-400" : "text-slate-500"}
-                />
-                <span className="hidden sm:inline">Segarkan</span>
-              </button>
+      {/* Summary KPI Cards */}
+      <FinancialNotesSummary summary={summary} loading={refreshing} />
 
-              <button
-                type="button"
-                onClick={handleExport}
-                disabled={exporting || loading}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs transition hover:bg-slate-50 active:scale-95 disabled:opacity-50"
-                title="Export Excel"
-              >
-                <FontAwesomeIcon
-                  icon={faFileExcel}
-                  className={`text-emerald-600 ${exporting ? "animate-bounce" : ""}`}
-                />
-                <span>{exporting ? "Mengunduh..." : "Export Excel"}</span>
-              </button>
-            </div>
-          }
-        />
-      </div>
+      {/* View Mode & Quick Nav Toolbar */}
+      <FinancialNotesToolbar
+        viewMode={viewMode}
+        periodId={periodId}
+        searchQuery={search}
+        totalCount={notes.length}
+        filteredCount={filteredNotes.length}
+        onViewModeChange={setViewMode}
+        onClearSearch={() => setSearch("")}
+      />
 
-      {/* 2. FORMAL PRINT-ONLY HEADER */}
-      <div className="hidden print:block border-b-2 border-slate-900 pb-4 mb-4">
-        <div className="text-center space-y-1">
-          <p className="text-xs uppercase font-extrabold tracking-widest text-slate-500">
-            Yayasan Wakaf Djalaluddin Pane (YWDP)
-          </p>
-          <h1 className="text-lg font-black text-slate-950 uppercase font-heading">
-            CATATAN ATAS LAPORAN KEUANGAN (CLK)
-          </h1>
-          <p className="text-xs text-slate-700 font-medium">
-            {selectedPeriodObj
-              ? `Periode: ${selectedPeriodObj.name} (${selectedPeriodObj.status === "open" ? "Tahun Buku Berjalan" : "Tutup Buku"})`
-              : "Semua Periode Akuntansi"}
-          </p>
-          <p className="text-[10px] text-slate-500 pt-1">
-            Dicetak pada:{" "}
-            {new Date().toLocaleDateString("id-ID", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}{" "}
-            WIB
-          </p>
+      {/* Initial Loading Skeleton */}
+      {loading && !notes.length && (
+        <div className="space-y-6 animate-pulse">
+          <div className="h-28 rounded-2xl bg-slate-200" />
+          <div className="h-64 rounded-2xl bg-slate-200" />
         </div>
-      </div>
+      )}
 
-      {/* 3. INSTITUTIONAL REPORT BANNER (SCREEN + PRINT) */}
-      <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-6 text-white shadow-sm print:bg-none print:text-black print:p-0 print:border-b-2 print:border-black print:rounded-none">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-emerald-400 uppercase print:text-slate-600">
-              <FontAwesomeIcon icon={faBuilding} />
-              <span>Yayasan Wakaf Djalaluddin Pane (YWDP)</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black font-heading tracking-tight text-white print:text-black">
-              CATATAN ATAS LAPORAN KEUANGAN
-            </h2>
-            <p className="text-xs text-slate-300 print:text-slate-600">
-              Catatan dan informasi penjelas atas laporan keuangan berdasarkan periode akuntansi dan standar akuntansi entitas wakaf.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 bg-white/10 backdrop-blur-xs px-4 py-3 rounded-xl border border-white/10 print:border-none print:p-0">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300 print:text-slate-600">
-                <FontAwesomeIcon icon={faCalendarDays} className="text-emerald-400 print:text-slate-600" />
-                <span>Periode Akuntansi:</span>
-              </div>
-              <p className="text-xs font-bold text-white print:text-black">
-                {selectedPeriodObj ? selectedPeriodObj.name : "Semua Periode"}
-                {selectedPeriodObj && (
-                  <span
-                    className={`ml-2 inline-block px-2 py-0.5 rounded text-[10px] uppercase font-extrabold print:border ${
-                      selectedPeriodObj.status === "open"
-                        ? "bg-emerald-500/20 text-emerald-300 print:text-black"
-                        : "bg-slate-500/30 text-slate-300 print:text-black"
-                    }`}
-                  >
-                    {selectedPeriodObj.status === "open" ? "Aktif" : "Closed"}
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. FILTER TOOLBAR & QUICK NAVIGATION (SCREEN ONLY) */}
-      <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-xs print:hidden space-y-4">
-        <div className="flex flex-wrap items-end gap-4">
-          {/* Periode Akuntansi */}
-          <div className="min-w-[200px] flex-1">
-            <label
-              htmlFor="clk_period_select"
-              className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500"
-            >
-              Periode Akuntansi
-            </label>
-            <select
-              id="clk_period_select"
-              value={periodFilter}
-              onChange={(e) => handlePeriodChange(e.target.value === "" ? "" : Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-semibold text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-            >
-              <option value="">Semua Periode (Default)</option>
-              {periods.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name || p.period_name} ({p.status === "open" ? "Aktif" : "Ditutup"})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Kategori Catatan */}
-          <div className="w-full sm:w-64">
-            <label
-              htmlFor="clk_cat_select"
-              className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500"
-            >
-              Kategori CLK
-            </label>
-            <select
-              id="clk_cat_select"
-              value={categoryFilter}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-semibold text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-            >
-              <option value="">Semua Kategori</option>
-              {CLK_CATEGORIES.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {c.sectionLetter}. {c.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Status Catatan */}
-          <div className="w-full sm:w-44">
-            <label
-              htmlFor="clk_status_select"
-              className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500"
-            >
-              Status Publikasi
-            </label>
-            <select
-              id="clk_status_select"
-              value={statusFilter}
-              onChange={(e) => handleStatusChange(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs font-semibold text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-            >
-              <option value="">Semua Status</option>
-              <option value="published">Dipublikasikan</option>
-              <option value="draft">Konsep (Draft)</option>
-            </select>
-          </div>
-
-          {/* Reset Filter Button */}
-          {isFilterActive && (
-            <div>
-              <button
-                type="button"
-                onClick={handleResetFilter}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-200 active:scale-95"
-              >
-                <FontAwesomeIcon icon={faRotateRight} className="text-[10px]" />
-                <span>Reset Filter</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Quick Cross-Report Navigation Links */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
-          <div className="flex flex-wrap items-center gap-2">
-            <span>Navigasi Laporan Terkait:</span>
-            <Link
-              to={periodFilter ? `/finance/balance-sheet?period_id=${periodFilter}` : "/finance/balance-sheet"}
-              className="font-bold text-emerald-700 hover:underline"
-            >
-              Posisi Keuangan (LP)
-            </Link>
-            <span className="text-slate-300">•</span>
-            <Link
-              to={periodFilter ? `/finance/activity-statement?period_id=${periodFilter}` : "/finance/activity-statement"}
-              className="font-bold text-emerald-700 hover:underline"
-            >
-              Laporan Aktivitas (LA)
-            </Link>
-            <span className="text-slate-300">•</span>
-            <Link
-              to={periodFilter ? `/finance/waqf-assets?period_id=${periodFilter}` : "/finance/waqf-assets"}
-              className="font-bold text-emerald-700 hover:underline"
-            >
-              Rincian Aset Wakaf (LRAW)
-            </Link>
-            <span className="text-slate-300">•</span>
-            <Link
-              to={periodFilter ? `/finance/trial-balance?period_id=${periodFilter}` : "/finance/trial-balance"}
-              className="font-bold text-emerald-700 hover:underline"
-            >
-              Neraca Saldo
-            </Link>
-          </div>
-
-          <div>
-            Cakupan: <strong>{selectedPeriodObj?.name || "Seluruh Periode Akuntansi"}</strong>
-          </div>
-        </div>
-      </div>
-
-      {/* 5. ERROR STATE */}
-      {error && (
+      {/* Error State */}
+      {error && !notes.length && (
         <FinanceErrorState
-          title="Tidak Dapat Memuat Catatan Keuangan"
+          title="Gagal Memuat Catatan atas Laporan Keuangan"
           message={error}
-          onRetry={fetchData}
+          onRetry={refresh}
         />
       )}
 
-      {/* 6. LOADING SKELETON */}
-      {loading && !error && (
+      {/* Main Content Body */}
+      {(!loading || notes.length > 0) && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-24 rounded-2xl bg-slate-100 animate-pulse border border-slate-200" />
-            ))}
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
-            <FinanceTableSkeleton rows={5} cols={4} />
-          </div>
-        </div>
-      )}
+          {/* Formal Print Banner & Narrative Screen Header */}
+          <FinancialNotesReportHeader period={selectedPeriodObj} />
 
-      {/* 7. SUMMARY CARDS (SCREEN ONLY) */}
-      {!loading && !error && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
-          {/* Card 1: Total Catatan */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                TOTAL CATATAN (CLK)
-              </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-                <FontAwesomeIcon icon={faFileLines} className="text-xs" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <p className="text-xl font-black font-heading text-slate-900 tabular-nums">
-                {summary?.total_notes ?? notes.length} Catatan
-              </p>
-              <p className="mt-1 text-[11px] font-medium text-slate-500">
-                Dokumentasi naratif pengungkapan
-              </p>
-            </div>
+          {/* Narrative View Mode (Default & Always used in Print) */}
+          <div className={viewMode === "narrative" ? "block" : "hidden print:block"}>
+            <FinancialNotesNarrative
+              groups={groupedNotes}
+              totalNotes={filteredNotes.length}
+              periodId={periodId}
+              canManage={canManage}
+              onDeleteClick={(note) => setDeletingNote(note)}
+              onResetFilters={resetFilters}
+            />
           </div>
 
-          {/* Card 2: Dipublikasikan */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                DIPUBLIKASIKAN
-              </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                <FontAwesomeIcon icon={faCheckCircle} className="text-xs" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <p className="text-xl font-black font-heading text-emerald-700 tabular-nums">
-                {summary?.by_status?.published ?? 0} Catatan
-              </p>
-              <p className="mt-1 text-[11px] font-medium text-slate-500">
-                Tampil pada lampiran laporan resmi
-              </p>
-            </div>
-          </div>
+          {/* Table View Mode (Screen only) */}
+          {viewMode === "table" && (
+            <div className="print:hidden space-y-4">
+              <FinancialNotesDesktopTable
+                notes={filteredNotes}
+                periodId={periodId}
+                canManage={canManage}
+                onDeleteClick={(note) => setDeletingNote(note)}
+                onResetFilters={resetFilters}
+              />
 
-          {/* Card 3: Konsep / Draft */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                DRAFT / KONSEP
-              </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                <FontAwesomeIcon icon={faClock} className="text-xs" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <p className="text-xl font-black font-heading text-amber-700 tabular-nums">
-                {summary?.by_status?.draft ?? 0} Catatan
-              </p>
-              <p className="mt-1 text-[11px] font-medium text-slate-500">
-                Belum dipublikasikan ke laporan
-              </p>
-            </div>
-          </div>
-
-          {/* Card 4: Kategori Terisi */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                CAKUPAN POS KATEGORI
-              </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <FontAwesomeIcon icon={faFolderOpen} className="text-xs" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <p className="text-xl font-black font-heading text-slate-900 tabular-nums">
-                {summary?.by_category?.filter((c) => c.count > 0).length || 0} / {CLK_CATEGORIES.length}
-              </p>
-              <p className="mt-1 text-[11px] font-medium text-slate-500">
-                Pos pengungkapan yang telah diisi
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 8. MAIN NOTES PRESENTATION SECTION */}
-      {!loading && !error && (
-        <section aria-labelledby="clk_section_heading" className="space-y-6">
-          {/* TOOLBAR: SEARCH & VIEW MODE TOGGLE (SCREEN ONLY) */}
-          <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 print:hidden">
-            <div>
-              <h3 id="clk_section_heading" className="font-heading text-sm font-bold text-slate-900">
-                Naskah Catatan Atas Laporan Keuangan
-              </h3>
-              <p className="text-[11px] text-slate-500">
-                Menampilkan {filteredNotes.length} dari {notes.length} catatan terdaftar
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Search Box */}
-              <div className="relative flex-1 sm:w-64">
-                <FontAwesomeIcon
-                  icon={faSearch}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"
-                />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  placeholder="Cari judul, isi, penyusun..."
-                  className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-8 py-2 text-xs font-semibold text-slate-800 placeholder-slate-400 transition focus:border-emerald-500 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => handleSearchChange("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
-                    title="Hapus pencarian"
-                  >
-                    <FontAwesomeIcon icon={faTimes} className="text-xs" />
-                  </button>
-                )}
-              </div>
-
-              {/* View Mode Toggle Button Group */}
-              <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("narrative")}
-                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                    viewMode === "narrative"
-                      ? "bg-white text-emerald-700 shadow-2xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                  title="Tampilan Naratif Resmi"
-                >
-                  <FontAwesomeIcon icon={faAlignLeft} className="text-[11px]" />
-                  <span>Naratif (CLK)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("table")}
-                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                    viewMode === "table"
-                      ? "bg-white text-emerald-700 shadow-2xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                  title="Tampilan Tabel Register"
-                >
-                  <FontAwesomeIcon icon={faTable} className="text-[11px]" />
-                  <span>Tabel Ringkas</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* EMPTY STATE */}
-          {filteredNotes.length === 0 ? (
-            <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-xs">
-              <FinanceEmptyState
-                title="Belum Ada Catatan Atas Laporan Keuangan"
-                description={
-                  isFilterActive
-                    ? "Tidak ditemukan catatan keuangan dengan filter yang dipilih. Silakan reset filter atau tambahkan catatan baru."
-                    : "Belum ada catatan atas laporan keuangan untuk periode yang dipilih."
-                }
-                icon={faFileLines}
-                action={
-                  canManage ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingNote(null);
-                        setIsFormOpen(true);
-                      }}
-                      className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition"
-                    >
-                      <FontAwesomeIcon icon={faPlus} />
-                      <span>Buat Catatan Pertama</span>
-                    </button>
-                  ) : undefined
-                }
+              <FinancialNotesMobileList
+                notes={filteredNotes}
+                periodId={periodId}
+                canManage={canManage}
+                onDeleteClick={(note) => setDeletingNote(note)}
+                onResetFilters={resetFilters}
               />
             </div>
-          ) : (
-            <>
-              {/* MODE A: NARRATIVE VIEW (OFFICIAL CLK DOCUMENT PRESENTATION & PRINT) */}
-              <div className={viewMode === "table" ? "hidden print:block" : "space-y-6"}>
-                {groupedNotes.map((group) => (
-                  <article
-                    key={group.categoryKey}
-                    className="rounded-[28px] border border-slate-200 bg-white shadow-xs overflow-hidden print:border-none print:shadow-none print:break-inside-avoid"
-                  >
-                    {/* Section Header */}
-                    <div className="border-b border-slate-200/80 bg-slate-50/70 px-6 py-4 flex items-center justify-between print:bg-slate-100 print:px-0 print:py-2">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-700 text-white font-mono font-black text-xs print:text-black print:bg-none print:border print:border-black">
-                          {group.sectionLetter}
-                        </span>
-                        <div>
-                          <h4 className="font-heading text-sm font-bold text-slate-900 uppercase tracking-wide">
-                            {group.categoryLabel}
-                          </h4>
-                          <p className="text-[11px] text-slate-500 print:hidden">
-                            {group.notes.length} pos pengungkapan catatan
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Section Notes Body */}
-                    <div className="divide-y divide-slate-100 print:divide-slate-300">
-                      {group.notes.map((note, index) => (
-                        <div
-                          key={note.id}
-                          className="p-6 transition hover:bg-slate-50/50 print:p-4 print:hover:bg-transparent print:break-inside-avoid"
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
-                            <div className="space-y-1">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="font-mono text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60 print:bg-none print:text-black">
-                                  {group.sectionLetter}.{note.sort_order ?? index + 1}
-                                </span>
-                                <h5 className="font-heading text-sm font-bold text-slate-900">
-                                  {note.title}
-                                </h5>
-                                <span
-                                  className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide print:hidden ${
-                                    note.status === "published"
-                                      ? "bg-emerald-100 text-emerald-800"
-                                      : "bg-slate-200 text-slate-700"
-                                  }`}
-                                >
-                                  {note.status === "published" ? "Publikasi" : "Draft"}
-                                </span>
-                              </div>
-
-                              <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500 pt-0.5">
-                                <span>
-                                  Periode:{" "}
-                                  <strong className="text-slate-700">
-                                    {note.period_name || (note.period_id ? `Periode #${note.period_id}` : "Semua Periode")}
-                                  </strong>
-                                </span>
-                                <span className="text-slate-300">•</span>
-                                <span className="flex items-center gap-1">
-                                  <FontAwesomeIcon icon={faUser} className="text-slate-400 text-[10px]" />
-                                  <span>{note.creator_name || "Admin Keuangan"}</span>
-                                </span>
-                                <span className="text-slate-300">•</span>
-                                <span>Diperbarui: {formatFinanceDate(note.updated_at || note.created_at)}</span>
-                              </div>
-                            </div>
-
-                            {/* Action Buttons (Screen Only) */}
-                            <div className="flex items-center gap-1.5 self-start print:hidden">
-                              <button
-                                type="button"
-                                onClick={() => setViewingNote(note)}
-                                className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                                title="Lihat Rincian Catatan"
-                              >
-                                <FontAwesomeIcon icon={faEye} className="text-xs" />
-                              </button>
-                              {canManage && (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setEditingNote(note);
-                                      setIsFormOpen(true);
-                                    }}
-                                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-emerald-700 hover:bg-emerald-50 transition"
-                                    title="Edit Catatan"
-                                  >
-                                    <FontAwesomeIcon icon={faPenToSquare} className="text-xs" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setDeletingNote(note)}
-                                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
-                                    title="Hapus Catatan"
-                                  >
-                                    <FontAwesomeIcon icon={faTrashCan} className="text-xs" />
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Content Paragraphs (Safe rendering preserving whitespace and lines) */}
-                          <div className="mt-3 rounded-2xl bg-slate-50/70 p-4 border border-slate-200/60 print:bg-transparent print:border-none print:p-0">
-                            <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-normal whitespace-pre-line">
-                              {note.content}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </article>
-                ))}
-              </div>
-
-              {/* MODE B: TABLE REGISTER VIEW (SCREEN ONLY) */}
-              {viewMode === "table" && (
-                <div className="rounded-[28px] border border-slate-200 bg-white shadow-xs overflow-hidden print:hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr className="border-b border-slate-200/80 bg-slate-50/40 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-                          <th className="py-3.5 px-6 w-16 text-center">Urutan</th>
-                          <th className="py-3.5 px-4 min-w-[260px]">Judul Catatan</th>
-                          <th className="py-3.5 px-4 w-52">Kategori Pos</th>
-                          <th className="py-3.5 px-4 w-36">Periode</th>
-                          <th className="py-3.5 px-4 w-36">Penyusun</th>
-                          <th className="py-3.5 px-4 text-center w-28">Status</th>
-                          <th className="py-3.5 px-4 w-36">Diperbarui</th>
-                          <th className="py-3.5 px-6 text-center w-36">Aksi</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 text-xs">
-                        {filteredNotes.map((note) => (
-                          <tr
-                            key={note.id}
-                            className="hover:bg-slate-50/70 transition-colors group"
-                          >
-                            <td className="py-3.5 px-6 text-center font-mono font-bold text-slate-500">
-                              {note.sort_order ?? note.order ?? 0}
-                            </td>
-                            <td className="py-3.5 px-4 font-semibold text-slate-900">
-                              <button
-                                type="button"
-                                onClick={() => setViewingNote(note)}
-                                className="text-left hover:text-emerald-700 hover:underline transition font-bold"
-                              >
-                                {note.title}
-                              </button>
-                              <p className="text-[11px] text-slate-500 line-clamp-1 font-normal mt-0.5">
-                                {note.content}
-                              </p>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className="inline-block px-2.5 py-0.5 rounded-md bg-purple-50 border border-purple-200/60 text-[10px] font-bold text-purple-900 uppercase">
-                                {note.category_label || note.category}
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4 text-slate-700">
-                              {note.period_name || (note.period_id ? `Periode #${note.period_id}` : "Semua Periode")}
-                            </td>
-                            <td className="py-3.5 px-4 text-slate-600">
-                              <span className="flex items-center gap-1.5">
-                                <FontAwesomeIcon icon={faUser} className="text-slate-400 text-[10px]" />
-                                <span>{note.creator_name || "Admin Keuangan"}</span>
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4 text-center">
-                              <span
-                                className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide ${
-                                  note.status === "published"
-                                    ? "bg-emerald-100 text-emerald-800"
-                                    : "bg-slate-200 text-slate-700"
-                                }`}
-                              >
-                                {note.status === "published" ? "Publikasi" : "Draft"}
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4 font-mono text-[11px] text-slate-500 whitespace-nowrap">
-                              {formatFinanceDate(note.updated_at || note.created_at)}
-                            </td>
-                            <td className="py-3.5 px-6 text-center">
-                              <div className="flex items-center justify-center gap-1.5">
-                                <button
-                                  type="button"
-                                  onClick={() => setViewingNote(note)}
-                                  className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                                  title="Lihat Detail Catatan"
-                                >
-                                  <FontAwesomeIcon icon={faEye} className="text-[11px]" />
-                                </button>
-                                {canManage && (
-                                  <>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setEditingNote(note);
-                                        setIsFormOpen(true);
-                                      }}
-                                      className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-emerald-700 hover:bg-emerald-50 transition"
-                                      title="Edit Catatan"
-                                    >
-                                      <FontAwesomeIcon icon={faPenToSquare} className="text-[11px]" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setDeletingNote(note)}
-                                      className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
-                                      title="Hapus Catatan"
-                                    >
-                                      <FontAwesomeIcon icon={faTrashCan} className="text-[11px]" />
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </section>
-      )}
-
-      {/* 9. CREATE / EDIT FORM MODAL */}
-      {isFormOpen && (
-        <FinancialNoteFormModal
-          editingNote={editingNote}
-          periods={periods}
-          defaultPeriodId={periodFilter !== "" ? periodFilter : undefined}
-          defaultCategory={categoryFilter || undefined}
-          submitting={submitting}
-          onSave={handleSaveNote}
-          onClose={() => {
-            setIsFormOpen(false);
-            setEditingNote(null);
-          }}
-        />
-      )}
-
-      {/* 10. VIEW DETAIL MODAL */}
-      {viewingNote && (
-        <FinancialNoteDetailModal
-          note={viewingNote}
-          canManage={canManage}
-          onClose={() => setViewingNote(null)}
-          onEdit={() => {
-            const n = viewingNote;
-            setViewingNote(null);
-            setEditingNote(n);
-            setIsFormOpen(true);
-          }}
-        />
-      )}
-
-      {/* 11. DELETE CONFIRMATION MODAL */}
-      {deletingNote && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="clk_delete_dialog_title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4"
-        >
-          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-xl space-y-4">
-            <div className="flex items-center gap-3 text-rose-600">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50">
-                <FontAwesomeIcon icon={faTrashCan} />
-              </div>
-              <div>
-                <h3 id="clk_delete_dialog_title" className="text-sm font-bold text-slate-900">
-                  Hapus Catatan Keuangan
-                </h3>
-                <p className="text-xs text-slate-500">Tindakan ini tidak dapat dibatalkan.</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-600">
-              Apakah Anda yakin ingin menghapus catatan:{" "}
-              <span className="font-bold text-slate-900">{deletingNote.title}</span>?
-            </p>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setDeletingNote(null)}
-                disabled={deleting}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteNote}
-                disabled={deleting}
-                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-rose-700 disabled:opacity-50 transition"
-              >
-                {deleting ? "Menghapus..." : "Ya, Hapus"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ==========================================
-// SUB-COMPONENT: FORM MODAL (CREATE / EDIT)
-// ==========================================
-interface FinancialNoteFormModalProps {
-  editingNote: FinancialNote | null;
-  periods: AccountingPeriod[];
-  defaultPeriodId?: number;
-  defaultCategory?: string;
-  submitting: boolean;
-  onSave: (payload: FinancialNotePayload) => Promise<void>;
-  onClose: () => void;
-}
-
-function FinancialNoteFormModal({
-  editingNote,
-  periods,
-  defaultPeriodId,
-  defaultCategory,
-  submitting,
-  onSave,
-  onClose,
-}: FinancialNoteFormModalProps) {
-  const [title, setTitle] = useState(editingNote?.title || "");
-  const [category, setCategory] = useState<string>(
-    editingNote?.category || defaultCategory || CLK_CATEGORIES[0].key
-  );
-  const [periodId, setPeriodId] = useState<number | "">(
-    editingNote?.accounting_period_id ?? editingNote?.period_id ?? defaultPeriodId ?? ""
-  );
-  const [sortOrder, setSortOrder] = useState<number>(
-    editingNote?.sort_order ?? editingNote?.order ?? 0
-  );
-  const [status, setStatus] = useState<FinancialNoteStatus>(
-    (editingNote?.status as FinancialNoteStatus) || "published"
-  );
-  const [content, setContent] = useState(editingNote?.content || "");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) {
-      toast.error("Judul catatan wajib diisi.");
-      return;
-    }
-    if (!content.trim()) {
-      toast.error("Isi catatan wajib diisi.");
-      return;
-    }
-
-    void onSave({
-      title: title.trim(),
-      category,
-      period_id: periodId !== "" ? Number(periodId) : null,
-      accounting_period_id: periodId !== "" ? Number(periodId) : null,
-      sort_order: Number(sortOrder) || 0,
-      status,
-      content: content.trim(),
-    });
-  };
-
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="clk_form_title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
-    >
-      <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-xl overflow-hidden my-8">
-        <form onSubmit={handleSubmit}>
-          {/* Modal Header */}
-          <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50/80">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-600 text-white text-xs font-bold">
-                <FontAwesomeIcon icon={editingNote ? faPenToSquare : faPlus} />
-              </div>
-              <h3 id="clk_form_title" className="font-heading text-sm font-bold text-slate-900">
-                {editingNote ? "Edit Catatan Keuangan (CLK)" : "Tambah Catatan Keuangan Baru (CLK)"}
-              </h3>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition"
-              title="Tutup dialog"
-            >
-              <FontAwesomeIcon icon={faXmark} />
-            </button>
-          </div>
-
-          {/* Form Body */}
-          <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
-            {/* Judul Catatan */}
-            <div>
-              <label htmlFor="clk_input_title" className="mb-1 block font-bold uppercase tracking-wider text-slate-500">
-                Judul Catatan <span className="text-rose-500">*</span>
-              </label>
-              <input
-                id="clk_input_title"
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Contoh: Kebijakan Penyusutan Aset Wakaf Tahun 2026"
-                required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 font-semibold text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Kategori Catatan */}
-              <div>
-                <label htmlFor="clk_input_category" className="mb-1 block font-bold uppercase tracking-wider text-slate-500">
-                  Kategori Pos <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  id="clk_input_category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 font-semibold text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-                >
-                  {CLK_CATEGORIES.map((c) => (
-                    <option key={c.key} value={c.key}>
-                      {c.sectionLetter}. {c.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Periode Akuntansi */}
-              <div>
-                <label htmlFor="clk_input_period" className="mb-1 block font-bold uppercase tracking-wider text-slate-500">
-                  Periode Akuntansi
-                </label>
-                <select
-                  id="clk_input_period"
-                  value={periodId}
-                  onChange={(e) =>
-                    setPeriodId(e.target.value === "" ? "" : Number(e.target.value))
-                  }
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 font-semibold text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-                >
-                  <option value="">Semua Periode</option>
-                  {periods.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name || p.period_name} ({p.status === "open" ? "Aktif" : "Ditutup"})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Nomor Urut */}
-              <div>
-                <label htmlFor="clk_input_order" className="mb-1 block font-bold uppercase tracking-wider text-slate-500">
-                  Nomor Urut Tampilan
-                </label>
-                <input
-                  id="clk_input_order"
-                  type="number"
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(Number(e.target.value))}
-                  min={0}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 font-semibold text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-                />
-              </div>
-
-              {/* Status */}
-              <div>
-                <label htmlFor="clk_input_status" className="mb-1 block font-bold uppercase tracking-wider text-slate-500">
-                  Status Publikasi
-                </label>
-                <select
-                  id="clk_input_status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as FinancialNoteStatus)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 font-semibold text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-                >
-                  <option value="published">Dipublikasikan (Tampil pada Laporan)</option>
-                  <option value="draft">Konsep (Draft Internal)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Isi Catatan */}
-            <div>
-              <label htmlFor="clk_input_content" className="mb-1 block font-bold uppercase tracking-wider text-slate-500">
-                Isi Catatan / Pengungkapan Naratif <span className="text-rose-500">*</span>
-              </label>
-              <textarea
-                id="clk_input_content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={9}
-                placeholder="Tuliskan naskah penjelasan naratif pengungkapan laporan keuangan secara jelas..."
-                required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3.5 font-sans text-xs leading-relaxed text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
-              />
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="flex justify-end gap-2 border-t border-slate-200 px-6 py-3.5 bg-slate-50">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 disabled:opacity-50 transition"
-            >
-              {submitting ? "Menyimpan..." : "Simpan Catatan"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-// ==========================================
-// SUB-COMPONENT: DETAIL MODAL
-// ==========================================
-interface FinancialNoteDetailModalProps {
-  note: FinancialNote;
-  canManage: boolean;
-  onClose: () => void;
-  onEdit: () => void;
-}
-
-function FinancialNoteDetailModal({
-  note,
-  canManage,
-  onClose,
-  onEdit,
-}: FinancialNoteDetailModalProps) {
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="clk_detail_title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
-    >
-      <div className="relative w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-xl overflow-hidden my-8">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50/80">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-600 text-white text-xs font-bold">
-              <FontAwesomeIcon icon={faFileLines} />
-            </div>
-            <div>
-              <h3 id="clk_detail_title" className="font-heading text-sm font-bold text-slate-900">
-                {note.title}
-              </h3>
-              <p className="text-[11px] text-slate-500">
-                {note.category_label || note.category}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition"
-            title="Tutup dialog"
-          >
-            <FontAwesomeIcon icon={faXmark} />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
-          {/* Metadata Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Status</span>
-              <span
-                className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-bold mt-0.5 ${
-                  note.status === "published"
-                    ? "bg-emerald-100 text-emerald-800"
-                    : "bg-slate-200 text-slate-700"
-                }`}
-              >
-                {note.status === "published" ? "Publikasi" : "Draft"}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Periode</span>
-              <span className="font-semibold text-slate-800">
-                {note.period_name || (note.period_id ? `Periode #${note.period_id}` : "Semua Periode")}
-              </span>
-            </div>
-
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Penyusun</span>
-              <span className="font-semibold text-slate-800">
-                {note.creator_name || "Admin Keuangan"}
-              </span>
-            </div>
-          </div>
-
-          {/* Note Content */}
-          <div className="space-y-1.5">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-              Naskah Catatan Pengungkapan
-            </span>
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-4 font-sans text-xs sm:text-sm leading-relaxed text-slate-800 whitespace-pre-line shadow-2xs">
-              {note.content}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
-            <span>Dibuat: {formatFinanceDateTime(note.created_at)}</span>
-            <span>Diperbarui: {formatFinanceDateTime(note.updated_at)}</span>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex justify-end gap-2 border-t border-slate-200 px-6 py-3.5 bg-slate-50">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
-          >
-            Tutup
-          </button>
-          {canManage && (
-            <button
-              type="button"
-              onClick={onEdit}
-              className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-2xs hover:bg-emerald-700 transition"
-            >
-              Edit Catatan
-            </button>
           )}
         </div>
-      </div>
+      )}
+
+      {/* Accessible Delete Confirmation Dialog */}
+      <FinancialNoteDeleteDialog
+        note={deletingNote}
+        deleting={deleting}
+        onConfirm={handleDeleteConfirm}
+        onClose={() => setDeletingNote(null)}
+      />
     </div>
   );
 }
