@@ -51,39 +51,39 @@ export const EmployeeDeleteDialog: React.FC<EmployeeDeleteDialogProps> = ({
       }}
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150"
+        className="w-full max-w-md rounded-[28px] border border-slate-200 border-l-4 border-l-rose-500 bg-white p-6 sm:p-7 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start gap-3.5">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
-            <FontAwesomeIcon icon={faTriangleExclamation} className="text-base" />
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+            <FontAwesomeIcon icon={faTriangleExclamation} className="text-lg" />
           </div>
           <div className="space-y-1">
-            <h2 id="delete-employee-title" className="text-base font-bold text-slate-900 font-poppins">
+            <h2 id="delete-employee-title" className="text-lg font-bold text-slate-900 font-heading">
               Hapus Karyawan?
             </h2>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Data karyawan akan dihapus dari pengelolaan aktif dan tidak lagi tersedia pada halaman publik. Tindakan ini tidak menghapus file ID Card secara fisik.
+              Data karyawan akan dihapus dari pengelolaan aktif dan tidak lagi tersedia pada halaman publik. Tindakan ini tidak menghapus berkas ID Card secara fisik.
             </p>
           </div>
         </div>
 
         {/* Employee Summary Box */}
-        <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-200/80 space-y-1 text-xs">
-          <p className="font-bold text-slate-900">{employee.name}</p>
-          <p className="font-mono text-slate-500">ID: {employee.employee_code}</p>
-          <p className="text-slate-600">
+        <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200 space-y-1 text-xs">
+          <p className="font-bold text-slate-900 text-sm">{employee.name}</p>
+          <p className="font-mono text-slate-500">ID Pegawai: {employee.employee_code}</p>
+          <p className="text-slate-600 font-medium">
             {employee.position} {employee.division ? `• ${employee.division}` : ''}
           </p>
         </div>
 
         {/* Dialog Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+        <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
           <button
             type="button"
             onClick={onClose}
             disabled={deleting}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+            className="rounded-2xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
           >
             Batal
           </button>
@@ -91,7 +91,7 @@ export const EmployeeDeleteDialog: React.FC<EmployeeDeleteDialogProps> = ({
             type="button"
             onClick={onConfirm}
             disabled={deleting}
-            className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-red-700 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-60"
           >
             <FontAwesomeIcon icon={faTrashCan} className="text-xs" />
             <span>{deleting ? 'Menghapus...' : 'Hapus Karyawan'}</span>

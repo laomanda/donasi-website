@@ -49,30 +49,32 @@ export function EmployeeDetailPage() {
   if (error || !employee) {
     return (
       <div className="mx-auto w-full max-w-md space-y-4 py-16 text-center font-body">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
-          <FontAwesomeIcon icon={faTriangleExclamation} className="text-2xl" />
-        </div>
-        <h2 className="font-poppins text-lg font-bold text-slate-900">
-          {error || 'Karyawan tidak ditemukan.'}
-        </h2>
-        <p className="text-xs text-slate-500">
-          Data karyawan yang Anda cari mungkin telah dihapus atau tidak tersedia.
-        </p>
-        <div className="flex items-center justify-center gap-3 pt-2">
-          <Link
-            to="/employees"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} />
-            <span>Kembali ke Daftar</span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => void refresh()}
-            className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-slate-800"
-          >
-            Coba Lagi
-          </button>
+        <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-rose-500 bg-white p-10 shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 mb-4">
+            <FontAwesomeIcon icon={faTriangleExclamation} className="text-2xl" />
+          </div>
+          <h2 className="font-heading text-lg font-bold text-slate-900">
+            {error || 'Karyawan tidak ditemukan.'}
+          </h2>
+          <p className="mt-1 text-xs text-slate-500">
+            Data karyawan yang Anda cari mungkin telah dihapus atau tidak tersedia.
+          </p>
+          <div className="flex items-center justify-center gap-3 pt-4">
+            <Link
+              to="/employees"
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50"
+            >
+              <FontAwesomeIcon icon={faArrowLeft} />
+              <span>Kembali ke Daftar</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              className="rounded-2xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800"
+            >
+              Coba Lagi
+            </button>
+          </div>
         </div>
       </div>
     );

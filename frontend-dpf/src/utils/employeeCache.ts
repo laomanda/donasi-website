@@ -6,14 +6,14 @@ import type {
 } from '@/types/employee';
 
 // TTL Configuration
-export const EMPLOYEE_LIST_FRESH_TTL_MS = 45 * 1000; // 45 seconds
-export const EMPLOYEE_LIST_MAX_STALE_MS = 3 * 60 * 1000; // 3 minutes
+export const EMPLOYEE_LIST_FRESH_TTL_MS = 15 * 1000; // 15 seconds
+export const EMPLOYEE_LIST_MAX_STALE_MS = 2 * 60 * 1000; // 2 minutes
 
-export const EMPLOYEE_FILTERS_FRESH_TTL_MS = 5 * 60 * 1000; // 5 minutes
-export const EMPLOYEE_FILTERS_MAX_STALE_MS = 15 * 60 * 1000; // 15 minutes
+export const EMPLOYEE_FILTERS_FRESH_TTL_MS = 3 * 60 * 1000; // 3 minutes
+export const EMPLOYEE_FILTERS_MAX_STALE_MS = 10 * 60 * 1000; // 10 minutes
 
-export const EMPLOYEE_DETAIL_FRESH_TTL_MS = 60 * 1000; // 60 seconds
-export const EMPLOYEE_DETAIL_MAX_STALE_MS = 5 * 60 * 1000; // 5 minutes
+export const EMPLOYEE_DETAIL_FRESH_TTL_MS = 30 * 1000; // 30 seconds
+export const EMPLOYEE_DETAIL_MAX_STALE_MS = 3 * 60 * 1000; // 3 minutes
 
 export interface CacheEntry<T> {
   data: T;
@@ -156,6 +156,7 @@ export function setInFlightDetailRequest(id: number | string, promise: Promise<E
  */
 export function invalidateEmployeeListCache(): void {
   listCache.clear();
+  inFlightListRequests.clear();
 }
 
 /**
@@ -163,6 +164,7 @@ export function invalidateEmployeeListCache(): void {
  */
 export function invalidateEmployeeFiltersCache(): void {
   filtersCacheEntry = null;
+  inFlightFiltersRequest = null;
 }
 
 /**
@@ -171,8 +173,10 @@ export function invalidateEmployeeFiltersCache(): void {
 export function invalidateEmployeeDetailCache(id?: number | string): void {
   if (id !== undefined) {
     detailCache.delete(id);
+    inFlightDetailRequests.delete(id);
   } else {
     detailCache.clear();
+    inFlightDetailRequests.clear();
   }
 }
 
@@ -181,6 +185,9 @@ export function invalidateEmployeeDetailCache(id?: number | string): void {
  */
 export function invalidateAllEmployeeCaches(): void {
   listCache.clear();
+  inFlightListRequests.clear();
   filtersCacheEntry = null;
+  inFlightFiltersRequest = null;
   detailCache.clear();
+  inFlightDetailRequests.clear();
 }

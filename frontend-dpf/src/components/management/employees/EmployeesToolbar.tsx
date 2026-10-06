@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faXmark, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faMagnifyingGlass, faXmark, faFilter, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import type { EmployeeFilterOptions, EmployeeListParams } from '@/types/employee';
 
 interface EmployeesToolbarProps {
@@ -44,111 +44,137 @@ export const EmployeesToolbar: React.FC<EmployeesToolbarProps> = ({
   );
 
   return (
-    <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12">
+    <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-5 shadow-sm sm:p-6 space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-12">
         {/* Search Input */}
-        <div className="relative sm:col-span-2 lg:col-span-4">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-            <FontAwesomeIcon icon={faSearch} className="text-sm" />
-          </div>
-          <input
-            type="text"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="Cari nama atau ID pegawai..."
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-9 text-sm text-slate-800 placeholder-slate-400 transition focus:border-slate-400 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-slate-200"
-          />
-          {searchValue && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchValue('');
-                onChange({ q: undefined, page: 1 });
-              }}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
-              aria-label="Hapus pencarian"
-            >
-              <FontAwesomeIcon icon={faXmark} className="text-sm" />
-            </button>
-          )}
+        <div className="sm:col-span-2 lg:col-span-4">
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              Cari Karyawan
+            </span>
+            <div className="relative mt-2">
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                <FontAwesomeIcon icon={faMagnifyingGlass} className="text-sm" />
+              </span>
+              <input
+                type="text"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                placeholder="Cari nama atau ID pegawai..."
+                className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-11 pr-10 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+              />
+              {searchValue && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchValue('');
+                    onChange({ q: undefined, page: 1 });
+                  }}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 transition"
+                  aria-label="Hapus pencarian"
+                >
+                  <FontAwesomeIcon icon={faXmark} className="text-sm" />
+                </button>
+              )}
+            </div>
+          </label>
         </div>
 
         {/* Position Filter */}
         <div className="lg:col-span-2">
-          <select
-            value={params.position ?? ''}
-            onChange={(e) => onChange({ position: e.target.value || undefined, page: 1 })}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-800 transition focus:border-slate-400 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-slate-200"
-          >
-            <option value="">Semua Jabatan</option>
-            {filterOptions.positions.map((pos) => (
-              <option key={pos} value={pos}>
-                {pos}
-              </option>
-            ))}
-          </select>
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              Jabatan
+            </span>
+            <select
+              value={params.position ?? ''}
+              onChange={(e) => onChange({ position: e.target.value || undefined, page: 1 })}
+              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+            >
+              <option value="">Semua Jabatan</option>
+              {filterOptions.positions.map((pos) => (
+                <option key={pos} value={pos}>
+                  {pos}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {/* Division Filter */}
         <div className="lg:col-span-2">
-          <select
-            value={params.division ?? ''}
-            onChange={(e) => onChange({ division: e.target.value || undefined, page: 1 })}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-800 transition focus:border-slate-400 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-slate-200"
-          >
-            <option value="">Semua Divisi</option>
-            {filterOptions.divisions.map((div) => (
-              <option key={div} value={div}>
-                {div}
-              </option>
-            ))}
-          </select>
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              Divisi
+            </span>
+            <select
+              value={params.division ?? ''}
+              onChange={(e) => onChange({ division: e.target.value || undefined, page: 1 })}
+              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+            >
+              <option value="">Semua Divisi</option>
+              {filterOptions.divisions.map((div) => (
+                <option key={div} value={div}>
+                  {div}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {/* Status Filter */}
         <div className="lg:col-span-2">
-          <select
-            value={params.employment_status ?? ''}
-            onChange={(e) => onChange({ employment_status: e.target.value || undefined, page: 1 })}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-800 transition focus:border-slate-400 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-slate-200"
-          >
-            <option value="">Semua Status</option>
-            <option value="active">Aktif</option>
-            <option value="inactive">Tidak Aktif</option>
-          </select>
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              Status
+            </span>
+            <select
+              value={params.employment_status ?? ''}
+              onChange={(e) => onChange({ employment_status: e.target.value || undefined, page: 1 })}
+              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+            >
+              <option value="">Semua Status</option>
+              <option value="active">Aktif</option>
+              <option value="inactive">Tidak Aktif</option>
+            </select>
+          </label>
         </div>
 
         {/* Publication Filter */}
         <div className="lg:col-span-2">
-          <select
-            value={params.is_published !== undefined ? String(params.is_published) : ''}
-            onChange={(e) => {
-              const val = e.target.value;
-              onChange({ is_published: val === '' ? undefined : val === 'true', page: 1 });
-            }}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-800 transition focus:border-slate-400 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-slate-200"
-          >
-            <option value="">Semua Publikasi</option>
-            <option value="true">Dipublikasikan</option>
-            <option value="false">Disembunyikan</option>
-          </select>
+          <label className="block">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              Publikasi
+            </span>
+            <select
+              value={params.is_published !== undefined ? String(params.is_published) : ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                onChange({ is_published: val === '' ? undefined : val === 'true', page: 1 });
+              }}
+              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
+            >
+              <option value="">Semua Publikasi</option>
+              <option value="true">Dipublikasikan</option>
+              <option value="false">Disembunyikan</option>
+            </select>
+          </label>
         </div>
       </div>
 
-      {/* Active Filter Indicators & Reset Action */}
+      {/* Reset Filter Button */}
       {hasActiveFilters && (
-        <div className="flex items-center justify-between border-t border-slate-100 pt-2.5">
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <FontAwesomeIcon icon={faFilter} className="text-[10px]" />
-            <span>Filter diterapkan</span>
-          </div>
-
+        <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+          <span className="text-xs font-semibold text-slate-500 flex items-center gap-2">
+            <FontAwesomeIcon icon={faFilter} className="text-slate-400 text-xs" />
+            Filter aktif
+          </span>
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
           >
-            <FontAwesomeIcon icon={faXmark} className="text-[11px]" />
+            <FontAwesomeIcon icon={faRotateLeft} className="text-xs text-slate-400" />
             <span>Reset Filter</span>
           </button>
         </div>

@@ -1,1 +1,0 @@
-import{j as o}from"./vendor-fontawesome-BvHMe5Sm.js";import{f as e,r as i}from"./vendor-react-C9U5JXBf.js";import{E as m}from"./EditorArticleForm-xgymoLaU.js";import"./index-5Ae9A14g.js";import"./editorArticleUtils-4tMoQcFG.js";function u(){const{id:r}=e(),t=i.useMemo(()=>Number(r),[r]);return o.jsx(m,{mode:"edit",articleId:t})}export{u as EditorArticleEditPage,u as default};

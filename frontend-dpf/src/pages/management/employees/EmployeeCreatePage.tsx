@@ -49,21 +49,25 @@ export function EmployeeCreatePage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 pb-12 animate-fade-in font-body">
-      {/* Top Header */}
-      <div className="flex flex-col gap-2">
-        <Link
-          to="/employees"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-800"
-        >
-          <FontAwesomeIcon icon={faArrowLeft} />
-          <span>Kembali ke Daftar Karyawan</span>
-        </Link>
-        <h1 className="font-poppins text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-          Tambah Karyawan
-        </h1>
-        <p className="text-sm text-slate-600">
-          Lengkapi data identitas, status organisasi, dan unggah ID Card digital untuk karyawan baru.
-        </p>
+      {/* Top Header Card */}
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="font-heading text-2xl font-bold text-slate-900 sm:text-3xl">
+              Tambah Karyawan
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-600">
+              Lengkapi data identitas, status organisasi, dan unggah ID Card digital untuk karyawan baru.
+            </p>
+          </div>
+          <Link
+            to="/employees"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+          >
+            <FontAwesomeIcon icon={faArrowLeft} />
+            <span>Kembali ke Daftar</span>
+          </Link>
+        </div>
       </div>
 
       {/* Shared Reusable Form */}

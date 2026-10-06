@@ -150,6 +150,7 @@ export function EmployeesPage() {
         canManage={canManage}
         refreshing={refreshing}
         onRefresh={() => void refresh()}
+        total={meta.total}
       />
 
       {/* Filter and Search Toolbar */}
@@ -162,15 +163,15 @@ export function EmployeesPage() {
 
       {/* Error Banner */}
       {error && (
-        <div className="flex items-center justify-between rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 shadow-xs">
+        <div className="flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 shadow-xs">
           <div className="flex items-center gap-3">
-            <FontAwesomeIcon icon={faTriangleExclamation} className="text-red-500" />
+            <FontAwesomeIcon icon={faTriangleExclamation} className="text-rose-500" />
             <span>{error}</span>
           </div>
           <button
             type="button"
             onClick={() => void refresh()}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-800 transition hover:bg-red-200"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-rose-100 px-3.5 py-1.5 text-xs font-bold text-rose-800 transition hover:bg-rose-200"
           >
             <FontAwesomeIcon icon={faRotateRight} className="text-[11px]" />
             <span>Coba Lagi</span>
@@ -180,13 +181,13 @@ export function EmployeesPage() {
 
       {/* Empty State when zero employees in system */}
       {!loading && !error && employees.length === 0 && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
+        <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-200 bg-white p-12 text-center shadow-sm">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 mb-4">
             <FontAwesomeIcon icon={faUsers} className="text-2xl" />
           </div>
           {hasFilterActive ? (
             <div className="space-y-1">
-              <h2 className="font-poppins text-base font-bold text-slate-900">
+              <h2 className="font-heading text-base font-bold text-slate-900">
                 Karyawan Tidak Ditemukan
               </h2>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
@@ -196,7 +197,7 @@ export function EmployeesPage() {
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
+                  className="rounded-2xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
                 >
                   Reset Filter
                 </button>
@@ -204,7 +205,7 @@ export function EmployeesPage() {
             </div>
           ) : (
             <div className="space-y-1">
-              <h2 className="font-poppins text-base font-bold text-slate-900">
+              <h2 className="font-heading text-base font-bold text-slate-900">
                 Belum Ada Karyawan
               </h2>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
@@ -233,19 +234,19 @@ export function EmployeesPage() {
           />
 
           {/* Pagination Footer */}
-          <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-200 bg-white p-4 sm:px-6 sm:py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <span className="text-xs font-medium text-slate-600 text-center sm:text-left">
+              <span className="text-xs font-semibold text-slate-600 text-center sm:text-left">
                 {paginationLabel}
               </span>
 
               {/* Rows Per Page Selector */}
-              <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+              <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 font-medium">
                 <span>Tampilkan:</span>
                 <select
                   value={params.per_page ?? 15}
                   onChange={(e) => handlePerPageChange(parseInt(e.target.value, 10))}
-                  className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-slate-300"
+                  className="rounded-xl border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 focus:border-slate-400 focus:outline-hidden focus:ring-2 focus:ring-brandGreen-400"
                 >
                   <option value={15}>15</option>
                   <option value={25}>25</option>
@@ -260,7 +261,7 @@ export function EmployeesPage() {
                 type="button"
                 onClick={() => handlePageChange(Math.max(1, (params.page ?? 1) - 1))}
                 disabled={loading || (params.page ?? 1) <= 1}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FontAwesomeIcon icon={faArrowLeft} className="text-[10px]" />
                 <span>Sebelumnya</span>
@@ -270,7 +271,7 @@ export function EmployeesPage() {
                 type="button"
                 onClick={() => handlePageChange(Math.min(meta.last_page, (params.page ?? 1) + 1))}
                 disabled={loading || (params.page ?? 1) >= meta.last_page}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span>Berikutnya</span>
                 <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
