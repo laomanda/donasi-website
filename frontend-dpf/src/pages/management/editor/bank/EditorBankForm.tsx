@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faBuildingColumns, faTrash, faImage, faUpload, faTimes } from "@fortawesome/free-solid-svg-icons";
 
@@ -82,7 +82,13 @@ type Mode = "create" | "edit";
 
 export function EditorBankForm({ mode, accountId }: { mode: Mode; accountId?: number }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
+  const basePath = location.pathname.startsWith("/keuangan")
+    ? "/keuangan"
+    : location.pathname.startsWith("/admin")
+    ? "/admin"
+    : "/editor";
 
   const [form, setForm] = useState<BankAccountFormState>(emptyForm);
   const [loading, setLoading] = useState(mode === "edit");
@@ -260,7 +266,7 @@ export function EditorBankForm({ mode, accountId }: { mode: Mode; accountId?: nu
         await http.post(`/editor/bank-accounts/${accountId}`, payload, config);
         toast.success("Perubahan rekening disimpan.", { title: "Berhasil" });
       }
-      navigate("/editor/bank-accounts", { replace: true });
+      navigate(`${basePath}/bank-accounts`, { replace: true });
     } catch (err: any) {
       setErrors(normalizeErrors(err));
     } finally {
@@ -302,7 +308,7 @@ export function EditorBankForm({ mode, accountId }: { mode: Mode; accountId?: nu
     try {
       await http.delete(`/editor/bank-accounts/${accountId}`);
       toast.success("Rekening berhasil dihapus.", { title: "Berhasil" });
-      navigate("/editor/bank-accounts", { replace: true });
+      navigate(`${basePath}/bank-accounts`, { replace: true });
     } catch (err: any) {
       setErrors(normalizeErrors(err));
     } finally {
@@ -328,7 +334,7 @@ export function EditorBankForm({ mode, accountId }: { mode: Mode; accountId?: nu
           <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:items-center">
             <button
               type="button"
-              onClick={() => navigate("/editor/bank-accounts")}
+              onClick={() => navigate(`${basePath}/bank-accounts`)}
               className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
               disabled={saving || deleting}
             >

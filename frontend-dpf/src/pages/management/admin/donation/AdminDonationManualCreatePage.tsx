@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -96,8 +96,11 @@ const formatCurrency = (value: number | string | null | undefined) => {
 
 export function AdminDonationManualCreatePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const basePath = location.pathname.startsWith("/keuangan") ? "/keuangan" : "/admin";
 
   const [form, setForm] = useState<ManualDonationFormState>(emptyForm);
   const [programOptions, setProgramOptions] = useState<ProgramOption[]>([]);
@@ -193,7 +196,7 @@ export function AdminDonationManualCreatePage() {
       const payload = payloadForRequest(form);
       await http.post("/admin/donations/manual", payload);
       toast.success("Donasi manual berhasil dibuat.", { title: "Berhasil" });
-      navigate("/admin/donations", { replace: true });
+      navigate(`${basePath}/donations`, { replace: true });
     } catch (err: any) {
       setErrors(normalizeErrors(err));
       toast.error("Gagal menyimpan donasi. Periksa kembali input Anda.", { title: "Gagal" });
@@ -216,7 +219,7 @@ export function AdminDonationManualCreatePage() {
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="space-y-4">
               <button
-                onClick={() => navigate("/admin/donations")}
+                onClick={() => navigate(`${basePath}/donations`)}
                 className="group inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-emerald-50 backdrop-blur-sm transition hover:bg-white/20"
               >
                 <FontAwesomeIcon icon={faArrowLeft} className="transition group-hover:-translate-x-1" />

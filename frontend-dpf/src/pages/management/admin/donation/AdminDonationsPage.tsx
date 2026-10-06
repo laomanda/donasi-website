@@ -224,7 +224,7 @@ export function AdminDonationsPage() {
   return (
     <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 pb-10">
       <AdminDonationHeader 
-        onInputManual={() => navigate("/admin/donations/manual")}
+        onInputManual={() => navigate(`${basePath}/donations/manual`)}
       />
 
       {selectedDonation && (

@@ -183,7 +183,7 @@ export function StatCard({
 }: {
   title: string;
   value: React.ReactNode;
-  icon: any;
+  icon?: any;
   tone: ToneKey;
   loading: boolean;
   helper?: string;
@@ -211,10 +211,13 @@ export function StatCard({
           </div>
           {helper ? <p className="mt-1 text-xs font-semibold text-slate-500">{helper}</p> : null}
         </div>
-        <div className={`flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl ${styles.iconBg} text-white shadow-sm`}>
-          <FontAwesomeIcon icon={icon} className="text-xl sm:text-2xl text-white" />
-        </div>
+        {icon ? (
+          <div className={`flex h-12 w-12 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl ${styles.iconBg} text-white shadow-sm`}>
+            <FontAwesomeIcon icon={icon} className="text-xl sm:text-2xl text-white" />
+          </div>
+        ) : null}
       </div>
     </div>
   );
 }
+

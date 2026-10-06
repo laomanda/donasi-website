@@ -245,7 +245,7 @@ export function AdminDonationShowPage() {
       });
       toast.success("Status donasi berhasil diperbarui.", { title: "Berhasil" });
       window.dispatchEvent(new Event("refresh-badges"));
-      navigate("/admin/donations", { replace: true });
+      navigate(`${basePath}/donations`, { replace: true });
     } catch (err: any) {
       const message = err?.response?.data?.message ?? "Gagal memperbarui status donasi.";
       toast.error(String(message), { title: "Gagal" });
@@ -261,7 +261,7 @@ export function AdminDonationShowPage() {
       await http.delete(`/admin/donations/${donationId}`);
       toast.success("Donasi berhasil dihapus.", { title: "Berhasil" });
       window.dispatchEvent(new Event("refresh-badges"));
-      navigate("/admin/donations", { replace: true });
+      navigate(`${basePath}/donations`, { replace: true });
     } catch (err: any) {
       const message = err?.response?.data?.message ?? "Gagal menghapus donasi.";
       toast.error(String(message), { title: "Gagal" });

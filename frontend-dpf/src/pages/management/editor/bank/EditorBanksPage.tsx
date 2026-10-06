@@ -1,5 +1,5 @@
-﻿import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import http from "../../../../lib/http";
 import { useToast } from "../../../../components/ui/ToastProvider";
 import { runWithConcurrency } from "../../../../lib/bulk";
@@ -13,7 +13,13 @@ import type { BankAccount } from "../../../../components/management/editor/bank/
 
 export function EditorBanksPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
+  const basePath = location.pathname.startsWith("/keuangan")
+    ? "/keuangan"
+    : location.pathname.startsWith("/admin")
+    ? "/admin"
+    : "/editor";
 
   const [items, setItems] = useState<BankAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +110,7 @@ export function EditorBanksPage() {
       <EditorBanksHeader
         totalItems={items.length}
         activeCount={activeCount}
-        onAdd={() => navigate("/editor/bank-accounts/create")}
+        onAdd={() => navigate(`${basePath}/bank-accounts/create`)}
       />
 
       <EditorBanksFilter
@@ -136,7 +142,7 @@ export function EditorBanksPage() {
         onToggle={selection.toggle}
         onToggleAll={() => selection.toggleAll(filteredIds)}
         allSelected={filteredIds.length > 0 && filteredIds.every((id) => selection.isSelected(id))}
-        onEdit={(id) => navigate(`/editor/bank-accounts/${id}/edit`)}
+        onEdit={(id) => navigate(`${basePath}/bank-accounts/${id}/edit`)}
       />
     </div>
   );

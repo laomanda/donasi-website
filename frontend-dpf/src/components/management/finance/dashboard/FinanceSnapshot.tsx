@@ -2,13 +2,7 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
-  faCoins,
-  faScaleUnbalanced,
-  faVault,
-  faArrowTrendUp,
-  faArrowTrendDown,
   faShieldHalved,
-  faChartPie,
 } from "@fortawesome/free-solid-svg-icons";
 import { CurrencyDisplay } from "@/components/management/finance/shared";
 import type {
@@ -22,9 +16,9 @@ interface FinancialKpiCardProps {
   title: string;
   value: React.ReactNode;
   helper: string;
-  icon: IconDefinition;
+  icon?: IconDefinition;
   accentBorder: string;
-  iconBg: string;
+  iconBg?: string;
   loading?: boolean;
 }
 
@@ -45,11 +39,13 @@ function FinancialKpiCard({
         <p className="text-xs font-bold uppercase tracking-wider text-slate-600 truncate">
           {title}
         </p>
-        <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconBg} text-white text-xs font-bold shadow-sm`}
-        >
-          <FontAwesomeIcon icon={icon} />
-        </div>
+        {icon && (
+          <div
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconBg} text-white text-xs font-bold shadow-sm`}
+          >
+            <FontAwesomeIcon icon={icon} />
+          </div>
+        )}
       </div>
 
       <div className="mt-3">
@@ -112,36 +108,28 @@ export const FinanceSnapshot: React.FC<FinanceSnapshotProps> = ({
           title="Total Aset"
           value={<CurrencyDisplay amount={totalAssets} />}
           helper="Kas, bank & aset wakaf"
-          icon={faVault}
           accentBorder="border-t-brandBlueTeal-500"
-          iconBg="bg-brandBlueTeal-500"
           loading={loading}
         />
         <FinancialKpiCard
           title="Aset Neto"
           value={<CurrencyDisplay amount={totalNetAssets} />}
           helper="Saldo dana neto wakaf"
-          icon={faScaleUnbalanced}
           accentBorder="border-t-brandGreen-500"
-          iconBg="bg-brandGreen-500"
           loading={loading}
         />
         <FinancialKpiCard
           title="Penerimaan"
           value={<CurrencyDisplay amount={totalRevenues} />}
           helper="Donasi & hasil kelola"
-          icon={faArrowTrendUp}
           accentBorder="border-t-primary-500"
-          iconBg="bg-primary-500"
           loading={loading}
         />
         <FinancialKpiCard
           title="Beban & Penyaluran"
           value={<CurrencyDisplay amount={totalExpenses} />}
           helper="Program & operasional"
-          icon={faArrowTrendDown}
           accentBorder="border-t-slate-700"
-          iconBg="bg-slate-700"
           loading={loading}
         />
       </div>
@@ -152,18 +140,14 @@ export const FinanceSnapshot: React.FC<FinanceSnapshotProps> = ({
           title="Total Liabilitas"
           value={<CurrencyDisplay amount={totalLiabilities} />}
           helper="Kewajiban berjalan entitas"
-          icon={faCoins}
           accentBorder="border-t-brandWarmOrange-500"
-          iconBg="bg-brandWarmOrange-500"
           loading={loading}
         />
         <FinancialKpiCard
           title="Surplus / Defisit"
           value={<CurrencyDisplay amount={surplusDeficit} tone="auto" />}
           helper={isSurplus ? "Surplus periode berjalan" : "Defisit periode berjalan"}
-          icon={faChartPie}
           accentBorder={isSurplus ? "border-t-brandGreen-500" : "border-t-rose-600"}
-          iconBg={isSurplus ? "bg-brandGreen-500" : "bg-rose-600"}
           loading={loading}
         />
 

@@ -1,5 +1,5 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import http from "@/lib/http";
 import { useToast } from "@/components/ui/ToastProvider";
 import { runWithConcurrency } from "@/lib/bulk";
@@ -61,7 +61,9 @@ type ProgramsPayload = PaginationPayload<{
 
 export function AdminDonationConfirmationsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToast();
+  const basePath = location.pathname.startsWith("/keuangan") ? "/keuangan" : "/admin";
 
   const [items, setItems] = useState<Donation[]>([]);
   const [page, setPage] = useState(1);
@@ -236,13 +238,13 @@ export function AdminDonationConfirmationsPage() {
   };
 
   const openDonation = (id: number) => {
-    navigate(`/admin/donations/${id}`);
+    navigate(`${basePath}/donations/${id}`);
   };
 
   return (
     <div className="mx-auto w-full max-w-7xl animate-fade-in space-y-8 pb-10">
       <AdminDonationHeader 
-        onInputManual={() => navigate("/admin/donations/manual")}
+        onInputManual={() => navigate(`${basePath}/donations/manual`)}
       />
 
       <AdminDonationFilters 

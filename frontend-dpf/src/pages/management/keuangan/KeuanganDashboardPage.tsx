@@ -3,16 +3,13 @@ import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRight,
-  faArrowTrendUp,
   faCheckCircle,
   faCircleCheck,
   faCircleInfo,
   faClock,
-  faHandHoldingDollar,
   faHandshake,
   faReceipt,
   faRotateRight,
-  faWallet,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAdminDashboard } from "../../../hooks/useAdminDashboard";
 import { StatCard, TONE_STYLES } from "../../../components/management/StatCard";
@@ -167,7 +164,6 @@ export function KeuanganDashboardPage() {
           title="Total Kas Masuk (Donasi Lunas)"
           value={formatCurrency(stats.donationsPaid)}
           helper={`${formatCount(stats.donationsPaidCount)} transaksi berhasil`}
-          icon={faWallet}
           tone="emerald"
           loading={loading}
         />
@@ -175,7 +171,6 @@ export function KeuanganDashboardPage() {
           title="Total Penyaluran (Kas Keluar)"
           value={formatCurrency(stats.allocationsTotal)}
           helper="Tersalurkan ke program & mitra"
-          icon={faHandHoldingDollar}
           tone="blue"
           loading={loading}
         />
@@ -183,7 +178,6 @@ export function KeuanganDashboardPage() {
           title="Sisa Saldo Kas Siap Salur"
           value={formatCurrency(stats.availableBalance)}
           helper="Selisih kas masuk - penyaluran"
-          icon={faArrowTrendUp}
           tone="teal"
           loading={loading}
         />
@@ -191,7 +185,6 @@ export function KeuanganDashboardPage() {
           title="Donasi Menunggu Konfirmasi"
           value={`${formatCount(stats.donationsPendingCount)} Menunggu`}
           helper={stats.donationsPendingAmount > 0 ? formatCurrency(stats.donationsPendingAmount) : "Tidak ada antrean"}
-          icon={faClock}
           tone="amber"
           loading={loading}
         />
@@ -267,7 +260,7 @@ export function KeuanganDashboardPage() {
             </div>
             <Link
               to="/keuangan/allocations"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-brandBlueTeal-600 bg-white px-3 py-1.5 text-xs font-bold text-brandBlueTeal-600 transition-all duration-200 hover:bg-brandBlueTeal-600 hover:text-white hover:shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-primary-500 bg-white px-3 py-1.5 text-xs font-bold text-primary-500 transition-all duration-200 hover:bg-primary-500 hover:text-white hover:shadow-sm"
             >
               <span>Lihat Semua</span>
               <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
