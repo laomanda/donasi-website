@@ -28,6 +28,7 @@ import {
   faCalendarCheck,
   faFileImport,
   faFileLines,
+  faIdBadge,
 } from "@fortawesome/free-solid-svg-icons";
 
 import type { ToneKey } from "../StatCard";
@@ -314,6 +315,14 @@ export const QUICK_ACTIONS: QuickAction[] = [
     icon: faHandshake,
     tone: "lime",
   },
+  {
+    label: "Kelola Karyawan",
+    description: "AKSES PENUH MODUL",
+    href: "/employees",
+    permission: "manage employees",
+    icon: faIdBadge,
+    tone: "teal",
+  },
 ];
 
 export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
@@ -340,6 +349,7 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       title: "Organisasi",
       items: [
         { label: "Mitra", href: "/editor/partners", icon: faHandshake, permission: "manage partners" },
+        { label: "Karyawan", href: "/employees", icon: faIdBadge, permission: "view employees" },
         { label: "Struktur", href: "/editor/organization-members", icon: faSitemap, permission: "manage organization" },
         { label: "Rekening", href: "/editor/bank-accounts", icon: faBuildingColumns, permission: "manage bank_accounts" },
       ],
@@ -375,6 +385,12 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       ],
     },
     {
+      title: "Organisasi",
+      items: [
+        { label: "Karyawan", href: "/employees", icon: faIdBadge, permission: "view employees" },
+      ],
+    },
+    {
       title: "Sistem",
       items: [
         { label: "Pengaturan", href: "/admin/settings", icon: faGears },
@@ -391,6 +407,12 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       items: [
         { label: "Pengguna", href: "/superadmin/users", icon: faUserGroup, permission: "manage users" },
         { label: "Roles", href: "/superadmin/roles", icon: faShieldHalved, permission: "manage roles" },
+      ],
+    },
+    {
+      title: "Organisasi",
+      items: [
+        { label: "Karyawan", href: "/employees", icon: faIdBadge, permission: "view employees" },
       ],
     },
     {
@@ -486,6 +508,7 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
       title: "Organisasi",
       items: [
         { label: "Mitra", href: "/editor/partners", icon: faHandshake, permission: "manage partners" },
+        { label: "Karyawan", href: "/employees", icon: faIdBadge, permission: "view employees" },
         { label: "Struktur", href: "/editor/organization-members", icon: faSitemap, permission: "manage organization" },
         { label: "Rekening", href: "/editor/bank-accounts", icon: faBuildingColumns, permission: "manage bank_accounts" },
       ],
@@ -604,6 +627,11 @@ export const resolveUserPermissions = (user: StoredUser | null): string[] => {
         role.permissions.forEach(addPerm);
       }
     });
+  }
+
+  if (permissions.includes("manage employees") || permissions.includes("manage_employees")) {
+    permissions.push("view employees");
+    permissions.push("view_employees");
   }
 
   return Array.from(new Set(permissions));

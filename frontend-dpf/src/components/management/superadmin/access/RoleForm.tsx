@@ -393,7 +393,7 @@ export default function RoleForm({ mode, roleId }: RoleFormProps) {
                             )}
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition truncate">
+                                <p className="text-sm font-bold text-slate-900 transition truncate">
                                   {user.name}
                                 </p>
                                 <span

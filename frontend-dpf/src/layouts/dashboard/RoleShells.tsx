@@ -95,3 +95,39 @@ export function ManagementShell() {
   return <RequireDashboardRole role="custom" />;
 }
 
+export function EmployeeShell() {
+  const location = useLocation();
+  const token = getAuthToken();
+
+  if (!token) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  const roles = resolveUserRoles();
+  const permissions = resolveUserPermissions();
+  const isSuperAdmin = roles.includes("superadmin");
+  const canView = isSuperAdmin || permissions.includes("view employees") || permissions.includes("manage employees");
+
+  if (!canView) {
+    return <Navigate to="/error/403" replace />;
+  }
+
+  const activeRole: Utils.DashboardRole = roles.includes("superadmin")
+    ? "superadmin"
+    : roles.includes("admin")
+    ? "admin"
+    : roles.includes("editor")
+    ? "editor"
+    : roles.includes("keuangan")
+    ? "keuangan"
+    : roles.includes("mitra")
+    ? "mitra"
+    : "custom";
+
+  return (
+    <DashboardLayout role={activeRole}>
+      <Outlet />
+    </DashboardLayout>
+  );
+}
+

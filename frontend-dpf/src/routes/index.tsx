@@ -39,6 +39,13 @@ const FinanceShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m
 const SuperAdminShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.SuperAdminShell })))
 const MitraShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.MitraShell })))
 const ManagementShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.ManagementShell })))
+const EmployeeShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.EmployeeShell })))
+
+// Employee Pages (Management)
+const EmployeesPage = lazy(() => import('../pages/management/employees/EmployeesPage').then(m => ({ default: m.EmployeesPage })))
+const EmployeeCreatePage = lazy(() => import('../pages/management/employees/EmployeeCreatePage').then(m => ({ default: m.EmployeeCreatePage })))
+const EmployeeDetailPage = lazy(() => import('../pages/management/employees/EmployeeDetailPage').then(m => ({ default: m.EmployeeDetailPage })))
+const EmployeeEditPage = lazy(() => import('../pages/management/employees/EmployeeEditPage').then(m => ({ default: m.EmployeeEditPage })))
 
 // Finance Pages
 const FinanceDashboardPage = lazy(() => import('../pages/management/finance/FinanceDashboardPage').then(m => ({ default: m.FinanceDashboardPage })))
@@ -408,6 +415,16 @@ export const router = createBrowserRouter([
           { path: 'dashboard', element: withSuspense(CustomDashboardPage) },
           { path: 'search', element: <Suspense fallback={<PageLoader />}><SearchPage role="custom" /></Suspense> },
           { path: 'settings', element: <Suspense fallback={<PageLoader />}><SettingsPage role="custom" /></Suspense> },
+        ],
+      },
+      {
+        path: 'employees',
+        element: withSuspense(EmployeeShell),
+        children: [
+          { index: true, element: withSuspense(EmployeesPage) },
+          { path: 'create', element: withSuspense(EmployeeCreatePage) },
+          { path: ':id', element: withSuspense(EmployeeDetailPage) },
+          { path: ':id/edit', element: withSuspense(EmployeeEditPage) },
         ],
       },
       { path: 'error/400', element: withSuspense(Error400) },
