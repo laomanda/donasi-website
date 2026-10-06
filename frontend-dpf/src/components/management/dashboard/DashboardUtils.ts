@@ -415,28 +415,28 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
     {
       title: "Pembukuan",
       items: [
-        { label: "Bagan Akun (COA)", href: "/finance/accounts", icon: faSitemap, permission: "view reports" },
-        { label: "Jurnal Umum", href: "/finance/journals", icon: faBookOpen, permission: "view reports" },
-        { label: "Buku Besar", href: "/finance/general-ledger", icon: faCoins, permission: "view reports" },
-        { label: "Neraca Saldo", href: "/finance/trial-balance", icon: faScaleUnbalanced, permission: "view reports" },
+        { label: "Bagan Akun (COA)", href: "/finance/accounts", icon: faSitemap },
+        { label: "Jurnal Umum", href: "/finance/journals", icon: faBookOpen },
+        { label: "Buku Besar", href: "/finance/general-ledger", icon: faCoins },
+        { label: "Neraca Saldo", href: "/finance/trial-balance", icon: faScaleUnbalanced },
       ],
     },
     {
       title: "Laporan Keuangan",
       items: [
-        { label: "Posisi Keuangan", href: "/finance/balance-sheet", icon: faVault, permission: "view reports" },
-        { label: "Laporan Aktivitas", href: "/finance/activity-statement", icon: faChartLine, permission: "view reports" },
-        { label: "Aset Wakaf", href: "/finance/waqf-assets", icon: faVault, permission: "view reports" },
-        { label: "Catatan Keuangan", href: "/finance/financial-notes", icon: faFileLines, permission: "view reports" },
-        { label: "Laporan Arus Kas", href: "/keuangan/reports/cashflow", icon: faCoins, permission: "view reports" },
+        { label: "Posisi Keuangan", href: "/finance/balance-sheet", icon: faVault },
+        { label: "Laporan Aktivitas", href: "/finance/activity-statement", icon: faChartLine },
+        { label: "Aset Wakaf", href: "/finance/waqf-assets", icon: faVault },
+        { label: "Catatan Keuangan", href: "/finance/financial-notes", icon: faFileLines },
+        { label: "Laporan Arus Kas", href: "/keuangan/reports/cashflow", icon: faCoins },
       ],
     },
     {
       title: "Kontrol & Audit",
       items: [
-        { label: "Periode Akuntansi", href: "/finance/accounting-periods", icon: faCalendarCheck, permission: "view reports" },
-        { label: "Rekonsiliasi (14 Titik)", href: "/finance/reconciliation", icon: faShieldHalved, permission: "view reports" },
-        { label: "Import & Export", href: "/finance/import", icon: faFileImport, permission: "view reports" },
+        { label: "Periode Akuntansi", href: "/finance/accounting-periods", icon: faCalendarCheck },
+        { label: "Rekonsiliasi (14 Titik)", href: "/finance/reconciliation", icon: faShieldHalved },
+        { label: "Import & Export", href: "/finance/import", icon: faFileImport },
       ],
     },
     {

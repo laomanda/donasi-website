@@ -76,7 +76,7 @@ export function RolesPage() {
   const onDeleteSelected = async () => {
     if (selection.count === 0) return;
     
-    const coreRoles = ['superadmin', 'admin', 'editor', 'mitra'];
+    const coreRoles = ['superadmin', 'admin', 'editor', 'keuangan', 'mitra'];
     const selectedToDestroy = items.filter(r => 
         selection.isSelected(r.id) && !coreRoles.includes(r.name.toLowerCase())
     );

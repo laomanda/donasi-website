@@ -61,6 +61,8 @@ use App\Http\Controllers\Api\PrayerTimesController;
 use App\Http\Controllers\Api\Reports\CashFlowReportController;
 use App\Http\Controllers\Api\Reports\DonationReportController;
 use App\Http\Controllers\Api\SavedItemController;
+use App\Http\Controllers\Api\EmployeeController;
+use App\Http\Controllers\Api\PublicEmployeeController;
 use App\Http\Controllers\Api\Superadmin\DashboardController as SuperadminDashboardController;
 use App\Http\Controllers\Api\Superadmin\RoleController as SuperadminRoleController;
 use App\Http\Controllers\Api\Superadmin\UserController as SuperadminUserController;
@@ -306,7 +308,7 @@ Route::prefix('v1')->group(function () {
     | FINANCE (Role: keuangan, superadmin)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:keuangan|superadmin|manage donations|view reports'])
+    Route::middleware(['auth:sanctum', 'is_active', 'role_or_permission:keuangan|superadmin'])
         ->prefix('finance')
         ->name('finance.')
         ->group(function () {
@@ -335,7 +337,7 @@ Route::prefix('v1')->group(function () {
                 ->middleware('role_or_permission:keuangan|superadmin');
 
             // Finance Reconciliation & Control
-            Route::middleware('role_or_permission:keuangan|superadmin|view reports')->group(function () {
+            Route::middleware('role_or_permission:keuangan|superadmin')->group(function () {
                 Route::get('reconciliation/summary', [FinanceReconciliationController::class, 'summary']);
                 Route::get('reconciliation', [FinanceReconciliationController::class, 'index']);
             });
@@ -428,5 +430,50 @@ Route::prefix('v1')->group(function () {
             Route::get('reports/donations/export', [DonationReportController::class, 'export']);
             Route::get('reports/cash-flow', [CashFlowReportController::class, 'index']);
             Route::get('reports/cash-flow/export', [CashFlowReportController::class, 'export']);
+        });
+
+    /*
+    |--------------------------------------------------------------------------
+    | PUBLIC EMPLOYEES (Digital Employee Directory)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('public/employees')->name('public.employees.')->group(function () {
+        Route::get('filters', [PublicEmployeeController::class, 'filters'])->name('filters');
+        Route::get('/', [PublicEmployeeController::class, 'index'])->name('index');
+        Route::get('{slug}', [PublicEmployeeController::class, 'show'])->name('show');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | EMPLOYEES MANAGEMENT (Digital Employee Directory)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['auth:sanctum', 'is_active'])
+        ->prefix('employees')
+        ->name('employees.')
+        ->group(function () {
+            Route::get('filters', [EmployeeController::class, 'filters'])
+                ->middleware('permission:manage employees|view employees')
+                ->name('filters');
+
+            Route::get('/', [EmployeeController::class, 'index'])
+                ->middleware('permission:manage employees|view employees')
+                ->name('index');
+
+            Route::post('/', [EmployeeController::class, 'store'])
+                ->middleware('permission:manage employees')
+                ->name('store');
+
+            Route::get('{employee}', [EmployeeController::class, 'show'])
+                ->middleware('permission:manage employees|view employees')
+                ->name('show');
+
+            Route::match(['put', 'patch', 'post'], '{employee}', [EmployeeController::class, 'update'])
+                ->middleware('permission:manage employees')
+                ->name('update');
+
+            Route::delete('{employee}', [EmployeeController::class, 'destroy'])
+                ->middleware('permission:manage employees')
+                ->name('destroy');
         });
 });

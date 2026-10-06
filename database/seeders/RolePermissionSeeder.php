@@ -46,6 +46,8 @@ class RolePermissionSeeder extends Seeder
             'manage suggestions',
             'manage tasks',
             'manage users',
+            'manage employees',
+            'view employees',
         ];
 
         foreach ($permissions as $permissionName) {

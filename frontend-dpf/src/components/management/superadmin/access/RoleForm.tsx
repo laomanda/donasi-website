@@ -92,8 +92,12 @@ const PERMISSION_DETAILS: Record<string, { label: string; desc: string }> = {
   "manage_tasks": { label: "Kelola Tugas", desc: "Pencatatan tugas & operasional" },
   "manage users": { label: "Kelola Pengguna", desc: "Akun pengurus & manajemen user" },
   "manage_users": { label: "Kelola Pengguna", desc: "Akun pengurus & manajemen user" },
-  "view reports": { label: "Lihat Laporan", desc: "Laporan donasi, kas, & keuangan" },
-  "view_reports": { label: "Lihat Laporan", desc: "Laporan donasi, kas, & keuangan" },
+  "manage employees": { label: "Kelola Karyawan", desc: "Direktori & data karyawan / ID card" },
+  "manage_employees": { label: "Kelola Karyawan", desc: "Direktori & data karyawan / ID card" },
+  "view employees": { label: "Lihat Karyawan", desc: "Melihat direktori data karyawan" },
+  "view_employees": { label: "Lihat Karyawan", desc: "Melihat direktori data karyawan" },
+  "view reports": { label: "Lihat Laporan", desc: "Laporan donasi & arus kas operasional" },
+  "view_reports": { label: "Lihat Laporan", desc: "Laporan donasi & arus kas operasional" },
 };
 
 function getPermissionMeta(name: string): { label: string; desc: string } {

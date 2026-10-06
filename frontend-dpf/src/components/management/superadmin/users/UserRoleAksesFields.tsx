@@ -61,6 +61,10 @@ const PERMISSION_LABELS: Record<string, string> = {
   "manage_tasks": "Kelola Tugas",
   "manage users": "Kelola Pengguna",
   "manage_users": "Kelola Pengguna",
+  "manage employees": "Kelola Karyawan",
+  "manage_employees": "Kelola Karyawan",
+  "view employees": "Lihat Karyawan",
+  "view_employees": "Lihat Karyawan",
   "view reports": "Lihat Laporan",
   "view_reports": "Lihat Laporan",
 };

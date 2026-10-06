@@ -90,7 +90,7 @@ class RoleController extends Controller
         ]);
 
         // Don't allow renaming core roles to avoid breaking system logic
-        $coreRoles = ['superadmin', 'admin', 'editor', 'mitra'];
+        $coreRoles = ['superadmin', 'admin', 'editor', 'keuangan', 'mitra'];
         if (in_array($role->name, $coreRoles) && strtolower($request->name) !== $role->name) {
             return response()->json(['message' => 'Role utama sistem tidak dapat diubah namanya.'], 422);
         }
@@ -117,7 +117,7 @@ class RoleController extends Controller
     {
         $role = Role::findOrFail($id);
         
-        $coreRoles = ['superadmin', 'admin', 'editor', 'mitra'];
+        $coreRoles = ['superadmin', 'admin', 'editor', 'keuangan', 'mitra'];
         if (in_array($role->name, $coreRoles)) {
             return response()->json(['message' => 'Role utama sistem tidak dapat dihapus.'], 422);
         }
