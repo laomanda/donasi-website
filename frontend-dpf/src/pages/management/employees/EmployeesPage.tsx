@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -9,8 +9,11 @@ import {
   faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/components/ui/ToastProvider';
+import { BulkActionsBar } from '@/components/ui/BulkActionsBar';
+import { useBulkSelection } from '@/components/ui/useBulkSelection';
+import { runWithConcurrency } from '@/lib/bulk';
 import employeeService from '@/services/employeeService';
-import type { Employee, EmployeeListParams } from '@/types/employee';
+import type { EmployeeListParams } from '@/types/employee';
 import { useEmployees } from '@/hooks/employees/useEmployees';
 import { useEmployeeFilters } from '@/hooks/employees/useEmployeeFilters';
 import { useEmployeePermissions } from '@/hooks/employees/useEmployeePermissions';
@@ -19,7 +22,6 @@ import {
   EmployeesToolbar,
   EmployeesTable,
   EmployeesMobileList,
-  EmployeeDeleteDialog,
 } from '@/components/management/employees';
 
 export function EmployeesPage() {
@@ -31,7 +33,6 @@ export function EmployeesPage() {
   const params: EmployeeListParams = useMemo(() => {
     const q = searchParams.get('q') || undefined;
     const position = searchParams.get('position') || undefined;
-    const division = searchParams.get('division') || undefined;
     const employment_status = searchParams.get('employment_status') || undefined;
     const isPubParam = searchParams.get('is_published');
     const is_published =
@@ -42,7 +43,6 @@ export function EmployeesPage() {
     return {
       q,
       position,
-      division,
       employment_status,
       is_published,
       page: isNaN(page) || page < 1 ? 1 : page,
@@ -63,9 +63,13 @@ export function EmployeesPage() {
   // Filter options
   const { filters: filterOptions } = useEmployeeFilters();
 
-  // State for delete modal
-  const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null);
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const selection = useBulkSelection<number>();
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const pageIds = useMemo(() => employees.map((employee) => employee.id), [employees]);
+
+  useEffect(() => {
+    selection.keepOnly(pageIds);
+  }, [pageIds, selection.keepOnly]);
 
   // Update URL search parameters
   const updateParams = useCallback(
@@ -104,27 +108,19 @@ export function EmployeesPage() {
     [updateParams]
   );
 
-  // Handle Delete Confirmation
-  const handleConfirmDelete = async () => {
-    if (!deletingEmployee) return;
-
-    setIsDeleting(true);
-    try {
-      await employeeService.deleteEmployee(deletingEmployee.id);
-      toast.success('Karyawan berhasil dihapus.');
-      setDeletingEmployee(null);
-
-      // If last item on page is deleted and page > 1, decrement page
-      if (employees.length === 1 && (params.page ?? 1) > 1) {
-        updateParams({ page: (params.page ?? 1) - 1 });
-      } else {
-        await refresh();
-      }
-    } catch {
-      toast.error('Gagal menghapus karyawan.');
-    } finally {
-      setIsDeleting(false);
+  const handleDeleteSelected = async () => {
+    if (!selection.count) return;
+    setBulkDeleting(true);
+    const result = await runWithConcurrency(selection.selectedIds, 4, (id) => employeeService.deleteEmployee(id));
+    if (result.failed.length) {
+      selection.setSelected(new Set(result.failed.map((item) => item.id)));
+      toast.error(`Berhasil menghapus ${result.succeeded.length} karyawan, tetapi ${result.failed.length} gagal.`, { title: 'Sebagian gagal' });
+    } else {
+      selection.clear();
+      toast.success(`Berhasil menghapus ${result.succeeded.length} karyawan.`, { title: 'Berhasil' });
     }
+    setBulkDeleting(false);
+    await refresh();
   };
 
   // Pagination summary text
@@ -138,7 +134,6 @@ export function EmployeesPage() {
   const hasFilterActive = Boolean(
     params.q ||
     params.position ||
-    params.division ||
     params.employment_status ||
     params.is_published !== undefined
   );
@@ -159,6 +154,15 @@ export function EmployeesPage() {
         filterOptions={filterOptions}
         onChange={updateParams}
         onReset={handleResetFilters}
+      />
+
+      <BulkActionsBar
+        count={selection.count}
+        itemLabel="karyawan"
+        onClear={selection.clear}
+        onSelectAllPage={() => selection.addMany(pageIds)}
+        onDeleteSelected={handleDeleteSelected}
+        disabled={bulkDeleting}
       />
 
       {/* Error Banner */}
@@ -223,14 +227,18 @@ export function EmployeesPage() {
             employees={employees}
             loading={loading}
             canManage={canManage}
-            onDelete={(emp) => setDeletingEmployee(emp)}
+            selectedIds={selection.selected}
+            allPageSelected={canManage && pageIds.length > 0 && pageIds.every((id) => selection.selected.has(id))}
+            onToggle={selection.toggle}
+            onToggleAll={() => selection.toggleAll(pageIds)}
           />
 
           <EmployeesMobileList
             employees={employees}
             loading={loading}
             canManage={canManage}
-            onDelete={(emp) => setDeletingEmployee(emp)}
+            selectedIds={selection.selected}
+            onToggle={selection.toggle}
           />
 
           {/* Pagination Footer */}
@@ -281,13 +289,6 @@ export function EmployeesPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      <EmployeeDeleteDialog
-        employee={deletingEmployee}
-        deleting={isDeleting}
-        onConfirm={handleConfirmDelete}
-        onClose={() => setDeletingEmployee(null)}
-      />
     </div>
   );
 }

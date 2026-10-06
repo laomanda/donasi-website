@@ -16,6 +16,7 @@ const App = () => {
     location.pathname.startsWith('/keuangan') ||
     location.pathname.startsWith('/finance') ||
     location.pathname.startsWith('/management');
+  const isPublicEmployeePage = location.pathname.startsWith('/karyawan');
 
 
 
@@ -44,7 +45,7 @@ const App = () => {
       <ScrollToTop />
       <div className="min-h-screen bg-white text-slate-900 antialiased">
         <Outlet />
-        {!isDashboard && <BackgroundMusic />}
+        {!isDashboard && !isPublicEmployeePage && <BackgroundMusic />}
       </div>
     </ToastProvider>
   )

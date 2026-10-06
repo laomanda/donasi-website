@@ -13,12 +13,20 @@ type Props = {
   items: GalleryDpf[];
   loading: boolean;
   onEdit: (id: number) => void;
+  selectedIds: Set<number>;
+  allPageSelected: boolean;
+  onToggle: (id: number) => void;
+  onToggleAll: () => void;
 };
 
 export default function EditorGalleryDpfTable({
   items,
   loading,
   onEdit,
+  selectedIds,
+  allPageSelected,
+  onToggle,
+  onToggleAll,
 }: Props) {
   return (
     <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
@@ -27,6 +35,7 @@ export default function EditorGalleryDpfTable({
         <table className="min-w-full table-fixed text-left">
           <thead className="border-b border-slate-200 bg-slate-50/80">
             <tr>
+              <th className="w-12 px-3 py-4 text-center"><input type="checkbox" checked={allPageSelected} onChange={onToggleAll} aria-label="Pilih semua galeri DPF" className="h-4 w-4 rounded border-slate-300 text-primary-500" /></th>
               <th className="w-28 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                 Gambar
               </th>
@@ -67,7 +76,7 @@ export default function EditorGalleryDpfTable({
               ))
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-16 text-center text-sm font-semibold text-slate-500">
+                <td colSpan={6} className="px-6 py-16 text-center text-sm font-semibold text-slate-500">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
                     <FontAwesomeIcon icon={faImages} className="text-xl" />
                   </div>
@@ -81,7 +90,7 @@ export default function EditorGalleryDpfTable({
                     key={item.id}
                     className="transition-colors hover:bg-slate-50/80"
                   >
-                    <td className="px-6 py-5">
+                    <td className="px-3 py-5 text-center" onClick={(event) => event.stopPropagation()}><input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => onToggle(item.id)} aria-label="Pilih galeri DPF" className="h-4 w-4 rounded border-slate-300 text-primary-500" /></td><td className="px-6 py-5">
                       <div className="h-14 w-20 overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200">
                         <img
                           src={resolveGalleryDpfUrl(item.image)}

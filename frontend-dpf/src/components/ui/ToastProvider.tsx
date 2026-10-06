@@ -46,43 +46,43 @@ const getVariantTokens = (variant: ToastVariant) => {
   if (variant === "success") {
     return {
       icon: faCheckCircle,
-      ring: "ring-brandGreen-100",
-      bg: "bg-brandGreen-50",
-      iconText: "text-brandGreen-700",
-      title: "text-brandGreen-900",
-      message: "text-brandGreen-800",
+      ring: "ring-brandGreen-600",
+      bg: "bg-brandGreen-600",
+      iconText: "text-white",
+      title: "text-white",
+      message: "text-white",
     };
   }
 
   if (variant === "error") {
     return {
       icon: faTriangleExclamation,
-      ring: "ring-red-100",
-      bg: "bg-red-50",
-      iconText: "text-red-600",
-      title: "text-red-900",
-      message: "text-red-800",
+      ring: "ring-red-600",
+      bg: "bg-red-600",
+      iconText: "text-white",
+      title: "text-white",
+      message: "text-white",
     };
   }
 
   if (variant === "warning") {
     return {
       icon: faTriangleExclamation,
-      ring: "ring-amber-100",
-      bg: "bg-amber-50",
-      iconText: "text-amber-700",
-      title: "text-amber-900",
-      message: "text-amber-800",
+      ring: "ring-amber-500",
+      bg: "bg-amber-500",
+      iconText: "text-white",
+      title: "text-white",
+      message: "text-white",
     };
   }
 
   return {
     icon: faCircleInfo,
-    ring: "ring-slate-200",
-    bg: "bg-white",
-    iconText: "text-primary-700",
-    title: "text-slate-900",
-    message: "text-slate-700",
+    ring: "ring-primary-500",
+    bg: "bg-primary-500",
+    iconText: "text-white",
+    title: "text-white",
+    message: "text-white",
   };
 };
 
@@ -149,7 +149,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <div
               key={toast.id}
               className={[
-                "pointer-events-auto overflow-hidden rounded-2xl bg-white shadow-soft ring-1",
+                "pointer-events-auto overflow-hidden shadow-soft ring-1",
+                tokens.bg,
                 tokens.ring,
               ].join(" ")}
               role="status"
@@ -172,7 +173,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 <button
                   type="button"
                   onClick={() => dismiss(toast.id)}
-                  className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600"
+                  className="rounded-xl p-2 text-white/70 transition hover:bg-white/15 hover:text-white"
                   aria-label="Tutup"
                 >
                   <FontAwesomeIcon icon={faXmark} />

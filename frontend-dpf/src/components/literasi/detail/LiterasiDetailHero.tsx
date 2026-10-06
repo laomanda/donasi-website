@@ -79,7 +79,7 @@ export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroPro
 
   return (
     <div className="space-y-6 min-w-0 max-w-full">
-      <div className="group relative aspect-[16/9] max-h-[520px] w-full overflow-hidden rounded-2xl sm:rounded-[32px] border border-slate-100 bg-slate-950 shadow-soft flex items-center justify-center">
+      <div className="group relative aspect-[16/9] max-h-[400px] w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-950 shadow-soft flex items-center justify-center">
         {hasVideo && activeMedia === "video" ? (
           <video
             src={videoUrl!}
@@ -129,7 +129,7 @@ export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroPro
         )}
       </div>
 
-      <div className="rounded-2xl sm:rounded-[32px] border border-slate-200 bg-white p-4 sm:p-6 lg:p-8 shadow-sm min-w-0 max-w-full overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 lg:p-6 shadow-sm min-w-0 overflow-hidden">
         <div className="flex flex-wrap items-center gap-2">
           {article.category ? (
             <InfoBadge 

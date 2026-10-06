@@ -52,13 +52,12 @@ export function isCacheValid<T>(entry: CacheEntry<T> | null | undefined, maxStal
 export function buildEmployeeListCacheKey(params: EmployeeListParams = {}): string {
   const q = (params.q ?? '').trim().toLowerCase();
   const position = (params.position ?? '').trim();
-  const division = (params.division ?? '').trim();
   const employment_status = (params.employment_status ?? '').trim();
   const is_published = params.is_published !== undefined ? String(params.is_published) : '';
   const page = params.page ?? 1;
   const per_page = params.per_page ?? 15;
 
-  return `employees:list:${JSON.stringify({ q, position, division, employment_status, is_published, page, per_page })}`;
+  return `employees:list:${JSON.stringify({ q, position, employment_status, is_published, page, per_page })}`;
 }
 
 // --- List Cache Accessors ---

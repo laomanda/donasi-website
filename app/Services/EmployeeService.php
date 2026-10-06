@@ -101,6 +101,13 @@ class EmployeeService
         return [
             'positions' => $positions,
             'divisions' => $divisions,
+            'display_orders' => Employee::query()
+                ->whereNotNull('display_order')
+                ->orderBy('display_order')
+                ->pluck('display_order')
+                ->map(fn ($order) => (int) $order)
+                ->values()
+                ->all(),
         ];
     }
 
@@ -175,6 +182,13 @@ class EmployeeService
         return [
             'positions' => $positions,
             'divisions' => $divisions,
+            'display_orders' => Employee::query()
+                ->whereNotNull('display_order')
+                ->orderBy('display_order')
+                ->pluck('display_order')
+                ->map(fn ($order) => (int) $order)
+                ->values()
+                ->all(),
         ];
     }
 

@@ -45,7 +45,7 @@ export function LiterasiDetailPage() {
           <div className="absolute -right-24 top-10 h-[380px] w-[380px] rounded-full bg-brandGreen-100/30 blur-[110px]" />
         </div>
 
-        <div className="relative mx-auto max-w-5xl px-3.5 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16 min-w-0 max-w-full">
+        <div className="relative mx-auto w-full max-w-5xl px-3.5 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12 min-w-0">
           <div className="mb-6 flex flex-wrap items-center gap-2 sm:gap-3">
             <button
               type="button"
@@ -83,15 +83,15 @@ export function LiterasiDetailPage() {
               {errorKey === "not_found" ? t("literasi.detail.notFound") : t("literasi.detail.error")}
             </div>
           ) : localizedArticle ? (
-            <div className="space-y-8 sm:space-y-10 min-w-0 max-w-full">
-              <article className="space-y-6 min-w-0 max-w-full">
+            <div className="space-y-6 sm:space-y-8 min-w-0">
+              <article className="space-y-5 min-w-0">
                 <LiterasiDetailHero 
                   article={localizedArticle} 
                   locale={locale} 
                   t={t} 
                 />
 
-                <div className="rounded-2xl sm:rounded-[32px] border border-slate-200 bg-white p-4 sm:p-6 lg:p-8 shadow-sm min-w-0 max-w-full overflow-hidden">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 lg:p-6 shadow-sm min-w-0 overflow-hidden">
                   <LiterasiDetailContent 
                     body={localizedArticle.body} 
                     excerpt={localizedArticle.excerpt} 

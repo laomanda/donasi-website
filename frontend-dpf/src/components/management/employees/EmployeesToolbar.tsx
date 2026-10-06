@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass, faXmark, faFilter, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import type { EmployeeFilterOptions, EmployeeListParams } from '@/types/employee';
+import { SearchableSelect } from '@/components/management/finance/shared';
 
 interface EmployeesToolbarProps {
   params: EmployeeListParams;
@@ -38,7 +39,6 @@ export const EmployeesToolbar: React.FC<EmployeesToolbarProps> = ({
   const hasActiveFilters = Boolean(
     (params.q && params.q.trim() !== '') ||
     params.position ||
-    params.division ||
     params.employment_status ||
     (params.is_published !== undefined && params.is_published !== '')
   );
@@ -82,44 +82,23 @@ export const EmployeesToolbar: React.FC<EmployeesToolbarProps> = ({
 
         {/* Position Filter */}
         <div className="lg:col-span-2">
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
-              Jabatan
-            </span>
-            <select
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+            Jabatan
+          </span>
+          <div className="mt-2">
+            <SearchableSelect<string>
               value={params.position ?? ''}
-              onChange={(e) => onChange({ position: e.target.value || undefined, page: 1 })}
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-            >
-              <option value="">Semua Jabatan</option>
-              {filterOptions.positions.map((pos) => (
-                <option key={pos} value={pos}>
-                  {pos}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        {/* Division Filter */}
-        <div className="lg:col-span-2">
-          <label className="block">
-            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
-              Divisi
-            </span>
-            <select
-              value={params.division ?? ''}
-              onChange={(e) => onChange({ division: e.target.value || undefined, page: 1 })}
-              className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-brandGreen-400"
-            >
-              <option value="">Semua Divisi</option>
-              {filterOptions.divisions.map((div) => (
-                <option key={div} value={div}>
-                  {div}
-                </option>
-              ))}
-            </select>
-          </label>
+              onChange={(value) => onChange({ position: value || undefined, page: 1 })}
+              options={filterOptions.positions.map((pos) => ({ value: pos, label: pos }))}
+              placeholder="Semua Jabatan"
+              searchPlaceholder="Cari jabatan..."
+              emptyMessage="Jabatan tidak ditemukan"
+              clearable
+              onClear={() => onChange({ position: undefined, page: 1 })}
+              className="w-full"
+              buttonClassName="!w-full !rounded-2xl !border-slate-300 !px-4 !py-3 !text-sm !font-semibold !text-slate-700 !shadow-sm"
+            />
+          </div>
         </div>
 
         {/* Status Filter */}

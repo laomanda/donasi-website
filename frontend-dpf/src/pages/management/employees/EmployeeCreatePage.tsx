@@ -23,7 +23,7 @@ export function EmployeeCreatePage() {
 
     try {
       const created = await employeeService.createEmployee(payload);
-      toast.success('Karyawan berhasil ditambahkan.');
+      toast.success('Karyawan berhasil ditambahkan.', { title: 'Berhasil' });
       navigate(`/employees/${created.id}`);
     } catch (err) {
       const axiosErr = err as AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
@@ -36,11 +36,11 @@ export function EmployeeCreatePage() {
           }
         });
         setServerErrors(mappedErrors);
-        toast.error('Periksa kembali isian formulir.');
+        toast.error('Periksa kembali isian formulir.', { title: 'Validasi gagal' });
       } else {
         const msg = axiosErr?.response?.data?.message || 'Gagal menambahkan karyawan.';
         setServerErrors({ general: msg });
-        toast.error(msg);
+        toast.error(msg, { title: 'Gagal' });
       }
     } finally {
       setSubmitting(false);
@@ -48,7 +48,7 @@ export function EmployeeCreatePage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 pb-12 animate-fade-in font-body">
+    <div className="mx-auto w-full max-w-6xl space-y-6 pb-12 animate-fade-in font-body">
       {/* Top Header Card */}
       <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

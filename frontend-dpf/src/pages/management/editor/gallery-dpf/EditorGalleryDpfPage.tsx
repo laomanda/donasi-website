@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
@@ -6,6 +6,10 @@ import http from "@/lib/http";
 import EditorGalleryDpfHeader from "@/components/management/editor/gallery-dpf/list/EditorGalleryDpfHeader";
 import EditorGalleryDpfTable from "@/components/management/editor/gallery-dpf/list/EditorGalleryDpfTable";
 import type { GalleryDpf } from "@/components/management/editor/gallery-dpf/GalleryDpfTypes";
+import { useBulkSelection } from "@/components/ui/useBulkSelection";
+import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
+import { runWithConcurrency } from "@/lib/bulk";
+import { useToast } from "@/components/ui/ToastProvider";
 
 type PaginatedGallery = {
   data: GalleryDpf[];
@@ -16,6 +20,7 @@ type PaginatedGallery = {
 
 export default function EditorGalleryDpfPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [items, setItems] = useState<GalleryDpf[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +29,10 @@ export default function EditorGalleryDpfPage() {
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const selection = useBulkSelection<number>();
+  const pageIds = useMemo(() => items.map((item) => item.id), [items]);
+
+  useEffect(() => { selection.keepOnly(pageIds); }, [pageIds, selection.keepOnly]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -61,6 +70,14 @@ export default function EditorGalleryDpfPage() {
   useEffect(() => {
     fetchItems();
   }, [page, status, debouncedSearch]);
+
+  const deleteSelected = async () => {
+    const result = await runWithConcurrency(selection.selectedIds, 4, (id) => http.delete(`/editor/gallery-dpf/${id}`));
+    if (result.failed.length) toast.error(`Berhasil menghapus ${result.succeeded.length} galeri, tetapi ${result.failed.length} gagal.`, { title: "Sebagian gagal" });
+    else toast.success(`Berhasil menghapus ${result.succeeded.length} galeri.`, { title: "Berhasil" });
+    selection.clear();
+    await fetchItems();
+  };
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 pb-12">
@@ -110,11 +127,17 @@ export default function EditorGalleryDpfPage() {
         </div>
       )}
 
+      <BulkActionsBar count={selection.count} itemLabel="galeri" onClear={selection.clear} onSelectAllPage={() => selection.addMany(pageIds)} onDeleteSelected={deleteSelected} />
+
       {/* Main Table */}
       <EditorGalleryDpfTable
         items={items}
         loading={loading}
         onEdit={(id) => navigate(`/editor/gallery-dpf/${id}/edit`)}
+        selectedIds={selection.selected}
+        allPageSelected={pageIds.length > 0 && pageIds.every((id) => selection.selected.has(id))}
+        onToggle={selection.toggle}
+        onToggleAll={() => selection.toggleAll(pageIds)}
       />
 
       {/* Pagination Footer */}

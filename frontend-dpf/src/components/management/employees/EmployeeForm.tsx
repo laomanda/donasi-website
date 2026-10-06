@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -41,15 +41,12 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   onCancel,
 }) => {
   const navigate = useNavigate();
-  const datalistPosId = useId();
-  const datalistDivId = useId();
 
   // Form State
   const [employeeCode, setEmployeeCode] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [slug, setSlug] = useState<string>('');
   const [position, setPosition] = useState<string>('');
-  const [division, setDivision] = useState<string>('');
   const [employmentStatus, setEmploymentStatus] = useState<EmploymentStatus>('active');
   const [displayOrder, setDisplayOrder] = useState<string>('1');
   const [isPublished, setIsPublished] = useState<boolean>(true);
@@ -68,7 +65,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       setName(initialData.name ?? '');
       setSlug(initialData.slug ?? '');
       setPosition(initialData.position ?? '');
-      setDivision(initialData.division ?? '');
       setEmploymentStatus(initialData.employment_status ?? 'active');
       setDisplayOrder(
         initialData.display_order !== null && initialData.display_order !== undefined
@@ -134,6 +130,29 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
     slug.trim() !== '' &&
     slug.trim() !== initialData.slug;
 
+  const parsedDisplayOrder = parseInt(displayOrder, 10);
+  const isDuplicateDisplayOrder =
+    Number.isInteger(parsedDisplayOrder) &&
+    filterOptions.display_orders.includes(parsedDisplayOrder) &&
+    parsedDisplayOrder !== initialData?.display_order;
+
+  useEffect(() => {
+    if (mode !== 'create' || !filterOptions.display_orders?.length) return;
+
+    const currentOrder = parseInt(displayOrder, 10);
+    const currentIsUsed = Number.isInteger(currentOrder) &&
+      filterOptions.display_orders.includes(currentOrder);
+
+    if (!displayOrder.trim() || currentIsUsed) {
+      let nextOrder = 1;
+      while (filterOptions.display_orders.includes(nextOrder)) nextOrder += 1;
+      setDisplayOrder(String(nextOrder));
+    }
+  }, [displayOrder, filterOptions.display_orders, mode]);
+  const displayOrderError = isDuplicateDisplayOrder
+    ? 'Nomor urutan ini sudah digunakan oleh karyawan lain.'
+    : clientErrors.display_order || serverErrors.display_order;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -153,7 +172,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
     }
 
     const parsedOrder = parseInt(displayOrder, 10);
-    if (!displayOrder.trim() || isNaN(parsedOrder) || parsedOrder < 1) {
+    if (!displayOrder.trim() || isNaN(parsedOrder) || parsedOrder < 1 || isDuplicateDisplayOrder) {
       errors.display_order = 'Urutan tampilan harus berupa bilangan bulat positif minimal 1.';
     }
 
@@ -173,7 +192,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       name: name.trim(),
       slug: slug.trim() || undefined,
       position: position.trim(),
-      division: division.trim() || undefined,
       employment_status: employmentStatus,
       display_order: parsedOrder,
       is_published: isPublished,
@@ -189,11 +207,11 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12">
       {/* SECTION A: IDENTITAS KARYAWAN */}
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8 space-y-6">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandPurple-500 bg-white p-5 shadow-sm sm:p-7 space-y-5 lg:col-span-7">
         <div className="flex items-center gap-3.5 border-b border-slate-100 pb-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-600 ring-1 ring-brandGreen-100">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brandPurple-500 text-white">
             <FontAwesomeIcon icon={faIdBadge} className="text-base" />
           </div>
           <div>
@@ -305,9 +323,9 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       </div>
 
       {/* SECTION B: ORGANISASI & STATUS */}
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-6 shadow-sm sm:p-8 space-y-6">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandBlueTeal-500 bg-white p-5 shadow-sm sm:p-7 space-y-5 lg:col-span-5">
         <div className="flex items-center gap-3.5 border-b border-slate-100 pb-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-600 ring-1 ring-brandGreen-100">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brandBlueTeal-500 text-white">
             <FontAwesomeIcon icon={faSitemap} className="text-base" />
           </div>
           <div>
@@ -315,7 +333,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               B. Organisasi & Status
             </h2>
             <p className="text-xs text-slate-500">
-              Penetapan jabatan, divisi kerja, urutan visual, dan status penugasan.
+              Penetapan jabatan, urutan visual, dan status penugasan.
             </p>
           </div>
         </div>
@@ -329,7 +347,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               </span>
               <input
                 type="text"
-                list={datalistPosId}
                 value={position}
                 onChange={(e) => setPosition(e.target.value)}
                 placeholder="Contoh: Web Developer"
@@ -339,11 +356,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
                     : 'border-slate-300 focus:border-slate-400 focus:ring-brandGreen-400'
                 }`}
               />
-              <datalist id={datalistPosId}>
-                {filterOptions.positions.map((p) => (
-                  <option key={p} value={p} />
-                ))}
-              </datalist>
             </label>
             {getFieldError('position') ? (
               <p className="mt-1.5 text-xs font-semibold text-rose-600">
@@ -357,8 +369,14 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
 
             {/* Quick suggestion chips for Jabatan */}
             {filterOptions.positions.length > 0 && (
-              <div className="mt-2.5 flex flex-wrap gap-1.5">
-                {filterOptions.positions.slice(0, 6).map((posOption) => {
+              <div className="mt-2.5 max-h-24 overflow-y-auto rounded-2xl bg-white p-2">
+                <div className="flex flex-wrap gap-1.5">
+                {filterOptions.positions
+                  .filter((posOption) => {
+                    const query = position.trim().toLowerCase();
+                    return !query || posOption.toLowerCase().includes(query);
+                  })
+                  .map((posOption) => {
                   const isSelected = position.trim().toLowerCase() === posOption.trim().toLowerCase();
                   return (
                     <button
@@ -367,72 +385,15 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
                       onClick={() => setPosition(posOption)}
                       className={`rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
                         isSelected
-                          ? 'bg-brandGreen-100 text-brandGreen-800 ring-1 ring-brandGreen-500 font-bold'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                          ? 'bg-brandGreen-600 text-white font-bold'
+                          : 'bg-slate-600 text-white hover:bg-slate-700'
                       }`}
                     >
                       {posOption}
                     </button>
                   );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Divisi */}
-          <div>
-            <label className="block">
-              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                Divisi <span className="text-[11px] font-normal lowercase text-slate-400">(opsional)</span>
-              </span>
-              <input
-                type="text"
-                list={datalistDivId}
-                value={division}
-                onChange={(e) => setDivision(e.target.value)}
-                placeholder="Contoh: Teknologi Informasi"
-                className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:outline-none focus:ring-2 ${
-                  getFieldError('division')
-                    ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
-                    : 'border-slate-300 focus:border-slate-400 focus:ring-brandGreen-400'
-                }`}
-              />
-              <datalist id={datalistDivId}>
-                {filterOptions.divisions.map((d) => (
-                  <option key={d} value={d} />
-                ))}
-              </datalist>
-            </label>
-            {getFieldError('division') ? (
-              <p className="mt-1.5 text-xs font-semibold text-rose-600">
-                {getFieldError('division')}
-              </p>
-            ) : (
-              <p className="mt-1.5 text-[11px] font-medium text-slate-400">
-                Pilih dari saran divisi atau ketik nama divisi baru.
-              </p>
-            )}
-
-            {/* Quick suggestion chips for Divisi */}
-            {filterOptions.divisions.length > 0 && (
-              <div className="mt-2.5 flex flex-wrap gap-1.5">
-                {filterOptions.divisions.slice(0, 6).map((divOption) => {
-                  const isSelected = division.trim().toLowerCase() === divOption.trim().toLowerCase();
-                  return (
-                    <button
-                      key={divOption}
-                      type="button"
-                      onClick={() => setDivision(divOption)}
-                      className={`rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
-                        isSelected
-                          ? 'bg-brandGreen-100 text-brandGreen-800 ring-1 ring-brandGreen-500 font-bold'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-                      }`}
-                    >
-                      {divOption}
-                    </button>
-                  );
-                })}
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -458,7 +419,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
           </div>
 
           {/* Urutan Tampilan */}
-          <div>
+          <div className="md:col-span-2 md:mx-auto md:w-1/2">
             <label className="block">
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
                 Urutan Tampilan <span className="text-rose-500">*</span>
@@ -471,15 +432,15 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 onChange={(e) => setDisplayOrder(e.target.value)}
                 placeholder="1"
                 className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 font-mono text-sm font-semibold text-slate-900 shadow-sm transition focus:outline-none focus:ring-2 ${
-                  getFieldError('display_order')
+                    displayOrderError
                     ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
                     : 'border-slate-300 focus:border-slate-400 focus:ring-brandGreen-400'
                 }`}
               />
             </label>
-            {getFieldError('display_order') ? (
+            {displayOrderError ? (
               <p className="mt-1.5 text-xs font-semibold text-rose-600">
-                {getFieldError('display_order')}
+                {displayOrderError}
               </p>
             ) : (
               <p className="mt-1.5 text-[11px] font-medium text-slate-400">
@@ -491,9 +452,9 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       </div>
 
       {/* SECTION C: ID CARD DIGITAL & PUBLIKASI */}
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-200 bg-white p-6 shadow-sm sm:p-8 space-y-6">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandWarmOrange-500 bg-white p-5 shadow-sm sm:p-7 space-y-5 lg:col-span-12">
         <div className="flex items-center gap-3.5 border-b border-slate-100 pb-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brandGreen-50 text-brandGreen-600 ring-1 ring-brandGreen-100">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brandWarmOrange-500 text-white">
             <FontAwesomeIcon icon={faImage} className="text-base" />
           </div>
           <div>
@@ -507,7 +468,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
         </div>
 
         {/* Publication Switch */}
-        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <label htmlFor="pub-switch" className="text-sm font-bold text-slate-900 cursor-pointer">
@@ -552,7 +513,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               </p>
             </label>
 
-            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/50 p-6 transition hover:bg-slate-50 text-center">
+            <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-6 transition hover:bg-slate-50 text-center">
               <input
                 type="file"
                 id="id-card-file-input"
@@ -602,7 +563,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
             <span className="block text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-2">
               Pratinjau ID Card
             </span>
-            <div className="flex min-h-[260px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+            <div className="flex min-h-[260px] items-center justify-center rounded-2xl border border-slate-200 bg-white p-4">
               {filePreviewUrl ? (
                 <div className="text-center space-y-2">
                   <img
@@ -610,7 +571,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
                     alt="Pratinjau ID Card baru"
                     className="max-h-64 w-auto max-w-full rounded-xl object-contain shadow-md mx-auto"
                   />
-                  <span className="inline-block rounded-full bg-brandGreen-100 px-3 py-1 text-[10px] font-bold text-brandGreen-800">
+                  <span className="inline-block rounded-full bg-brandGreen-600 px-3 py-1 text-[10px] font-bold text-white">
                     File Baru Dipilih
                   </span>
                 </div>
@@ -638,27 +599,27 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
 
       {/* General Error Banner */}
       {serverErrors.general && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-800 flex items-center gap-3">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-800 flex items-center gap-3 lg:col-span-12">
           <FontAwesomeIcon icon={faTriangleExclamation} className="text-rose-500 text-sm" />
           <span>{serverErrors.general}</span>
         </div>
       )}
 
       {/* Form Action Buttons */}
-      <div className="flex items-center justify-end gap-3 pt-2">
+      <div className="flex flex-col-reverse items-stretch justify-end gap-3 pt-2 sm:flex-row sm:items-center lg:col-span-12">
         <button
           type="button"
           onClick={onCancel || (() => navigate('/employees'))}
           disabled={submitting}
-          className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+          className="inline-flex items-center justify-center rounded-2xl bg-slate-700 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-50"
         >
           Batal
         </button>
 
         <button
           type="submit"
-          disabled={submitting}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brandGreen-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brandGreen-700 active:scale-[0.99] disabled:opacity-50"
+          disabled={submitting || isDuplicateDisplayOrder}
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-500 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-primary-600 active:scale-[0.99] disabled:opacity-50"
         >
           <FontAwesomeIcon icon={faCheck} className="text-xs" />
           <span>

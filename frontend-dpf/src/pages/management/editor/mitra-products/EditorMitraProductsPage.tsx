@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,6 +13,10 @@ import {
   resolveMitraProductImage,
   type MitraProduct,
 } from "@/components/management/editor/mitra-products/MitraProductTypes";
+import { useBulkSelection } from "@/components/ui/useBulkSelection";
+import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
+import { runWithConcurrency } from "@/lib/bulk";
+import { useToast } from "@/components/ui/ToastProvider";
 
 type Response = {
   data: MitraProduct[];
@@ -45,6 +49,7 @@ const statusLabel = (status: string) => {
 
 export default function EditorMitraProductsPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [items, setItems] = useState<MitraProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -57,6 +62,9 @@ export default function EditorMitraProductsPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const selection = useBulkSelection<number>();
+  const pageIds = useMemo(() => items.map((item) => item.id), [items]);
+  useEffect(() => { selection.keepOnly(pageIds); }, [pageIds, selection.keepOnly]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -93,6 +101,14 @@ export default function EditorMitraProductsPage() {
   useEffect(() => {
     load();
   }, [page, status, debouncedSearch]);
+
+  const deleteSelected = async () => {
+    const result = await runWithConcurrency(selection.selectedIds, 4, (id) => http.delete(`/editor/mitra-products/${id}`));
+    if (result.failed.length) toast.error(`Berhasil menghapus ${result.succeeded.length} produk, tetapi ${result.failed.length} gagal.`, { title: "Sebagian gagal" });
+    else toast.success(`Berhasil menghapus ${result.succeeded.length} produk.`, { title: "Berhasil" });
+    selection.clear();
+    await load();
+  };
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 pb-12">
@@ -160,6 +176,8 @@ export default function EditorMitraProductsPage() {
         </div>
       )}
 
+      <BulkActionsBar count={selection.count} itemLabel="produk" onClear={selection.clear} onSelectAllPage={() => selection.addMany(pageIds)} onDeleteSelected={deleteSelected} />
+
       {/* Main Table View */}
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
         {/* Desktop View */}
@@ -167,6 +185,7 @@ export default function EditorMitraProductsPage() {
           <table className="min-w-full table-fixed text-left">
             <thead className="border-b border-slate-200 bg-slate-50/80">
               <tr>
+                <th className="w-12 px-3 py-4 text-center"><input type="checkbox" checked={pageIds.length > 0 && pageIds.every((id) => selection.selected.has(id))} onChange={() => selection.toggleAll(pageIds)} aria-label="Pilih semua produk" className="h-4 w-4 rounded border-slate-300 text-primary-500" /></th>
                 <th className="w-28 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                   Gambar
                 </th>
@@ -207,7 +226,7 @@ export default function EditorMitraProductsPage() {
                 ))
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center text-sm font-semibold text-slate-500">
+                  <td colSpan={6} className="px-6 py-16 text-center text-sm font-semibold text-slate-500">
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
                       <FontAwesomeIcon icon={faStore} className="text-xl" />
                     </div>
@@ -221,7 +240,7 @@ export default function EditorMitraProductsPage() {
                       key={item.id}
                       className="transition-colors hover:bg-slate-50/80"
                     >
-                      <td className="px-6 py-5">
+                      <td className="px-3 py-5 text-center" onClick={(event) => event.stopPropagation()}><input type="checkbox" checked={selection.selected.has(item.id)} onChange={() => selection.toggle(item.id)} aria-label="Pilih produk" className="h-4 w-4 rounded border-slate-300 text-primary-500" /></td><td className="px-6 py-5">
                         <div className="h-14 w-20 overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200">
                           <img
                             src={resolveMitraProductImage(item.images?.[0]?.image)}

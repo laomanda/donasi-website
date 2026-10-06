@@ -73,7 +73,7 @@ export const EmployeeDeleteDialog: React.FC<EmployeeDeleteDialogProps> = ({
           <p className="font-bold text-slate-900 text-sm">{employee.name}</p>
           <p className="font-mono text-slate-500">ID Pegawai: {employee.employee_code}</p>
           <p className="text-slate-600 font-medium">
-            {employee.position} {employee.division ? `• ${employee.division}` : ''}
+            {employee.position}
           </p>
         </div>
 

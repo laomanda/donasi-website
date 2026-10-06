@@ -47,6 +47,10 @@ const EmployeeCreatePage = lazy(() => import('../pages/management/employees/Empl
 const EmployeeDetailPage = lazy(() => import('../pages/management/employees/EmployeeDetailPage').then(m => ({ default: m.EmployeeDetailPage })))
 const EmployeeEditPage = lazy(() => import('../pages/management/employees/EmployeeEditPage').then(m => ({ default: m.EmployeeEditPage })))
 
+// Public employee directory (kept outside every management and landing shell)
+const PublicEmployeesPage = lazy(() => import('../pages/public/employees/PublicEmployeesPage').then(m => ({ default: m.PublicEmployeesPage })))
+const PublicEmployeeDetailPage = lazy(() => import('../pages/public/employees/PublicEmployeeDetailPage').then(m => ({ default: m.PublicEmployeeDetailPage })))
+
 // Finance Pages
 const FinanceDashboardPage = lazy(() => import('../pages/management/finance/FinanceDashboardPage').then(m => ({ default: m.FinanceDashboardPage })))
 const AccountsPage = lazy(() => import('../pages/management/finance/accounts/AccountsPage').then(m => ({ default: m.AccountsPage })))
@@ -188,6 +192,8 @@ export const router = createBrowserRouter([
       { path: 'donate', element: withSuspense(DonatePage) },
       { path: 'login', element: withSuspense(LoginPage) },
       { path: 'register-mitra', element: withSuspense(MitraRegisterPage) },
+      { path: 'karyawan', element: withSuspense(PublicEmployeesPage) },
+      { path: 'karyawan/:slug', element: withSuspense(PublicEmployeeDetailPage) },
       { path: 'preview', element: withSuspense(PreviewPage) },
       {
         path: 'editor',

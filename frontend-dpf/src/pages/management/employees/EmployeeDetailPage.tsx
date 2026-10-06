@@ -1,38 +1,15 @@
-import { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTriangleExclamation, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-import { useToast } from '@/components/ui/ToastProvider';
-import employeeService from '@/services/employeeService';
 import { useEmployeeDetail } from '@/hooks/employees/useEmployeeDetail';
 import { useEmployeePermissions } from '@/hooks/employees/useEmployeePermissions';
-import { EmployeeDetailView, EmployeeDeleteDialog } from '@/components/management/employees';
+import { EmployeeDetailView } from '@/components/management/employees';
 
 export function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const toast = useToast();
   const { canManage } = useEmployeePermissions();
 
   const { employee, loading, error, refresh } = useEmployeeDetail(id);
-
-  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
-
-  const handleDeleteConfirm = async () => {
-    if (!employee) return;
-    setIsDeleting(true);
-    try {
-      await employeeService.deleteEmployee(employee.id);
-      toast.success('Karyawan berhasil dihapus.');
-      navigate('/employees');
-    } catch {
-      toast.error('Gagal menghapus karyawan.');
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteModal(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -85,15 +62,6 @@ export function EmployeeDetailPage() {
       <EmployeeDetailView
         employee={employee}
         canManage={canManage}
-        onDeleteClick={() => setShowDeleteModal(true)}
-      />
-
-      {/* Delete Confirmation Modal */}
-      <EmployeeDeleteDialog
-        employee={showDeleteModal ? employee : null}
-        deleting={isDeleting}
-        onConfirm={handleDeleteConfirm}
-        onClose={() => setShowDeleteModal(false)}
       />
     </div>
   );

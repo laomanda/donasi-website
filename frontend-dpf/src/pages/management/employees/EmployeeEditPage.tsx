@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faTriangleExclamation, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/components/ui/ToastProvider';
 import type { AxiosError } from 'axios';
 import employeeService from '@/services/employeeService';
 import type { EmployeeFormErrors, EmployeeFormPayload } from '@/types/employee';
 import { useEmployeeDetail } from '@/hooks/employees/useEmployeeDetail';
 import { useEmployeeFilters } from '@/hooks/employees/useEmployeeFilters';
-import { EmployeeForm } from '@/components/management/employees';
+import { EmployeeDeleteDialog, EmployeeForm } from '@/components/management/employees';
 
 export function EmployeeEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +20,8 @@ export function EmployeeEditPage() {
 
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<EmployeeFormErrors>({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const handleSubmit = async (payload: EmployeeFormPayload) => {
     if (!id) return;
@@ -28,7 +30,7 @@ export function EmployeeEditPage() {
 
     try {
       await employeeService.updateEmployee(id, payload);
-      toast.success('Data karyawan berhasil diperbarui.');
+      toast.success('Data karyawan berhasil diperbarui.', { title: 'Berhasil' });
       navigate(`/employees/${id}`);
     } catch (err) {
       const axiosErr = err as AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
@@ -41,14 +43,28 @@ export function EmployeeEditPage() {
           }
         });
         setServerErrors(mappedErrors);
-        toast.error('Periksa kembali isian formulir.');
+        toast.error('Periksa kembali isian formulir.', { title: 'Validasi gagal' });
       } else {
         const msg = axiosErr?.response?.data?.message || 'Gagal memperbarui data karyawan.';
         setServerErrors({ general: msg });
-        toast.error(msg);
+        toast.error(msg, { title: 'Gagal' });
       }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    setDeleting(true);
+    try {
+      await employeeService.deleteEmployee(id);
+      toast.success('Karyawan berhasil dihapus.', { title: 'Berhasil' });
+      navigate('/employees');
+    } catch {
+      toast.error('Gagal menghapus karyawan.', { title: 'Gagal' });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -87,7 +103,7 @@ export function EmployeeEditPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 pb-12 animate-fade-in font-body">
+    <div className="mx-auto w-full max-w-6xl space-y-6 pb-12 animate-fade-in font-body">
       {/* Top Header Card */}
       <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-400 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -101,16 +117,13 @@ export function EmployeeEditPage() {
               </span>
             </div>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
-              Perbarui profil <span className="font-semibold text-slate-800">{employee.name}</span>, jabatan, divisi, urutan tampilan, atau ganti berkas kartu identitas digital.
+              Perbarui profil <span className="font-semibold text-slate-800">{employee.name}</span>, jabatan, urutan tampilan, atau ganti berkas kartu identitas digital.
             </p>
           </div>
-          <Link
-            to={`/employees/${id}`}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} />
-            <span>Detail Karyawan</span>
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link to={`/employees/${id}`} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"><FontAwesomeIcon icon={faArrowLeft} /><span>Detail Karyawan</span></Link>
+            <button type="button" onClick={() => setShowDeleteModal(true)} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-rose-700"><FontAwesomeIcon icon={faTrashCan} /><span>Hapus</span></button>
+          </div>
         </div>
       </div>
 
@@ -124,6 +137,7 @@ export function EmployeeEditPage() {
         onSubmit={handleSubmit}
         onCancel={() => navigate(`/employees/${id}`)}
       />
+      <EmployeeDeleteDialog employee={showDeleteModal ? employee : null} deleting={deleting} onConfirm={handleDelete} onClose={() => setShowDeleteModal(false)} />
     </div>
   );
 }

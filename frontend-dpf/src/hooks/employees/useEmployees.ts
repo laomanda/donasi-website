@@ -34,6 +34,7 @@ export function useEmployees(params: EmployeeListParams): UseEmployeesReturn {
   const currentKey = buildEmployeeListCacheKey(params);
   const activeKeyRef = useRef<string>(currentKey);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const requestKeyRef = useRef<string | null>(null);
 
   // Synchronous cache lookup on mount or param change
   const cached = getCachedEmployeeList(currentKey);
@@ -49,12 +50,16 @@ export function useEmployees(params: EmployeeListParams): UseEmployeesReturn {
 
   const executeFetch = useCallback(
     async (targetParams: EmployeeListParams, targetKey: string, force = false) => {
-      // Abort previous in-flight HTTP request if any
-      if (abortControllerRef.current) {
+      // Abort a request only when switching to a different query. React may
+      // re-run an effect for the same key in development, and aborting that
+      // request before the service deduplicates it would leave the new effect
+      // subscribed to an already-canceled promise.
+      if (abortControllerRef.current && requestKeyRef.current !== targetKey) {
         abortControllerRef.current.abort();
       }
       const controller = new AbortController();
       abortControllerRef.current = controller;
+      requestKeyRef.current = targetKey;
 
       // Check cache if not forced
       if (!force) {
@@ -112,9 +117,9 @@ export function useEmployees(params: EmployeeListParams): UseEmployeesReturn {
     void executeFetch(params, currentKey, false);
 
     return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      // The next query will abort the previous request if its key changes.
+      // Do not abort here: StrictMode re-runs this effect with the same key
+      // and the shared in-flight promise must remain usable.
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentKey, executeFetch]);
