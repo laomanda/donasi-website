@@ -45,9 +45,17 @@ return new class extends Migration
                     ->nullOnDelete();
             }
 
-            $table->index('accounting_period_id');
-            $table->index('category');
-            $table->index('status');
+            if (!Schema::hasIndex('financial_notes', 'financial_notes_accounting_period_id_index')) {
+                $table->index('accounting_period_id');
+            }
+
+            if (!Schema::hasIndex('financial_notes', 'financial_notes_category_index')) {
+                $table->index('category');
+            }
+
+            if (!Schema::hasIndex('financial_notes', 'financial_notes_status_index')) {
+                $table->index('status');
+            }
         });
     }
 
