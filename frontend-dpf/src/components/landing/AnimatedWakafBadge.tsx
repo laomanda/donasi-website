@@ -10,6 +10,7 @@ interface AnimatedWakafBadgeProps {
         total_donations?: number;
         amount_collected?: string | number;
         total_waqf_collected?: string | number;
+        total_collected?: string | number;
     } | null;
     locale?: "id" | "en";
 }
@@ -20,7 +21,11 @@ export function AnimatedWakafBadge({
     locale = "id",
 }: AnimatedWakafBadgeProps) {
     const targetAmount = Number(
-        finance?.total_waqf_collected ?? stats?.total_waqf_collected ?? 0,
+        finance?.total_waqf_collected ||
+            stats?.total_waqf_collected ||
+            stats?.amount_collected ||
+            stats?.total_collected ||
+            0,
     );
     const [currentValue, setCurrentValue] = useState<number>(0);
     const animationRef = useRef<number | null>(null);

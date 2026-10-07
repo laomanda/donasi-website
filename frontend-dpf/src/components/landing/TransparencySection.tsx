@@ -114,10 +114,30 @@ export function TransparencySection({
     }, [availableYears, currentYear]);
 
     // Aggregate Verified Numeric Metrics (Presentation Only, No Synthetic Calculations)
-    const totalWaqfCollected = Number(finance?.total_waqf_collected ?? 0);
-    const totalDistributed = Number(finance?.total_distributed ?? stats?.total_distributed ?? Number(stats?.amount_allocated ?? 0));
-    const verifiedDonations = Number(finance?.verified_donations ?? stats?.verified_donations ?? stats?.total_donations ?? 0);
-    const programDistributions = Number(finance?.program_distributions ?? stats?.program_distributions ?? 0);
+    const totalWaqfCollected = Number(
+        finance?.total_waqf_collected ||
+            stats?.total_waqf_collected ||
+            stats?.amount_collected ||
+            stats?.total_collected ||
+            0,
+    );
+    const totalDistributed = Number(
+        finance?.total_distributed ||
+            stats?.total_distributed ||
+            Number(stats?.amount_allocated || 0),
+    );
+    const verifiedDonations = Number(
+        finance?.verified_donations ||
+            stats?.verified_donations ||
+            stats?.total_donations ||
+            0,
+    );
+    const programDistributions = Number(
+        finance?.program_distributions ||
+            stats?.program_distributions ||
+            stats?.total_allocations ||
+            0,
+    );
 
     const momCollected = calculateMoM(stats?.monthly_trends, stats?.collected_mom);
 
@@ -525,7 +545,7 @@ export function TransparencySection({
                                 className="text-brandGreen-600"
                             />
                             <span>{t("landing.transparency.tabProgram")}</span>
-                            <span className="rounded-md bg-slate-200/70 px-1.5 py-0.5 text-[10px] font-bold text-slate-700">
+                            <span className="rounded-md bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-white">
                                 {programAllocations.length}
                             </span>
                         </button>
@@ -672,7 +692,7 @@ export function TransparencySection({
                                             >
                                                 <div className="space-y-4">
                                                     <div className="flex items-center justify-between gap-3 h-6">
-                                                        <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                                                        <span className="inline-flex items-center rounded-md bg-slate-800 px-2.5 py-1 text-[11px] font-bold text-white">
                                                             {category}
                                                         </span>
                                                         <span className="text-[11px] font-medium text-slate-400">

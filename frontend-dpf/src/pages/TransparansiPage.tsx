@@ -72,19 +72,22 @@ export function TransparansiPage() {
     }, [selectedYear]);
 
     const totalWaqfCollected = Number(
-        data?.finance?.total_waqf_collected ??
-            data?.stats?.total_waqf_collected ??
+        data?.finance?.total_waqf_collected ||
+            data?.stats?.total_waqf_collected ||
+            data?.stats?.amount_collected ||
+            data?.stats?.total_collected ||
             0,
     );
     const totalDistributed = Number(
-        data?.finance?.total_distributed ??
-            data?.stats?.total_distributed ??
-            data?.stats?.amount_allocated ??
+        data?.finance?.total_distributed ||
+            data?.stats?.total_distributed ||
+            data?.stats?.amount_allocated ||
             0,
     );
     const programDistributions = Number(
-        data?.finance?.program_distributions ??
-            data?.stats?.program_distributions ??
+        data?.finance?.program_distributions ||
+            data?.stats?.program_distributions ||
+            data?.stats?.total_allocations ||
             0,
     );
 

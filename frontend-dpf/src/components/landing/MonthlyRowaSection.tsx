@@ -80,7 +80,7 @@ const getRoWAProductivity = (
       status: "pending",
       label: locale === "en" ? "Pending Distribution" : "Belum Tersalurkan",
       description: locale === "en" ? "No distributions recorded yet" : "Belum ada penyaluran tercatat",
-      badgeClass: "bg-white/10 text-slate-300 border-white/20",
+      badgeClass: "bg-slate-700 text-white font-bold",
       distributionRate: null,
     };
   }
@@ -95,7 +95,7 @@ const getRoWAProductivity = (
               ? `${distributionRate.toFixed(1)}% of waqf funds actively disbursed`
               : `${distributionRate.toFixed(1)}% dana wakaf tersalurkan aktif`)
           : (locale === "en" ? "Optimal distribution flow" : "Alur penyaluran sangat optimal"),
-      badgeClass: "bg-brandGreen-400/10 border-none",
+      badgeClass: "bg-emerald-600 text-white font-bold",
       distributionRate,
     };
   }
@@ -110,7 +110,7 @@ const getRoWAProductivity = (
               ? `${distributionRate.toFixed(1)}% of waqf funds disbursed`
               : `${distributionRate.toFixed(1)}% dana wakaf tersalurkan`)
           : (locale === "en" ? "Steady distribution" : "Penyaluran berjalan lancar"),
-      badgeClass: "bg-amber-400/20 text-amber-300 border-amber-400/30",
+      badgeClass: "bg-amber-500 text-white font-bold",
       distributionRate,
     };
   }
@@ -124,7 +124,7 @@ const getRoWAProductivity = (
             ? `${distributionRate.toFixed(1)}% disbursed, remaining in pool`
             : `${distributionRate.toFixed(1)}% tersalurkan, dana dalam proses`)
         : (locale === "en" ? "Fund in distribution pipeline" : "Dana dalam proses penyaluran bertahap"),
-    badgeClass: "bg-sky-400/20 text-sky-300 border-sky-400/30",
+    badgeClass: "bg-sky-600 text-white font-bold",
     distributionRate,
   };
 };
@@ -190,10 +190,22 @@ export function MonthlyRowaSection({
     return reversed;
   }, [monthlyList, filterActiveOnly]);
 
-  // Verified canonical totals from finance payload (presentation only, no frontend reduce)
-  const totalWaqfCollected = Number(finance?.total_waqf_collected ?? 0);
-  const totalDistributed = Number(finance?.total_distributed ?? stats?.total_distributed ?? Number(stats?.amount_allocated ?? 0));
-  const totalExpense = Number(finance?.total_expense ?? stats?.total_expense ?? 0);
+  // Verified canonical totals from finance payload, with automatic fallback to core website stats
+  const totalWaqfCollected = Number(
+    finance?.total_waqf_collected ||
+      stats?.total_waqf_collected ||
+      stats?.amount_collected ||
+      stats?.total_collected ||
+      0
+  );
+  const totalDistributed = Number(
+    finance?.total_distributed ||
+      stats?.total_distributed ||
+      Number(stats?.amount_allocated || 0)
+  );
+  const totalExpense = Number(
+    finance?.total_expense || stats?.total_expense || 0
+  );
 
   // Canonical RoWA ratio multiplier directly from backend
   const overallRowa: number | null = useMemo(() => {
@@ -453,7 +465,7 @@ export function MonthlyRowaSection({
                         {/* Rasio RoWA */}
                         <td className="py-5 px-6 sm:px-8 text-center whitespace-nowrap">
                           {item.rowa !== null && item.rowa !== undefined && Number(item.rowa) > 0 ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-brandGreen-50 border border-brandGreen-200/80 px-2.5 py-0.5 text-xs font-extrabold text-brandGreen-800 font-heading">
+                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white font-heading">
                               <FontAwesomeIcon icon={faArrowTrendUp} className="text-[9px]" />
                               <span>{Number(item.rowa).toFixed(2)}x</span>
                             </span>
@@ -486,7 +498,7 @@ export function MonthlyRowaSection({
                       {formatCurrency(totalExpense, locale)}
                     </td>
                     <td className="py-5 px-6 sm:px-8 text-center">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-brandGreen-800 text-white px-3 py-1 font-heading text-xs font-black shadow-2xs">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-700 text-white px-3 py-1 font-heading text-xs font-bold shadow-xs">
                         {overallRowa !== null && overallRowa > 0 ? `${Number(overallRowa).toFixed(2)}x` : (locale === "en" ? "Unavailable" : "Belum Tersedia")}
                       </span>
                     </td>

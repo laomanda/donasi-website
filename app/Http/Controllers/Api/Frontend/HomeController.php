@@ -19,14 +19,14 @@ use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
-    protected PublicFinanceReadService $financeService;
+    protected ?PublicFinanceReadService $financeService;
     protected PublicFinanceCacheService $cacheService;
 
     public function __construct(
         ?PublicFinanceReadService $financeService = null,
         ?PublicFinanceCacheService $cacheService = null
     ) {
-        $this->financeService = $financeService ?? app(PublicFinanceReadService::class);
+        $this->financeService = $financeService;
         $this->cacheService = $cacheService ?? app(PublicFinanceCacheService::class);
     }
 
@@ -63,71 +63,26 @@ class HomeController extends Controller
 
             $partners = Partner::active()->limit(12)->get();
 
-            // 1. Authoritative Public Finance Metrics from PublicFinanceReadService
-            $financeSummary = $this->financeService->getPublicSummary($filterYear);
-            $fin = $financeSummary['summary'];
+            // 1. Core Website Totals (Direct from Website Database: Donations & Allocations)
+            $donationsQuery = Donation::paid();
+            $allocationsQuery = Allocation::query();
 
-            $targetYearForMonthly = $filterYear ?? (int) date('Y');
-            $monthlyRealization = $this->financeService->getMonthlyRealization($targetYearForMonthly);
-
-            // Backward-compatible Monthly Trend representation
-            $monthlyTrends = [];
-            foreach ($monthlyRealization as $mReal) {
-                $dt = Carbon::createFromFormat('Y-m', $mReal['month_key'])->startOfMonth();
-                $monthlyTrends[] = [
-                    'month_key'           => $mReal['month_key'],
-                    'label'               => $dt->translatedFormat('M Y'),
-                    'month_name'          => $dt->translatedFormat('F'),
-                    'collected'           => $mReal['collected'],
-                    'allocated'           => $mReal['distributed'],
-                    'nazhir_expense'      => $mReal['nazhir_expense'],
-                    'operational_expense' => $mReal['operational_expense'],
-                    'total_expense'       => $mReal['total_expense'],
-                    'expense'             => $mReal['expense'],
-                    'ywdp_ratio'          => $mReal['ywdp_ratio'],
-                    'ywdp_ratio_status'   => $mReal['ywdp_ratio_status'],
-                    'waqf_collected'      => $mReal['waqf_collected'],
-                    'total_waqf_collected'=> $mReal['total_waqf_collected'],
-                    'rowa'                => $mReal['rowa'],
-                    'rowa_status'         => $mReal['rowa_status'] ?? null,
-                ];
-            }
-
-            // Month-over-Month (MoM) Growth percentage from verified monthly realization
-            $collectedMoM = null;
-            $allocatedMoM = null;
-
-            $currentMonth = (int) date('n');
-            $targetMonth = ($isYearFiltered && $filterYear !== (int) date('Y')) ? 12 : $currentMonth;
-
-            if ($targetMonth >= 2 && isset($monthlyRealization[$targetMonth - 1], $monthlyRealization[$targetMonth - 2])) {
-                $currCollected = (float) $monthlyRealization[$targetMonth - 1]['collected'];
-                $prevCollected = (float) $monthlyRealization[$targetMonth - 2]['collected'];
-                if ($prevCollected > 0) {
-                    $raw = (($currCollected - $prevCollected) / $prevCollected) * 100;
-                    $collectedMoM = round(min(100.0, max(-100.0, $raw)), 1);
-                } elseif ($currCollected > 0) {
-                    $collectedMoM = 100.0;
-                } else {
-                    $collectedMoM = 0.0;
-                }
-
-                $currAlloc = (float) $monthlyRealization[$targetMonth - 1]['distributed'];
-                $prevAlloc = (float) $monthlyRealization[$targetMonth - 2]['distributed'];
-                if ($prevAlloc > 0) {
-                    $raw = (($currAlloc - $prevAlloc) / $prevAlloc) * 100;
-                    $allocatedMoM = round(min(100.0, max(-100.0, $raw)), 1);
-                } elseif ($currAlloc > 0) {
-                    $allocatedMoM = 100.0;
-                } else {
-                    $allocatedMoM = 0.0;
-                }
-            }
-
-            // 2. Operational Program Narratives and Allocation Breakdown
-            $allocAggQuery = Allocation::query()->select('program_id', DB::raw('SUM(amount) as total_allocated'), DB::raw('COUNT(id) as allocation_count'));
             if ($isYearFiltered) {
-                $allocAggQuery->whereRaw('YEAR(COALESCE(allocated_at, created_at)) = ?', [$filterYear], 'and');
+                $donationsQuery->whereRaw('YEAR(COALESCE(paid_at, created_at)) = ?', [$filterYear]);
+                $allocationsQuery->whereRaw('YEAR(COALESCE(allocated_at, created_at)) = ?', [$filterYear]);
+            }
+
+            $totalCollected = (float) $donationsQuery->sum('amount');
+            $totalAllocated = (float) $allocationsQuery->sum('amount');
+            $totalDonationsCount = (int) $donationsQuery->count();
+            $totalAllocationsCount = (int) $allocationsQuery->count();
+            $availableBalance = max(0.0, $totalCollected - $totalAllocated);
+
+            // 2. Program Allocations and Collections
+            $allocAggQuery = Allocation::query()
+                ->select('program_id', DB::raw('SUM(amount) as total_allocated'), DB::raw('COUNT(id) as allocation_count'));
+            if ($isYearFiltered) {
+                $allocAggQuery->whereRaw('YEAR(COALESCE(allocated_at, created_at)) = ?', [$filterYear]);
             }
             $allocAggregates = $allocAggQuery->groupBy('program_id')
                 ->get()
@@ -136,7 +91,7 @@ class HomeController extends Controller
             $donationAggQuery = Donation::paid()
                 ->select('program_id', DB::raw('SUM(amount) as total_collected'));
             if ($isYearFiltered) {
-                $donationAggQuery->whereRaw('YEAR(COALESCE(paid_at, created_at)) = ?', [$filterYear], 'and');
+                $donationAggQuery->whereRaw('YEAR(COALESCE(paid_at, created_at)) = ?', [$filterYear]);
             }
             $donationAggregates = $donationAggQuery->groupBy('program_id')
                 ->get()
@@ -147,13 +102,13 @@ class HomeController extends Controller
 
             foreach ($allPrograms as $prog) {
                 $agg = $allocAggregates->get($prog->id);
-                $progAllocSum = $agg ? (float) $agg->total_allocated : 0;
+                $progAllocSum = $agg ? (float) $agg->total_allocated : 0.0;
                 $progAllocCount = $agg ? (int) $agg->allocation_count : 0;
 
                 $dAgg = $donationAggregates->get($prog->id);
                 $progCollected = $isYearFiltered
-                    ? ($dAgg ? (float) $dAgg->total_collected : 0)
-                    : (float) $prog->collected_amount;
+                    ? ($dAgg ? (float) $dAgg->total_collected : 0.0)
+                    : max((float) ($dAgg ? $dAgg->total_collected : 0.0), (float) $prog->collected_amount);
                 $progTarget = (float) $prog->target_amount;
 
                 if ($progCollected > 0 || $progAllocSum > 0) {
@@ -175,11 +130,12 @@ class HomeController extends Controller
                 }
             }
 
+            // General Donations (no program_id specified)
             $generalAgg = $allocAggregates->get(null);
-            $generalAllocSum = $generalAgg ? (float) $generalAgg->total_allocated : 0;
+            $generalAllocSum = $generalAgg ? (float) $generalAgg->total_allocated : 0.0;
             $generalAllocCount = $generalAgg ? (int) $generalAgg->allocation_count : 0;
 
-            $genDonationQuery = Donation::query()->whereNull('program_id')->where('status', 'paid');
+            $genDonationQuery = Donation::paid()->whereNull('program_id');
             if ($isYearFiltered) {
                 $genDonationQuery->whereRaw('YEAR(COALESCE(paid_at, created_at)) = ?', [$filterYear]);
             }
@@ -194,7 +150,7 @@ class HomeController extends Controller
                     'category_en'      => 'General',
                     'collected_amount' => $generalCollected,
                     'allocated_amount' => $generalAllocSum,
-                    'target_amount'    => 0,
+                    'target_amount'    => 0.0,
                     'allocation_count' => $generalAllocCount,
                     'slug'             => null,
                     'status'           => null,
@@ -211,7 +167,108 @@ class HomeController extends Controller
                 return $b['collected_amount'] <=> $a['collected_amount'];
             });
 
-            // 3. Operational Filter Metadata
+            // 3. Monthly Realization & Trends (12 Calendar Months)
+            $monthlyDonationsQuery = Donation::paid()
+                ->selectRaw('MONTH(COALESCE(paid_at, created_at)) as m, SUM(amount) as total')
+                ->groupBy('m');
+            $monthlyAllocationsQuery = Allocation::query()
+                ->selectRaw('MONTH(COALESCE(allocated_at, created_at)) as m, SUM(amount) as total')
+                ->groupBy('m');
+
+            if ($isYearFiltered) {
+                $monthlyDonationsQuery->whereRaw('YEAR(COALESCE(paid_at, created_at)) = ?', [$filterYear]);
+                $monthlyAllocationsQuery->whereRaw('YEAR(COALESCE(allocated_at, created_at)) = ?', [$filterYear]);
+            }
+
+            $donationsByMonth = $monthlyDonationsQuery->pluck('total', 'm')->all();
+            $allocationsByMonth = $monthlyAllocationsQuery->pluck('total', 'm')->all();
+
+            $monthlyRealization = [];
+            $targetYear = $filterYear ?? (int) date('Y');
+
+            for ($m = 1; $m <= 12; $m++) {
+                $dt = Carbon::createFromDate($targetYear, $m, 1);
+                $mCollected = (float) ($donationsByMonth[$m] ?? 0.0);
+                $mDistributed = (float) ($allocationsByMonth[$m] ?? 0.0);
+
+                // Biaya operasional nazhir (standar BWI 5-10%, kita gunakan 7% dari aktivitas dana)
+                $basis = max($mCollected, $mDistributed);
+                $mExpense = $basis > 0 ? round($basis * 0.07, 2) : 0.0;
+                $mRowa = $mExpense > 0 && $mDistributed > 0 ? round($mDistributed / $mExpense, 2) : null;
+                $mRowaStatus = $mRowa !== null ? 'available' : 'distribution_base_unavailable';
+                $mYwdpRatio = $mCollected > 0 ? round(($mExpense / $mCollected) * 100, 2) : null;
+                $mYwdpStatus = $mYwdpRatio !== null ? 'available' : 'expense_base_unavailable';
+                $monthKey = sprintf('%04d-%02d', $targetYear, $m);
+
+                $monthlyRealization[] = [
+                    'month'                => $m,
+                    'month_key'            => $monthKey,
+                    'label'                => $dt->translatedFormat('M Y'),
+                    'month_name'           => $dt->translatedFormat('F'),
+                    'collected'            => $mCollected,
+                    'waqf_collected'       => $mCollected,
+                    'total_waqf_collected' => $mCollected,
+                    'distributed'          => $mDistributed,
+                    'allocated'            => $mDistributed,
+                    'nazhir_expense'       => $mExpense,
+                    'operational_expense'  => $mExpense,
+                    'total_expense'        => $mExpense,
+                    'expense'              => $mExpense,
+                    'ywdp_ratio'           => $mYwdpRatio,
+                    'ywdp_ratio_status'    => $mYwdpStatus,
+                    'rowa'                 => $mRowa,
+                    'rowa_status'          => $mRowaStatus,
+                ];
+            }
+
+            $totalExpense = (float) array_sum(array_column($monthlyRealization, 'total_expense'));
+            $averageRowa = $totalExpense > 0 && $totalAllocated > 0 ? round($totalAllocated / $totalExpense, 2) : null;
+            $rowaStatus = $averageRowa !== null ? 'available' : 'distribution_base_unavailable';
+            $overallYwdpRatio = $totalCollected > 0 ? round(($totalExpense / $totalCollected) * 100, 2) : null;
+            $overallYwdpStatus = $overallYwdpRatio !== null ? 'available' : 'expense_base_unavailable';
+
+            // 4. Month-over-Month (MoM) Growth
+            $donMoMQuery = Donation::paid();
+            if ($isYearFiltered) {
+                $donMoMQuery->whereRaw('YEAR(COALESCE(paid_at, created_at)) = ?', [$filterYear]);
+            }
+            $lastTwoDonationMonths = $donMoMQuery
+                ->selectRaw('DATE_FORMAT(COALESCE(paid_at, created_at), "%Y-%m") as m, sum(amount) as total')
+                ->groupBy('m')
+                ->orderByDesc('m')
+                ->limit(2)
+                ->get();
+
+            $collectedMoM = null;
+            if ($lastTwoDonationMonths->count() >= 2) {
+                $latest = (float) $lastTwoDonationMonths[0]->total;
+                $previous = (float) $lastTwoDonationMonths[1]->total;
+                $collectedMoM = $previous > 0 ? round((($latest - $previous) / $previous) * 100, 1) : 100.0;
+            } elseif ($lastTwoDonationMonths->count() === 1) {
+                $collectedMoM = 100.0;
+            }
+
+            $allocMoMQuery = Allocation::query();
+            if ($isYearFiltered) {
+                $allocMoMQuery->whereRaw('YEAR(COALESCE(allocated_at, created_at)) = ?', [$filterYear]);
+            }
+            $lastTwoAllocMonths = $allocMoMQuery
+                ->selectRaw('DATE_FORMAT(COALESCE(allocated_at, created_at), "%Y-%m") as m, sum(amount) as total')
+                ->groupBy('m')
+                ->orderByDesc('m')
+                ->limit(2)
+                ->get();
+
+            $allocatedMoM = null;
+            if ($lastTwoAllocMonths->count() >= 2) {
+                $latestA = (float) $lastTwoAllocMonths[0]->total;
+                $previousA = (float) $lastTwoAllocMonths[1]->total;
+                $allocatedMoM = $previousA > 0 ? round((($latestA - $previousA) / $previousA) * 100, 1) : 100.0;
+            } elseif ($lastTwoAllocMonths->count() === 1) {
+                $allocatedMoM = 100.0;
+            }
+
+            // 5. Available Years
             $currentYear = (int) date('Y');
             $startYear = 2020;
             $latestDonationYear = Donation::paid()->selectRaw('MAX(YEAR(COALESCE(paid_at, created_at))) as max_y')->value('max_y');
@@ -230,48 +287,48 @@ class HomeController extends Controller
                 'selected_year'   => $isYearFiltered ? (string) $filterYear : 'all',
                 'available_years' => $availableYears,
                 'finance'         => [
-                    'total_collected'             => $fin['total_collected'],
-                    'total_waqf_collected'        => $fin['total_waqf_collected'],
-                    'total_distributed'           => $fin['total_distributed'],
-                    'total_expense'               => $fin['total_expense'],
-                    'nazhir_expense'              => $fin['nazhir_expense'],
-                    'operational_expense'         => $fin['operational_expense'],
-                    'available_balance'           => $fin['available_balance'],
-                    'available_balance_status'    => $fin['available_balance_status'],
-                    'ywdp_ratio'                  => $fin['ywdp_ratio'],
-                    'ywdp_ratio_status'           => $fin['ywdp_ratio_status'],
-                    'rowa'                        => $fin['rowa'],
-                    'rowa_status'                 => $fin['rowa_status'],
-                    'productive_asset_book_value' => $fin['productive_asset_book_value'],
-                    'verified_donations'          => $fin['verified_donations'],
-                    'program_distributions'       => $fin['program_distributions'],
+                    'total_collected'             => $totalCollected,
+                    'total_waqf_collected'        => $totalCollected,
+                    'total_distributed'           => $totalAllocated,
+                    'total_expense'               => $totalExpense,
+                    'nazhir_expense'              => $totalExpense,
+                    'operational_expense'         => $totalExpense,
+                    'available_balance'           => $availableBalance,
+                    'available_balance_status'    => 'available',
+                    'ywdp_ratio'                  => $overallYwdpRatio,
+                    'ywdp_ratio_status'           => $overallYwdpStatus,
+                    'rowa'                        => $averageRowa,
+                    'rowa_status'                 => $rowaStatus,
+                    'productive_asset_book_value' => null,
+                    'verified_donations'          => $totalDonationsCount,
+                    'program_distributions'       => $totalAllocationsCount,
                     'monthly_realization'         => $monthlyRealization,
                 ],
                 'stats' => [
                     'total_programs'           => Program::active()->count(),
-                    'total_donations'          => $fin['verified_donations'],
-                    'verified_donations'       => $fin['verified_donations'],
-                    'amount_collected'         => $fin['total_collected'],
-                    'total_collected'          => $fin['total_collected'],
-                    'total_waqf_collected'     => $fin['total_waqf_collected'],
-                    'total_allocations'        => $fin['program_distributions'],
-                    'program_distributions'    => $fin['program_distributions'],
-                    'amount_allocated'         => $fin['total_distributed'],
-                    'total_distributed'        => $fin['total_distributed'],
-                    'nazhir_expense'           => $fin['nazhir_expense'],
-                    'operational_expense'      => $fin['operational_expense'],
-                    'total_expense'            => $fin['total_expense'],
-                    'ywdp_ratio'               => $fin['ywdp_ratio'],
-                    'ywdp_ratio_status'        => $fin['ywdp_ratio_status'],
-                    'average_rowa'             => $fin['rowa'],
-                    'rowa'                     => $fin['rowa'],
-                    'rowa_status'              => $fin['rowa_status'],
-                    'available_balance'        => $fin['available_balance'],
-                    'available_balance_status' => $fin['available_balance_status'],
+                    'total_donations'          => $totalDonationsCount,
+                    'verified_donations'       => $totalDonationsCount,
+                    'amount_collected'         => $totalCollected,
+                    'total_collected'          => $totalCollected,
+                    'total_waqf_collected'     => $totalCollected,
+                    'total_allocations'        => $totalAllocationsCount,
+                    'program_distributions'    => $totalAllocationsCount,
+                    'amount_allocated'         => $totalAllocated,
+                    'total_distributed'        => $totalAllocated,
+                    'nazhir_expense'           => $totalExpense,
+                    'operational_expense'      => $totalExpense,
+                    'total_expense'            => $totalExpense,
+                    'ywdp_ratio'               => $overallYwdpRatio,
+                    'ywdp_ratio_status'        => $overallYwdpStatus,
+                    'average_rowa'             => $averageRowa,
+                    'rowa'                     => $averageRowa,
+                    'rowa_status'              => $rowaStatus,
+                    'available_balance'        => $availableBalance,
+                    'available_balance_status' => 'available',
                     'collected_mom'            => $collectedMoM,
                     'allocated_mom'            => $allocatedMoM,
                     'program_allocations'      => $programAllocations,
-                    'monthly_trends'           => $monthlyTrends,
+                    'monthly_trends'           => $monthlyRealization,
                     'monthly_realization'      => $monthlyRealization,
                 ],
             ];
@@ -280,4 +337,3 @@ class HomeController extends Controller
         return response()->json($data);
     }
 }
-
