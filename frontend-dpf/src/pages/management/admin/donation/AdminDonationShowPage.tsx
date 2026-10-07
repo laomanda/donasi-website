@@ -89,27 +89,27 @@ const toIsoFromLocalInput = (value: string) => {
 const getStatusConfig = (status: DonationStatus) => {
   const s = String(status ?? "").toLowerCase();
   if (s === "paid") return {
-    bg: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+    bg: "bg-emerald-600 text-white shadow-xs",
     icon: faCheckCircle, label: "Lunas", border: "border-l-emerald-500",
     headerBg: "bg-emerald-600", decoration: "decoration-emerald-400/50"
   };
   if (s === "pending") return {
-    bg: "bg-amber-50 text-amber-700 ring-amber-100",
+    bg: "bg-amber-500 text-white shadow-xs",
     icon: faClock, label: "Menunggu", border: "border-l-amber-500",
     headerBg: "bg-amber-500", decoration: "decoration-amber-400/50"
   };
   if (s === "failed") return {
-    bg: "bg-rose-50 text-rose-700 ring-rose-100",
+    bg: "bg-rose-600 text-white shadow-xs",
     icon: faExclamationCircle, label: "Gagal", border: "border-l-rose-500",
     headerBg: "bg-rose-600", decoration: "decoration-rose-400/50"
   };
   if (s === "cancelled") return {
-    bg: "bg-rose-50 text-rose-700 ring-rose-200",
+    bg: "bg-rose-600 text-white shadow-xs",
     icon: faBan, label: "Dibatalkan", border: "border-l-rose-400",
     headerBg: "bg-rose-600", decoration: "decoration-rose-400/50"
   };
   return {
-    bg: "bg-slate-50 text-slate-600 ring-slate-200",
+    bg: "bg-slate-600 text-white shadow-xs",
     icon: faCircleInfo, label: s || "-", border: "border-l-slate-300",
     headerBg: "bg-slate-500", decoration: "decoration-slate-400/50"
   };

@@ -13,4 +13,4 @@ export const formatGalleryMitraDate = (value?: string | null) => {
   return Number.isNaN(date.getTime()) ? "-" : new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short", year: "numeric" }).format(date);
 };
 export const getGalleryMitraStatusLabel = (status: string) => status === "published" ? "Terbit" : status === "archived" ? "Arsip" : "Draf";
-export const getGalleryMitraStatusTone = (status: string) => status === "published" ? "bg-emerald-50 text-emerald-700 ring-emerald-100" : status === "archived" ? "bg-slate-100 text-slate-600 ring-slate-200" : "bg-amber-50 text-amber-700 ring-amber-100";
+export const getGalleryMitraStatusTone = (status: string) => status === "published" ? "bg-emerald-600 text-white shadow-xs" : status === "archived" ? "bg-slate-600 text-white shadow-xs" : "bg-amber-500 text-white shadow-xs";

@@ -159,7 +159,7 @@ export const JournalDetailModal: React.FC<JournalDetailModalProps> = ({
                     {journal.program && (
                       <div className="text-xs">
                         <span className="font-bold text-slate-500 mr-2">Terkait Program:</span>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-[11px]">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-600 text-white font-bold text-[11px] shadow-xs">
                           {journal.program.title}
                         </span>
                       </div>

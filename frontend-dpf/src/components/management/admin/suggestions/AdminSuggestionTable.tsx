@@ -114,7 +114,7 @@ export const AdminSuggestionTable = ({
                       </span>
                     </td>
                     <td className="px-6 py-5">
-                      <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold ${item.status === "baru" ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-emerald-100 text-emerald-700 border border-emerald-200"}`}>
+                      <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold ${item.status === "baru" ? "bg-amber-500 text-white shadow-xs" : "bg-emerald-600 text-white shadow-xs"}`}>
                         {item.status === "baru" ? "Baru" : "Dibalas"}
                       </span>
                     </td>

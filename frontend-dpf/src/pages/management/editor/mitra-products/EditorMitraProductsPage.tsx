@@ -28,11 +28,11 @@ type Response = {
 const getStatusTone = (status: string) => {
   switch (status) {
     case "published":
-      return "bg-emerald-50 text-emerald-700 ring-emerald-200/60";
+      return "bg-emerald-600 text-white shadow-xs";
     case "draft":
-      return "bg-amber-50 text-amber-700 ring-amber-200/60";
+      return "bg-amber-500 text-white shadow-xs";
     default:
-      return "bg-slate-100 text-slate-700 ring-slate-200";
+      return "bg-slate-600 text-white shadow-xs";
   }
 };
 

@@ -65,10 +65,10 @@ export default function EditorTagsList({
               <div className="flex items-center justify-between gap-2">
                 <p className="truncate text-base font-bold text-slate-900">{tag.name}</p>
                 <span
-                  className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1 whitespace-nowrap ${
+                  className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-xs whitespace-nowrap ${
                     tag.is_active
-                      ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
-                      : "bg-rose-50 text-rose-700 ring-rose-200"
+                      ? "bg-emerald-600 text-white"
+                      : "bg-rose-600 text-white"
                   }`}
                 >
                   {tag.is_active ? "Aktif" : "Nonaktif"}

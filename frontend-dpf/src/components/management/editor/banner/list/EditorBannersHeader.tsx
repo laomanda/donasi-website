@@ -24,17 +24,15 @@ export default function EditorBannersHeader({
           <p className="mt-2 max-w-2xl text-sm text-slate-600">
             Kelola slideshow banner yang tampil di bagian atas beranda website.
           </p>
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
-            <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-700 ring-1 ring-slate-200">
-              Total: <span className="ml-1 font-bold text-slate-900">{total}</span>
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
+            <span className="inline-flex items-center rounded-full bg-slate-800 px-3 py-1 text-xs font-bold text-white shadow-xs">
+              Total: <span className="ml-1 text-white">{total}</span>
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 ring-1 ring-emerald-200">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              Dipublikasikan: <span className="font-bold text-emerald-900">{publishedCount}</span>
+            <span className="inline-flex items-center rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-xs">
+              Dipublikasikan: <span className="ml-1 text-white">{publishedCount}</span>
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-amber-700 ring-1 ring-amber-200">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-              Draf: <span className="font-bold text-amber-900">{draftCount}</span>
+            <span className="inline-flex items-center rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white shadow-xs">
+              Draf: <span className="ml-1 text-white">{draftCount}</span>
             </span>
           </div>
         </div>

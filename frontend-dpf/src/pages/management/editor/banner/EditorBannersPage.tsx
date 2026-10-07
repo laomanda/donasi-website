@@ -1,16 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import http from "../../../../lib/http";
 import EditorBannersHeader from "../../../../components/management/editor/banner/list/EditorBannersHeader";
 import EditorBannersTable from "../../../../components/management/editor/banner/list/EditorBannersTable";
 import { type Banner } from "../../../../components/management/editor/banner/EditorBannerTypes";
+import { useToast } from "@/components/ui/ToastProvider";
+import { useBulkSelection } from "@/components/ui/useBulkSelection";
+import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
+import { runWithConcurrency } from "@/lib/bulk";
 
 export default function EditorBannersPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
+  const selection = useBulkSelection<number>();
 
   const fetchBanners = async () => {
     setLoading(true);
@@ -41,6 +48,33 @@ export default function EditorBannersPage() {
     return true;
   });
 
+  const pageIds = useMemo(() => filteredBanners.map((b) => b.id), [filteredBanners]);
+
+  const deleteSelected = async () => {
+    setBulkDeleting(true);
+    try {
+      const result = await runWithConcurrency(selection.selectedIds, 4, (id) =>
+        http.delete(`/editor/banners/${id}`)
+      );
+      if (result.failed.length) {
+        toast.error(
+          `Berhasil menghapus ${result.succeeded.length} banner, tetapi ${result.failed.length} gagal.`,
+          { title: "Sebagian gagal" }
+        );
+      } else {
+        toast.success(`Berhasil menghapus ${result.succeeded.length} banner.`, {
+          title: "Berhasil",
+        });
+      }
+      selection.clear();
+      await fetchBanners();
+    } catch {
+      toast.error("Terjadi kesalahan saat menghapus banner.", { title: "Gagal" });
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 pb-12">
       <EditorBannersHeader 
@@ -55,7 +89,10 @@ export default function EditorBannersPage() {
       <div className="flex items-center gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 w-fit shadow-sm">
         <button
           type="button"
-          onClick={() => setStatusFilter("all")}
+          onClick={() => {
+            setStatusFilter("all");
+            selection.clear();
+          }}
           className={[
             "rounded-xl px-3.5 py-1.5 text-xs font-bold transition",
             statusFilter === "all"
@@ -68,7 +105,10 @@ export default function EditorBannersPage() {
 
         <button
           type="button"
-          onClick={() => setStatusFilter("published")}
+          onClick={() => {
+            setStatusFilter("published");
+            selection.clear();
+          }}
           className={[
             "rounded-xl px-3.5 py-1.5 text-xs font-bold transition",
             statusFilter === "published"
@@ -81,7 +121,10 @@ export default function EditorBannersPage() {
 
         <button
           type="button"
-          onClick={() => setStatusFilter("draft")}
+          onClick={() => {
+            setStatusFilter("draft");
+            selection.clear();
+          }}
           className={[
             "rounded-xl px-3.5 py-1.5 text-xs font-bold transition",
             statusFilter === "draft"
@@ -99,10 +142,24 @@ export default function EditorBannersPage() {
         </div>
       )}
 
+      {/* Bulk Actions Bar */}
+      <BulkActionsBar
+        count={selection.count}
+        itemLabel="banner"
+        onClear={selection.clear}
+        onSelectAllPage={() => selection.addMany(pageIds)}
+        onDeleteSelected={deleteSelected}
+        disabled={loading || bulkDeleting}
+      />
+
       <EditorBannersTable
         banners={filteredBanners}
         loading={loading}
         onEdit={(id) => navigate(`/editor/banners/${id}/edit`)}
+        selectedIds={selection.selected}
+        allPageSelected={pageIds.length > 0 && pageIds.every((id) => selection.selected.has(id))}
+        onToggle={selection.toggle}
+        onToggleAll={() => selection.toggleAll(pageIds)}
       />
 
       {!loading && filteredBanners.length === 0 && !error && (

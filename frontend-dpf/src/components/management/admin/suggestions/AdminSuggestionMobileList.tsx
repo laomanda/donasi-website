@@ -57,7 +57,7 @@ export const AdminSuggestionMobileList = ({
                   <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${getCategoryTone(item.category)}`}>
                     {getCategoryLabel(item.category)}
                   </span>
-                  <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${item.status === 'baru' ? 'bg-amber-100 text-amber-700 border border-amber-200 shadow-sm' : 'bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm'}`}>
+                  <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${item.status === 'baru' ? 'bg-amber-500 text-white shadow-xs' : 'bg-emerald-600 text-white shadow-xs'}`}>
                     {item.status === 'baru' ? 'Baru' : 'Dibalas'}
                   </span>
                 </div>

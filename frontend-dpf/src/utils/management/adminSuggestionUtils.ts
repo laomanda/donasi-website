@@ -29,10 +29,10 @@ export const getCategoryTone = (cat: string) => {
 };
 
 export const getCategoryToneAlt = (cat: string) => {
-  if (cat === "bug") return "bg-red-50 text-red-700 border-red-100";
-  if (cat === "appreciation") return "bg-emerald-50 text-emerald-700 border-emerald-100";
-  if (cat === "suggestion") return "bg-amber-50 text-amber-700 border-amber-100";
-  return "bg-slate-50 text-slate-700 border-slate-100";
+  if (cat === "bug") return "bg-rose-600 text-white shadow-xs";
+  if (cat === "appreciation") return "bg-emerald-600 text-white shadow-xs";
+  if (cat === "suggestion") return "bg-amber-500 text-white shadow-xs";
+  return "bg-slate-600 text-white shadow-xs";
 };
 
 export const formatWhatsAppLink = (phone: string, name: string, category: string) => {
