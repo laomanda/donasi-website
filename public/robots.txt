@@ -1,4 +1,18 @@
 User-agent: *
 Allow: /
 
+Disallow: /admin
+Disallow: /editor
+Disallow: /finance
+Disallow: /keuangan
+Disallow: /superadmin
+Disallow: /mitra
+Disallow: /management
+Disallow: /employees
+Disallow: /login
+Disallow: /register-mitra
+Disallow: /preview
+Disallow: /error/
+Disallow: /maintenance
+
 Sitemap: https://ywdp.org/sitemap.xml

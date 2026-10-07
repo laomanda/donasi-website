@@ -46,16 +46,17 @@ export function useJournalMasterData(): UseJournalMasterDataReturn {
   const { accounts, loading: accountsLoading, refresh: refreshAccounts } = useAccountsData();
 
   // 3. Programs (cached locally)
-  const isProgramsFresh = Boolean(
-    programsCache && Date.now() - programsCache.fetchedAt < PROGRAMS_TTL_MS
-  );
   const [programs, setPrograms] = useState<ProgramOption[]>(
     programsCache ? programsCache.data : []
   );
-  const [programsLoading, setProgramsLoading] = useState<boolean>(!isProgramsFresh);
+  const [programsLoading, setProgramsLoading] = useState<boolean>(!programsCache);
 
   useEffect(() => {
     isMountedRef.current = true;
+
+    const isProgramsFresh = Boolean(
+      programsCache && Date.now() - programsCache.fetchedAt < PROGRAMS_TTL_MS
+    );
 
     if (!isProgramsFresh) {
       setProgramsLoading(true);
@@ -78,7 +79,7 @@ export function useJournalMasterData(): UseJournalMasterDataReturn {
     return () => {
       isMountedRef.current = false;
     };
-  }, [isProgramsFresh]);
+  }, []);
 
   const refresh = async () => {
     programsCache = null;

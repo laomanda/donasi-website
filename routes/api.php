@@ -167,7 +167,7 @@ Route::prefix('v1')->group(function () {
     | PUBLIC FRONTEND API (Tanpa Auth)
     |--------------------------------------------------------------------------
     */
-    Route::middleware('throttle:300,1')->group(function () {
+    Route::middleware(['throttle:300,1', 'public.cache'])->group(function () {
         Route::get('home', HomeController::class);
         Route::get('banners', [FrontendBannerController::class, 'index']);
         Route::get('gallery-dpf', [FrontendGalleryDpfController::class, 'index']);
@@ -437,7 +437,8 @@ Route::prefix('v1')->group(function () {
     | PUBLIC EMPLOYEES (Digital Employee Directory)
     |--------------------------------------------------------------------------
     */
-    Route::prefix('public/employees')->name('public.employees.')->group(function () {
+    Route::middleware(['throttle:300,1', 'public.cache'])
+        ->prefix('public/employees')->name('public.employees.')->group(function () {
         Route::get('filters', [PublicEmployeeController::class, 'filters'])->name('filters');
         Route::get('/', [PublicEmployeeController::class, 'index'])->name('index');
         Route::get('{slug}', [PublicEmployeeController::class, 'show'])->name('show');

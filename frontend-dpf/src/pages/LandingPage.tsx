@@ -4,6 +4,7 @@ import { useLang } from "@/lib/i18n";
 import { landingDict } from "@/components/landing/LandingI18n";
 import { translate } from "@/lib/i18n-utils";
 import { LandingLayout } from "@/layouts/LandingLayout";
+import { requestPublic } from "@/lib/publicRequestCache";
 
 // Refactored Components
 import { 
@@ -34,11 +35,10 @@ function LandingPage() {
 
   useEffect(() => {
     let mounted = true;
-    http
-      .get<HomePayload>("/home")
+    requestPublic("home", () => http.get<HomePayload>("/home").then((response) => response.data), 120_000)
       .then((response) => {
         if (!mounted) return;
-        setData(response.data);
+        setData(response);
         setError(null);
       })
       .catch(() => {
@@ -55,11 +55,10 @@ function LandingPage() {
 
   useEffect(() => {
     let active = true;
-    http
-      .get<Banner[]>("/banners")
-      .then((res) => {
+    requestPublic("banners", () => http.get<Banner[]>("/banners").then((response) => response.data), 120_000)
+      .then((banners) => {
         if (!active) return;
-        setBanners(res.data ?? []);
+        setBanners(banners ?? []);
       })
       .catch(() => {
         if (!active) return;

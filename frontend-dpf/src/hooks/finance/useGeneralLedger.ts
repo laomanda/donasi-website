@@ -47,8 +47,9 @@ export function useGeneralLedger(
   );
   const [error, setError] = useState<string | null>(null);
 
-  // Update activeKeyRef on each render
-  activeKeyRef.current = currentKey;
+  useEffect(() => {
+    activeKeyRef.current = currentKey;
+  }, [currentKey]);
 
   const executeFetch = useCallback(
     async (key: string, filterParams: ReturnType<typeof buildGeneralLedgerParams>, forceBypassCache = false) => {

@@ -7,11 +7,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\Mime\MimeTypes;
 Route::get('/sitemap.xml', function () {
-    $baseUrl = 'https://ywdp.org';
+    $baseUrl = rtrim(config('app.frontend_url', config('app.url')), '/');
 
     $urls = [
         ['loc' => $baseUrl . '/', 'changefreq' => 'daily', 'priority' => '1.0'],
-        ['loc' => $baseUrl . '/programs', 'changefreq' => 'daily', 'priority' => '0.9'],
+        ['loc' => $baseUrl . '/program', 'changefreq' => 'daily', 'priority' => '0.9'],
         ['loc' => $baseUrl . '/literasi', 'changefreq' => 'daily', 'priority' => '0.9'],
         ['loc' => $baseUrl . '/tentang-kami', 'changefreq' => 'monthly', 'priority' => '0.7'],
         ['loc' => $baseUrl . '/layanan', 'changefreq' => 'monthly', 'priority' => '0.7'],
@@ -34,7 +34,7 @@ Route::get('/sitemap.xml', function () {
         $programs = Program::active()->get(['slug', 'updated_at']);
         foreach ($programs as $prog) {
             $urls[] = [
-                'loc' => $baseUrl . '/programs/' . $prog->slug,
+                'loc' => $baseUrl . '/program/' . $prog->slug,
                 'lastmod' => $prog->updated_at?->toIso8601String(),
                 'changefreq' => 'weekly',
                 'priority' => '0.8',
@@ -58,7 +58,10 @@ Route::get('/sitemap.xml', function () {
     }
     $xml .= '</urlset>';
 
-    return response($xml, 200, ['Content-Type' => 'application/xml']);
+    return response($xml, 200, [
+        'Content-Type' => 'application/xml',
+        'Cache-Control' => 'public, max-age=300, stale-while-revalidate=600',
+    ]);
 });
 
 Route::get('/{path?}', function (?string $path = null) {
@@ -88,6 +91,9 @@ Route::get('/{path?}', function (?string $path = null) {
             ];
             $mime = $mimeMap[$ext] ?? MimeTypes::getDefault()->guessMimeType($publicPath);
             $headers = $mime ? ['Content-Type' => $mime] : [];
+            if (str_starts_with($path, 'assets/')) {
+                $headers['Cache-Control'] = 'public, max-age=31536000, immutable';
+            }
             return response()->file($publicPath, $headers);
         }
 
@@ -111,6 +117,9 @@ Route::get('/{path?}', function (?string $path = null) {
             ];
             $mime = $mimeMap[$ext] ?? MimeTypes::getDefault()->guessMimeType($assetPath);
             $headers = $mime ? ['Content-Type' => $mime] : [];
+            if (str_starts_with($path, 'assets/')) {
+                $headers['Cache-Control'] = 'public, max-age=31536000, immutable';
+            }
             return response()->file($assetPath, $headers);
         }
 
@@ -126,7 +135,9 @@ Route::get('/{path?}', function (?string $path = null) {
         $metaTitle = null;
         $metaDescription = null;
         $metaImage = null;
-        $metaUrl = url($path ?? '/');
+        $frontendBase = rtrim(config('app.frontend_url', config('app.url')), '/');
+        $metaUrl = $frontendBase . '/' . ltrim((string) ($path ?? ''), '/');
+        if ($path === null || $path === '') $metaUrl = $frontendBase . '/';
         $metaType = 'website';
 
         if ($path) {
@@ -211,7 +222,19 @@ Route::get('/{path?}', function (?string $path = null) {
             $html = str_replace('</head>', $ogInjectString, $html);
         }
 
-        return response($html, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+        $firstSegment = strtolower(explode('/', trim((string) $path, '/'))[0] ?? '');
+        $noIndexSegments = ['admin', 'editor', 'finance', 'keuangan', 'superadmin', 'mitra', 'management', 'employees', 'login', 'register-mitra', 'donate', 'preview', 'error', 'maintenance', 'search', 'karyawan'];
+        $robotsContent = in_array($firstSegment, $noIndexSegments, true) ? 'noindex,nofollow' : 'index,follow';
+        $headTags = '<meta name="robots" content="' . $robotsContent . '" />' .
+            '<link rel="canonical" href="' . e($metaUrl) . '" />';
+        $html = preg_replace('/<meta name="robots"[^>]*>/i', '', $html);
+        $html = preg_replace('/<link rel="canonical"[^>]*>/i', '', $html);
+        $html = str_replace('</head>', "    {$headTags}\n</head>", $html);
+
+        return response($html, 200, [
+            'Content-Type' => 'text/html; charset=UTF-8',
+            'Cache-Control' => 'no-cache, must-revalidate',
+        ]);
     }
 
     abort(404);

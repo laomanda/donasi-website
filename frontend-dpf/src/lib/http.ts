@@ -6,12 +6,20 @@ const API_BASE_URL = resolveApiBaseUrl()
 const BACKEND_BASE_URL = resolveBackendBaseUrl()
 
 let csrfFetched = false
+let csrfRequest: Promise<void> | null = null
 const fetchCsrfCookie = async () => {
   if (csrfFetched) return
-  await axios.get(`${BACKEND_BASE_URL}/sanctum/csrf-cookie`, {
-    withCredentials: true,
-  })
-  csrfFetched = true
+  if (!csrfRequest) {
+    csrfRequest = axios.get(`${BACKEND_BASE_URL}/sanctum/csrf-cookie`, {
+      withCredentials: true,
+      timeout: 15_000,
+    }).then(() => {
+      csrfFetched = true
+    }).finally(() => {
+      csrfRequest = null
+    })
+  }
+  await csrfRequest
 }
 
 const http = axios.create({
@@ -19,6 +27,7 @@ const http = axios.create({
   withCredentials: true,
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
+  timeout: 15_000,
 })
 
 http.interceptors.request.use(async (config) => {

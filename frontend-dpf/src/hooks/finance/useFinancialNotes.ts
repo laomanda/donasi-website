@@ -61,8 +61,10 @@ export function useFinancialNotes(
   const [error, setError] = useState<string | null>(null);
   const [summaryError, setSummaryError] = useState<string | null>(null);
 
-  activeListKeyRef.current = listKey;
-  activeSummaryKeyRef.current = summaryKey;
+  useEffect(() => {
+    activeListKeyRef.current = listKey;
+    activeSummaryKeyRef.current = summaryKey;
+  }, [listKey, summaryKey]);
 
   const executeFetch = useCallback(
     async (

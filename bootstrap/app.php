@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Global middleware
         $middleware->append(HandleCors::class);
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
         // ALIAS MIDDLEWARE
         $middleware->alias([
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // Custom
             'is_active' => \App\Http\Middleware\EnsureUserIsActive::class,
+            'public.cache' => \App\Http\Middleware\PublicCacheHeaders::class,
         ]);
 
         // GROUP WEB

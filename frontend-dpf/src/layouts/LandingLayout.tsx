@@ -7,6 +7,7 @@ import { ScrollToTop } from "../components/landing/ScrollToTop";
 import { WaveDivider } from "../components/landing/WaveDivider";
 import http from "../lib/http";
 import { useLang } from "../lib/i18n";
+import { requestPublic } from "../lib/publicRequestCache";
 
 type LandingLayoutProps = PropsWithChildren<{
   whatsappPhone?: string;
@@ -55,11 +56,10 @@ export function LandingLayout({
 
   useEffect(() => {
     let active = true;
-    http
-      .get<{ data: ProgramSummary[] }>("/programs")
-      .then((res) => {
+    requestPublic("programs", () => http.get<{ data: ProgramSummary[] }>("/programs").then((response) => response.data), 120_000)
+      .then((data) => {
         if (!active) return;
-        setPrograms(res.data?.data ?? []);
+        setPrograms(data?.data ?? []);
       })
       .catch(() => {
         if (!active) return;
