@@ -432,33 +432,33 @@ export const NAV_SECTIONS_BY_ROLE: Record<DashboardRole, NavSection[]> = {
   keuangan: [
     {
       title: "Ringkasan",
-      items: [{ label: "Dashboard", href: "/finance/dashboard", icon: faGaugeHigh }],
+      items: [{ label: "Dashboard", href: "/keuangan/dashboard", icon: faGaugeHigh }],
     },
     {
       title: "Pembukuan",
       items: [
-        { label: "Bagan Akun (COA)", href: "/finance/accounts", icon: faSitemap },
-        { label: "Jurnal Umum", href: "/finance/journals", icon: faBookOpen },
-        { label: "Buku Besar", href: "/finance/general-ledger", icon: faCoins },
-        { label: "Neraca Saldo", href: "/finance/trial-balance", icon: faScaleUnbalanced },
+        { label: "Bagan Akun (COA)", href: "/keuangan/accounts", icon: faSitemap },
+        { label: "Jurnal Umum", href: "/keuangan/journals", icon: faBookOpen },
+        { label: "Buku Besar", href: "/keuangan/general-ledger", icon: faCoins },
+        { label: "Neraca Saldo", href: "/keuangan/trial-balance", icon: faScaleUnbalanced },
       ],
     },
     {
       title: "Laporan Keuangan",
       items: [
-        { label: "Posisi Keuangan", href: "/finance/balance-sheet", icon: faVault },
-        { label: "Laporan Aktivitas", href: "/finance/activity-statement", icon: faChartLine },
-        { label: "Aset Wakaf", href: "/finance/waqf-assets", icon: faVault },
-        { label: "Catatan Keuangan", href: "/finance/financial-notes", icon: faFileLines },
+        { label: "Posisi Keuangan", href: "/keuangan/balance-sheet", icon: faVault },
+        { label: "Laporan Aktivitas", href: "/keuangan/activity-statement", icon: faChartLine },
+        { label: "Aset Wakaf", href: "/keuangan/waqf-assets", icon: faVault },
+        { label: "Catatan Keuangan", href: "/keuangan/financial-notes", icon: faFileLines },
         { label: "Laporan Arus Kas", href: "/keuangan/reports/cashflow", icon: faCoins },
       ],
     },
     {
       title: "Kontrol & Audit",
       items: [
-        { label: "Periode Akuntansi", href: "/finance/accounting-periods", icon: faCalendarCheck },
-        { label: "Rekonsiliasi (14 Titik)", href: "/finance/reconciliation", icon: faShieldHalved },
-        { label: "Import & Export", href: "/finance/import", icon: faFileImport },
+        { label: "Periode Akuntansi", href: "/keuangan/accounting-periods", icon: faCalendarCheck },
+        { label: "Rekonsiliasi (14 Titik)", href: "/keuangan/reconciliation", icon: faShieldHalved },
+        { label: "Import & Export", href: "/keuangan/import", icon: faFileImport },
       ],
     },
     {

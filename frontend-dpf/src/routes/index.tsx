@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { createBrowserRouter, Navigate, useParams } from 'react-router-dom'
+import { createBrowserRouter, Navigate, useLocation, useParams } from 'react-router-dom'
 import App from '../App'
 import { LandingPage } from '../pages/LandingPage'
 import { PageLoader } from '../components/ui/PageLoader'
@@ -10,6 +10,14 @@ const withSuspense = (Component: React.ComponentType) => (
     <Component />
   </Suspense>
 )
+
+// Keep old bookmarks working while exposing a single accounting area under /keuangan.
+function FinanceRouteRedirect() {
+  const location = useLocation();
+  const targetPath = location.pathname.replace(/^\/finance(?=\/|$)/, "/keuangan");
+
+  return <Navigate to={`${targetPath}${location.search}${location.hash}`} replace />;
+}
 
 // Public Pages (Lazy Loaded except LandingPage for LCP optimization)
 const LayananPage = lazy(() => import('../pages/LayananPage').then(m => ({ default: m.LayananPage })))
@@ -35,7 +43,6 @@ const MitraRegisterPage = lazy(() => import('../pages/auth/MitraRegisterPage').t
 const EditorShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.EditorShell })))
 const AdminShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.AdminShell })))
 const KeuanganShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.KeuanganShell })))
-const FinanceShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.FinanceShell })))
 const SuperAdminShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.SuperAdminShell })))
 const MitraShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.MitraShell })))
 const ManagementShell = lazy(() => import('../layouts/dashboard/RoleShells').then(m => ({ default: m.ManagementShell })))
@@ -77,7 +84,6 @@ const FinanceImportExportPage = lazy(() => import('../pages/management/finance/F
 
 // Shared & Management Pages
 const CustomDashboardPage = lazy(() => import('../pages/management/custom/CustomDashboardPage').then(m => ({ default: m.CustomDashboardPage })))
-const KeuanganDashboardPage = lazy(() => import('../pages/management/keuangan/KeuanganDashboardPage').then(m => ({ default: m.KeuanganDashboardPage })))
 const PreviewPage = lazy(() => import('../pages/management/editor/PreviewPage').then(m => ({ default: m.PreviewPage })))
 const SettingsPage = lazy(() => import('../pages/management/SettingsPage').then(m => ({ default: m.SettingsPage })))
 const SearchPage = lazy(() => import('../pages/management/shared/SearchPage').then(m => ({ default: m.SearchPage })))
@@ -274,7 +280,7 @@ export const router = createBrowserRouter([
         element: withSuspense(KeuanganShell),
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
-          { path: 'dashboard', element: withSuspense(KeuanganDashboardPage) },
+          { path: 'dashboard', element: withSuspense(FinanceDashboardPage) },
           { path: 'donations', element: withSuspense(AdminDonationsPage) },
           { path: 'donations/manual', element: withSuspense(AdminDonationManualCreatePage) },
           { path: 'donations/:id/edit', element: withSuspense(AdminDonationManualEditPage) },
@@ -330,50 +336,7 @@ export const router = createBrowserRouter([
           { path: 'import', element: withSuspense(FinanceImportExportPage) },
         ],
       },
-      {
-        path: 'finance',
-        element: withSuspense(FinanceShell),
-        children: [
-          { index: true, element: <Navigate to="dashboard" replace /> },
-          { path: 'dashboard', element: withSuspense(FinanceDashboardPage) },
-          { path: 'accounts', element: withSuspense(AccountsPage) },
-          { path: 'accounts/create', element: withSuspense(AccountCreatePage) },
-          { path: 'accounts/:id/edit', element: withSuspense(AccountEditPage) },
-          { path: 'accounts/:id', element: withSuspense(AccountDetailPage) },
-          { path: 'journals', element: withSuspense(JournalsPage) },
-          { path: 'journals/create', element: withSuspense(JournalCreatePage) },
-          { path: 'journals/:id', element: withSuspense(JournalDetailPage) },
-          { path: 'general-ledger', element: withSuspense(GeneralLedgerPage) },
-          { path: 'trial-balance', element: withSuspense(TrialBalancePage) },
-          { path: 'neraca-saldo', element: withSuspense(TrialBalancePage) },
-          { path: 'financial-statements', element: withSuspense(FinancialStatementsPage) },
-          { path: 'balance-sheet', element: withSuspense(BalanceSheetPage) },
-          { path: 'laporan-posisi-keuangan', element: withSuspense(BalanceSheetPage) },
-          { path: 'activity-statement', element: withSuspense(ActivityStatementPage) },
-          { path: 'laporan-aktivitas', element: withSuspense(ActivityStatementPage) },
-          { path: 'waqf-assets', element: withSuspense(WaqfAssetsPage) },
-          { path: 'waqf-assets/:id', element: withSuspense(WaqfAssetDetailPage) },
-          { path: 'laporan-aset-wakaf', element: withSuspense(WaqfAssetsPage) },
-          { path: 'laporan-aset-wakaf/:id', element: withSuspense(WaqfAssetDetailPage) },
-          { path: 'lraw', element: withSuspense(WaqfAssetsPage) },
-          { path: 'lraw/:id', element: withSuspense(WaqfAssetDetailPage) },
-          { path: 'financial-notes', element: withSuspense(FinancialNotesPage) },
-          { path: 'financial-notes/create', element: withSuspense(FinancialNoteCreatePage) },
-          { path: 'financial-notes/:id', element: withSuspense(FinancialNoteDetailPage) },
-          { path: 'financial-notes/:id/edit', element: withSuspense(FinancialNoteEditPage) },
-          { path: 'catatan-keuangan', element: withSuspense(FinancialNotesPage) },
-          { path: 'catatan-keuangan/create', element: withSuspense(FinancialNoteCreatePage) },
-          { path: 'catatan-keuangan/:id', element: withSuspense(FinancialNoteDetailPage) },
-          { path: 'catatan-keuangan/:id/edit', element: withSuspense(FinancialNoteEditPage) },
-          { path: 'clk', element: withSuspense(FinancialNotesPage) },
-          { path: 'clk/create', element: withSuspense(FinancialNoteCreatePage) },
-          { path: 'clk/:id', element: withSuspense(FinancialNoteDetailPage) },
-          { path: 'clk/:id/edit', element: withSuspense(FinancialNoteEditPage) },
-          { path: 'accounting-periods', element: withSuspense(AccountingPeriodsPage) },
-          { path: 'reconciliation', element: withSuspense(ReconciliationPage) },
-          { path: 'import', element: withSuspense(FinanceImportExportPage) },
-        ],
-      },
+      { path: 'finance/*', element: <FinanceRouteRedirect /> },
       {
         path: 'superadmin',
         element: withSuspense(SuperAdminShell),
