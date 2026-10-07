@@ -9,7 +9,6 @@ import {
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
-import { toast } from "react-hot-toast";
 
 import {
   FinancePageHeader,
@@ -25,6 +24,7 @@ import {
   AccountsMobileList,
   AccountsPagination,
 } from "@/components/management/finance/accounts";
+import { useToast } from "@/components/ui/ToastProvider";
 
 import { useAccountsData } from "@/hooks/finance/useAccountsData";
 import { useAccountFilters } from "@/hooks/finance/useAccountFilters";
@@ -37,6 +37,7 @@ import type { Account } from "@/types/finance";
 
 export function AccountsPage() {
   const navigate = useNavigate();
+  const toast = useToast();
 
   // 1. RBAC Permissions
   const currentUser = getAuthUser();

@@ -454,27 +454,27 @@ Route::prefix('v1')->group(function () {
         ->name('employees.')
         ->group(function () {
             Route::get('filters', [EmployeeController::class, 'filters'])
-                ->middleware('permission:manage employees|view employees')
+                ->middleware('permission:manage employees|view employees,sanctum')
                 ->name('filters');
 
             Route::get('/', [EmployeeController::class, 'index'])
-                ->middleware('permission:manage employees|view employees')
+                ->middleware('permission:manage employees|view employees,sanctum')
                 ->name('index');
 
             Route::post('/', [EmployeeController::class, 'store'])
-                ->middleware('permission:manage employees')
+                ->middleware('permission:manage employees,sanctum')
                 ->name('store');
 
             Route::get('{employee}', [EmployeeController::class, 'show'])
-                ->middleware('permission:manage employees|view employees')
+                ->middleware('permission:manage employees|view employees,sanctum')
                 ->name('show');
 
             Route::match(['put', 'patch', 'post'], '{employee}', [EmployeeController::class, 'update'])
-                ->middleware('permission:manage employees')
+                ->middleware('permission:manage employees,sanctum')
                 ->name('update');
 
             Route::delete('{employee}', [EmployeeController::class, 'destroy'])
-                ->middleware('permission:manage employees')
+                ->middleware('permission:manage employees,sanctum')
                 ->name('destroy');
         });
 });

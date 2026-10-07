@@ -1,6 +1,5 @@
 import { useMemo, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { toast } from "react-hot-toast";
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -12,6 +11,7 @@ import {
   AccountMetadata,
 } from "@/components/management/finance/accounts";
 import { FinanceErrorState } from "@/components/management/finance/shared";
+import { useToast } from "@/components/ui/ToastProvider";
 import { useAccount, invalidateAccountCache } from "@/hooks/finance/useAccount";
 import { invalidateAccountsDataCache } from "@/hooks/finance/useAccountsData";
 import financeService from "@/services/financeService";
@@ -21,6 +21,7 @@ import { getAuthUser } from "@/lib/auth";
 export function AccountDetailPage() {
   const { id: rawId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const accountId = Number(rawId);
   const isValidId = Number.isFinite(accountId) && accountId > 0;
