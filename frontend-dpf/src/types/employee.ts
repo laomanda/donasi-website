@@ -23,6 +23,7 @@ export interface Employee {
 export interface EmployeeListParams {
   q?: string;
   position?: string;
+  division?: string;
   employment_status?: string;
   is_published?: boolean | string;
   page?: number;
@@ -31,6 +32,7 @@ export interface EmployeeListParams {
 
 export interface EmployeeFilterOptions {
   positions: string[];
+  divisions: string[];
   display_orders: number[];
 }
 
@@ -55,6 +57,7 @@ export interface EmployeeFormPayload {
   phone: string;
   slug?: string;
   position: string;
+  division?: string | null;
   employment_status: EmploymentStatus;
   display_order: number;
   is_published: boolean;
@@ -68,6 +71,7 @@ export interface EmployeeFormErrors {
   phone?: string;
   slug?: string;
   position?: string;
+  division?: string;
   employment_status?: string;
   display_order?: string;
   is_published?: string;

@@ -12,6 +12,7 @@ export interface UseEmployeeFiltersReturn {
 export function useEmployeeFilters(): UseEmployeeFiltersReturn {
   const [filters, setFilters] = useState<EmployeeFilterOptions>({
     positions: [],
+    divisions: [],
     display_orders: [],
   });
   const [loading, setLoading] = useState<boolean>(true);

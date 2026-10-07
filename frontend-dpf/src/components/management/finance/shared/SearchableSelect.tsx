@@ -5,6 +5,7 @@ import {
   faChevronDown,
   faTimes,
   faCheck,
+  faPlus,
   type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -33,6 +34,8 @@ export interface SearchableSelectProps<T = string | number> {
   icon?: IconDefinition;
   size?: "sm" | "md";
   ariaLabel?: string;
+  allowCustom?: boolean;
+  customOptionLabel?: (query: string) => string;
 }
 
 export function SearchableSelect<T extends string | number = string | number>({
@@ -51,6 +54,8 @@ export function SearchableSelect<T extends string | number = string | number>({
   icon,
   size = "md",
   ariaLabel,
+  allowCustom = false,
+  customOptionLabel,
 }: SearchableSelectProps<T>) {
   const generatedId = useId();
   const id = explicitId || generatedId;
@@ -68,6 +73,14 @@ export function SearchableSelect<T extends string | number = string | number>({
     return options.find((opt) => opt.value === value) || null;
   }, [options, value]);
 
+  const displayLabel = useMemo(() => {
+    if (selectedOption) return selectedOption.label;
+    if (allowCustom && typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+    return null;
+  }, [selectedOption, allowCustom, value]);
+
   // Filter options based on search query
   const filteredOptions = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
@@ -80,6 +93,12 @@ export function SearchableSelect<T extends string | number = string | number>({
       const badgeMatch = opt.badge ? opt.badge.toLowerCase().includes(q) : false;
       return labelMatch || sublabelMatch || badgeMatch;
     });
+  }, [options, searchTerm]);
+
+  const hasExactMatch = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return false;
+    return options.some((opt) => opt.label.trim().toLowerCase() === q);
   }, [options, searchTerm]);
 
   // Reset highlight index when filtered options change
@@ -160,6 +179,9 @@ export function SearchableSelect<T extends string | number = string | number>({
         e.preventDefault();
         if (filteredOptions[highlightedIndex]) {
           handleSelect(filteredOptions[highlightedIndex]);
+        } else if (allowCustom && searchTerm.trim()) {
+          onChange(searchTerm.trim() as unknown as T);
+          setIsOpen(false);
         }
         break;
       case "Escape":
@@ -213,10 +235,10 @@ export function SearchableSelect<T extends string | number = string | number>({
           )}
 
           <div className="min-w-0 flex-1 truncate">
-            {selectedOption ? (
+            {displayLabel ? (
               <span className="font-semibold text-slate-900">
-                {selectedOption.label}
-                {selectedOption.sublabel && (
+                {displayLabel}
+                {selectedOption?.sublabel && (
                   <span className="ml-1.5 font-normal text-slate-500 text-[11px]">
                     {selectedOption.sublabel}
                   </span>
@@ -230,7 +252,7 @@ export function SearchableSelect<T extends string | number = string | number>({
 
         {/* Action icons */}
         <div className="flex shrink-0 items-center gap-1.5 pl-1">
-          {clearable && selectedOption && !disabled && (
+          {clearable && (selectedOption || (allowCustom && value)) && !disabled && (
             <span
               role="button"
               tabIndex={0}
@@ -294,7 +316,23 @@ export function SearchableSelect<T extends string | number = string | number>({
             tabIndex={-1}
             className="max-h-52 overflow-y-auto space-y-0.5 text-xs [scrollbar-width:thin]"
           >
-            {filteredOptions.length === 0 ? (
+            {allowCustom && searchTerm.trim() && !hasExactMatch && (
+              <li
+                role="option"
+                onClick={() => {
+                  onChange(searchTerm.trim() as unknown as T);
+                  setIsOpen(false);
+                }}
+                className="flex items-center gap-2 rounded-lg px-2.5 py-2 cursor-pointer transition select-none text-brandGreen-700 bg-brandGreen-50 hover:bg-brandGreen-100 font-semibold border border-dashed border-brandGreen-300 mb-1"
+              >
+                <FontAwesomeIcon icon={faPlus} className="text-xs shrink-0" />
+                <span className="truncate">
+                  {customOptionLabel ? customOptionLabel(searchTerm.trim()) : `Gunakan "${searchTerm.trim()}"`}
+                </span>
+              </li>
+            )}
+
+            {filteredOptions.length === 0 && !(allowCustom && searchTerm.trim() && !hasExactMatch) ? (
               <li className="py-4 text-center text-xs text-slate-400">
                 {emptyMessage}
               </li>

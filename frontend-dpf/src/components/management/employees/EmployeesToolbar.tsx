@@ -39,6 +39,7 @@ export const EmployeesToolbar: React.FC<EmployeesToolbarProps> = ({
   const hasActiveFilters = Boolean(
     (params.q && params.q.trim() !== '') ||
     params.position ||
+    params.division ||
     params.employment_status ||
     (params.is_published !== undefined && params.is_published !== '')
   );
@@ -47,7 +48,7 @@ export const EmployeesToolbar: React.FC<EmployeesToolbarProps> = ({
     <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandGreen-300 bg-white p-5 shadow-sm sm:p-6 space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-12">
         {/* Search Input */}
-        <div className="sm:col-span-2 lg:col-span-4">
+        <div className="sm:col-span-2 lg:col-span-3">
           <label className="block">
             <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
               Cari Karyawan
@@ -81,7 +82,7 @@ export const EmployeesToolbar: React.FC<EmployeesToolbarProps> = ({
         </div>
 
         {/* Position Filter */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
           <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
             Jabatan
           </span>
@@ -95,6 +96,27 @@ export const EmployeesToolbar: React.FC<EmployeesToolbarProps> = ({
               emptyMessage="Jabatan tidak ditemukan"
               clearable
               onClear={() => onChange({ position: undefined, page: 1 })}
+              className="w-full"
+              buttonClassName="!w-full !rounded-2xl !border-slate-300 !px-4 !py-3 !text-sm !font-semibold !text-slate-700 !shadow-sm"
+            />
+          </div>
+        </div>
+
+        {/* Division Filter */}
+        <div className="lg:col-span-2">
+          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+            Divisi
+          </span>
+          <div className="mt-2">
+            <SearchableSelect<string>
+              value={params.division ?? ''}
+              onChange={(value) => onChange({ division: value || undefined, page: 1 })}
+              options={(filterOptions.divisions || []).map((div) => ({ value: div, label: div }))}
+              placeholder="Semua Divisi"
+              searchPlaceholder="Cari divisi..."
+              emptyMessage="Divisi tidak ditemukan"
+              clearable
+              onClear={() => onChange({ division: undefined, page: 1 })}
               className="w-full"
               buttonClassName="!w-full !rounded-2xl !border-slate-300 !px-4 !py-3 !text-sm !font-semibold !text-slate-700 !shadow-sm"
             />

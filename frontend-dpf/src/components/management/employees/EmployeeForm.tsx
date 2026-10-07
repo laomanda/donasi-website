@@ -19,6 +19,7 @@ import type {
   EmployeeFormPayload,
   EmploymentStatus,
 } from '@/types/employee';
+import { SearchableSelect } from '@/components/management/finance/shared';
 
 interface EmployeeFormProps {
   mode: 'create' | 'edit';
@@ -51,6 +52,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   const [phone, setPhone] = useState<string>('');
   const [slug, setSlug] = useState<string>('');
   const [position, setPosition] = useState<string>('');
+  const [division, setDivision] = useState<string>('');
   const [employmentStatus, setEmploymentStatus] = useState<EmploymentStatus>('active');
   const [displayOrder, setDisplayOrder] = useState<string>('1');
   const [isPublished, setIsPublished] = useState<boolean>(true);
@@ -71,6 +73,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       setPhone(initialData.phone ?? '');
       setSlug(initialData.slug ?? '');
       setPosition(initialData.position ?? '');
+      setDivision(initialData.division ?? '');
       setEmploymentStatus(initialData.employment_status ?? 'active');
       setDisplayOrder(
         initialData.display_order !== null && initialData.display_order !== undefined
@@ -196,6 +199,10 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       errors.position = 'Jabatan wajib diisi.';
     }
 
+    if (division.trim().length > 150) {
+      errors.division = 'Nama divisi tidak boleh melebihi 150 karakter.';
+    }
+
     const parsedOrder = parseInt(displayOrder, 10);
     if (!displayOrder.trim() || isNaN(parsedOrder) || parsedOrder < 1 || isDuplicateDisplayOrder) {
       errors.display_order = 'Urutan tampilan harus berupa bilangan bulat positif minimal 1.';
@@ -219,6 +226,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       phone: cleanPhone,
       slug: slug.trim() || undefined,
       position: position.trim(),
+      division: division.trim() || null,
       employment_status: employmentStatus,
       display_order: parsedOrder,
       is_published: isPublished,
@@ -236,7 +244,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12">
       {/* SECTION A: IDENTITAS KARYAWAN */}
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandPurple-500 bg-white p-5 shadow-sm sm:p-7 space-y-5 lg:col-span-7">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandPurple-500 bg-white p-5 shadow-sm sm:p-7 space-y-5 lg:col-span-6">
         <div className="flex items-center gap-3.5 border-b border-slate-100 pb-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brandPurple-500 text-white">
             <FontAwesomeIcon icon={faIdBadge} className="text-base" />
@@ -420,7 +428,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       </div>
 
       {/* SECTION B: ORGANISASI & STATUS */}
-      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandBlueTeal-500 bg-white p-5 shadow-sm sm:p-7 space-y-5 lg:col-span-5">
+      <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandBlueTeal-500 bg-white p-5 shadow-sm sm:p-7 space-y-5 lg:col-span-6">
         <div className="flex items-center gap-3.5 border-b border-slate-100 pb-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brandBlueTeal-500 text-white">
             <FontAwesomeIcon icon={faSitemap} className="text-base" />
@@ -430,29 +438,46 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               B. Organisasi & Status
             </h2>
             <p className="text-xs text-slate-500">
-              Penetapan jabatan, urutan visual, dan status penugasan.
+              Penetapan jabatan, divisi kerja, urutan visual, dan status penugasan.
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {/* Jabatan */}
+          {/* Jabatan (Searchable Dropdown) */}
           <div>
             <label className="block">
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
                 Jabatan <span className="text-rose-500">*</span>
               </span>
-              <input
-                type="text"
-                value={position}
-                onChange={(e) => setPosition(e.target.value)}
-                placeholder="Contoh: Web Developer"
-                className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:outline-none focus:ring-2 ${
-                  getFieldError('position')
-                    ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
-                    : 'border-slate-300 focus:border-slate-400 focus:ring-brandGreen-400'
-                }`}
-              />
+              <div className="mt-2">
+                <SearchableSelect<string>
+                  value={position}
+                  onChange={(val) => {
+                    setPosition(val);
+                    if (clientErrors.position) {
+                      setClientErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.position;
+                        return next;
+                      });
+                    }
+                  }}
+                  options={(filterOptions.positions || []).map((pos) => ({ value: pos, label: pos }))}
+                  placeholder="Pilih atau cari jabatan..."
+                  searchPlaceholder="Ketik untuk mencari atau menambah jabatan..."
+                  emptyMessage="Belum ada jabatan yang cocok. Ketik nama jabatan untuk menambah baru."
+                  allowCustom
+                  customOptionLabel={(q) => `Gunakan Jabatan: "${q}"`}
+                  clearable
+                  onClear={() => setPosition('')}
+                  buttonClassName={`!w-full !rounded-2xl !px-4 !py-3 !text-sm !font-semibold !text-slate-900 !shadow-sm ${
+                    getFieldError('position')
+                      ? '!border-rose-400 focus:!border-rose-500 focus:!ring-rose-200'
+                      : '!border-slate-300 focus:!border-slate-400'
+                  }`}
+                />
+              </div>
             </label>
             {getFieldError('position') ? (
               <p className="mt-1.5 text-xs font-semibold text-rose-600">
@@ -460,38 +485,54 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               </p>
             ) : (
               <p className="mt-1.5 text-[11px] font-medium text-slate-400">
-                Pilih dari saran yang sudah ada atau ketik nama jabatan baru.
+                Pilih jabatan yang tersedia atau ketik nama baru pada kotak pencarian.
               </p>
             )}
+          </div>
 
-            {/* Quick suggestion chips for Jabatan */}
-            {filterOptions.positions.length > 0 && (
-              <div className="mt-2.5 max-h-24 overflow-y-auto rounded-2xl bg-white p-2">
-                <div className="flex flex-wrap gap-1.5">
-                {filterOptions.positions
-                  .filter((posOption) => {
-                    const query = position.trim().toLowerCase();
-                    return !query || posOption.toLowerCase().includes(query);
-                  })
-                  .map((posOption) => {
-                  const isSelected = position.trim().toLowerCase() === posOption.trim().toLowerCase();
-                  return (
-                    <button
-                      key={posOption}
-                      type="button"
-                      onClick={() => setPosition(posOption)}
-                      className={`rounded-xl px-2.5 py-1 text-xs font-semibold transition ${
-                        isSelected
-                          ? 'bg-brandGreen-600 text-white font-bold'
-                          : 'bg-slate-600 text-white hover:bg-slate-700'
-                      }`}
-                    >
-                      {posOption}
-                    </button>
-                  );
-                  })}
-                </div>
+          {/* Divisi (Searchable Dropdown) */}
+          <div>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                Divisi <span className="text-[11px] font-normal lowercase text-slate-400">(opsional)</span>
+              </span>
+              <div className="mt-2">
+                <SearchableSelect<string>
+                  value={division}
+                  onChange={(val) => {
+                    setDivision(val);
+                    if (clientErrors.division) {
+                      setClientErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.division;
+                        return next;
+                      });
+                    }
+                  }}
+                  options={(filterOptions.divisions || []).map((div) => ({ value: div, label: div }))}
+                  placeholder="Pilih atau cari divisi..."
+                  searchPlaceholder="Ketik untuk mencari atau menambah divisi..."
+                  emptyMessage="Belum ada divisi yang cocok. Ketik nama divisi untuk menambah baru."
+                  allowCustom
+                  customOptionLabel={(q) => `Gunakan Divisi: "${q}"`}
+                  clearable
+                  onClear={() => setDivision('')}
+                  buttonClassName={`!w-full !rounded-2xl !px-4 !py-3 !text-sm !font-semibold !text-slate-900 !shadow-sm ${
+                    getFieldError('division')
+                      ? '!border-rose-400 focus:!border-rose-500 focus:!ring-rose-200'
+                      : '!border-slate-300 focus:!border-slate-400'
+                  }`}
+                />
               </div>
+            </label>
+            {getFieldError('division') ? (
+              <p className="mt-1.5 text-xs font-semibold text-rose-600">
+                {getFieldError('division')}
+              </p>
+            ) : (
+              <p className="mt-1.5 text-[11px] font-medium text-slate-400">
+                Unit atau divisi kerja (contoh: Operasional, IT, Penyaluran).
+              </p>
             )}
           </div>
 
@@ -516,7 +557,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
           </div>
 
           {/* Urutan Tampilan */}
-          <div className="md:col-span-2 md:mx-auto md:w-1/2">
+          <div>
             <label className="block">
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
                 Urutan Tampilan <span className="text-rose-500">*</span>
@@ -529,7 +570,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 onChange={(e) => setDisplayOrder(e.target.value)}
                 placeholder="1"
                 className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 font-mono text-sm font-semibold text-slate-900 shadow-sm transition focus:outline-none focus:ring-2 ${
-                    displayOrderError
+                  displayOrderError
                     ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
                     : 'border-slate-300 focus:border-slate-400 focus:ring-brandGreen-400'
                 }`}

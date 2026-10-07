@@ -219,8 +219,15 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                       </div>
                     </td>
 
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-800">
-                      {emp.position}
+                    <td className="px-5 py-4">
+                      <div className="text-sm font-semibold text-slate-800">
+                        {emp.position}
+                      </div>
+                      {emp.division && (
+                        <div className="text-xs font-medium text-slate-400">
+                          {emp.division}
+                        </div>
+                      )}
                     </td>
 
                     <td className="px-5 py-4">

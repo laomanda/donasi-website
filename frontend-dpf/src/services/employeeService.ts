@@ -58,6 +58,7 @@ export class EmployeeService {
         const queryParams: Record<string, string | number | boolean> = {};
         if (params.q?.trim()) queryParams.q = params.q.trim();
         if (params.position?.trim()) queryParams.position = params.position.trim();
+        if (params.division?.trim()) queryParams.division = params.division.trim();
         if (params.employment_status?.trim()) queryParams.employment_status = params.employment_status.trim();
         if (params.is_published !== undefined && params.is_published !== '') {
           queryParams.is_published = params.is_published;
@@ -128,6 +129,7 @@ export class EmployeeService {
         const res = await http.get<EmployeeFilterOptions>('/employees/filters');
         const data: EmployeeFilterOptions = {
           positions: Array.isArray(res.data?.positions) ? res.data.positions : [],
+          divisions: Array.isArray(res.data?.divisions) ? res.data.divisions : [],
           display_orders: Array.isArray(res.data?.display_orders)
             ? res.data.display_orders.map((order) => Number(order)).filter(Number.isFinite)
             : [],
@@ -199,6 +201,9 @@ export class EmployeeService {
       formData.append('slug', payload.slug.trim());
     }
     formData.append('position', payload.position);
+    if (payload.division !== undefined && payload.division !== null) {
+      formData.append('division', payload.division.trim());
+    }
     formData.append('employment_status', payload.employment_status);
     formData.append('display_order', String(payload.display_order));
     formData.append('is_published', payload.is_published ? '1' : '0');
@@ -239,6 +244,9 @@ export class EmployeeService {
       formData.append('slug', payload.slug.trim());
     }
     formData.append('position', payload.position);
+    if (payload.division !== undefined && payload.division !== null) {
+      formData.append('division', payload.division.trim());
+    }
     formData.append('employment_status', payload.employment_status);
     formData.append('display_order', String(payload.display_order));
     formData.append('is_published', payload.is_published ? '1' : '0');
