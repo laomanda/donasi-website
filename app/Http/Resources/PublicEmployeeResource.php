@@ -18,6 +18,8 @@ class PublicEmployeeResource extends JsonResource
             'employee_code'           => (string) $this->employee_code,
             'slug'                    => $this->slug,
             'name'                    => $this->name,
+            'email'                   => $this->email,
+            'phone'                   => $this->phone,
             'position'                => $this->position,
             'division'                => $this->division,
             'employment_status'       => $this->employment_status,

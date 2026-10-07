@@ -33,6 +33,18 @@ class UpdateEmployeeRequest extends FormRequest
                 'employee_code' => trim($this->employee_code),
             ]);
         }
+
+        if ($this->has('email') && is_string($this->email)) {
+            $this->merge([
+                'email' => strtolower(trim($this->email)),
+            ]);
+        }
+
+        if ($this->has('phone') && is_string($this->phone)) {
+            $this->merge([
+                'phone' => trim($this->phone),
+            ]);
+        }
     }
 
     /**
@@ -48,6 +60,22 @@ class UpdateEmployeeRequest extends FormRequest
         return [
             'employee_code'     => ['required', 'string', 'max:50', Rule::unique('employees', 'employee_code')->ignore($employeeId)],
             'name'              => ['required', 'string', 'max:150'],
+            'email'             => [
+                'required',
+                'string',
+                'email:rfc',
+                'max:150',
+                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+                Rule::unique('employees', 'email')->whereNull('deleted_at')->ignore($employeeId),
+            ],
+            'phone'             => [
+                'required',
+                'string',
+                'min:9',
+                'max:25',
+                'regex:/^(\+?[0-9]{9,20})$/',
+                Rule::unique('employees', 'phone')->whereNull('deleted_at')->ignore($employeeId),
+            ],
             'slug'              => ['nullable', 'string', 'max:120', Rule::unique('employees', 'slug')->ignore($employeeId), 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
             'position'          => ['required', 'string', 'max:150'],
             'division'          => ['nullable', 'string', 'max:150'],
@@ -68,6 +96,8 @@ class UpdateEmployeeRequest extends FormRequest
         return [
             'employee_code'     => 'ID pegawai',
             'name'              => 'nama karyawan',
+            'email'             => 'alamat email',
+            'phone'             => 'nomor telepon',
             'slug'              => 'slug URL',
             'position'          => 'jabatan',
             'division'          => 'divisi',
@@ -94,6 +124,15 @@ class UpdateEmployeeRequest extends FormRequest
             'employee_code.required'    => 'ID pegawai wajib diisi.',
             'employee_code.unique'      => 'ID pegawai sudah digunakan.',
             'name.required'             => 'Nama karyawan wajib diisi.',
+            'email.required'            => 'Email karyawan wajib diisi.',
+            'email.email'               => 'Format email tidak valid.',
+            'email.regex'               => 'Format email harus valid (contoh: nama@domain.com).',
+            'email.unique'              => 'Email sudah digunakan oleh karyawan lain.',
+            'phone.required'            => 'Nomor telepon wajib diisi.',
+            'phone.min'                 => 'Nomor telepon minimal 9 digit.',
+            'phone.max'                 => 'Nomor telepon maksimal 25 digit.',
+            'phone.regex'               => 'Format nomor telepon tidak valid. Gunakan angka atau format internasional (+).',
+            'phone.unique'              => 'Nomor telepon sudah digunakan oleh karyawan lain.',
             'slug.unique'               => 'Slug URL sudah digunakan oleh karyawan lain.',
             'slug.regex'                => 'Format slug URL tidak valid. Gunakan huruf kecil, angka, dan tanda hubung (-).',
             'position.required'         => 'Jabatan wajib diisi.',

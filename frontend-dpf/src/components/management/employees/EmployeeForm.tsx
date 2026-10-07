@@ -9,6 +9,8 @@ import {
   faSitemap,
   faImage,
   faCheck,
+  faEnvelope,
+  faPhone,
 } from '@fortawesome/free-solid-svg-icons';
 import type {
   Employee,
@@ -45,6 +47,8 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   // Form State
   const [employeeCode, setEmployeeCode] = useState<string>('');
   const [name, setName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
   const [slug, setSlug] = useState<string>('');
   const [position, setPosition] = useState<string>('');
   const [employmentStatus, setEmploymentStatus] = useState<EmploymentStatus>('active');
@@ -63,6 +67,8 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
     if (initialData) {
       setEmployeeCode(initialData.employee_code ?? '');
       setName(initialData.name ?? '');
+      setEmail(initialData.email ?? '');
+      setPhone(initialData.phone ?? '');
       setSlug(initialData.slug ?? '');
       setPosition(initialData.position ?? '');
       setEmploymentStatus(initialData.employment_status ?? 'active');
@@ -167,6 +173,25 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       errors.name = 'Nama karyawan wajib diisi.';
     }
 
+    if (!email.trim()) {
+      errors.email = 'Email karyawan wajib diisi.';
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.trim())) {
+      errors.email = 'Format email tidak valid (contoh: nama@domain.com).';
+    } else if (email.trim().length > 150) {
+      errors.email = 'Email tidak boleh melebihi 150 karakter.';
+    }
+
+    const cleanPhone = phone.trim().replace(/[\s-]/g, '');
+    if (!phone.trim()) {
+      errors.phone = 'Nomor telepon wajib diisi.';
+    } else if (cleanPhone.length < 9) {
+      errors.phone = 'Nomor telepon minimal 9 digit.';
+    } else if (cleanPhone.length > 25) {
+      errors.phone = 'Nomor telepon maksimal 25 digit.';
+    } else if (!/^(\+?[0-9]{9,20})$/.test(cleanPhone)) {
+      errors.phone = 'Format nomor telepon tidak valid. Gunakan format angka standar (contoh: 08123456789 atau +628123456789).';
+    }
+
     if (!position.trim()) {
       errors.position = 'Jabatan wajib diisi.';
     }
@@ -190,6 +215,8 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
     const payload: EmployeeFormPayload = {
       employee_code: employeeCode.trim(),
       name: name.trim(),
+      email: email.trim().toLowerCase(),
+      phone: cleanPhone,
       slug: slug.trim() || undefined,
       position: position.trim(),
       employment_status: employmentStatus,
@@ -275,6 +302,76 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
             {getFieldError('name') && (
               <p className="mt-1.5 text-xs font-semibold text-rose-600">
                 {getFieldError('name')}
+              </p>
+            )}
+          </div>
+
+          {/* Email Karyawan */}
+          <div>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                Email Karyawan <span className="text-rose-500">*</span>
+              </span>
+              <div className="relative mt-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="karyawan@ywdp.org"
+                  className={`w-full rounded-2xl border bg-white pl-11 pr-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:outline-none focus:ring-2 ${
+                    getFieldError('email')
+                      ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
+                      : 'border-slate-300 focus:border-slate-400 focus:ring-brandGreen-400'
+                  }`}
+                />
+                <FontAwesomeIcon
+                  icon={faEnvelope}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"
+                />
+              </div>
+            </label>
+            {getFieldError('email') ? (
+              <p className="mt-1.5 text-xs font-semibold text-rose-600">
+                {getFieldError('email')}
+              </p>
+            ) : (
+              <p className="mt-1.5 text-[11px] font-medium text-slate-400">
+                Alamat email aktif untuk korespondensi dan administrasi resmi.
+              </p>
+            )}
+          </div>
+
+          {/* Nomor Telepon */}
+          <div>
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                Nomor Telepon <span className="text-rose-500">*</span>
+              </span>
+              <div className="relative mt-2">
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Contoh: 081234567890"
+                  className={`w-full rounded-2xl border bg-white pl-11 pr-4 py-3 font-mono text-sm font-semibold text-slate-900 shadow-sm transition focus:outline-none focus:ring-2 ${
+                    getFieldError('phone')
+                      ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
+                      : 'border-slate-300 focus:border-slate-400 focus:ring-brandGreen-400'
+                  }`}
+                />
+                <FontAwesomeIcon
+                  icon={faPhone}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"
+                />
+              </div>
+            </label>
+            {getFieldError('phone') ? (
+              <p className="mt-1.5 text-xs font-semibold text-rose-600">
+                {getFieldError('phone')}
+              </p>
+            ) : (
+              <p className="mt-1.5 text-[11px] font-medium text-slate-400">
+                Format nomor aktif (contoh: 081234567890 atau +6281234567890).
               </p>
             )}
           </div>

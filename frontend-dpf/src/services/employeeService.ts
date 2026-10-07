@@ -193,6 +193,8 @@ export class EmployeeService {
     const formData = new FormData();
     formData.append('employee_code', payload.employee_code);
     formData.append('name', payload.name);
+    formData.append('email', payload.email);
+    formData.append('phone', payload.phone);
     if (payload.slug && payload.slug.trim()) {
       formData.append('slug', payload.slug.trim());
     }
@@ -231,6 +233,8 @@ export class EmployeeService {
     formData.append('_method', 'PUT');
     formData.append('employee_code', payload.employee_code);
     formData.append('name', payload.name);
+    formData.append('email', payload.email);
+    formData.append('phone', payload.phone);
     if (payload.slug !== undefined && payload.slug !== null) {
       formData.append('slug', payload.slug.trim());
     }

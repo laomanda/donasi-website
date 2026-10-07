@@ -7,6 +7,8 @@ import {
   faCopy,
   faCheck,
   faIdBadge,
+  faEnvelope,
+  faPhone,
 } from '@fortawesome/free-solid-svg-icons';
 import type { Employee } from '@/types/employee';
 import { EmployeePublicationBadge, EmployeeStatusBadge } from './EmployeeStatusBadge';
@@ -138,6 +140,36 @@ export const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({
               <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/75 p-4">
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Divisi</p>
                 <p title={employee.division || undefined} className="mt-1 line-clamp-2 break-words font-semibold text-slate-900">{employee.division || '—'}</p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/75 p-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Email</p>
+                {employee.email ? (
+                  <a
+                    href={`mailto:${employee.email}`}
+                    className="mt-1 flex items-center gap-2 break-all text-sm font-semibold text-brandGreen-700 hover:text-brandGreen-800 hover:underline"
+                  >
+                    <FontAwesomeIcon icon={faEnvelope} className="text-xs text-slate-400 shrink-0" />
+                    <span>{employee.email}</span>
+                  </a>
+                ) : (
+                  <p className="mt-1 text-slate-400">—</p>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/75 p-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">No. Telepon</p>
+                {employee.phone ? (
+                  <a
+                    href={`tel:${employee.phone}`}
+                    className="mt-1 flex items-center gap-2 font-mono text-sm font-semibold text-brandGreen-700 hover:text-brandGreen-800 hover:underline"
+                  >
+                    <FontAwesomeIcon icon={faPhone} className="text-xs text-slate-400 shrink-0" />
+                    <span>{employee.phone}</span>
+                  </a>
+                ) : (
+                  <p className="mt-1 text-slate-400">—</p>
+                )}
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50/75 p-4">

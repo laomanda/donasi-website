@@ -27,6 +27,8 @@ class EmployeeFactory extends Factory
             'employee_code'     => '0' . fake()->unique()->numerify('######'),
             'slug'              => Str::slug($name) . '-' . fake()->unique()->numberBetween(100, 9999),
             'name'              => $name,
+            'email'             => fake()->unique()->safeEmail(),
+            'phone'             => '08' . fake()->numerify('##########'),
             'position'          => fake()->randomElement(['Software Engineer', 'Finance Officer', 'HR Specialist', 'Marketing Lead']),
             'division'          => fake()->randomElement(['Teknologi Informasi', 'Keuangan', 'Operasional', 'Komunikasi']),
             'id_card_image'     => 'employees/id-cards/test-' . Str::random(16) . '.jpg',

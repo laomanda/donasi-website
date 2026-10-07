@@ -28,6 +28,8 @@ class Employee extends Model
         'employee_code',
         'slug',
         'name',
+        'email',
+        'phone',
         'position',
         'division',
         'id_card_image',

@@ -5,6 +5,8 @@ export interface Employee {
   employee_code: string;
   slug: string;
   name: string;
+  email: string;
+  phone: string;
   position: string;
   division: string | null;
   id_card_image: string;
@@ -49,6 +51,8 @@ export interface EmployeeListResponse {
 export interface EmployeeFormPayload {
   employee_code: string;
   name: string;
+  email: string;
+  phone: string;
   slug?: string;
   position: string;
   employment_status: EmploymentStatus;
@@ -60,6 +64,8 @@ export interface EmployeeFormPayload {
 export interface EmployeeFormErrors {
   employee_code?: string;
   name?: string;
+  email?: string;
+  phone?: string;
   slug?: string;
   position?: string;
   employment_status?: string;

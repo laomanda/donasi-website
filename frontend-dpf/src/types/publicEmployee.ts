@@ -4,6 +4,8 @@ export interface PublicEmployee {
   employee_code: string;
   slug: string;
   name: string;
+  email?: string | null;
+  phone?: string | null;
   position: string;
   division: string | null;
   employment_status: PublicEmploymentStatus;

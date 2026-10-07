@@ -5,6 +5,8 @@ import {
   faEye,
   faMagnifyingGlass,
   faPenToSquare,
+  faEnvelope,
+  faPhone,
 } from '@fortawesome/free-solid-svg-icons';
 import type { Employee } from '@/types/employee';
 import {
@@ -60,6 +62,9 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                 ID Pegawai
               </th>
               <th className="px-5 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                Kontak
+              </th>
+              <th className="px-5 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                 Jabatan
               </th>
               <th className="px-5 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
@@ -97,6 +102,9 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                     <div className="h-4 w-28 rounded bg-slate-100" />
                   </td>
                   <td className="px-5 py-4">
+                    <div className="h-4 w-28 rounded bg-slate-100" />
+                  </td>
+                  <td className="px-5 py-4">
                     <div className="h-5 w-24 rounded-full bg-slate-100" />
                   </td>
                   <td className="px-5 py-4">
@@ -111,7 +119,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
               /* Empty State */
               <tr>
                 <td
-                  colSpan={canManage ? 8 : 7}
+                  colSpan={canManage ? 9 : 8}
                   className="px-6 py-12 text-center text-sm font-semibold text-slate-500"
                 >
                   <FontAwesomeIcon
@@ -178,6 +186,37 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
 
                     <td className="px-5 py-4 font-mono text-xs font-bold text-slate-600">
                       {emp.employee_code}
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <div className="flex flex-col gap-1 text-xs">
+                        {emp.email ? (
+                          <a
+                            href={`mailto:${emp.email}`}
+                            onClick={(e) => e.stopPropagation()}
+                            title={emp.email}
+                            className="inline-flex items-center gap-1.5 text-slate-600 hover:text-brandGreen-600 transition"
+                          >
+                            <FontAwesomeIcon icon={faEnvelope} className="text-[10px] text-slate-400 shrink-0" />
+                            <span className="truncate max-w-[140px]">{emp.email}</span>
+                          </a>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                        {emp.phone ? (
+                          <a
+                            href={`tel:${emp.phone}`}
+                            onClick={(e) => e.stopPropagation()}
+                            title={emp.phone}
+                            className="inline-flex items-center gap-1.5 font-mono text-slate-600 hover:text-brandGreen-600 transition"
+                          >
+                            <FontAwesomeIcon icon={faPhone} className="text-[10px] text-slate-400 shrink-0" />
+                            <span>{emp.phone}</span>
+                          </a>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </div>
                     </td>
 
                     <td className="px-5 py-4 text-sm font-semibold text-slate-800">

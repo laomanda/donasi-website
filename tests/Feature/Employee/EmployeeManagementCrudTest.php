@@ -102,6 +102,8 @@ class EmployeeManagementCrudTest extends TestCase
         $createRes = $this->actingAs($manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => '0108026',
             'name'              => 'Jakkob Panjaitan',
+            'email'             => 'jakkob@example.com',
+            'phone'             => '081234567890',
             'slug'              => 'jakkob',
             'position'          => 'Senior Engineer',
             'division'          => 'Teknologi Informasi',
@@ -115,6 +117,8 @@ class EmployeeManagementCrudTest extends TestCase
             ->assertJsonPath('message', 'Karyawan berhasil ditambahkan.')
             ->assertJsonPath('data.employee_code', '0108026')
             ->assertJsonPath('data.slug', 'jakkob')
+            ->assertJsonPath('data.email', 'jakkob@example.com')
+            ->assertJsonPath('data.phone', '081234567890')
             ->assertJsonPath('data.display_order', 1);
 
         $employeeId = $createRes->json('data.id');
@@ -125,12 +129,16 @@ class EmployeeManagementCrudTest extends TestCase
         $showRes = $this->actingAs($manager, 'sanctum')->getJson("/api/v1/employees/{$employeeId}");
         $showRes->assertStatus(200)
             ->assertJsonPath('data.name', 'Jakkob Panjaitan')
+            ->assertJsonPath('data.email', 'jakkob@example.com')
+            ->assertJsonPath('data.phone', '081234567890')
             ->assertJsonPath('data.position', 'Senior Engineer');
 
         // 3. Update without new image
         $updateRes = $this->actingAs($manager, 'sanctum')->putJson("/api/v1/employees/{$employeeId}", [
             'employee_code'     => '0108026',
             'name'              => 'Jakkob P. Panjaitan',
+            'email'             => 'jakkob.updated@example.com',
+            'phone'             => '+6281299998888',
             'position'          => 'Tech Lead',
             'division'          => 'Teknologi Informasi',
             'employment_status' => 'active',

@@ -36,6 +36,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $res = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => '0108026',
             'name'              => 'Budi Leading Zero',
+            'email'             => 'budi0108026@example.com',
+            'phone'             => '081234567890',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 1,
@@ -61,6 +63,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $res = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => '0108026',
             'name'              => 'Clone Employee',
+            'email'             => 'clone@example.com',
+            'phone'             => '081234567891',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 2,
@@ -87,6 +91,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $res = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => 'EMP002',
             'name'              => 'New Employee',
+            'email'             => 'emp002@example.com',
+            'phone'             => '081234567892',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 10, // DUPLICATE
@@ -118,6 +124,8 @@ class EmployeeBusinessRulesTest extends TestCase
             'employee_code'     => 'EMP002',
             'slug'              => 'emp-002',
             'name'              => 'Direct DB Duplicate',
+            'email'             => 'emp002_db@example.com',
+            'phone'             => '081234567895',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 5, // Duplicate DB unique key
@@ -132,6 +140,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $resA = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => 'EMP_ORD_A',
             'name'              => 'Employee Order A',
+            'email'             => 'ord_a@example.com',
+            'phone'             => '081234567893',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 1,
@@ -154,6 +164,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $resB = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => 'EMP_ORD_B',
             'name'              => 'Employee Order B',
+            'email'             => 'ord_b@example.com',
+            'phone'             => '081234567894',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 1, // Reusing display_order = 1
@@ -176,6 +188,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $res1 = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => 'EMP001',
             'name'              => 'Jakkob Panjaitan',
+            'email'             => 'jakkob1@example.com',
+            'phone'             => '081234567801',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 1,
@@ -190,6 +204,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $res2 = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => 'EMP002',
             'name'              => 'Jakkob Panjaitan',
+            'email'             => 'jakkob2@example.com',
+            'phone'             => '081234567802',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 2,
@@ -204,6 +220,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $res3 = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => 'EMP003',
             'name'              => 'Jakkob Panjaitan',
+            'email'             => 'jakkob3@example.com',
+            'phone'             => '081234567803',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 3,
@@ -221,6 +239,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $res1 = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => 'EMP001',
             'name'              => 'Jakkob Panjaitan',
+            'email'             => 'jakkob_custom1@example.com',
+            'phone'             => '081234567811',
             'slug'              => 'jakkob',
             'position'          => 'Staff',
             'employment_status' => 'active',
@@ -236,6 +256,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $res2 = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => 'EMP002',
             'name'              => 'Another Jakkob',
+            'email'             => 'jakkob_custom2@example.com',
+            'phone'             => '081234567812',
             'slug'              => 'jakkob',
             'position'          => 'Staff',
             'employment_status' => 'active',
@@ -261,6 +283,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $res = $this->actingAs($this->manager, 'sanctum')->putJson("/api/v1/employees/{$employee->id}", [
             'employee_code'     => $employee->employee_code,
             'name'              => 'Jakkob P. Panjaitan',
+            'email'             => $employee->email,
+            'phone'             => $employee->phone,
             'position'          => $employee->position,
             'employment_status' => 'active',
             'display_order'     => 1,
@@ -285,6 +309,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $res = $this->actingAs($this->manager, 'sanctum')->putJson("/api/v1/employees/{$employee->id}", [
             'employee_code'     => $employee->employee_code,
             'name'              => $employee->name,
+            'email'             => $employee->email,
+            'phone'             => $employee->phone,
             'slug'              => 'jakkob-new',
             'position'          => $employee->position,
             'employment_status' => 'active',
@@ -303,6 +329,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $createRes = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => 'EMP001',
             'name'              => 'Staff Photo Test',
+            'email'             => 'staff.photo@example.com',
+            'phone'             => '081234567820',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 1,
@@ -310,15 +338,19 @@ class EmployeeBusinessRulesTest extends TestCase
             'id_card_image'     => $oldFile,
         ]);
 
+        $createRes->assertStatus(201);
         $employeeId = $createRes->json('data.id');
         $oldPath = $createRes->json('data.id_card_image');
         Storage::disk('public')->assertExists($oldPath);
 
-        // 2. Update with replacement image
+        // 2. Update with replacement image using multipart POST with _method=PUT
         $newFile = UploadedFile::fake()->image('new_id_card.webp');
-        $updateRes = $this->actingAs($this->manager, 'sanctum')->putJson("/api/v1/employees/{$employeeId}", [
+        $updateRes = $this->actingAs($this->manager, 'sanctum')->postJson("/api/v1/employees/{$employeeId}", [
+            '_method'           => 'PUT',
             'employee_code'     => 'EMP001',
             'name'              => 'Staff Photo Test',
+            'email'             => 'staff.photo@example.com',
+            'phone'             => '081234567820',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 1,
@@ -342,6 +374,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $resType = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => 'EMP001',
             'name'              => 'Staff',
+            'email'             => 'staff1@example.com',
+            'phone'             => '081234567830',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 1,
@@ -356,6 +390,8 @@ class EmployeeBusinessRulesTest extends TestCase
         $resSize = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
             'employee_code'     => 'EMP002',
             'name'              => 'Staff',
+            'email'             => 'staff2@example.com',
+            'phone'             => '081234567831',
             'position'          => 'Staff',
             'employment_status' => 'active',
             'display_order'     => 2,
@@ -368,6 +404,73 @@ class EmployeeBusinessRulesTest extends TestCase
             'Ukuran gambar ID Card melebihi batas maksimum yang diizinkan (5MB).',
             $resSize->json('errors.id_card_image.0')
         );
+    }
+
+    public function test_email_and_phone_are_required_with_indonesian_validation_messages(): void
+    {
+        $res = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
+            'employee_code'     => 'EMP001',
+            'name'              => 'Staff Without Contact',
+            'position'          => 'Staff',
+            'employment_status' => 'active',
+            'display_order'     => 1,
+            'is_published'      => true,
+            'id_card_image'     => UploadedFile::fake()->image('card.png'),
+        ]);
+
+        $res->assertStatus(422)
+            ->assertJsonValidationErrors(['email', 'phone']);
+
+        $this->assertEquals('Email karyawan wajib diisi.', $res->json('errors.email.0'));
+        $this->assertEquals('Nomor telepon wajib diisi.', $res->json('errors.phone.0'));
+    }
+
+    public function test_invalid_email_and_phone_formats_are_rejected(): void
+    {
+        $res = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
+            'employee_code'     => 'EMP001',
+            'name'              => 'Staff Invalid Contact',
+            'email'             => 'bukan-email-valid',
+            'phone'             => 'abc12345678',
+            'position'          => 'Staff',
+            'employment_status' => 'active',
+            'display_order'     => 1,
+            'is_published'      => true,
+            'id_card_image'     => UploadedFile::fake()->image('card.png'),
+        ]);
+
+        $res->assertStatus(422)
+            ->assertJsonValidationErrors(['email', 'phone']);
+
+        $this->assertEquals('Format email tidak valid.', $res->json('errors.email.0'));
+        $this->assertEquals('Format nomor telepon tidak valid. Gunakan angka atau format internasional (+).', $res->json('errors.phone.0'));
+    }
+
+    public function test_duplicate_email_and_phone_are_rejected_with_indonesian_messages(): void
+    {
+        Employee::factory()->create([
+            'email' => 'existing@example.com',
+            'phone' => '081234567899',
+            'display_order' => 1,
+        ]);
+
+        $res = $this->actingAs($this->manager, 'sanctum')->postJson('/api/v1/employees', [
+            'employee_code'     => 'EMP999',
+            'name'              => 'Staff Duplicate Contact',
+            'email'             => 'existing@example.com',
+            'phone'             => '081234567899',
+            'position'          => 'Staff',
+            'employment_status' => 'active',
+            'display_order'     => 2,
+            'is_published'      => true,
+            'id_card_image'     => UploadedFile::fake()->image('card.png'),
+        ]);
+
+        $res->assertStatus(422)
+            ->assertJsonValidationErrors(['email', 'phone']);
+
+        $this->assertEquals('Email sudah digunakan oleh karyawan lain.', $res->json('errors.email.0'));
+        $this->assertEquals('Nomor telepon sudah digunakan oleh karyawan lain.', $res->json('errors.phone.0'));
     }
 
     public function test_public_url_is_computed_dynamically_and_not_stored_in_database(): void
