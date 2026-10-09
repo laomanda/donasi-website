@@ -1,7 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faBookmark as faBookmarkSolid } from "@fortawesome/free-solid-svg-icons";
-import { faBookmark as faBookmarkRegular } from "@fortawesome/free-regular-svg-icons";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useSavedItems } from "../lib/SavedItemsContext";
 import { LandingLayout } from "../layouts/LandingLayout";
 import { useLang } from "../lib/i18n";
@@ -41,8 +40,8 @@ export function LiterasiDetailPage() {
     <LandingLayout>
       <div className="bg-slate-50/70 py-8 sm:py-12">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 min-w-0">
-          {/* Top Actions Bar */}
-          <div className="mb-8 flex flex-wrap items-center gap-3">
+          {/* Top Actions Bar (Hanya Navigasi Kembali & Jelajah) */}
+          <div className="mb-8 flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
@@ -51,25 +50,13 @@ export function LiterasiDetailPage() {
               <FontAwesomeIcon icon={faArrowLeft} />
               {t("literasi.detail.back")}
             </button>
+            <span className="h-4 w-px bg-slate-200" />
             <Link
               to="/literasi"
               className="text-xs sm:text-sm font-semibold text-brandGreen-700 hover:text-brandGreen-800 transition-colors"
             >
               {t("literasi.detail.viewOther")}
             </Link>
-            <span className="h-4 w-px bg-slate-200" />
-            <button
-              type="button"
-              onClick={() => toggleSave(Number(article?.id), 'Article')}
-              className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-xs sm:text-sm font-semibold shadow-xs transition-colors ${
-                saved 
-                  ? "bg-brandGreen-600 text-white border-brandGreen-600 hover:bg-brandGreen-700" 
-                  : "bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-              }`}
-            >
-              <FontAwesomeIcon icon={saved ? faBookmarkSolid : faBookmarkRegular} />
-              {saved ? (locale === "en" ? "Saved" : "Tersimpan") : (locale === "en" ? "Save" : "Simpan")}
-            </button>
           </div>
 
           {loading ? (
@@ -86,6 +73,8 @@ export function LiterasiDetailPage() {
                   article={localizedArticle} 
                   locale={locale} 
                   t={t} 
+                  saved={saved}
+                  onToggleSave={() => toggleSave(Number(localizedArticle?.id ?? article?.id), 'Article')}
                 />
 
                 <LiterasiDetailContent 
