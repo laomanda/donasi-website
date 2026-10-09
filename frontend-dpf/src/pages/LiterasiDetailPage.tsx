@@ -1,6 +1,3 @@
-import { useNavigate, Link } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useSavedItems } from "../lib/SavedItemsContext";
 import { LandingLayout } from "../layouts/LandingLayout";
 import { useLang } from "../lib/i18n";
@@ -17,7 +14,6 @@ import { LiterasiDetailSkeleton } from "../components/literasi/detail/LiterasiDe
 import { LiterasiDetailPrograms } from "../components/literasi/detail/LiterasiDetailPrograms.tsx";
 
 export function LiterasiDetailPage() {
-  const navigate = useNavigate();
   const { locale } = useLang();
   const t = (key: string, fallback?: string) => translate(literasiDict, locale, key, fallback);
 
@@ -40,25 +36,6 @@ export function LiterasiDetailPage() {
     <LandingLayout>
       <div className="bg-slate-50/70 py-8 sm:py-12">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 min-w-0">
-          {/* Top Actions Bar (Hanya Navigasi Kembali & Jelajah) */}
-          <div className="mb-8 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 shadow-xs hover:border-slate-300 hover:text-slate-900 transition-colors"
-            >
-              <FontAwesomeIcon icon={faArrowLeft} />
-              {t("literasi.detail.back")}
-            </button>
-            <span className="h-4 w-px bg-slate-200" />
-            <Link
-              to="/literasi"
-              className="text-xs sm:text-sm font-semibold text-brandGreen-700 hover:text-brandGreen-800 transition-colors"
-            >
-              {t("literasi.detail.viewOther")}
-            </Link>
-          </div>
-
           {loading ? (
             <LiterasiDetailSkeleton />
           ) : errorKey ? (
