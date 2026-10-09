@@ -20,43 +20,12 @@ export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroPro
 
   return (
     <div className="space-y-6 min-w-0 max-w-full">
-      {/* Featured Media Showcase (Crisp single image/video, no tacky blur backdrop) */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-900">
-        {hasVideo && activeMedia === "video" ? (
-          <video
-            src={videoUrl!}
-            controls
-            preload="metadata"
-            className="h-full w-full object-contain bg-black"
-          />
-        ) : (
-          <img
-            src={getImageUrl(article.thumbnail_path)}
-            alt={article.title}
-            className="h-full w-full object-cover"
-            onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
-          />
-        )}
-
-        {/* Media Switcher when both Video & Image exist */}
-        {hasVideo && (
-          <div className="absolute bottom-3 right-3 z-10 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveMedia((prev) => (prev === "video" ? "image" : "video"))}
-              className="rounded-lg bg-black/75 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/90"
-            >
-              {activeMedia === "video" ? "Lihat Foto" : "Tonton Video"}
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Meta Information, Category, and Title */}
-      <div className="space-y-3 pb-6 border-b border-slate-100">
-        <div className="flex flex-wrap items-center gap-3">
+      {/* 1. Header Komposisi Berita: Kategori & Meta -> Judul Headline -> Lead Excerpt */}
+      <div className="space-y-3.5">
+        {/* Category Badge & Meta Information */}
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
           {article.category ? (
-            <span className="rounded-md bg-brandGreen-500 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+            <span className="rounded-md bg-brandGreen-500 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-2xs">
               {article.category}
             </span>
           ) : null}
@@ -92,16 +61,59 @@ export function LiterasiDetailHero({ article, locale, t }: LiterasiDetailHeroPro
           </div>
         </div>
 
-        <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight tracking-tight break-words [overflow-wrap:anywhere]">
+        {/* Judul Headline Berita: Proporsional, Tegas & Elegan */}
+        <h1 className="font-heading text-xl sm:text-2xl lg:text-[30px] font-extrabold text-slate-900 leading-snug tracking-tight break-words [overflow-wrap:anywhere]">
           {article.title}
         </h1>
 
-        {article.excerpt ? (
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal break-words [overflow-wrap:anywhere] pt-1">
+        {/* Ringkasan / Lead Deck Berita (Tampil jika ada dan berbeda dari isi utama) */}
+        {article.excerpt && article.body && article.excerpt.trim() !== article.body.trim() ? (
+          <div className="rounded-xl border-l-4 border-brandGreen-500 bg-slate-50/80 p-3.5 sm:p-4 text-xs sm:text-sm text-slate-600 leading-relaxed italic whitespace-pre-line">
             {article.excerpt}
-          </p>
+          </div>
         ) : null}
       </div>
+
+      {/* 2. Media Utama Berita (Featured Photo / Video Showcase) di bawah Headline */}
+      {(article.thumbnail_path || hasVideo) && (
+        <figure className="space-y-2">
+          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-slate-200/90 bg-slate-900 shadow-2xs">
+            {hasVideo && activeMedia === "video" ? (
+              <video
+                src={videoUrl!}
+                controls
+                preload="metadata"
+                className="h-full w-full object-contain bg-black"
+              />
+            ) : (
+              <img
+                src={getImageUrl(article.thumbnail_path)}
+                alt={article.title}
+                className="h-full w-full object-cover"
+                onError={(evt) => ((evt.target as HTMLImageElement).src = imagePlaceholder)}
+              />
+            )}
+
+            {/* Media Switcher when both Video & Image exist */}
+            {hasVideo && (
+              <div className="absolute bottom-3 right-3 z-10 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveMedia((prev) => (prev === "video" ? "image" : "video"))}
+                  className="rounded-lg bg-black/75 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/90"
+                >
+                  {activeMedia === "video" ? "Lihat Foto" : "Tonton Video"}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Caption / Keterangan Foto Utama Berita */}
+          <figcaption className="text-center text-[11px] sm:text-xs text-slate-500 italic">
+            Foto: {article.title}
+          </figcaption>
+        </figure>
+      )}
     </div>
   );
 }
