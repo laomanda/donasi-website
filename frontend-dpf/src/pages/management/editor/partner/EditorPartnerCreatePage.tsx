@@ -109,8 +109,9 @@ export default function EditorPartnerCreatePage() {
       />
 
       {error && (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700 animate-in fade-in slide-in-from-top-2">
-          {error}
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 animate-in fade-in slide-in-from-top-2">
+          <p className="font-bold">Validasi Gagal</p>
+          <p className="mt-0.5 text-xs sm:text-sm font-medium leading-relaxed">{error}</p>
         </div>
       )}
 

@@ -18,6 +18,7 @@ import { translate } from "../lib/i18n-utils";
 import { LandingLayout } from "../layouts/LandingLayout";
 import { getAuthUser } from "../lib/auth";
 import { PageHero } from "../components/PageHero";
+import { useToast } from "@/components/ui/ToastProvider";
 
 // Refactored Components
 import { DonationForm } from "@/components/donate/DonationForm";
@@ -133,6 +134,7 @@ const pickLocale = (idVal?: string | null, enVal?: string | null, locale: "id" |
 
 const DonatePage = () => {
     const { locale } = useLang();
+    const toast = useToast();
     const [searchParams] = useSearchParams();
     const location = useLocation();
     const t = (key: string, fallback?: string) => translate(donateDict, locale, key, fallback);
@@ -288,10 +290,14 @@ const DonatePage = () => {
                 setSubmitState({ type: "success", messageKey: "donate.form.status.success" });
                 setForm(prev => ({ ...prev, amount: "", name: "", email: "", phone: "", notes: "", is_anonymous: false }));
             } else {
-                alert("Pembayaran belum terkonfirmasi oleh sistem. Jika Anda sudah membayar, mohon tunggu beberapa saat dan coba lagi.");
+                toast.warning("Pembayaran belum terkonfirmasi oleh sistem. Jika Anda sudah membayar, mohon tunggu beberapa saat dan coba lagi.", {
+                    title: "Peringatan",
+                });
             }
         } catch {
-            alert("Gagal memeriksa status pembayaran. Coba lagi.");
+            toast.error("Gagal memeriksa status pembayaran. Silakan coba beberapa saat lagi.", {
+                title: "Gagal",
+            });
         } finally {
             setCheckingPayment(false);
         }

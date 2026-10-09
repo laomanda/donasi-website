@@ -119,9 +119,11 @@ export function RolesPage() {
       />
 
       {error ? (
-        <div className="rounded-[24px] border border-red-100 bg-red-50 p-6 flex items-center gap-4 text-red-700 shadow-sm">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 font-bold">!</div>
-          <p className="font-bold uppercase tracking-tight">{error}</p>
+        <div className="rounded-[24px] border border-red-200 bg-red-50 p-6 flex items-start gap-4 text-red-800 shadow-sm">
+          <div className="space-y-0.5">
+            <p className="font-bold">Gagal Memuat Data</p>
+            <p className="text-sm font-medium leading-relaxed">{error}</p>
+          </div>
         </div>
       ) : null}
 

@@ -143,13 +143,18 @@ export function KonsultasiForm({ translate: t }: KonsultasiFormProps) {
         <div className="pt-2">
           {status && (
             <div
-              className={`mb-4 rounded-xl px-4 py-3 text-sm font-semibold ${
+              className={`mb-4 rounded-2xl border p-4 text-sm ${
                 status === "success"
-                  ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
-                  : "border border-red-100 bg-red-50 text-red-700"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border-red-200 bg-red-50 text-red-800"
               }`}
             >
-              {status === "success" ? t("konsultasi.form.submit.success") : t("konsultasi.form.submit.error")}
+              <p className="font-bold">
+                {status === "success" ? "Berhasil" : "Validasi Gagal"}
+              </p>
+              <p className="mt-0.5 text-xs sm:text-sm font-medium">
+                {status === "success" ? t("konsultasi.form.submit.success") : t("konsultasi.form.submit.error")}
+              </p>
             </div>
           )}
 

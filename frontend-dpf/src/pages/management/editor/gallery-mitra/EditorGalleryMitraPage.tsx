@@ -121,8 +121,9 @@ export default function EditorGalleryMitraPage() {
 
       {/* Error Alert */}
       {error && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
-          {error}
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+          <p className="font-bold">Gagal Memuat Data</p>
+          <p className="mt-0.5 text-xs sm:text-sm font-medium leading-relaxed">{error}</p>
         </div>
       )}
 

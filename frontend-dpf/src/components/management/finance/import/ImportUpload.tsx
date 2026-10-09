@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faCloudArrowUp, faFileExcel, faTrashCan, faTriangleExclamation, faCircleInfo, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
-import { toast } from "react-hot-toast";
+import { toast } from "@/components/ui/ToastProvider";
 import { SearchableSelect } from "@/components/management/finance/shared";
 import type { ImportModule, AccountingPeriod } from "@/types/finance";
 import type { ModuleConfig } from "./importTypes";
@@ -119,7 +119,15 @@ export function ImportUpload({
       </div>
 
       <div className="flex items-start gap-2 text-xs text-slate-600"><FontAwesomeIcon icon={faCircleInfo} className="mt-0.5 text-slate-400" /><span>File akan divalidasi terlebih dahulu dan belum disimpan ke database.</span></div>
-      {previewError && <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700"><FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5" /><span><strong>Validasi File Gagal.</strong> {previewError}</span></div>}
+      {previewError && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3.5 text-xs text-red-800">
+          <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5 text-red-600" />
+          <div className="space-y-0.5">
+            <p className="font-bold">Validasi File Gagal</p>
+            <p className="font-normal text-red-700">{previewError}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

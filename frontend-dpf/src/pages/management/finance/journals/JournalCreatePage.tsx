@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import { toast } from "@/components/ui/ToastProvider";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInfoCircle, faBookOpen } from "@fortawesome/free-solid-svg-icons";
 
@@ -131,9 +131,9 @@ export function JournalCreatePage() {
       {serverError && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-800 flex items-start gap-3">
           <FontAwesomeIcon icon={faInfoCircle} className="mt-0.5 text-red-600 text-sm" />
-          <div className="space-y-1">
-            <strong className="font-bold">Gagal Menyimpan Jurnal:</strong>
-            <p>{serverError}</p>
+          <div className="space-y-0.5">
+            <p className="font-bold">Gagal Menyimpan Jurnal</p>
+            <p className="font-normal text-red-700 leading-relaxed">{serverError}</p>
           </div>
         </div>
       )}

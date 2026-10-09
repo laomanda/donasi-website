@@ -1,8 +1,7 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   faArrowLeft,
   faArrowRight,
-  faCircleCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import http from "../../../../lib/http";
@@ -182,11 +181,11 @@ export function SuperAdminUsersPage() {
       />
 
       {error ? (
-        <div className="rounded-[24px] border border-red-100 bg-red-50 p-6 flex items-center gap-4 text-red-700 shadow-sm">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
-            <FontAwesomeIcon icon={faCircleCheck} className="rotate-180" />
+        <div className="rounded-[24px] border border-red-200 bg-red-50 p-6 flex items-start gap-4 text-red-800 shadow-sm">
+          <div className="space-y-0.5">
+            <p className="font-bold">Gagal Memuat Data</p>
+            <p className="text-sm font-medium leading-relaxed">{error}</p>
           </div>
-          <p className="font-bold">{error}</p>
         </div>
       ) : null}
 

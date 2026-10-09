@@ -356,13 +356,18 @@ export function JemputWakafForm({ translate: t, locale }: JemputWakafFormProps) 
 
           {status.message && (
             <div
-              className={`rounded-xl px-4 py-3 text-sm font-semibold ${
+              className={`rounded-2xl border p-4 text-sm ${
                 status.type === "success"
-                  ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
-                  : "border border-red-100 bg-red-50 text-red-700"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border-red-200 bg-red-50 text-red-800"
               }`}
             >
-              {status.message}
+              <p className="font-bold">
+                {status.type === "success" ? "Berhasil" : "Validasi Gagal"}
+              </p>
+              <p className="mt-0.5 text-xs sm:text-sm font-medium">
+                {status.message}
+              </p>
             </div>
           )}
           <button

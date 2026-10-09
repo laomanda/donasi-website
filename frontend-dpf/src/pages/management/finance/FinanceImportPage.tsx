@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "@/components/ui/ToastProvider";
 import { useFinancePeriods } from "@/hooks/finance/useFinancePeriods";
 import { useFinanceImportWorkflow } from "@/hooks/finance/useFinanceImportWorkflow";
 import { useImportHistory } from "@/hooks/finance/useImportHistory";

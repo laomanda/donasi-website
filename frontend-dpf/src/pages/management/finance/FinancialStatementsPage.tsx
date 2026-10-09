@@ -22,7 +22,7 @@ import {
   faBuilding,
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
-import { toast } from "react-hot-toast";
+import { toast } from "@/components/ui/ToastProvider";
 
 import {
   FinancePageHeader,

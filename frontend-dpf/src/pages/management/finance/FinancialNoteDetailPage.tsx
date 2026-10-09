@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faFileLines } from "@fortawesome/free-solid-svg-icons";
-import { toast } from "react-hot-toast";
+import { toast } from "@/components/ui/ToastProvider";
 import { getAuthUser } from "@/lib/auth";
 import { extractFinanceErrorMessage } from "@/utils/financeUtils";
 import { FinanceErrorState } from "@/components/management/finance/shared";

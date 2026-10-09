@@ -8,7 +8,7 @@ import {
   faSave,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
-import { toast } from "react-hot-toast";
+import { toast } from "@/components/ui/ToastProvider";
 import { getAuthUser } from "@/lib/auth";
 import { extractFinanceErrorMessage } from "@/utils/financeUtils";
 import { AccountPageHeader } from "@/components/management/finance/accounts";

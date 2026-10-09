@@ -9,7 +9,7 @@ import {
   faCheckCircle,
   faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
-import { toast } from "react-hot-toast";
+import { toast } from "@/components/ui/ToastProvider";
 import type {
   Account,
   AccountingPeriod,
@@ -228,10 +228,17 @@ export const JournalForm: React.FC<JournalFormProps> = ({
       {clientError && (
         <div className="rounded-xl border border-rose-300 bg-rose-50 p-4 text-xs font-semibold text-rose-800 shadow-2xs flex items-start gap-2.5">
           <FontAwesomeIcon icon={faExclamationTriangle} className="text-rose-600 mt-0.5 text-sm" />
-          <div className="space-y-0.5">
-            <div className="font-bold">Periksa Kembali Formulir</div>
+          <div className="space-y-0.5 flex-1">
+            <p className="font-bold">Validasi Gagal</p>
             <p className="font-normal text-rose-700">{clientError}</p>
           </div>
+          <button
+            type="button"
+            onClick={() => setClientError(null)}
+            className="text-rose-500 hover:text-rose-700"
+          >
+            ×
+          </button>
         </div>
       )}
 

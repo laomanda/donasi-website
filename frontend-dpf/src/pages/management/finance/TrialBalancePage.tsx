@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "@/components/ui/ToastProvider";
 import { faScaleUnbalanced } from "@fortawesome/free-solid-svg-icons";
 
 import { useFinancePeriods } from "@/hooks/finance/useFinancePeriods";

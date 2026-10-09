@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { toast } from "react-hot-toast";
+import { toast } from "@/components/ui/ToastProvider";
 import { getAuthUser } from "@/lib/auth";
 import financeService from "@/services/financeService";
 import {

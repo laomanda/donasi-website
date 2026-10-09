@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getAuthUser } from './auth';
 import http from './http';
-import { toast } from 'react-hot-toast';
+import { toast } from '@/components/ui/ToastProvider';
 import Swal from 'sweetalert2';
 import { resolveUserRoles } from '../components/management/dashboard/DashboardUtils';
 
@@ -84,7 +84,7 @@ export const SavedItemsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       } else {
         setSavedItems(prev => prev.filter(item => item !== itemKey));
         Swal.fire({
-          title: 'Dihapus',
+          title: 'Berhasil',
           text: 'Item telah dihapus dari daftar favorit.',
           icon: 'success',
           confirmButtonColor: '#10b981',
