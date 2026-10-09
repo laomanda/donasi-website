@@ -45,7 +45,7 @@ export function LiterasiDetailPage() {
           <div className="absolute -right-24 top-10 h-[380px] w-[380px] rounded-full bg-brandGreen-100/30 blur-[110px]" />
         </div>
 
-        <div className="relative mx-auto w-full max-w-5xl px-3.5 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12 min-w-0">
+        <div className="relative mx-auto w-full max-w-6xl xl:max-w-7xl px-3.5 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12 min-w-0">
           <div className="mb-6 flex flex-wrap items-center gap-2 sm:gap-3">
             <button
               type="button"
@@ -83,8 +83,9 @@ export function LiterasiDetailPage() {
               {errorKey === "not_found" ? t("literasi.detail.notFound") : t("literasi.detail.error")}
             </div>
           ) : localizedArticle ? (
-            <div className="space-y-6 sm:space-y-8 min-w-0">
-              <article className="space-y-5 min-w-0">
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_380px] lg:items-start min-w-0 max-w-full">
+              {/* Kolom Kiri: Artikel Utama */}
+              <article className="space-y-6 min-w-0 max-w-full">
                 <LiterasiDetailHero 
                   article={localizedArticle} 
                   locale={locale} 
@@ -105,18 +106,23 @@ export function LiterasiDetailPage() {
                     locale={locale}
                   />
                 </div>
-
-                <LiterasiDetailPrograms
-                  programs={localizedArticle.programs}
-                  locale={locale}
-                />
               </article>
 
-              <LiterasiDetailRelated 
-                related={localizedRelated} 
-                locale={locale} 
-                t={t} 
-              />
+              {/* Kolom Kanan: Sidebar Program & Berita Terkait */}
+              <aside className="space-y-6 lg:sticky lg:top-24 min-w-0 max-w-full">
+                {localizedArticle.programs && localizedArticle.programs.length > 0 && (
+                  <LiterasiDetailPrograms
+                    programs={localizedArticle.programs}
+                    locale={locale}
+                  />
+                )}
+
+                <LiterasiDetailRelated 
+                  related={localizedRelated} 
+                  locale={locale} 
+                  t={t} 
+                />
+              </aside>
             </div>
           ) : null}
         </div>
