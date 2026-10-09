@@ -34,7 +34,7 @@ export function LiterasiDetailPage() {
 
   return (
     <LandingLayout>
-      <div className="bg-slate-50/70 py-8 sm:py-12">
+      <div className="bg-slate-50/70 pt-10 sm:pt-14 lg:pt-16 pb-16 sm:pb-24">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 min-w-0">
           {loading ? (
             <LiterasiDetailSkeleton />
