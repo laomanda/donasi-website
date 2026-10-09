@@ -43,7 +43,7 @@ export function LiterasiDetailRelated({ related, locale, t }: LiterasiDetailRela
 
       {/* Related News List */}
       <div className="divide-y divide-slate-100">
-        {related.slice(0, 5).map((item) => (
+        {related.slice(0, 3).map((item) => (
           <Link
             key={item.id}
             to={`/literasi/${item.slug}`}

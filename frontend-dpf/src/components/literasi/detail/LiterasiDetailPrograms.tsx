@@ -30,7 +30,7 @@ export function LiterasiDetailPrograms({ programs = [], locale }: LiterasiDetail
 
       {/* Program Cards */}
       <div className="space-y-4">
-        {programs.map((prog) => {
+        {programs.slice(0, 3).map((prog) => {
           const imageSrc = getImageUrl(
             prog.thumbnail_path || (prog as any).thumbnail_url || (prog as any).banner_path
           );
