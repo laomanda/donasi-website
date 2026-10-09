@@ -28,7 +28,7 @@ export function LiterasiDetailContent({ body, excerpt }: LiterasiDetailContentPr
         "[&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5",
         "[&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-5",
         "[&_li]:mt-1 [&_li]:text-slate-700",
-        "[&_a]:text-primary-700 [&_a]:font-semibold hover:[&_a]:text-primary-800 [&_a]:break-all [&_a]:[overflow-wrap:anywhere]",
+        "[&_a]:text-brandGreen-700 [&_a]:font-semibold hover:[&_a]:text-brandGreen-800 [&_a]:break-all [&_a]:[overflow-wrap:anywhere]",
         "[&_blockquote]:mt-5 [&_blockquote]:rounded-2xl [&_blockquote]:border [&_blockquote]:border-slate-200 [&_blockquote]:bg-slate-50 [&_blockquote]:px-5 [&_blockquote]:py-4 [&_blockquote]:text-slate-700",
         "[&_img]:my-6 [&_img]:block [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-2xl [&_img]:shadow-sm [&_img]:ring-1 [&_img]:ring-slate-200 [&_img]:object-contain [&_img]:mx-auto",
         "[&_video]:my-6 [&_video]:block [&_video]:w-full [&_video]:max-w-full [&_video]:max-h-[500px] [&_video]:rounded-2xl [&_video]:shadow-md [&_video]:bg-black",
