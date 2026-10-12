@@ -8,6 +8,7 @@ export interface PublicEmployee {
   phone?: string | null;
   position: string;
   division: string | null;
+  gelar?: string | null;
   employment_status: PublicEmploymentStatus;
   employment_status_label?: string | null;
   id_card_image_url: string | null;

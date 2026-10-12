@@ -25,11 +25,14 @@ class EmployeeService
     {
         $query = Employee::query()->publicDirectory();
 
-        // 1. Name search only
+        // 1. Name or Title search
         if (!empty($filters['q'])) {
             $search = trim((string) $filters['q']);
             if ($search !== '') {
-                $query->where('name', 'like', "%{$search}%");
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('gelar', 'like', "%{$search}%");
+                });
             }
         }
 
@@ -126,7 +129,8 @@ class EmployeeService
                     $sub->where('name', 'like', "%{$search}%")
                         ->orWhere('employee_code', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('gelar', 'like', "%{$search}%");
                 });
             }
         }

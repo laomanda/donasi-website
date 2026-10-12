@@ -23,6 +23,7 @@ class EmployeeResource extends JsonResource
             'phone'                   => $this->phone,
             'position'                => $this->position,
             'division'                => $this->division,
+            'gelar'                   => $this->gelar,
             'id_card_image'           => $this->id_card_image,
             'id_card_image_url'       => $this->id_card_image_url,
             'employment_status'       => $this->employment_status,

@@ -32,6 +32,7 @@ class Employee extends Model
         'phone',
         'position',
         'division',
+        'gelar',
         'id_card_image',
         'employment_status',
         'display_order',

@@ -132,7 +132,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
             ) : (
               /* Data Rows */
               employees.map((emp) => {
-                const displayName = emp.name.trim().split(/\s+/)[0] || emp.name;
+                const displayName = emp.gelar ? `${emp.name}, ${emp.gelar}` : emp.name;
 
                 return (
                   <tr

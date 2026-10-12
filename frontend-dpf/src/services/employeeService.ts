@@ -204,6 +204,9 @@ export class EmployeeService {
     if (payload.division !== undefined && payload.division !== null) {
       formData.append('division', payload.division.trim());
     }
+    if (payload.gelar !== undefined && payload.gelar !== null) {
+      formData.append('gelar', payload.gelar.trim());
+    }
     formData.append('employment_status', payload.employment_status);
     formData.append('display_order', String(payload.display_order));
     formData.append('is_published', payload.is_published ? '1' : '0');
@@ -246,6 +249,11 @@ export class EmployeeService {
     formData.append('position', payload.position);
     if (payload.division !== undefined && payload.division !== null) {
       formData.append('division', payload.division.trim());
+    }
+    if (payload.gelar !== undefined && payload.gelar !== null) {
+      formData.append('gelar', payload.gelar.trim());
+    } else {
+      formData.append('gelar', '');
     }
     formData.append('employment_status', payload.employment_status);
     formData.append('display_order', String(payload.display_order));

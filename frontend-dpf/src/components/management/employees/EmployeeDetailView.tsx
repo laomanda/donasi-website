@@ -39,6 +39,9 @@ export const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({
     }
   };
 
+  const gelarTrimmed = employee.gelar?.trim();
+  const displayName = gelarTrimmed ? `${employee.name}, ${gelarTrimmed}` : employee.name;
+
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
@@ -46,8 +49,8 @@ export const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 title={employee.name} className="line-clamp-2 max-w-full break-all font-heading text-2xl font-bold leading-tight text-slate-900 sm:text-3xl lg:max-w-3xl">
-                {employee.name}
+              <h1 title={displayName} className="line-clamp-2 max-w-full break-all font-heading text-2xl font-bold leading-tight text-slate-900 sm:text-3xl lg:max-w-3xl">
+                {displayName}
               </h1>
               <span className="rounded-full bg-slate-100 px-3 py-1 font-mono text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
                 {employee.employee_code}
@@ -140,6 +143,11 @@ export const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({
               <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/75 p-4">
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Divisi</p>
                 <p title={employee.division || undefined} className="mt-1 line-clamp-2 break-words font-semibold text-slate-900">{employee.division || '—'}</p>
+              </div>
+
+              <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/75 p-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Gelar</p>
+                <p className="mt-1 break-words font-semibold text-slate-900">{employee.gelar || '—'}</p>
               </div>
 
               <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/75 p-4">

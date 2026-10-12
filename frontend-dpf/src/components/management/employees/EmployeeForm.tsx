@@ -53,6 +53,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   const [slug, setSlug] = useState<string>('');
   const [position, setPosition] = useState<string>('');
   const [division, setDivision] = useState<string>('');
+  const [gelar, setGelar] = useState<string>('');
   const [employmentStatus, setEmploymentStatus] = useState<EmploymentStatus>('active');
   const [displayOrder, setDisplayOrder] = useState<string>('1');
   const [isPublished, setIsPublished] = useState<boolean>(true);
@@ -74,6 +75,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       setSlug(initialData.slug ?? '');
       setPosition(initialData.position ?? '');
       setDivision(initialData.division ?? '');
+      setGelar(initialData.gelar ?? '');
       setEmploymentStatus(initialData.employment_status ?? 'active');
       setDisplayOrder(
         initialData.display_order !== null && initialData.display_order !== undefined
@@ -203,6 +205,10 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       errors.division = 'Nama divisi tidak boleh melebihi 150 karakter.';
     }
 
+    if (gelar.trim().length > 100) {
+      errors.gelar = 'Gelar tidak boleh melebihi 100 karakter.';
+    }
+
     const parsedOrder = parseInt(displayOrder, 10);
     if (!displayOrder.trim() || isNaN(parsedOrder) || parsedOrder < 1 || isDuplicateDisplayOrder) {
       errors.display_order = 'Urutan tampilan harus berupa bilangan bulat positif minimal 1.';
@@ -227,6 +233,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       slug: slug.trim() || undefined,
       position: position.trim(),
       division: division.trim() || null,
+      gelar: gelar.trim() || null,
       employment_status: employmentStatus,
       display_order: parsedOrder,
       is_published: isPublished,
@@ -572,6 +579,44 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
             ) : (
               <p className="mt-1.5 text-[11px] font-medium text-slate-400">
                 Nomor menentukan urutan karyawan pada direktori publik.
+              </p>
+            )}
+          </div>
+
+          {/* Gelar (Opsional) */}
+          <div className="md:col-span-2">
+            <label className="block">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                Gelar <span className="text-[11px] font-normal lowercase text-slate-400">(opsional)</span>
+              </span>
+              <input
+                type="text"
+                value={gelar}
+                onChange={(e) => {
+                  setGelar(e.target.value);
+                  if (clientErrors.gelar) {
+                    setClientErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.gelar;
+                      return next;
+                    });
+                  }
+                }}
+                placeholder="Contoh: S.Kom., M.M. atau Lc., M.A. atau S.T."
+                className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:outline-none focus:ring-2 ${
+                  getFieldError('gelar')
+                    ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
+                    : 'border-slate-300 focus:border-slate-400 focus:ring-brandGreen-400'
+                }`}
+              />
+            </label>
+            {getFieldError('gelar') ? (
+              <p className="mt-1.5 text-xs font-semibold text-rose-600">
+                {getFieldError('gelar')}
+              </p>
+            ) : (
+              <p className="mt-1.5 text-[11px] font-medium text-slate-400">
+                Gelar akademik atau profesi untuk tampilan profil yang lebih profesional (contoh: S.Kom., M.Pd., Ph.D).
               </p>
             )}
           </div>

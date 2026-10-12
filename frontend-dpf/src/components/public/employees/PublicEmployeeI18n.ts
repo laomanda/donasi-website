@@ -41,6 +41,7 @@ export const publicEmployeeDict: Dict = {
 
   // Detail Fields
   "employees.detail.field.code": { id: "ID Pegawai", en: "Employee ID" },
+  "employees.detail.field.gelar": { id: "Gelar", en: "Degree / Title" },
   "employees.detail.field.position": { id: "Jabatan", en: "Position" },
   "employees.detail.field.division": { id: "Divisi", en: "Division" },
   "employees.detail.field.status": { id: "Status", en: "Status" },

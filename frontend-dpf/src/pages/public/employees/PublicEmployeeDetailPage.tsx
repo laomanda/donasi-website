@@ -35,6 +35,9 @@ export function PublicEmployeeDetailPage() {
     ? t('employees.detail.status.inactive', 'Tidak Aktif')
     : t('employees.detail.status.active', 'Aktif');
 
+  const gelarTrimmed = data.gelar?.trim();
+  const displayName = gelarTrimmed ? `${data.name}, ${gelarTrimmed}` : data.name;
+
   return (
     <LandingLayout>
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-20 sm:px-6 lg:px-8">
@@ -43,7 +46,7 @@ export function PublicEmployeeDetailPage() {
             <div className="flex min-h-[360px] items-center justify-center rounded-xl bg-slate-100 p-3 sm:min-h-[520px]">
               <img
                 src={data.id_card_image_url || ''}
-                alt={`ID card ${data.name}`}
+                alt={`ID card ${displayName}`}
                 className="max-h-[640px] w-full object-contain"
               />
             </div>
@@ -54,7 +57,7 @@ export function PublicEmployeeDetailPage() {
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-brandGreen-700">
                   {t('employees.detail.badge', 'Profil karyawan')}
                 </p>
-                <h1 className="mt-2 break-words text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">{data.name}</h1>
+                <h1 className="mt-2 break-words text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">{displayName}</h1>
               </div>
               <span className={`rounded-full px-3 py-1 text-xs sm:text-sm font-bold text-white shrink-0 ${inactive ? 'bg-rose-600' : 'bg-brandGreen-600'}`}>
                 {statusLabel}
@@ -62,6 +65,9 @@ export function PublicEmployeeDetailPage() {
             </div>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <Info label={t('employees.detail.field.code', 'ID Pegawai')} value={data.employee_code} />
+              {gelarTrimmed && (
+                <Info label={t('employees.detail.field.gelar', 'Gelar')} value={gelarTrimmed} />
+              )}
               <Info label={t('employees.detail.field.position', 'Jabatan')} value={data.position} />
               <Info label={t('employees.detail.field.division', 'Divisi')} value={data.division} />
               <Info label={t('employees.detail.field.status', 'Status')} value={statusLabel} />

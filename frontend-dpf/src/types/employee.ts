@@ -9,6 +9,7 @@ export interface Employee {
   phone: string;
   position: string;
   division: string | null;
+  gelar?: string | null;
   id_card_image: string;
   id_card_image_url: string;
   employment_status: EmploymentStatus;
@@ -58,6 +59,7 @@ export interface EmployeeFormPayload {
   slug?: string;
   position: string;
   division?: string | null;
+  gelar?: string | null;
   employment_status: EmploymentStatus;
   display_order: number;
   is_published: boolean;
@@ -72,6 +74,7 @@ export interface EmployeeFormErrors {
   slug?: string;
   position?: string;
   division?: string;
+  gelar?: string;
   employment_status?: string;
   display_order?: string;
   is_published?: string;

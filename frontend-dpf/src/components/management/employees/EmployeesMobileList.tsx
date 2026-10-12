@@ -81,13 +81,18 @@ export const EmployeesMobileList: React.FC<EmployeesMobileListProps> = ({
 
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex items-start justify-between gap-2">
-                <Link
-                  to={`/employees/${emp.id}`}
-                  title={emp.name}
-                  className="truncate text-sm font-bold text-slate-900 hover:text-brandBlueTeal-500"
-                >
-                  {emp.name.trim().split(/\s+/)[0] || emp.name}
-                </Link>
+                {(() => {
+                  const displayName = emp.gelar ? `${emp.name}, ${emp.gelar}` : emp.name;
+                  return (
+                    <Link
+                      to={`/employees/${emp.id}`}
+                      title={displayName}
+                      className="truncate text-sm font-bold text-slate-900 hover:text-brandBlueTeal-500"
+                    >
+                      {displayName}
+                    </Link>
+                  );
+                })()}
                 <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-slate-500">
                   #{emp.display_order ?? '—'}
                 </span>

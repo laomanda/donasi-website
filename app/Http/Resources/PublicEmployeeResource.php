@@ -22,6 +22,7 @@ class PublicEmployeeResource extends JsonResource
             'phone'                   => $this->phone,
             'position'                => $this->position,
             'division'                => $this->division,
+            'gelar'                   => $this->gelar,
             'employment_status'       => $this->employment_status,
             'employment_status_label' => $this->employment_status_label,
             'id_card_image_url'       => $this->id_card_image_url,

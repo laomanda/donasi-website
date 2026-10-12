@@ -44,6 +44,12 @@ class StoreEmployeeRequest extends FormRequest
                 'phone' => trim($this->phone),
             ]);
         }
+
+        if ($this->has('gelar') && is_string($this->gelar)) {
+            $this->merge([
+                'gelar' => trim($this->gelar) !== '' ? trim($this->gelar) : null,
+            ]);
+        }
     }
 
     /**
@@ -75,6 +81,7 @@ class StoreEmployeeRequest extends FormRequest
             'slug'              => ['nullable', 'string', 'max:120', 'unique:employees,slug', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
             'position'          => ['required', 'string', 'max:150'],
             'division'          => ['nullable', 'string', 'max:150'],
+            'gelar'             => ['nullable', 'string', 'max:100'],
             'employment_status' => ['required', Rule::in(['active', 'inactive'])],
             'display_order'     => ['required', 'integer', 'min:1', Rule::unique('employees', 'display_order')->whereNull('deleted_at')],
             'is_published'      => ['required', 'boolean'],
@@ -97,6 +104,7 @@ class StoreEmployeeRequest extends FormRequest
             'slug'              => 'slug URL',
             'position'          => 'jabatan',
             'division'          => 'divisi',
+            'gelar'             => 'gelar',
             'employment_status' => 'status karyawan',
             'display_order'     => 'urutan tampilan',
             'is_published'      => 'status publikasi',
