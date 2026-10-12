@@ -10,7 +10,6 @@ import {
   faImage,
   faCheck,
   faEnvelope,
-  faPhone,
 } from '@fortawesome/free-solid-svg-icons';
 import type {
   Employee,
@@ -20,6 +19,7 @@ import type {
   EmploymentStatus,
 } from '@/types/employee';
 import { SearchableSelect } from '@/components/management/finance/shared';
+import PhoneInput from '@/components/ui/PhoneInput';
 
 interface EmployeeFormProps {
   mode: 'create' | 'edit';
@@ -184,15 +184,15 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       errors.email = 'Email tidak boleh melebihi 150 karakter.';
     }
 
-    const cleanPhone = phone.trim().replace(/[\s-]/g, '');
-    if (!phone.trim()) {
+    const cleanPhone = (phone || '').trim().replace(/[\s\-()]/g, '');
+    if (!phone || !phone.trim()) {
       errors.phone = 'Nomor telepon wajib diisi.';
     } else if (cleanPhone.length < 9) {
       errors.phone = 'Nomor telepon minimal 9 digit.';
     } else if (cleanPhone.length > 25) {
       errors.phone = 'Nomor telepon maksimal 25 digit.';
     } else if (!/^(\+?[0-9]{9,20})$/.test(cleanPhone)) {
-      errors.phone = 'Format nomor telepon tidak valid. Gunakan format angka standar (contoh: 08123456789 atau +628123456789).';
+      errors.phone = 'Format nomor telepon tidak valid. Gunakan format nomor aktif (contoh: +62 812-3456-7890).';
     }
 
     if (!position.trim()) {
@@ -355,31 +355,20 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
                 Nomor Telepon <span className="text-rose-500">*</span>
               </span>
-              <div className="relative mt-2">
-                <input
-                  type="tel"
+              <div className="mt-2">
+                <PhoneInput
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Contoh: 081234567890"
-                  className={`w-full rounded-2xl border bg-white pl-11 pr-4 py-3 font-mono text-sm font-semibold text-slate-900 shadow-sm transition focus:outline-none focus:ring-2 ${
-                    getFieldError('phone')
-                      ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
-                      : 'border-slate-300 focus:border-slate-400 focus:ring-brandGreen-400'
-                  }`}
-                />
-                <FontAwesomeIcon
-                  icon={faPhone}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"
+                  onChange={(val) => setPhone(val || '')}
+                  placeholder="812 3456 7890"
+                  disabled={submitting}
+                  error={getFieldError('phone')}
+                  containerClassName="rounded-2xl shadow-sm"
                 />
               </div>
             </label>
-            {getFieldError('phone') ? (
-              <p className="mt-1.5 text-xs font-semibold text-rose-600">
-                {getFieldError('phone')}
-              </p>
-            ) : (
+            {!getFieldError('phone') && (
               <p className="mt-1.5 text-[11px] font-medium text-slate-400">
-                Format nomor aktif (contoh: 081234567890 atau +6281234567890).
+                Pilih bendera/kode negara dan masukkan nomor aktif (contoh: +62 812-3456-7890).
               </p>
             )}
           </div>
