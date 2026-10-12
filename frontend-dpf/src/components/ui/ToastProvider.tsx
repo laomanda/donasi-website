@@ -72,39 +72,43 @@ const getVariantTokens = (variant: ToastVariant) => {
   if (variant === "success") {
     return {
       icon: faCheckCircle,
-      card: "bg-emerald-600 text-white shadow-xl shadow-emerald-950/20 border border-emerald-500/80 ring-1 ring-emerald-500/50",
-      iconWrap: "bg-white/20 text-white",
-      title: "text-white",
-      message: "text-white/95",
+      ring: "ring-brandGreen-100",
+      bg: "bg-brandGreen-50",
+      iconText: "text-brandGreen-700",
+      title: "text-brandGreen-900",
+      message: "text-brandGreen-800",
     };
   }
 
   if (variant === "error") {
     return {
       icon: faCircleExclamation,
-      card: "bg-red-600 text-white shadow-xl shadow-red-950/20 border border-red-500/80 ring-1 ring-red-500/50",
-      iconWrap: "bg-white/20 text-white",
-      title: "text-white",
-      message: "text-white/95",
+      ring: "ring-red-100",
+      bg: "bg-red-50",
+      iconText: "text-red-600",
+      title: "text-red-900",
+      message: "text-red-800",
     };
   }
 
   if (variant === "warning") {
     return {
       icon: faTriangleExclamation,
-      card: "bg-amber-600 text-white shadow-xl shadow-amber-950/20 border border-amber-500/80 ring-1 ring-amber-500/50",
-      iconWrap: "bg-white/20 text-white",
-      title: "text-white",
-      message: "text-white/95",
+      ring: "ring-amber-100",
+      bg: "bg-amber-50",
+      iconText: "text-amber-700",
+      title: "text-amber-900",
+      message: "text-amber-800",
     };
   }
 
   return {
     icon: faCircleInfo,
-    card: "bg-primary-600 text-white shadow-xl shadow-primary-950/20 border border-primary-500/80 ring-1 ring-primary-500/50",
-    iconWrap: "bg-white/20 text-white",
-    title: "text-white",
-    message: "text-white/95",
+    ring: "ring-slate-200",
+    bg: "bg-slate-50",
+    iconText: "text-primary-700",
+    title: "text-slate-900",
+    message: "text-slate-700",
   };
 };
 
@@ -195,28 +199,30 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <div
               key={item.id}
               className={[
-                "pointer-events-auto overflow-hidden rounded-2xl shadow-xl transition-all duration-200 animate-in fade-in slide-in-from-top-2",
-                tokens.card,
+                "pointer-events-auto overflow-hidden rounded-2xl bg-white shadow-soft ring-1 transition-all duration-200 animate-in fade-in slide-in-from-top-2",
+                tokens.ring,
               ].join(" ")}
               role="alert"
               aria-live="polite"
             >
-              <div className="flex items-start gap-3 sm:gap-3.5 p-4">
+              <div className="flex items-start gap-3 p-4">
                 <div
                   className={[
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-                    tokens.iconWrap,
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl",
+                    tokens.bg,
                   ].join(" ")}
                 >
-                  <FontAwesomeIcon icon={tokens.icon} className="text-base" />
+                  <FontAwesomeIcon icon={tokens.icon} className={["text-base", tokens.iconText].join(" ")} />
                 </div>
                 <div className="min-w-0 flex-1 pt-0.5">
-                  <h4 className={["text-sm font-bold tracking-tight", tokens.title].join(" ")}>
-                    {item.title}
-                  </h4>
+                  {item.title ? (
+                    <h4 className={["truncate text-sm font-bold", tokens.title].join(" ")}>
+                      {item.title}
+                    </h4>
+                  ) : null}
                   <p
                     className={[
-                      "mt-1 text-xs sm:text-sm font-normal leading-relaxed break-words",
+                      "mt-0.5 text-sm font-semibold leading-relaxed break-words",
                       tokens.message,
                     ].join(" ")}
                   >
@@ -226,7 +232,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 <button
                   type="button"
                   onClick={() => dismiss(item.id)}
-                  className="rounded-lg p-1.5 text-white/70 transition hover:bg-white/20 hover:text-white shrink-0 -mr-1 -mt-1"
+                  className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 shrink-0 -mr-1 -mt-1"
                   aria-label="Tutup notifikasi"
                 >
                   <FontAwesomeIcon icon={faXmark} className="text-sm" />
