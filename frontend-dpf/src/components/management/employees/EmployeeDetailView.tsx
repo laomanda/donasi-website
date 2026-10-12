@@ -84,7 +84,7 @@ export const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({
       {/* Main Two-Column Layout */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* LEFT: ID Card Visual Showcase */}
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-4 xl:col-span-4">
           <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandBlueTeal-500 bg-white p-5 shadow-sm sm:p-8">
             <h3 className="font-heading text-lg font-bold text-slate-900 pb-4 border-b border-slate-100">
               ID Card Digital Fisik
@@ -112,7 +112,7 @@ export const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({
         </div>
 
         {/* RIGHT: Metadata & Information */}
-        <div className="space-y-6 lg:col-span-7">
+        <div className="space-y-6 lg:col-span-8 xl:col-span-8">
           {/* Identity & Status Card */}
           <div className="min-w-0 space-y-6 rounded-[28px] border border-slate-200 border-l-4 border-l-brandWarmOrange-500 bg-white p-5 shadow-sm sm:p-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between border-b border-slate-100 pb-4">
@@ -132,7 +132,7 @@ export const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 text-sm">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/75 p-4">
+              <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/75 p-4">
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Jabatan</p>
                 <p className="mt-1 break-words font-semibold text-slate-900">{employee.position}</p>
               </div>
@@ -142,32 +142,34 @@ export const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({
                 <p title={employee.division || undefined} className="mt-1 line-clamp-2 break-words font-semibold text-slate-900">{employee.division || '—'}</p>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/75 p-4">
+              <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/75 p-4">
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Email</p>
                 {employee.email ? (
                   <a
                     href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(employee.email.trim())}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 flex items-center gap-2 break-all text-sm font-semibold text-slate-900 hover:text-slate-700 hover:underline"
+                    title={employee.email}
+                    className="mt-1 flex items-center gap-2 min-w-0 text-sm font-semibold text-slate-900 hover:text-slate-700 hover:underline"
                   >
                     <FontAwesomeIcon icon={faEnvelope} className="text-xs text-slate-400 shrink-0" />
-                    <span>{employee.email}</span>
+                    <span className="truncate whitespace-nowrap">{employee.email}</span>
                   </a>
                 ) : (
                   <p className="mt-1 text-slate-400">—</p>
                 )}
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/75 p-4">
+              <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/75 p-4">
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">No. Telepon</p>
                 {employee.phone ? (
                   <a
                     href={`tel:${employee.phone}`}
-                    className="mt-1 flex items-center gap-2 font-mono text-sm font-semibold text-slate-900 hover:text-slate-700 hover:underline"
+                    title={employee.phone}
+                    className="mt-1 flex items-center gap-2 font-mono text-sm font-semibold text-slate-900 hover:text-slate-700 hover:underline min-w-0"
                   >
                     <FontAwesomeIcon icon={faPhone} className="text-xs text-slate-400 shrink-0" />
-                    <span>{employee.phone}</span>
+                    <span className="truncate whitespace-nowrap">{employee.phone}</span>
                   </a>
                 ) : (
                   <p className="mt-1 text-slate-400">—</p>
