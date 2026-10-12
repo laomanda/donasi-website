@@ -51,6 +51,12 @@ class UpdateEmployeeRequest extends FormRequest
                 'gelar' => trim($this->gelar) !== '' ? trim($this->gelar) : null,
             ]);
         }
+
+        if (!$this->has('is_published') && $this->has('employment_status')) {
+            $this->merge([
+                'is_published' => $this->input('employment_status') === 'active',
+            ]);
+        }
     }
 
     /**
@@ -88,7 +94,7 @@ class UpdateEmployeeRequest extends FormRequest
             'gelar'             => ['nullable', 'string', 'max:100'],
             'employment_status' => ['required', Rule::in(['active', 'inactive'])],
             'display_order'     => ['required', 'integer', 'min:1', Rule::unique('employees', 'display_order')->whereNull('deleted_at')->ignore($employeeId)],
-            'is_published'      => ['required', 'boolean'],
+            'is_published'      => ['nullable', 'boolean'],
             'id_card_image'     => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }

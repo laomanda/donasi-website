@@ -70,7 +70,7 @@ class EmployeeService
     public function findPublicBySlug(string $slug): ?Employee
     {
         return Employee::query()
-            ->published()
+            ->active()
             ->where('slug', trim($slug))
             ->first();
     }

@@ -11,7 +11,7 @@ import {
   faPhone,
 } from '@fortawesome/free-solid-svg-icons';
 import type { Employee } from '@/types/employee';
-import { EmployeePublicationBadge, EmployeeStatusBadge } from './EmployeeStatusBadge';
+import { EmployeeStatusBadge } from './EmployeeStatusBadge';
 import { useToast } from '@/components/ui/ToastProvider';
 
 interface EmployeeDetailViewProps {
@@ -124,13 +124,12 @@ export const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({
                   Informasi & Status Karyawan
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Detail penugasan, visibilitas publik, dan urutan tampilan
+                  Detail penugasan, status kepegawaian, dan urutan tampilan
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
                 <EmployeeStatusBadge status={employee.employment_status} />
-                <EmployeePublicationBadge isPublished={employee.is_published} />
               </div>
             </div>
 

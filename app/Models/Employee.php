@@ -64,6 +64,12 @@ class Employee extends Model
      */
     protected static function booted(): void
     {
+        static::saving(function (Employee $employee) {
+            if ($employee->isDirty('employment_status') || $employee->is_published === null) {
+                $employee->is_published = ($employee->employment_status === 'active');
+            }
+        });
+
         static::deleting(function (Employee $employee) {
             if (!$employee->isForceDeleting() && $employee->display_order !== null) {
                 $employee->display_order = null;
@@ -90,11 +96,11 @@ class Employee extends Model
 
     /**
      * Scope a query to only include employees eligible for the public directory.
-     * Rule: published + active + not soft deleted.
+     * Rule: active + not soft deleted.
      */
     public function scopePublicDirectory(Builder $query): Builder
     {
-        return $query->published()->active();
+        return $query->active();
     }
 
     /**

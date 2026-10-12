@@ -56,7 +56,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   const [gelar, setGelar] = useState<string>('');
   const [employmentStatus, setEmploymentStatus] = useState<EmploymentStatus>('active');
   const [displayOrder, setDisplayOrder] = useState<string>('1');
-  const [isPublished, setIsPublished] = useState<boolean>(true);
+  const isPublished = employmentStatus === 'active';
 
   // ID Card Image state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -82,7 +82,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
           ? String(initialData.display_order)
           : ''
       );
-      setIsPublished(Boolean(initialData.is_published));
     }
   }, [initialData]);
 
@@ -623,7 +622,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
         </div>
       </div>
 
-      {/* SECTION C: ID CARD DIGITAL & PUBLIKASI */}
+      {/* SECTION C: ID CARD DIGITAL */}
       <div className="rounded-[28px] border border-slate-200 border-l-4 border-l-brandWarmOrange-500 bg-white p-5 shadow-sm sm:p-7 space-y-5 lg:col-span-12">
         <div className="flex items-center gap-3.5 border-b border-slate-100 pb-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brandWarmOrange-500 text-white">
@@ -631,44 +630,11 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
           </div>
           <div>
             <h2 className="font-heading text-lg font-bold text-slate-900">
-              C. ID Card Digital & Publikasi
+              C. ID Card Digital
             </h2>
             <p className="text-xs text-slate-500">
-              Unggah file gambar kartu ID Card digital fisik lengkap dan atur visibilitas publik.
+              Unggah file gambar kartu ID Card digital fisik lengkap karyawan.
             </p>
-          </div>
-        </div>
-
-        {/* Publication Switch */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <label htmlFor="pub-switch" className="text-sm font-bold text-slate-900 cursor-pointer">
-                Tampilkan di Halaman Publik
-              </label>
-              <p className="text-xs text-slate-500">
-                {isPublished
-                  ? 'Karyawan akan dapat diakses publik melalui direktori dan pemindaian QR.'
-                  : 'Karyawan yang disembunyikan tidak dapat diakses melalui halaman publik.'}
-              </p>
-            </div>
-
-            <button
-              id="pub-switch"
-              type="button"
-              role="switch"
-              aria-checked={isPublished}
-              onClick={() => setIsPublished((v) => !v)}
-              className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brandGreen-400 ${
-                isPublished ? 'bg-brandGreen-600' : 'bg-slate-300'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                  isPublished ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
           </div>
         </div>
 
