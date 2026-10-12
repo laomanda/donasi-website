@@ -146,8 +146,10 @@ export const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({
                 <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">Email</p>
                 {employee.email ? (
                   <a
-                    href={`mailto:${employee.email}`}
-                    className="mt-1 flex items-center gap-2 break-all text-sm font-semibold text-brandGreen-700 hover:text-brandGreen-800 hover:underline"
+                    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(employee.email.trim())}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 flex items-center gap-2 break-all text-sm font-semibold text-slate-900 hover:text-slate-700 hover:underline"
                   >
                     <FontAwesomeIcon icon={faEnvelope} className="text-xs text-slate-400 shrink-0" />
                     <span>{employee.email}</span>
@@ -162,7 +164,7 @@ export const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({
                 {employee.phone ? (
                   <a
                     href={`tel:${employee.phone}`}
-                    className="mt-1 flex items-center gap-2 font-mono text-sm font-semibold text-brandGreen-700 hover:text-brandGreen-800 hover:underline"
+                    className="mt-1 flex items-center gap-2 font-mono text-sm font-semibold text-slate-900 hover:text-slate-700 hover:underline"
                   >
                     <FontAwesomeIcon icon={faPhone} className="text-xs text-slate-400 shrink-0" />
                     <span>{employee.phone}</span>

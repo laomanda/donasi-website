@@ -76,7 +76,7 @@ function Info({
   isEmail?: boolean;
   isPhone?: boolean;
 }) {
-  const trimmed = value?.trim();
+  const trimmed = value?.trim() || '';
   const hasValue = Boolean(trimmed && trimmed !== '-' && trimmed !== '—');
 
   return (
@@ -84,8 +84,10 @@ function Info({
       <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{label}</p>
       {isEmail && hasValue ? (
         <a
-          href={`mailto:${trimmed}`}
-          className="mt-2 flex items-center gap-2 break-all text-base font-bold text-brandGreen-700 hover:text-brandGreen-800 hover:underline"
+          href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(trimmed)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 flex items-center gap-2 break-all text-base font-bold text-slate-900 hover:text-slate-700 hover:underline"
         >
           <FontAwesomeIcon icon={faEnvelope} className="text-xs text-slate-400 shrink-0" />
           <span>{trimmed}</span>
@@ -93,7 +95,7 @@ function Info({
       ) : isPhone && hasValue ? (
         <a
           href={`tel:${trimmed}`}
-          className="mt-2 flex items-center gap-2 font-mono text-base font-bold text-brandGreen-700 hover:text-brandGreen-800 hover:underline"
+          className="mt-2 flex items-center gap-2 font-mono text-base font-bold text-slate-900 hover:text-slate-700 hover:underline"
         >
           <FontAwesomeIcon icon={faPhone} className="text-xs text-slate-400 shrink-0" />
           <span>{trimmed}</span>
