@@ -2,17 +2,13 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faEye,
   faMagnifyingGlass,
   faPenToSquare,
   faEnvelope,
   faPhone,
 } from '@fortawesome/free-solid-svg-icons';
 import type { Employee } from '@/types/employee';
-import {
-  EmployeePublicationBadge,
-  EmployeeStatusBadge,
-} from './EmployeeStatusBadge';
+import { EmployeeStatusBadge } from './EmployeeStatusBadge';
 
 interface EmployeesTableProps {
   employees: Employee[];
@@ -65,15 +61,9 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                 Kontak
               </th>
               <th className="px-5 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
-                Jabatan
-              </th>
-              <th className="px-5 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                 Status
               </th>
-              <th className="px-5 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
-                Publikasi
-              </th>
-              <th className="w-28 px-5 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
+              <th className="w-24 px-5 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">
                 Aksi
               </th>
             </tr>
@@ -102,16 +92,10 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                     <div className="h-4 w-28 rounded bg-slate-100" />
                   </td>
                   <td className="px-5 py-4">
-                    <div className="h-4 w-28 rounded bg-slate-100" />
-                  </td>
-                  <td className="px-5 py-4">
                     <div className="h-5 w-24 rounded-full bg-slate-100" />
                   </td>
                   <td className="px-5 py-4">
-                    <div className="h-5 w-24 rounded-full bg-slate-100" />
-                  </td>
-                  <td className="px-5 py-4">
-                    <div className="ml-auto h-9 w-20 rounded-xl bg-slate-100" />
+                    <div className="ml-auto h-9 w-10 rounded-xl bg-slate-100" />
                   </td>
                 </tr>
               ))
@@ -119,7 +103,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
               /* Empty State */
               <tr>
                 <td
-                  colSpan={canManage ? 9 : 8}
+                  colSpan={canManage ? 7 : 6}
                   className="px-6 py-12 text-center text-sm font-semibold text-slate-500"
                 >
                   <FontAwesomeIcon
@@ -220,22 +204,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                     </td>
 
                     <td className="px-5 py-4">
-                      <div className="text-sm font-semibold text-slate-800">
-                        {emp.position}
-                      </div>
-                      {emp.division && (
-                        <div className="text-xs font-medium text-slate-400">
-                          {emp.division}
-                        </div>
-                      )}
-                    </td>
-
-                    <td className="px-5 py-4">
                       <EmployeeStatusBadge status={emp.employment_status} />
-                    </td>
-
-                    <td className="px-5 py-4">
-                      <EmployeePublicationBadge isPublished={emp.is_published} />
                     </td>
 
                     <td
@@ -243,13 +212,6 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex justify-end gap-1.5">
-                        <Link
-                          to={`/employees/${emp.id}`}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brandBlueTeal-500 text-white shadow-sm hover:brightness-95"
-                          title="Lihat Detail"
-                        >
-                          <FontAwesomeIcon icon={faEye} className="text-xs" />
-                        </Link>
                         {canManage && (
                           <Link
                             to={`/employees/${emp.id}/edit`}

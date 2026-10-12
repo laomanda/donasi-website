@@ -2,14 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faEye,
   faMagnifyingGlass,
   faPenToSquare,
   faEnvelope,
   faPhone,
 } from '@fortawesome/free-solid-svg-icons';
 import type { Employee } from '@/types/employee';
-import { EmployeePublicationBadge, EmployeeStatusBadge } from './EmployeeStatusBadge';
+import { EmployeeStatusBadge } from './EmployeeStatusBadge';
 
 interface EmployeesMobileListProps {
   employees: Employee[];
@@ -123,20 +122,12 @@ export const EmployeesMobileList: React.FC<EmployeesMobileListProps> = ({
 
               <div className="flex flex-wrap gap-1.5 pt-1">
                 <EmployeeStatusBadge status={emp.employment_status} />
-                <EmployeePublicationBadge isPublished={emp.is_published} />
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-slate-100 pt-2.5">
-            <Link
-              to={`/employees/${emp.id}`}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-brandBlueTeal-500 text-white shadow-xs hover:brightness-95"
-              title="Lihat Detail"
-            >
-              <FontAwesomeIcon icon={faEye} className="text-xs" />
-            </Link>
-            {canManage && (
+          {canManage && (
+            <div className="flex justify-end gap-2 border-t border-slate-100 pt-2.5">
               <Link
                 to={`/employees/${emp.id}/edit`}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-brandGreen-600 text-white shadow-xs hover:bg-brandGreen-700"
@@ -144,8 +135,8 @@ export const EmployeesMobileList: React.FC<EmployeesMobileListProps> = ({
               >
                 <FontAwesomeIcon icon={faPenToSquare} className="text-xs" />
               </Link>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       ))}
     </div>
