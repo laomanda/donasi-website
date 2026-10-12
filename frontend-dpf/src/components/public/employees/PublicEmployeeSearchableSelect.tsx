@@ -1,8 +1,15 @@
 import { useMemo, useState } from 'react';
 
-type Props = { label: string; value: string; options: string[]; placeholder: string; onChange: (value: string) => void };
+type Props = {
+  label: string;
+  value: string;
+  options: string[];
+  placeholder: string;
+  emptyText?: string;
+  onChange: (value: string) => void;
+};
 
-export function PublicEmployeeSearchableSelect({ label, value, options, placeholder, onChange }: Props) {
+export function PublicEmployeeSearchableSelect({ label, value, options, placeholder, emptyText, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => options.filter((option) => option.toLowerCase().includes(query.toLowerCase())), [options, query]);
@@ -15,7 +22,7 @@ export function PublicEmployeeSearchableSelect({ label, value, options, placehol
         <div className="absolute z-20 mt-2 max-h-56 w-full overflow-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl">
           <button type="button" className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-600 hover:bg-slate-100" onClick={() => { onChange(''); setOpen(false); setQuery(''); }}>{placeholder}</button>
           {filtered.map((option) => <button key={option} type="button" className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-brandGreen-700 hover:text-white" onClick={() => { onChange(option); setOpen(false); setQuery(''); }}>{option}</button>)}
-          {!filtered.length && <p className="px-3 py-2 text-sm text-slate-500">Tidak ada pilihan.</p>}
+          {!filtered.length && <p className="px-3 py-2 text-sm text-slate-500">{emptyText || 'Tidak ada pilihan.'}</p>}
         </div>
       </>}
     </div>

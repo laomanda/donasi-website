@@ -5,21 +5,36 @@ import { faEnvelope, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { LandingLayout } from '@/layouts/LandingLayout';
 import { usePublicEmployeeDetail } from '@/hooks/employees/usePublicEmployeeDetail';
 import Error404 from '@/pages/errors/404';
+import { useLang } from '@/lib/i18n';
+import { translate } from '@/lib/i18n-utils';
+import { publicEmployeeDict } from '@/components/public/employees/PublicEmployeeI18n';
 
 export function PublicEmployeeDetailPage() {
   const { slug = '' } = useParams();
+  const { locale } = useLang();
+  const t = (key: string, fallback?: string) => translate(publicEmployeeDict, locale, key, fallback);
+
   const { data, loading, notFound, error } = usePublicEmployeeDetail(slug);
+
   useEffect(() => {
-    document.title = data ? `${data.name} | Direktori Karyawan` : 'Profil Karyawan | DPF';
+    document.title = data
+      ? `${data.name} | ${t('employees.detail.directory.title', 'Direktori Karyawan')}`
+      : t('employees.detail.page.title', 'Profil Karyawan | DPF');
     const robots = document.querySelector('meta[name="robots"]') ?? document.createElement('meta');
     robots.setAttribute('name', 'robots'); robots.setAttribute('content', 'noindex,nofollow');
     if (!robots.parentElement) document.head.appendChild(robots);
     return () => { if (robots.getAttribute('content') === 'noindex,nofollow') robots.remove(); };
-  }, [data]);
+  }, [data, locale]);
+
   if (notFound) return <LandingLayout><Error404 /></LandingLayout>;
-  if (loading) return <LandingLayout><div className="mx-auto max-w-5xl px-4 py-16 text-center text-slate-500">Memuat profil...</div></LandingLayout>;
-  if (error || !data) return <LandingLayout><div className="mx-auto max-w-5xl px-4 py-16 text-center"><p className="font-bold text-red-700">Profil belum dapat dimuat.</p><Link to="/karyawan" className="mt-4 inline-block font-bold text-brandGreen-700">← Direktori Karyawan</Link></div></LandingLayout>;
+  if (loading) return <LandingLayout><div className="mx-auto max-w-5xl px-4 py-16 text-center text-slate-500">{t('employees.detail.loading', 'Memuat profil...')}</div></LandingLayout>;
+  if (error || !data) return <LandingLayout><div className="mx-auto max-w-5xl px-4 py-16 text-center"><p className="font-bold text-red-700">{t('employees.detail.error.title', 'Profil belum dapat dimuat.')}</p><Link to="/karyawan" className="mt-4 inline-block font-bold text-brandGreen-700">{t('employees.detail.error.back', '← Direktori Karyawan')}</Link></div></LandingLayout>;
+
   const inactive = data.employment_status === 'inactive';
+  const statusLabel = inactive
+    ? t('employees.detail.status.inactive', 'Tidak Aktif')
+    : t('employees.detail.status.active', 'Aktif');
+
   return (
     <LandingLayout>
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-20 sm:px-6 lg:px-8">
@@ -36,28 +51,30 @@ export function PublicEmployeeDetailPage() {
           <section className="self-start rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-6 sm:p-8">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.2em] text-brandGreen-700">Profil karyawan</p>
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-brandGreen-700">
+                  {t('employees.detail.badge', 'Profil karyawan')}
+                </p>
                 <h1 className="mt-2 break-words text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">{data.name}</h1>
               </div>
-              <span className={`rounded-full px-3 py-1 text-xs sm:text-sm font-bold text-white shrink-0 ${inactive ? 'bg-slate-700' : 'bg-emerald-600'}`}>
-                {inactive ? 'Tidak Aktif' : 'Aktif'}
+              <span className={`rounded-full px-3 py-1 text-xs sm:text-sm font-bold text-white shrink-0 ${inactive ? 'bg-rose-600' : 'bg-brandGreen-600'}`}>
+                {statusLabel}
               </span>
             </div>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <Info label="ID Pegawai" value={data.employee_code} />
-              <Info label="Jabatan" value={data.position} />
-              <Info label="Divisi" value={data.division} />
-              <Info label="Status" value={data.employment_status_label || (inactive ? 'Tidak Aktif' : 'Aktif')} />
-              <Info label="Email" value={data.email} isEmail />
-              <Info label="No. Telepon" value={data.phone} isPhone />
+              <Info label={t('employees.detail.field.code', 'ID Pegawai')} value={data.employee_code} />
+              <Info label={t('employees.detail.field.position', 'Jabatan')} value={data.position} />
+              <Info label={t('employees.detail.field.division', 'Divisi')} value={data.division} />
+              <Info label={t('employees.detail.field.status', 'Status')} value={statusLabel} />
+              <Info label={t('employees.detail.field.email', 'Email')} value={data.email} isEmail />
+              <Info label={t('employees.detail.field.phone', 'No. Telepon')} value={data.phone} isPhone />
             </div>
           </section>
         </div>
         <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <h2 className="text-xl font-black">Lihat Karyawan Lain</h2>
-          <p className="mt-2 text-sm text-slate-600">Kembali ke direktori untuk menjelajahi profil lainnya.</p>
+          <h2 className="text-xl font-black">{t('employees.detail.cta.title', 'Lihat Karyawan Lain')}</h2>
+          <p className="mt-2 text-sm text-slate-600">{t('employees.detail.cta.desc', 'Kembali ke direktori untuk menjelajahi profil lainnya.')}</p>
           <Link to="/karyawan" className="mt-4 inline-flex rounded-xl bg-brandGreen-700 px-5 py-3 font-bold text-white">
-            Buka Direktori
+            {t('employees.detail.cta.button', 'Buka Direktori')}
           </Link>
         </div>
       </div>
