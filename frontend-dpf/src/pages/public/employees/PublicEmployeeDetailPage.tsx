@@ -65,14 +65,12 @@ export function PublicEmployeeDetailPage() {
             </div>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <Info label={t('employees.detail.field.code', 'ID Pegawai')} value={data.employee_code} />
-              {gelarTrimmed && (
-                <Info label={t('employees.detail.field.gelar', 'Gelar')} value={gelarTrimmed} />
-              )}
+              <Info label={t('employees.detail.field.gelar', 'Gelar')} value={data.gelar} />
               <Info label={t('employees.detail.field.position', 'Jabatan')} value={data.position} />
               <Info label={t('employees.detail.field.division', 'Divisi')} value={data.division} />
               <Info label={t('employees.detail.field.status', 'Status')} value={statusLabel} />
-              <Info label={t('employees.detail.field.email', 'Email')} value={data.email} isEmail />
               <Info label={t('employees.detail.field.phone', 'No. Telepon')} value={data.phone} isPhone />
+              <Info label={t('employees.detail.field.email', 'Email')} value={data.email} isEmail className="sm:col-span-2" />
             </div>
           </section>
         </div>
@@ -93,17 +91,19 @@ function Info({
   value,
   isEmail,
   isPhone,
+  className = '',
 }: {
   label: string;
   value?: string | null;
   isEmail?: boolean;
   isPhone?: boolean;
+  className?: string;
 }) {
   const trimmed = value?.trim() || '';
   const hasValue = Boolean(trimmed && trimmed !== '-' && trimmed !== '—');
 
   return (
-    <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4">
+    <div className={`min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-4 ${className}`}>
       <p className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{label}</p>
       {isEmail && hasValue ? (
         <a

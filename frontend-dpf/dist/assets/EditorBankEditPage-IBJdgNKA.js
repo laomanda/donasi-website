@@ -1,0 +1,1 @@
+import{j as t}from"./vendor-fontawesome-CRU8R4sf.js";import{f as s,r as a}from"./vendor-react-C9U5JXBf.js";import{E as m}from"./EditorBankForm-CGxg0Ijo.js";import"./index-CdNKtZDV.js";function u(){const{id:o}=s(),r=a.useMemo(()=>Number(o),[o]);return t.jsx(m,{mode:"edit",accountId:r})}export{u as EditorBankEditPage,u as default};
