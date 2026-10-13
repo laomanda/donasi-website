@@ -58,17 +58,17 @@ export function PublicEmployeesPage() {
 
   return (
     <LandingLayout>
-      <div className="mx-auto max-w-7xl px-4 pb-8 pt-20 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pb-12 pt-4 sm:pt-6 sm:px-6 lg:px-8">
         <div className="mb-6">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-brandGreen-700">
             {t('employees.header.badge', 'Profil publik')}
           </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
+          <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-4xl">
             {t('employees.header.title', 'Direktori Karyawan')}
           </h1>
         </div>
 
-        <section className="mb-6 grid gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-[1.4fr_1fr_1fr]">
+        <section className="mb-6 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <label className="mb-2 block text-sm font-bold text-slate-700">
               {t('employees.filter.search.label', 'Cari nama karyawan')}
@@ -133,22 +133,24 @@ export function PublicEmployeesPage() {
                 <PublicEmployeeCard key={employee.slug} employee={employee} />
               ))}
             </div>
-            <div className="mt-6 flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 text-sm">
-              <span className="text-slate-600">
+            <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-sm">
+              <span className="text-center sm:text-left text-xs sm:text-sm text-slate-600">
                 {t('employees.pagination.showing', 'Menampilkan')} {data.meta.from ?? 0}–{data.meta.to ?? 0} {t('employees.pagination.of', 'dari')} {data.meta.total} {t('employees.pagination.employees', 'karyawan')}
               </span>
-              <div className="flex gap-2">
+              <div className="flex items-center justify-center sm:justify-end gap-2.5 w-full sm:w-auto shrink-0">
                 <button
+                  type="button"
                   disabled={page <= 1}
                   onClick={() => goPage(page - 1)}
-                  className="rounded-lg border border-slate-300 px-3 py-2 font-bold disabled:opacity-40"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap"
                 >
                   {t('employees.pagination.prev', 'Sebelumnya')}
                 </button>
                 <button
+                  type="button"
                   disabled={page >= data.meta.last_page}
                   onClick={() => goPage(page + 1)}
-                  className="rounded-lg bg-brandGreen-700 px-3 py-2 font-bold text-white disabled:opacity-40"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center rounded-xl bg-brandGreen-700 px-4 py-2.5 text-xs sm:text-sm font-bold text-white transition hover:bg-brandGreen-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap"
                 >
                   {t('employees.pagination.next', 'Berikutnya')}
                 </button>

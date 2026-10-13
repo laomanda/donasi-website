@@ -107,11 +107,11 @@ export function TransparansiPage() {
             {/* Full-Screen Hero Section with Parallax */}
             <section
                 id="hero"
-                className="relative -mt-24 h-screen min-h-screen flex flex-col justify-center overflow-hidden bg-slate-950 text-white"
+                className="relative -mt-24 min-h-[100svh] lg:h-screen lg:min-h-[700px] flex flex-col justify-center overflow-hidden bg-slate-950 text-white"
             >
                 {/* Parallax Background Photo & Clean Dark Overlay */}
                 <motion.div
-                    className="absolute inset-0 z-0 h-[125%] -top-[12%] w-full"
+                    className="absolute inset-0 z-0 h-[120%] -top-[10%] w-full"
                     style={{ y: isMobile ? 0 : yParallax }}
                 >
                     <img
@@ -123,32 +123,32 @@ export function TransparansiPage() {
                     <div className="absolute inset-0 bg-black/60" />
                 </motion.div>
 
-                <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8 text-center pt-24 pb-8 my-auto">
+                <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6 lg:space-y-8 text-center pt-28 pb-10 sm:pt-32 sm:pb-12 lg:pt-24 lg:pb-8 my-auto">
                     {/* Heading */}
-                    <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight drop-shadow-md">
+                    <h1 className="font-heading text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-snug sm:leading-tight drop-shadow-md">
                         {locale === "en"
                             ? "Waqf Collection & Distribution Transparency"
                             : "Transparansi Penghimpunan & Penyaluran Wakaf"}
                     </h1>
 
                     {/* Subtitle */}
-                    <p className="max-w-3xl mx-auto text-base sm:text-lg text-slate-200 leading-relaxed font-normal drop-shadow-sm">
+                    <p className="max-w-3xl mx-auto text-xs sm:text-base lg:text-lg text-slate-200 leading-relaxed font-normal drop-shadow-sm px-1 sm:px-0">
                         {locale === "en"
                             ? "Djalaludin Pane Foundation (DPF) is committed to real-time transparency, accountability, and productive waqf governance. Monitor all funds collected and distributed to programs."
                             : "Djalaludin Pane Foundation (DPF) berkomitmen mewujudkan keterbukaan dan tata kelola wakaf yang amanah, akuntabel, dan produktif. Pantau seluruh alur dana dari wakif hingga penyaluran ke program."}
                     </p>
 
                     {/* Harmonious Quick Metrics Strip: 3 Verified Public Metrics with Elegant Glassmorphism */}
-                    <div className="pt-6 grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-5 max-w-5xl mx-auto text-left w-full">
+                    <div className="pt-2 sm:pt-4 lg:pt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 lg:gap-5 max-w-5xl mx-auto text-left w-full">
                         {/* Card 1: Total Wakaf Terhimpun */}
-                        <div className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/40 backdrop-blur-xl border border-white/15 p-4.5 sm:p-5 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_0_rgba(255,255,255,0.2)] transition-all duration-300 hover:bg-slate-900/55 hover:border-emerald-400/30 hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.3)]">
+                        <div className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/40 backdrop-blur-xl border border-white/15 p-3.5 sm:p-5 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_0_rgba(255,255,255,0.2)] transition-all duration-300 hover:bg-slate-900/55 hover:border-emerald-400/30 hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.3)]">
                             <div className="pointer-events-none absolute -top-10 -left-10 h-28 w-28 rounded-full bg-emerald-500/10 blur-xl" />
 
-                            <div className="relative flex items-center gap-3.5 sm:gap-4">
-                                <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-brandGreen-500">
+                            <div className="relative flex items-center gap-3 sm:gap-4">
+                                <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-brandGreen-500">
                                     <FontAwesomeIcon
                                         icon={faBuildingColumns}
-                                        className="text-base sm:text-lg"
+                                        className="text-sm sm:text-lg"
                                     />
                                 </div>
                                 <div className="min-w-0 flex-1">
@@ -176,8 +176,8 @@ export function TransparansiPage() {
                                                     momCollected > 0
                                                         ? "bg-brandGreen-500"
                                                         : momCollected < 0
-                                                          ? "bg-red-500"
-                                                          : "bg-red-500"
+                                                           ? "bg-red-500"
+                                                           : "bg-red-500"
                                                 }`}
                                             >
                                                 <FontAwesomeIcon
@@ -211,7 +211,7 @@ export function TransparansiPage() {
                         {/* Card 2: Dana Disalurkan (Clickable to /penyaluran) */}
                         <Link
                             to="/penyaluran"
-                            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/40 backdrop-blur-xl border border-white/15 p-4.5 sm:p-5 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_0_rgba(255,255,255,0.2)] transition-all duration-300 hover:bg-slate-900/55 hover:border-sky-400/30 hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.3)] cursor-pointer block text-left"
+                            className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/40 backdrop-blur-xl border border-white/15 p-3.5 sm:p-5 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_0_rgba(255,255,255,0.2)] transition-all duration-300 hover:bg-slate-900/55 hover:border-sky-400/30 hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.3)] cursor-pointer block text-left"
                             title={
                                 locale === "en"
                                     ? "Click to view distribution details"
@@ -220,18 +220,18 @@ export function TransparansiPage() {
                         >
                             <div className="pointer-events-none absolute -top-10 -left-10 h-28 w-28 rounded-full bg-sky-500/10 blur-xl" />
 
-                            <div className="absolute top-3.5 right-3.5 flex h-6 w-6 items-center justify-center rounded-full bg-white/[0.08] border border-white/10 text-slate-300 group-hover:bg-sky-500/25 group-hover:text-sky-200 group-hover:border-sky-400/40 transition-all duration-300">
+                            <div className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full bg-white/[0.08] border border-white/10 text-slate-300 group-hover:bg-sky-500/25 group-hover:text-sky-200 group-hover:border-sky-400/40 transition-all duration-300">
                                 <FontAwesomeIcon
                                     icon={faArrowRight}
                                     className="text-[10px] -rotate-45 group-hover:rotate-0 transition-transform duration-300"
                                 />
                             </div>
 
-                            <div className="relative flex items-center gap-3.5 sm:gap-4 pr-4">
-                                <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-600">
+                            <div className="relative flex items-center gap-3 sm:gap-4 pr-4">
+                                <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-600">
                                     <FontAwesomeIcon
                                         icon={faReceipt}
-                                        className="text-base sm:text-lg"
+                                        className="text-sm sm:text-lg"
                                     />
                                 </div>
                                 <div className="min-w-0 flex-1">
@@ -264,14 +264,14 @@ export function TransparansiPage() {
                         </Link>
 
                         {/* Card 3: Penyaluran Program */}
-                        <div className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/40 backdrop-blur-xl border border-white/15 p-4.5 sm:p-5 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_0_rgba(255,255,255,0.2)] transition-all duration-300 hover:bg-slate-900/55 hover:border-indigo-400/30 hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.3)]">
+                        <div className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/40 backdrop-blur-xl border border-white/15 p-3.5 sm:p-5 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_0_rgba(255,255,255,0.2)] transition-all duration-300 hover:bg-slate-900/55 hover:border-indigo-400/30 hover:shadow-[0_12px_40px_0_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.3)]">
                             <div className="pointer-events-none absolute -top-10 -left-10 h-28 w-28 rounded-full bg-indigo-500/10 blur-xl" />
 
-                            <div className="relative flex items-center gap-3.5 sm:gap-4">
-                                <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600">
+                            <div className="relative flex items-center gap-3 sm:gap-4">
+                                <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600">
                                     <FontAwesomeIcon
                                         icon={faHandshakeAngle}
-                                        className="text-base sm:text-lg"
+                                        className="text-sm sm:text-lg"
                                     />
                                 </div>
                                 <div className="min-w-0 flex-1">

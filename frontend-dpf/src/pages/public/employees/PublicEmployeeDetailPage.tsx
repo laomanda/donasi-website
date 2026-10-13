@@ -40,7 +40,7 @@ export function PublicEmployeeDetailPage() {
 
   return (
     <LandingLayout>
-      <div className="mx-auto max-w-7xl px-4 pb-12 pt-20 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pb-12 pt-4 sm:pt-6 sm:px-6 lg:px-8">
         <div className="grid items-start gap-6 lg:gap-8 lg:grid-cols-[380px_1fr] xl:grid-cols-[410px_1fr]">
           <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
             <div className="flex min-h-[360px] items-center justify-center rounded-xl bg-slate-100 p-3 sm:min-h-[520px]">
