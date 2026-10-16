@@ -22,81 +22,91 @@ class DonationJournalService
      */
     public function recordDonationJournal(Donation $donation): ?JournalEntry
     {
-        // 1. Duplicate Protection
-        $existing = JournalEntry::where('reference_type', 'donation')
-            ->where('reference_id', $donation->id)
-            ->first();
-
-        if ($existing) {
-            return $existing;
-        }
-
-        // 2. Only record for paid donations with amount > 0
-        if ($donation->status !== 'paid' || (float) $donation->amount <= 0) {
-            return null;
-        }
-
-        // 3. Resolve accounts
-        $debitAccount = $this->resolveDebitAccount($donation);
-        $creditAccount = $this->resolveCreditAccount($donation);
-
-        $programTitle = $donation->program ? $donation->program->title : 'Dana Umum';
-        $donorName = $donation->is_anonymous ? 'Hamba Allah' : ($donation->donor_name ?: 'Donatur');
-        $date = $donation->paid_at ? $donation->paid_at->toDateString() : now()->toDateString();
-
-        // 3. Resolve & ensure accounting period is open
-        $period = null;
         try {
-            $period = $this->periodService->resolvePeriodByDate($date);
-            $this->periodService->ensurePeriodOpen($period);
-        } catch (\Throwable $e) {
-            Log::error("Cannot create donation journal in closed accounting period: donation {$donation->id} date {$date} - ".$e->getMessage());
+            // 1. Duplicate Protection
+            $existing = JournalEntry::where('reference_type', 'donation')
+                ->where('reference_id', $donation->id)
+                ->first();
 
-            AuditLog::create([
-                'user_id' => $donation->user_id ?? auth()->id() ?? User::query()->first()?->id ?? 1,
-                'module' => 'donation',
-                'action' => 'journal_rejected_closed_period',
+            if ($existing) {
+                return $existing;
+            }
+
+            // 2. Only record for paid donations with amount > 0
+            if ($donation->status !== 'paid' || (float) $donation->amount <= 0) {
+                return null;
+            }
+
+            // 3. Resolve accounts
+            $debitAccount = $this->resolveDebitAccount($donation);
+            $creditAccount = $this->resolveCreditAccount($donation);
+
+            if (! $debitAccount || ! $creditAccount) {
+                Log::warning("Cannot auto-create donation journal: Debit or Credit account missing in Chart of Accounts for donation {$donation->id}");
+
+                return null;
+            }
+
+            $programTitle = $donation->program ? $donation->program->title : 'Dana Umum';
+            $donorName = $donation->is_anonymous ? 'Hamba Allah' : ($donation->donor_name ?: 'Donatur');
+            $date = $donation->paid_at ? $donation->paid_at->toDateString() : now()->toDateString();
+
+            // 4. Resolve & ensure accounting period is open
+            $period = null;
+            try {
+                $period = $this->periodService->resolvePeriodByDate($date);
+                $this->periodService->ensurePeriodOpen($period);
+            } catch (\Throwable $e) {
+                Log::error("Cannot create donation journal in closed accounting period: donation {$donation->id} date {$date} - ".$e->getMessage());
+
+                AuditLog::create([
+                    'user_id' => $donation->user_id ?? auth()->id() ?? User::query()->first()?->id ?? 1,
+                    'module' => 'donation',
+                    'action' => 'journal_rejected_closed_period',
+                    'reference_id' => $donation->id,
+                    'old_data' => null,
+                    'new_data' => [
+                        'donation_id' => $donation->id,
+                        'donation_code' => $donation->donation_code,
+                        'amount' => (float) $donation->amount,
+                        'transaction_date' => $date,
+                        'accounting_period_id' => $period?->id ?? null,
+                        'reason' => 'Accounting period is closed or missing',
+                        'error_message' => $e->getMessage(),
+                    ],
+                ]);
+
+                return null;
+            }
+
+            if (! $period) {
+                return null;
+            }
+
+            $journalData = [
+                'transaction_date' => $date,
+                'accounting_period_id' => $period->id,
+                'reference_type' => 'donation',
                 'reference_id' => $donation->id,
-                'old_data' => null,
-                'new_data' => [
-                    'donation_id' => $donation->id,
-                    'donation_code' => $donation->donation_code,
-                    'amount' => (float) $donation->amount,
-                    'transaction_date' => $date,
-                    'accounting_period_id' => $period?->id ?? null,
-                    'reason' => 'Accounting period is closed',
-                    'error_message' => $e->getMessage(),
+                'program_id' => $donation->program_id,
+                'description' => "Penerimaan Donasi #{$donation->donation_code} - {$donorName} ({$programTitle})",
+                'status' => 'posted',
+                'journal_lines' => [
+                    [
+                        'account_id' => $debitAccount->id,
+                        'debit' => (float) $donation->amount,
+                        'credit' => 0.00,
+                        'description' => 'Penerimaan Kas/Bank via '.($donation->payment_channel ?: $donation->payment_source ?: 'Bank'),
+                    ],
+                    [
+                        'account_id' => $creditAccount->id,
+                        'debit' => 0.00,
+                        'credit' => (float) $donation->amount,
+                        'description' => "Penerimaan Wakaf/Donasi Program {$programTitle}",
+                    ],
                 ],
-            ]);
+            ];
 
-            return null;
-        }
-
-        $journalData = [
-            'transaction_date' => $date,
-            'accounting_period_id' => $period->id,
-            'reference_type' => 'donation',
-            'reference_id' => $donation->id,
-            'program_id' => $donation->program_id,
-            'description' => "Penerimaan Donasi #{$donation->donation_code} - {$donorName} ({$programTitle})",
-            'status' => 'posted',
-            'journal_lines' => [
-                [
-                    'account_id' => $debitAccount->id,
-                    'debit' => (float) $donation->amount,
-                    'credit' => 0.00,
-                    'description' => 'Penerimaan Kas/Bank via '.($donation->payment_channel ?: $donation->payment_source ?: 'Bank'),
-                ],
-                [
-                    'account_id' => $creditAccount->id,
-                    'debit' => 0.00,
-                    'credit' => (float) $donation->amount,
-                    'description' => "Penerimaan Wakaf/Donasi Program {$programTitle}",
-                ],
-            ],
-        ];
-
-        try {
             return $this->journalService->createJournal($journalData, $donation->user);
         } catch (\Throwable $e) {
             Log::error("Failed to auto-generate journal for donation {$donation->id}: ".$e->getMessage());
@@ -108,7 +118,7 @@ class DonationJournalService
     /**
      * Resolve debit account (Kas / Bank) based on payment source & channel.
      */
-    public function resolveDebitAccount(Donation $donation): Account
+    public function resolveDebitAccount(Donation $donation): ?Account
     {
         $channel = strtolower((string) ($donation->payment_channel ?? ''));
         $source = strtolower((string) ($donation->payment_source ?? ''));
@@ -125,13 +135,13 @@ class DonationJournalService
             $account = Account::where('code', '1112')->first(); // Default Bank BSI
         }
 
-        return $account ?? Account::where('account_type', 'asset')->where('code', 'like', '111%')->firstOrFail();
+        return $account ?? Account::where('account_type', 'asset')->where('code', 'like', '111%')->first();
     }
 
     /**
      * Resolve credit account (Penerimaan) based on program category.
      */
-    public function resolveCreditAccount(Donation $donation): Account
+    public function resolveCreditAccount(Donation $donation): ?Account
     {
         $program = $donation->program;
         $category = strtolower((string) ($program?->category ?? ''));
@@ -147,6 +157,6 @@ class DonationJournalService
             $account = Account::where('code', '4110')->first(); // Penerimaan Wakaf Uang - Abadi
         }
 
-        return $account ?? Account::where('account_type', 'revenue')->where('code', 'like', '41%')->firstOrFail();
+        return $account ?? Account::where('account_type', 'revenue')->where('code', 'like', '41%')->first();
     }
 }

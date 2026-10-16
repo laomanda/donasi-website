@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Allocation;
 use App\Services\AllocationJournalService;
+use Illuminate\Support\Facades\Log;
 
 class AllocationObserver
 {
@@ -13,10 +14,15 @@ class AllocationObserver
      */
     public function saved(Allocation $allocation): void
     {
-        $service = app(AllocationJournalService::class);
+        try {
+            $service = app(AllocationJournalService::class);
 
-        if ($service->isAllocationValid($allocation)) {
-            $service->recordAllocationJournal($allocation);
+            if ($service->isAllocationValid($allocation)) {
+                $service->recordAllocationJournal($allocation);
+            }
+        } catch (\Throwable $e) {
+            Log::error("AllocationObserver error recording journal for allocation {$allocation->id}: " . $e->getMessage());
         }
     }
 }
+

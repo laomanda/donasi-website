@@ -39,69 +39,79 @@ class AllocationJournalService
      */
     public function recordAllocationJournal(Allocation $allocation): ?JournalEntry
     {
-        // 1. Duplicate Protection
-        $existing = JournalEntry::where('reference_type', 'allocation')
-            ->where('reference_id', $allocation->id)
-            ->first();
-
-        if ($existing) {
-            return $existing;
-        }
-
-        // 2. Validity check
-        if (! $this->isAllocationValid($allocation)) {
-            return null;
-        }
-
-        // 3. Resolve accounts
-        $debitAccount = $this->resolveDebitAccount($allocation);
-        $creditAccount = $this->resolveCreditAccount($allocation);
-
-        $program = $allocation->program;
-        $programTitle = $program ? $program->title : 'Umum / Kemanusiaan';
-        $transactionDate = $allocation->allocated_at
-            ? $allocation->allocated_at->toDateString()
-            : ($allocation->created_at ? $allocation->created_at->toDateString() : now()->toDateString());
-
-        // Resolve & ensure accounting period is open
         try {
-            $period = $this->periodService->resolvePeriodByDate($transactionDate);
-            $this->periodService->ensurePeriodOpen($period);
-        } catch (\Throwable $e) {
-            Log::error("Cannot create allocation journal in closed accounting period: allocation {$allocation->id} date {$transactionDate} - ".$e->getMessage());
+            // 1. Duplicate Protection
+            $existing = JournalEntry::where('reference_type', 'allocation')
+                ->where('reference_id', $allocation->id)
+                ->first();
 
-            return null;
-        }
+            if ($existing) {
+                return $existing;
+            }
 
-        $description = $allocation->description
-            ? "Penyaluran: {$allocation->description} ({$programTitle})"
-            : "Penyaluran Dana Program {$programTitle}";
+            // 2. Validity check
+            if (! $this->isAllocationValid($allocation)) {
+                return null;
+            }
 
-        $journalData = [
-            'transaction_date' => $transactionDate,
-            'accounting_period_id' => $period->id,
-            'reference_type' => 'allocation',
-            'reference_id' => $allocation->id,
-            'program_id' => $allocation->program_id,
-            'description' => $description,
-            'status' => 'posted',
-            'journal_lines' => [
-                [
-                    'account_id' => $debitAccount->id,
-                    'debit' => (float) $allocation->amount,
-                    'credit' => 0.00,
-                    'description' => "Penyaluran Dana - {$debitAccount->name} ({$programTitle})",
+            // 3. Resolve accounts
+            $debitAccount = $this->resolveDebitAccount($allocation);
+            $creditAccount = $this->resolveCreditAccount($allocation);
+
+            if (! $debitAccount || ! $creditAccount) {
+                Log::warning("Cannot auto-create allocation journal: Debit or Credit account missing in Chart of Accounts for allocation {$allocation->id}");
+
+                return null;
+            }
+
+            $program = $allocation->program;
+            $programTitle = $program ? $program->title : 'Umum / Kemanusiaan';
+            $transactionDate = $allocation->allocated_at
+                ? $allocation->allocated_at->toDateString()
+                : ($allocation->created_at ? $allocation->created_at->toDateString() : now()->toDateString());
+
+            // Resolve & ensure accounting period is open
+            try {
+                $period = $this->periodService->resolvePeriodByDate($transactionDate);
+                $this->periodService->ensurePeriodOpen($period);
+            } catch (\Throwable $e) {
+                Log::error("Cannot create allocation journal in closed accounting period: allocation {$allocation->id} date {$transactionDate} - ".$e->getMessage());
+
+                return null;
+            }
+
+            if (! $period) {
+                return null;
+            }
+
+            $description = $allocation->description
+                ? "Penyaluran: {$allocation->description} ({$programTitle})"
+                : "Penyaluran Dana Program {$programTitle}";
+
+            $journalData = [
+                'transaction_date' => $transactionDate,
+                'accounting_period_id' => $period->id,
+                'reference_type' => 'allocation',
+                'reference_id' => $allocation->id,
+                'program_id' => $allocation->program_id,
+                'description' => $description,
+                'status' => 'posted',
+                'journal_lines' => [
+                    [
+                        'account_id' => $debitAccount->id,
+                        'debit' => (float) $allocation->amount,
+                        'credit' => 0.00,
+                        'description' => "Penyaluran Dana - {$debitAccount->name} ({$programTitle})",
+                    ],
+                    [
+                        'account_id' => $creditAccount->id,
+                        'debit' => 0.00,
+                        'credit' => (float) $allocation->amount,
+                        'description' => "Pengeluaran Kas/Bank via {$creditAccount->name}",
+                    ],
                 ],
-                [
-                    'account_id' => $creditAccount->id,
-                    'debit' => 0.00,
-                    'credit' => (float) $allocation->amount,
-                    'description' => "Pengeluaran Kas/Bank via {$creditAccount->name}",
-                ],
-            ],
-        ];
+            ];
 
-        try {
             $journal = $this->journalService->createJournal($journalData, $allocation->user);
 
             // Audit Log
@@ -131,15 +141,8 @@ class AllocationJournalService
 
     /**
      * Resolve debit account (Beban Penyaluran) based on program category.
-     *
-     * Mapping:
-     * - Pendidikan: 5110 Penyaluran Program Pendidikan & Beasiswa
-     * - Sosial / Kemanusiaan: 5120 Penyaluran Program Sosial & Kemanusiaan
-     * - Dakwah / Keagamaan: 5130 Penyaluran Program Dakwah & Keagamaan
-     * - Kesehatan: 5140 Penyaluran Program Layanan Kesehatan
-     * - Ekonomi / UMKM / Produktif: 5150 Penyaluran Program Pemberdayaan Ekonomi
      */
-    public function resolveDebitAccount(Allocation $allocation): Account
+    public function resolveDebitAccount(Allocation $allocation): ?Account
     {
         $program = $allocation->program;
         $category = strtolower((string) ($program?->category ?? ''));
@@ -197,13 +200,13 @@ class AllocationJournalService
             $account = Account::where('code', '5120')->first() ?? Account::where('code', '5100')->first();
         }
 
-        return $account ?? Account::where('account_type', 'expense')->where('code', 'like', '51%')->firstOrFail();
+        return $account ?? Account::where('account_type', 'expense')->where('code', 'like', '51%')->first();
     }
 
     /**
      * Resolve credit account (Kas / Bank sumber dana) for allocation.
      */
-    public function resolveCreditAccount(Allocation $allocation): Account
+    public function resolveCreditAccount(Allocation $allocation): ?Account
     {
         $donation = $allocation->donation;
         $channel = strtolower((string) ($donation?->payment_channel ?? ''));
@@ -227,6 +230,6 @@ class AllocationJournalService
             $account = Account::where('code', '1112')->first();
         }
 
-        return $account ?? Account::where('account_type', 'asset')->where('code', 'like', '111%')->firstOrFail();
+        return $account ?? Account::where('account_type', 'asset')->where('code', 'like', '111%')->first();
     }
 }
