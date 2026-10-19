@@ -24,4 +24,8 @@ Homestead.yaml
 Thumbs.db
 _ide_helper_models.php
 .phpstorm.meta.php
-
+*.zip
+*.tar.gz
+*.rar
+/scratch
+/deployment/artifacts
