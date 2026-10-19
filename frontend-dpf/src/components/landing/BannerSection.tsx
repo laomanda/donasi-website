@@ -78,7 +78,6 @@ export function BannerSection({ banners }: { banners: Banner[] }) {
 
     video.muted = isMuted;
     video.defaultMuted = isMuted;
-    // @ts-expect-error iOS Safari inline video property
     video.playsInline = true;
 
     const playPromise = video.play();
@@ -183,9 +182,7 @@ export function BannerSection({ banners }: { banners: Banner[] }) {
                 autoPlay
                 muted={isMuted}
                 playsInline
-                // @ts-expect-error iOS Safari playsinline
-                webkit-playsinline="true"
-                x5-playsinline="true"
+                {...({ "webkit-playsinline": "true", "x5-playsinline": "true" } as Record<string, string>)}
                 preload="auto"
                 onPlay={() => {
                   setIsVideoPlaying(true);
@@ -257,7 +254,7 @@ export function BannerSection({ banners }: { banners: Banner[] }) {
               }
             }}
             aria-label={isMuted ? "Aktifkan suara video" : "Bisukan suara video"}
-            className="absolute bottom-3 right-3 sm:bottom-5 sm:right-5 z-30 inline-flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-slate-900/80 text-white backdrop-blur-md border border-white/20 shadow-lg hover:bg-slate-900 transition transform active:scale-95"
+            className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 z-30 inline-flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-slate-900/80 text-white backdrop-blur-md border border-white/20 shadow-lg hover:bg-slate-900 transition transform active:scale-95"
           >
             <FontAwesomeIcon icon={isMuted ? faVolumeXmark : faVolumeHigh} className="text-xs sm:text-sm" />
           </button>

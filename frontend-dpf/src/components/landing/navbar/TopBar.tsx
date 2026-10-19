@@ -84,11 +84,9 @@ export function TopBar({
                                 {emailText}
                             </a>
                         </span>
-                        <div
-                            className={`inline-flex items-center gap-2 font-semibold ${topbarDark ? "text-white/70" : "text-slate-600"}`}
-                        >
-                            <PrayerBadge variant={topbarDark ? "dark" : "light"} />
-                        </div>
+                        <PrayerBadge
+                            variant={topbarDark ? "dark" : "light"}
+                        />
                     </div>
 
                     {/* Right: Music toggle & Language switch (above Masuk & Donasi buttons) */}

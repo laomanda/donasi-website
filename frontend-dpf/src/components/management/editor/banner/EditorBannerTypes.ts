@@ -31,7 +31,7 @@ export const emptyBannerForm: BannerFormState = {
   image_path: "",
   video_path: "",
   video_duration: "",
-  display_order: "0",
+  display_order: "1",
   status: "published",
 };
 
@@ -57,7 +57,7 @@ export const formatBannerDate = (value: string | null | undefined) => {
 };
 
 /**
- * Logic to find the next available display order
+ * Logic to find the next available display order (starts from 1, common across all media types)
  */
 export const getNextBannerOrder = (banners: Banner[], excludeId?: number) => {
   const used = new Set<number>();
@@ -65,10 +65,10 @@ export const getNextBannerOrder = (banners: Banner[], excludeId?: number) => {
     if (excludeId && banner.id === excludeId) return;
     const n = Number(banner.display_order);
     if (!Number.isFinite(n)) return;
-    used.add(Math.max(0, Math.floor(n)));
+    used.add(Math.max(1, Math.floor(n)));
   });
 
-  let candidate = 0;
+  let candidate = 1;
   while (used.has(candidate)) candidate += 1;
   return candidate;
 };

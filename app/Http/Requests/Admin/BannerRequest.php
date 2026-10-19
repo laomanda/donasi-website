@@ -48,7 +48,7 @@ class BannerRequest extends FormRequest
                 'nullable', 'string', 'max:255'
             ],
             'video_duration'=> ['nullable', 'integer', 'min:1', 'max:120'],
-            'display_order' => [$banner ? 'sometimes' : 'required', 'integer', 'min:0', $orderRule],
+            'display_order' => [$banner ? 'sometimes' : 'required', 'integer', 'min:1', $orderRule],
             'status'        => ['sometimes', 'required', 'string', 'in:published,draft'],
         ];
     }
@@ -56,9 +56,15 @@ class BannerRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'video_duration.max' => 'Durasi video maksimal adalah 2 menit (120 detik).',
-            'video_path.required' => 'File video wajib diunggah untuk banner bertipe video.',
-            'image_path.required' => 'Gambar banner wajib diunggah.',
+            'display_order.required' => 'Nomor urutan tampil wajib diisi.',
+            'display_order.integer'  => 'Nomor urutan tampil harus berupa angka bulat.',
+            'display_order.min'      => 'Nomor urutan tampil minimal bernilai 1.',
+            'display_order.unique'   => 'Nomor urutan tampil sudah digunakan oleh banner lain.',
+            'video_duration.integer' => 'Durasi video harus berupa angka detik.',
+            'video_duration.min'     => 'Durasi video minimal 1 detik.',
+            'video_duration.max'     => 'Durasi video maksimal adalah 2 menit (120 detik).',
+            'video_path.required'    => 'File video wajib diunggah untuk banner bertipe video.',
+            'image_path.required'    => 'Gambar banner wajib diunggah.',
         ];
     }
 }

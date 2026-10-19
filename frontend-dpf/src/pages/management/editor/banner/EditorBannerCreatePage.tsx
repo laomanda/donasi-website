@@ -43,7 +43,7 @@ export default function EditorBannerCreatePage() {
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
 
   const orderNumber = Number(form.display_order);
-  const orderIsValid = Number.isFinite(orderNumber) && Number.isInteger(orderNumber) && orderNumber >= 0;
+  const orderIsValid = Number.isFinite(orderNumber) && Number.isInteger(orderNumber) && orderNumber >= 1;
   
   const duplicateOrderOwner = useMemo(() => {
     if (!orderIsValid) return null;
@@ -51,10 +51,22 @@ export default function EditorBannerCreatePage() {
   }, [orderIsValid, orderNumber, peers]);
 
   const orderErrorMsg = useMemo(() => {
-    if (!orderIsValid) return "Urutan harus berupa angka bulat positif.";
-    if (duplicateOrderOwner) return `Urutan #${orderNumber} sudah digunakan banner lain.`;
+    if (!orderIsValid) return "Urutan harus berupa angka bulat positif (minimal 1).";
+    if (duplicateOrderOwner) {
+      const typeLabel = duplicateOrderOwner.media_type === "video" || duplicateOrderOwner.video_path ? "video" : "foto";
+      return `Urutan #${orderNumber} sudah digunakan oleh banner ${typeLabel}.`;
+    }
     return null;
   }, [duplicateOrderOwner, orderIsValid, orderNumber]);
+
+  const durationNum = form.video_duration ? Number(form.video_duration) : null;
+  const durationErrorMsg = useMemo(() => {
+    if (form.media_type !== "video" || !form.video_duration) return null;
+    if (!Number.isFinite(durationNum) || !Number.isInteger(durationNum) || (durationNum !== null && (durationNum < 1 || durationNum > 120))) {
+      return "Durasi slide video harus antara 1 sampai 120 detik.";
+    }
+    return null;
+  }, [form.media_type, form.video_duration, durationNum]);
 
   const suggestedOrder = useMemo(() => getNextBannerOrder(peers), [peers]);
 
@@ -173,7 +185,7 @@ export default function EditorBannerCreatePage() {
   const isVideo = form.media_type === "video";
   const hasRequiredMedia = isVideo ? !!form.video_path : !!form.image_path;
   const isMediaUploading = imageUploading || videoUploading;
-  const canSubmit = !saving && !isMediaUploading && !loadingPeers && !orderErrorMsg && hasRequiredMedia;
+  const canSubmit = !saving && !isMediaUploading && !loadingPeers && !orderErrorMsg && !durationErrorMsg && hasRequiredMedia;
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 pb-20">
@@ -244,6 +256,7 @@ export default function EditorBannerCreatePage() {
             loadingPeers={loadingPeers}
             disabled={saving}
             error={orderErrorMsg}
+            durationError={durationErrorMsg}
           />
         </div>
       </div>

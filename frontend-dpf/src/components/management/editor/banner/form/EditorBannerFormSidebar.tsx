@@ -12,6 +12,7 @@ type Props = {
   loadingPeers: boolean;
   disabled: boolean;
   error?: string | null;
+  durationError?: string | null;
 };
 
 export default function EditorBannerFormSidebar({
@@ -24,6 +25,7 @@ export default function EditorBannerFormSidebar({
   loadingPeers,
   disabled,
   error,
+  durationError,
 }: Props) {
   const isVideo = form.media_type === "video";
 
@@ -91,11 +93,13 @@ export default function EditorBannerFormSidebar({
           {isVideo && (
             <label className="block group">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-purple-600 flex items-center gap-1.5">
+                <span className={`text-[11px] font-bold uppercase tracking-[0.18em] flex items-center gap-1.5 ${
+                  durationError ? "text-rose-600" : "text-primary-600"
+                }`}>
                   <FontAwesomeIcon icon={faClock} className="text-xs" />
                   Durasi Slide (Detik)
                 </span>
-                <span className="text-[10px] font-semibold text-slate-400">Maks. 120s</span>
+                <span className="text-[10px] font-semibold text-slate-400">1 - 120 detik</span>
               </div>
               <div className="relative mt-2">
                 <input
@@ -104,15 +108,39 @@ export default function EditorBannerFormSidebar({
                   max={120}
                   step={1}
                   value={form.video_duration}
-                  onChange={(e) => onDurationChange?.(e.target.value)}
-                  placeholder="Contoh: 15"
-                  className="w-full rounded-2xl border border-purple-200 bg-purple-50/20 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:border-purple-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-purple-100"
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw === "") {
+                      onDurationChange?.("");
+                      return;
+                    }
+                    const num = parseInt(raw, 10);
+                    if (Number.isNaN(num)) return;
+                    if (num > 120) {
+                      onDurationChange?.("120");
+                    } else if (num < 1) {
+                      onDurationChange?.("1");
+                    } else {
+                      onDurationChange?.(String(num));
+                    }
+                  }}
+                  placeholder="Otomatis mengikuti video"
+                  className={[
+                    "w-full rounded-2xl border px-4 py-3 text-sm font-semibold shadow-sm transition focus:outline-none focus:ring-4",
+                    durationError
+                      ? "border-rose-300 bg-rose-50 text-rose-900 focus:border-rose-400 focus:ring-rose-100"
+                      : "border-primary-200 bg-primary-50/20 text-slate-900 focus:border-primary-400 focus:bg-white focus:ring-primary-100",
+                  ].join(" ")}
                   disabled={disabled}
                 />
               </div>
-              <p className="mt-2 text-[10px] font-medium text-slate-500">
-                Waktu tayang sebelum beralih ke slide berikutnya (1 - 120 detik). Jika kosong, mengikuti durasi video atau otomatis berlanjut saat video berakhir.
-              </p>
+              {durationError ? (
+                <p className="mt-1.5 text-[10px] font-bold text-rose-600">{durationError}</p>
+              ) : (
+                <p className="mt-2 text-[10px] font-medium text-slate-500">
+                  Waktu tayang sebelum beralih ke slide berikutnya (1 - 120 detik). Jika kosong, otomatis mengikuti durasi video asli.
+                </p>
+              )}
             </label>
           )}
 
@@ -124,11 +152,11 @@ export default function EditorBannerFormSidebar({
             <div className="relative mt-2">
               <input
                 type="number"
-                min={0}
+                min={1}
                 step={1}
                 value={form.display_order}
                 onChange={(e) => onChange(e.target.value)}
-                placeholder="0"
+                placeholder="1"
                 className={[
                   "w-full rounded-2xl border px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition focus:outline-none focus:ring-4",
                   error
@@ -140,7 +168,7 @@ export default function EditorBannerFormSidebar({
             </div>
             
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[10px] font-medium text-slate-500">Angka kecil = posisi paling awal.</p>
+              <p className="text-[10px] font-medium text-slate-500">Angka kecil = posisi paling awal (mulai dari 1).</p>
               <button
                 type="button"
                 onClick={onSuggest}

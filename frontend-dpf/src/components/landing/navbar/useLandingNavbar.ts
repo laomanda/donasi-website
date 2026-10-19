@@ -46,10 +46,12 @@ export function useLandingNavbar() {
     const navigate = useNavigate();
     const location = useLocation();
     
-    const isHeroPage = location.pathname === "/" || location.pathname === "/transparansi";
+    const isLanding = location.pathname === "/";
+    const isHeroPage = isLanding || location.pathname === "/transparansi";
     const heroMode = isHeroPage && !scrolled;
     const topbarDark = heroMode;
-    const showWave = !heroMode && !scrolled;
+    const isGlass = heroMode;
+    const showWave = false;
 
     const t = useCallback((key: string, fallback?: string) => 
         translate(globalDict, locale, key, fallback), [locale]);
@@ -109,6 +111,8 @@ export function useLandingNavbar() {
     return {
         open, setOpen,
         scrolled,
+        isGlass,
+        isLanding,
         locale, setLocale,
         langOpen, setLangOpen,
         langRef,

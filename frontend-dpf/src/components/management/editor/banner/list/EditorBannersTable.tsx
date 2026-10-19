@@ -102,7 +102,7 @@ export default function EditorBannersTable({
                                   className="h-full w-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600/90 text-white text-[10px]">
+                                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-600/90 text-white text-[10px]">
                                     <FontAwesomeIcon icon={faPlay} className="translate-x-[1px]" />
                                   </span>
                                 </div>
@@ -116,7 +116,7 @@ export default function EditorBannersTable({
                                   className="h-full w-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600/90 text-white text-[10px]">
+                                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-600/90 text-white text-[10px]">
                                     <FontAwesomeIcon icon={faPlay} className="translate-x-[1px]" />
                                   </span>
                                 </div>
@@ -145,12 +145,12 @@ export default function EditorBannersTable({
                     </td>
                     <td className="px-6 py-5">
                       {isVideo ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-700 border border-purple-200">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-600 px-3 py-1 text-xs font-bold text-white shadow-xs">
                           <FontAwesomeIcon icon={faVideo} className="text-[10px]" />
-                          Video {banner.video_duration ? `(${banner.video_duration}s)` : ""}
+                          Video
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 border border-slate-200">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1 text-xs font-bold text-white shadow-xs">
                           <FontAwesomeIcon icon={faImage} className="text-[10px]" />
                           Gambar
                         </span>
@@ -231,7 +231,7 @@ export default function EditorBannersTable({
                         <div className="relative h-full w-full">
                           <img src={activeImg} alt="Banner" className="h-full w-full object-cover" />
                           <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600 text-white text-[10px]">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-white text-[10px]">
                               <FontAwesomeIcon icon={faPlay} className="translate-x-[1px]" />
                             </span>
                           </div>
@@ -240,7 +240,7 @@ export default function EditorBannersTable({
                         <div className="relative h-full w-full bg-black">
                           <video src={activeVideo} preload="metadata" muted className="h-full w-full object-cover" />
                           <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600 text-white text-[10px]">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 text-white text-[10px]">
                               <FontAwesomeIcon icon={faPlay} className="translate-x-[1px]" />
                             </span>
                           </div>
@@ -275,12 +275,12 @@ export default function EditorBannersTable({
                       </div>
                       <div className="mt-1 flex items-center gap-2">
                         {isVideo ? (
-                          <span className="inline-flex items-center gap-1 rounded bg-purple-50 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 border border-purple-200">
-                            <FontAwesomeIcon icon={faVideo} /> {banner.video_duration ? `${banner.video_duration}s` : "Video"}
+                          <span className="inline-flex items-center gap-1 rounded-full bg-primary-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                            <FontAwesomeIcon icon={faVideo} /> Video
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600 border border-slate-200">
-                            <FontAwesomeIcon icon={faImage} /> Foto
+                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                            <FontAwesomeIcon icon={faImage} /> Gambar
                           </span>
                         )}
                         <span className="text-[10px] text-slate-400 font-mono font-bold">#{banner.display_order}</span>

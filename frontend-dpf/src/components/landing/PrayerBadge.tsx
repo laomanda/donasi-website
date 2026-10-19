@@ -3,7 +3,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fortawesome/free-solid-svg-icons";
 import { useLang } from "../../lib/i18n";
 
-export function PrayerBadge({ variant = "light" }: { variant?: "light" | "dark" }) {
+interface PrayerBadgeProps {
+  variant?: "light" | "dark";
+  className?: string;
+  iconClass?: string;
+}
+
+export function PrayerBadge({
+  variant = "light",
+  className = "",
+  iconClass,
+}: PrayerBadgeProps) {
   const { locale } = useLang();
   const [now, setNow] = useState<Date>(() => new Date());
 
@@ -26,17 +36,15 @@ export function PrayerBadge({ variant = "light" }: { variant?: "light" | "dark" 
   const formattedTime = `${formattedDate} • ${hours}:${minutes}:${seconds}${locale === "en" ? "" : " WIB"}`;
 
   const isDark = variant === "dark";
-  
-  // Style configurations
-  const containerClass = isDark
-    ? "inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold text-white ring-1 ring-white/20 shadow-sm backdrop-blur-sm"
-    : "inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 shadow-sm backdrop-blur-sm";
+  const defaultContainerClass = isDark
+    ? "inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur-sm"
+    : "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1 text-xs font-semibold text-slate-700 shadow-sm";
 
-  const iconClass = isDark ? "text-white/80" : "text-brandGreen-600";
+  const resolvedIconClass = iconClass ?? (isDark ? "text-white/80" : "text-brandGreen-600");
 
   return (
-    <div className={containerClass}>
-      <FontAwesomeIcon icon={faClock} className={iconClass} />
+    <div className={className ? `inline-flex items-center gap-2 ${className}` : defaultContainerClass}>
+      <FontAwesomeIcon icon={faClock} className={resolvedIconClass} />
       <span className="tracking-wide font-sans font-semibold tabular-nums">
         {formattedTime}
       </span>

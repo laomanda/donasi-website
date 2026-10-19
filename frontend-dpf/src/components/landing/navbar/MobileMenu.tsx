@@ -62,7 +62,7 @@ export function MobileMenu({
                             <span className="font-heading font-bold text-slate-800">{t("nav.menuTitle")}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                            <MusicToggle className="text-slate-500 hover:text-brandGreen-600" />
+                            <MusicToggle className="text-slate-500 hover:text-primary-600" />
                             <button
                                 onClick={() => setOpen(false)}
                                 className="h-9 w-9 rounded-full bg-slate-100 text-slate-500 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition"
@@ -73,27 +73,27 @@ export function MobileMenu({
                     </div>
 
                     <div className="p-5 space-y-1">
-                        <div className="mb-4">
-                            <PrayerBadge />
+                        <div className="mb-4 text-xs text-slate-700">
+                            <PrayerBadge iconClass="text-primary-500" />
                         </div>
 
                         <div className="rounded-xl border border-slate-100 bg-white p-3 text-xs text-slate-600 space-y-2 mb-4">
                             <div className="flex items-center gap-2">
-                                <FontAwesomeIcon icon={faPhone} className="text-brandGreen-600" />
+                                <FontAwesomeIcon icon={faPhone} className="text-primary-500" />
                                 {t("nav.phoneLabel")}:{" "}
                                 <a
                                     href={phoneLink}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="font-semibold text-slate-800"
+                                    className="font-semibold text-slate-800 hover:text-primary-600"
                                 >
                                     {phoneNumber}
                                 </a>
                             </div>
                             <div className="flex items-center gap-2">
-                                <FontAwesomeIcon icon={faEnvelope} className="text-brandGreen-600" />
+                                <FontAwesomeIcon icon={faEnvelope} className="text-primary-500" />
                                 {t("nav.emailLabel")}:{" "}
-                                <a href={emailLink} className="font-semibold text-slate-800">
+                                <a href={emailLink} className="font-semibold text-slate-800 hover:text-primary-600">
                                     {emailText}
                                 </a>
                             </div>
@@ -101,7 +101,7 @@ export function MobileMenu({
 
                         <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-xs font-semibold text-slate-500 mb-3">
                             <div className="flex items-center gap-2">
-                                <FontAwesomeIcon icon={faGlobe} className="text-brandGreen-600" />
+                                <FontAwesomeIcon icon={faGlobe} className="text-primary-500" />
                                 {t("nav.language")}
                             </div>
                             <div className="flex items-center gap-1 rounded-full bg-slate-50 p-1 ring-1 ring-slate-100">
@@ -109,7 +109,7 @@ export function MobileMenu({
                                     type="button"
                                     onClick={() => setLocale("id")}
                                     aria-label="Bahasa Indonesia"
-                                    className={`h-7 w-10 rounded-md ${locale === "id" ? "bg-brandGreen-600 ring-1 ring-brandGreen-700" : "bg-white"}`}
+                                    className={`h-7 w-10 rounded-md ${locale === "id" ? "bg-primary-500 ring-1 ring-primary-600" : "bg-white"}`}
                                 >
                                     <img
                                         src={indonesiaFlag}
@@ -121,7 +121,7 @@ export function MobileMenu({
                                     type="button"
                                     onClick={() => setLocale("en")}
                                     aria-label="English"
-                                    className={`h-7 w-10 rounded-md ${locale === "en" ? "bg-brandGreen-600 ring-1 ring-brandGreen-700" : "bg-white"}`}
+                                    className={`h-7 w-10 rounded-md ${locale === "en" ? "bg-primary-500 ring-1 ring-primary-600" : "bg-white"}`}
                                 >
                                     <img
                                         src={ukFlag}
@@ -136,13 +136,14 @@ export function MobileMenu({
                             <button
                                 key={it.href}
                                 onClick={() => { setOpen(false); navigate(it.href); }}
-                                className={`flex w-full items-center rounded-xl px-4 py-3.5 text-sm font-semibold transition
+                                className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition
                               ${location.pathname === it.href
-                                        ? "bg-primary-50 text-primary-700 border border-primary-100"
+                                        ? "bg-primary-500 text-white shadow-sm"
                                         : "text-slate-700 hover:bg-slate-50"
                                     }`}
                             >
-                                {it.label}
+                                <FontAwesomeIcon icon={it.icon} className={`text-sm shrink-0 w-4 text-center ${location.pathname === it.href ? "text-white" : "text-slate-400"}`} />
+                                <span>{it.label}</span>
                             </button>
                         ))}
                     </div>
@@ -157,7 +158,7 @@ export function MobileMenu({
                             className={`inline-flex justify-center items-center rounded-xl py-3 text-sm font-semibold text-white transition ${
                                 resolveUserDashboard()
                                     ? "bg-slate-800 hover:bg-slate-900"
-                                    : "border border-slate-200 bg-primary-600 hover:bg-primary-700"
+                                    : "bg-primary-600 hover:bg-primary-700"
                             }`}
                         >
                             <FontAwesomeIcon icon={resolveUserDashboard() ? faGaugeHigh : faRightToBracket} className="mr-2" />

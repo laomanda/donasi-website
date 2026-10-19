@@ -18,6 +18,7 @@ import { MobileMenu } from "./MobileMenu";
 export function LandingNavbar() {
     const {
         open, setOpen,
+        isGlass,
         locale, setLocale,
         langOpen, setLangOpen,
         langRef,
@@ -33,36 +34,44 @@ export function LandingNavbar() {
     } = useLandingNavbar();
 
     // Styles
-    const heroGlassClass = "bg-slate-900/35";
-    const navSurfaceClass = heroMode ? heroGlassClass : "bg-white/95";
-    const topbarClass = topbarDark ? "text-white" : "text-slate-900";
+    const heroGlassClass = "bg-slate-900/35 backdrop-blur-md";
+    const navSurfaceClass = heroMode 
+        ? `${heroGlassClass} transition-all duration-300` 
+        : "bg-white/95 backdrop-blur-md shadow-sm transition-all duration-300";
+    
+    const topbarClass = topbarDark 
+        ? "text-white bg-transparent transition-colors duration-300" 
+        : "text-slate-900 bg-transparent transition-colors duration-300";
+    
     const topbarIconClass = topbarDark ? "text-white" : "text-brandGreen-600";
-    const topbarLinkClass = topbarDark ? "font-semibold text-white" : "font-semibold text-slate-900 hover:text-primary-700";
+    const topbarLinkClass = topbarDark 
+        ? "font-semibold text-white hover:text-white/80 transition-colors" 
+        : "font-semibold text-slate-900 hover:text-primary-700 transition-colors";
     const topbarTextClass = topbarDark ? "text-white" : "text-slate-900";
     const topbarMutedClass = topbarDark ? "text-white/70" : "text-slate-700";
     
     const navShellClass = heroMode
         ? "border-b border-white/10 shadow-none"
-        : `${(location.pathname === "/" || location.pathname === "/transparansi") && !heroMode ? "border-b border-slate-100" : "border-b border-transparent"} shadow-[0_12px_30px_-22px_rgba(15,23,42,0.3)]`;
+        : "border-b border-slate-100 shadow-[0_12px_30px_-22px_rgba(15,23,42,0.15)]";
     
     const navItemActiveClass = heroMode
-        ? "text-white bg-white/15 ring-1 ring-white/20"
-        : "text-primary-700 bg-primary-50 ring-1 ring-primary-100/60";
+        ? "text-white bg-white/20 ring-1 ring-white/20 font-bold backdrop-blur-sm shadow-sm"
+        : "text-primary-700 bg-primary-50 ring-1 ring-primary-100/60 font-semibold";
     
     const navItemIdleClass = heroMode
-        ? "text-white/80 hover:text-white hover:bg-white/10"
-        : "text-slate-600 hover:text-primary-700 hover:bg-slate-50/80";
+        ? "text-white/80 hover:text-white hover:bg-white/10 font-semibold transition-all"
+        : "text-slate-600 hover:text-primary-700 hover:bg-slate-50/80 font-semibold transition-all";
     
     const brandTitleClass = heroMode ? "text-white" : "text-slate-800";
     const brandTaglineClass = heroMode ? "text-white/70" : "text-slate-500";
     
     const langButtonClass = heroMode
-        ? "inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white shadow-sm transition hover:border-white/40"
+        ? "inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur transition hover:border-white/40"
         : "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-600 shadow-sm transition hover:border-brandGreen-200";
     
     const langIconClass = heroMode ? "text-white/80" : "text-brandGreen-600";
     const langDropdownClass = heroMode
-        ? `${heroGlassClass} text-white shadow-xl ring-1 ring-white/15 backdrop-blur`
+        ? "bg-slate-900/90 text-white shadow-xl ring-1 ring-white/15 backdrop-blur"
         : "bg-white text-slate-700 shadow-xl ring-1 ring-slate-100";
     
     const langOptionClass = heroMode ? "text-white/90" : "text-slate-700";
@@ -71,11 +80,11 @@ export function LandingNavbar() {
     
     const loginButtonClass = heroMode
         ? "inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/20 transition-colors"
-        : "inline-flex items-center justify-center rounded-full border border-slate-200 bg-primary-600 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:border-slate-300 hover:bg-primary-700 transition-colors";
+        : "inline-flex items-center justify-center rounded-full bg-primary-600 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-primary-700 transition-colors";
     
     const dashboardButtonClass = heroMode
         ? "inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/20 transition-colors"
-        : "inline-flex items-center justify-center rounded-full border border-slate-200 bg-slate-800 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-slate-900 transition-colors";
+        : "inline-flex items-center justify-center rounded-full bg-slate-800 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-slate-900 transition-colors";
     
     const donateButtonClass = heroMode
         ? "inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 text-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-white/20 transition-colors"
@@ -92,7 +101,7 @@ export function LandingNavbar() {
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 w-full font-sans overflow-visible">
-            <div className={`relative overflow-visible backdrop-blur-sm ${navSurfaceClass}`}>
+            <div className={`relative overflow-visible ${navSurfaceClass}`}>
                 <TopBar 
                     topbarClass={topbarClass}
                     topbarTextClass={topbarTextClass}
@@ -192,7 +201,11 @@ export function LandingNavbar() {
                             <button
                                 type="button"
                                 onClick={() => setOpen((v) => !v)}
-                                className="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm transition-all"
+                                className={`lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-xl border text-slate-700 shadow-sm transition-all ${
+                                    isGlass
+                                        ? "bg-white/70 backdrop-blur-md border-white/50 hover:bg-white/90"
+                                        : "bg-white border-slate-200 hover:bg-slate-50"
+                                }`}
                                 aria-label={open ? "Tutup menu navigasi / Close navigation menu" : "Buka menu navigasi / Open navigation menu"}
                             >
                                 <FontAwesomeIcon icon={open ? faXmark : faBars} className="text-lg" />

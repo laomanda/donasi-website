@@ -78,11 +78,11 @@ export default function EditorBannerFormMain({
             className={[
               "flex items-center justify-center gap-2.5 rounded-2xl border p-4 font-semibold text-sm transition shadow-xs",
               isVideo
-                ? "border-purple-600 bg-purple-50/70 text-purple-950 ring-2 ring-purple-500/20"
+                ? "border-primary-600 bg-primary-50/70 text-primary-950 ring-2 ring-primary-500/20"
                 : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
             ].join(" ")}
           >
-            <FontAwesomeIcon icon={faVideo} className={isVideo ? "text-purple-600 text-base" : "text-slate-400 text-base"} />
+            <FontAwesomeIcon icon={faVideo} className={isVideo ? "text-primary-600 text-base" : "text-slate-400 text-base"} />
             <span>Video Banner</span>
           </button>
         </div>
@@ -179,7 +179,7 @@ export default function EditorBannerFormMain({
                 type="button"
                 onClick={() => videoInputRef.current?.click()}
                 disabled={disabled || videoUploading}
-                className="inline-flex items-center justify-center rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 disabled:opacity-50"
               >
                 {activeVideoUrl ? "Ganti Video" : "Pilih Berkas Video"}
               </button>
@@ -197,7 +197,7 @@ export default function EditorBannerFormMain({
               )}
 
               {videoUploading && (
-                <span className="text-xs font-semibold text-purple-600 animate-pulse">
+                <span className="text-xs font-semibold text-primary-600 animate-pulse">
                   Mengunggah video...
                 </span>
               )}
@@ -228,9 +228,9 @@ export default function EditorBannerFormMain({
               ) : (
                 <div
                   onClick={() => videoInputRef.current?.click()}
-                  className="cursor-pointer rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/20 p-8 text-center transition hover:border-purple-300 hover:bg-purple-50/50 aspect-video flex flex-col items-center justify-center gap-2"
+                  className="cursor-pointer rounded-2xl border-2 border-dashed border-primary-200 bg-primary-50/20 p-8 text-center transition hover:border-primary-300 hover:bg-primary-50/50 aspect-video flex flex-col items-center justify-center gap-2"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm text-purple-600">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm text-primary-600">
                     <FontAwesomeIcon icon={faFilm} className="text-xl" />
                   </div>
                   <p className="text-sm font-semibold text-slate-700">
