@@ -13,7 +13,7 @@ class BannerController extends Controller
         $data = Cache::remember('frontend.banners', 600, function () {
             return Banner::published()
                 ->orderBy('display_order', 'asc')
-                ->get(['id', 'image_path', 'display_order', 'status']);
+                ->get(['id', 'media_type', 'image_path', 'video_path', 'video_duration', 'display_order', 'status']);
         });
 
         return response()->json($data);

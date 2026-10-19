@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faPenToSquare, faVideo, faImage, faPlay } from "@fortawesome/free-solid-svg-icons";
 import { type Banner, resolveBannerUrl, formatBannerDate } from "../EditorBannerTypes";
 import { imagePlaceholder } from "@/lib/placeholder";
 
@@ -38,8 +38,9 @@ export default function EditorBannersTable({
                   className="h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500 accent-brandGreen-600"
                 />
               </th>
-              <th className="w-24 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Urutan</th>
+              <th className="w-20 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Urutan</th>
               <th className="px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Banner</th>
+              <th className="w-36 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Tipe Media</th>
               <th className="w-36 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Status</th>
               <th className="w-40 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Diperbarui</th>
               <th className="w-24 px-6 py-4 text-right text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Aksi</th>
@@ -58,73 +59,131 @@ export default function EditorBannersTable({
                     </div>
                   </td>
                   <td className="px-6 py-5"><div className="h-6 w-20 rounded-full bg-slate-100" /></td>
+                  <td className="px-6 py-5"><div className="h-6 w-20 rounded-full bg-slate-100" /></td>
                   <td className="px-6 py-5"><div className="h-4 w-24 rounded bg-slate-100" /></td>
                   <td className="px-6 py-5"><div className="ml-auto h-8 w-10 rounded-xl bg-slate-100" /></td>
                 </tr>
               ))
             ) : banners.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-sm font-semibold text-slate-500">
+                <td colSpan={7} className="px-6 py-12 text-center text-sm font-semibold text-slate-500">
                   Belum ada banner yang ditambahkan.
                 </td>
               </tr>
             ) : (
-              banners.map((banner) => (
-                <tr key={banner.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-5 text-center" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds?.has(banner.id)}
-                      onChange={() => onToggle?.(banner.id)}
-                      aria-label={`Pilih banner #${banner.display_order}`}
-                      className="h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500 accent-brandGreen-600"
-                    />
-                  </td>
-                  <td className="px-6 py-5 font-mono font-bold text-slate-800 text-sm">
-                    #{banner.display_order}
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className="h-14 w-24 overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200 shadow-sm">
-                        <img
-                          src={resolveBannerUrl(banner.image_path) ?? imagePlaceholder}
-                          alt="Banner"
-                          className="h-full w-full object-cover"
-                          onError={(e) => (e.currentTarget.src = imagePlaceholder)}
-                        />
+              banners.map((banner) => {
+                const isVideo = banner.media_type === "video" || !!banner.video_path;
+                const activeImg = banner.image_path ? resolveBannerUrl(banner.image_path) : null;
+                const activeVideo = banner.video_path ? resolveBannerUrl(banner.video_path) : null;
+
+                return (
+                  <tr key={banner.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-5 text-center" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds?.has(banner.id)}
+                        onChange={() => onToggle?.(banner.id)}
+                        aria-label={`Pilih banner #${banner.display_order}`}
+                        className="h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500 accent-brandGreen-600"
+                      />
+                    </td>
+                    <td className="px-6 py-5 font-mono font-bold text-slate-800 text-sm">
+                      #{banner.display_order}
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="h-14 w-24 overflow-hidden rounded-xl bg-slate-900 ring-1 ring-slate-200 shadow-sm relative shrink-0">
+                          {isVideo ? (
+                            activeImg ? (
+                              <div className="relative h-full w-full">
+                                <img
+                                  src={activeImg}
+                                  alt="Banner Video"
+                                  className="h-full w-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600/90 text-white text-[10px]">
+                                    <FontAwesomeIcon icon={faPlay} className="translate-x-[1px]" />
+                                  </span>
+                                </div>
+                              </div>
+                            ) : activeVideo ? (
+                              <div className="relative h-full w-full bg-black">
+                                <video
+                                  src={activeVideo}
+                                  preload="metadata"
+                                  muted
+                                  className="h-full w-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600/90 text-white text-[10px]">
+                                    <FontAwesomeIcon icon={faPlay} className="translate-x-[1px]" />
+                                  </span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-slate-400">
+                                <FontAwesomeIcon icon={faVideo} />
+                              </div>
+                            )
+                          ) : (
+                            <img
+                              src={activeImg ?? imagePlaceholder}
+                              alt="Banner"
+                              className="h-full w-full object-cover"
+                              onError={(e) => (e.currentTarget.src = imagePlaceholder)}
+                            />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-900 text-sm">Banner #{banner.display_order}</p>
+                          <p className="text-[10px] text-slate-400 font-medium truncate max-w-[200px]">
+                            {isVideo ? banner.video_path : banner.image_path}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-bold text-slate-900 text-sm">Banner #{banner.display_order}</p>
-                        <p className="text-[10px] text-slate-400 font-medium truncate max-w-[200px]">{banner.image_path}</p>
+                    </td>
+                    <td className="px-6 py-5">
+                      {isVideo ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-700 border border-purple-200">
+                          <FontAwesomeIcon icon={faVideo} className="text-[10px]" />
+                          Video {banner.video_duration ? `(${banner.video_duration}s)` : ""}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 border border-slate-200">
+                          <FontAwesomeIcon icon={faImage} className="text-[10px]" />
+                          Gambar
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-5">
+                      {banner.status === "draft" ? (
+                        <span className="inline-flex items-center rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white shadow-xs">
+                          Draf
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-xs">
+                          Dipublikasikan
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-5 text-sm font-semibold text-slate-600">
+                      {formatBannerDate(banner.updated_at ?? banner.created_at)}
+                    </td>
+                    <td className="px-6 py-5 text-right">
+                      <div className="flex items-center justify-end">
+                        <button
+                          onClick={() => onEdit(banner.id)}
+                          aria-label={`Ubah banner #${banner.display_order}`}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 hover:text-brandGreen-600 transition"
+                        >
+                          <FontAwesomeIcon icon={faPenToSquare} />
+                        </button>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    {banner.status === "draft" ? (
-                      <span className="inline-flex items-center rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white shadow-xs">
-                        Draf
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-xs">
-                        Dipublikasikan
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-5 text-sm font-semibold text-slate-600">
-                    {formatBannerDate(banner.updated_at ?? banner.created_at)}
-                  </td>
-                  <td className="px-6 py-5 text-right">
-                    <div className="flex items-center justify-end">
-                      <button
-                        onClick={() => onEdit(banner.id)}
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 hover:text-brandGreen-600 transition"
-                      >
-                        <FontAwesomeIcon icon={faPenToSquare} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -149,59 +208,103 @@ export default function EditorBannersTable({
             Belum ada banner.
           </div>
         ) : (
-          banners.map((banner) => (
-            <div key={banner.id} className="p-4 bg-white hover:bg-slate-50">
-              <div className="flex items-start gap-3">
-                <div className="pt-2" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="checkbox"
-                    checked={selectedIds?.has(banner.id)}
-                    onChange={() => onToggle?.(banner.id)}
-                    aria-label={`Pilih banner #${banner.display_order}`}
-                    className="h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500 accent-brandGreen-600"
-                  />
-                </div>
-                <div className="h-20 w-32 overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200 shadow-sm shrink-0">
-                   <img
-                      src={resolveBannerUrl(banner.image_path) ?? imagePlaceholder}
-                      alt="Banner"
-                      className="h-full w-full object-cover"
-                      onError={(e) => (e.currentTarget.src = imagePlaceholder)}
+          banners.map((banner) => {
+            const isVideo = banner.media_type === "video" || !!banner.video_path;
+            const activeImg = banner.image_path ? resolveBannerUrl(banner.image_path) : null;
+            const activeVideo = banner.video_path ? resolveBannerUrl(banner.video_path) : null;
+
+            return (
+              <div key={banner.id} className="p-4 bg-white hover:bg-slate-50">
+                <div className="flex items-start gap-3">
+                  <div className="pt-2" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds?.has(banner.id)}
+                      onChange={() => onToggle?.(banner.id)}
+                      aria-label={`Pilih banner #${banner.display_order}`}
+                      className="h-4 w-4 rounded border-slate-300 text-brandGreen-600 focus:ring-brandGreen-500 accent-brandGreen-600"
                     />
-                </div>
-                <div className="min-w-0 flex-1 flex flex-col justify-between py-1">
-                  <div>
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-bold text-slate-900 line-clamp-1">Banner #{banner.display_order}</p>
-                      {banner.status === "draft" ? (
-                        <span className="inline-flex items-center rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
-                          Draf
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
-                          Dipublikasikan
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[10px] text-slate-400 font-mono font-bold mt-0.5">Urutan: #{banner.display_order}</p>
                   </div>
-                  <div className="mt-2 flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      {formatBannerDate(banner.updated_at ?? banner.created_at)}
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => onEdit(banner.id)}
-                        className="p-2 text-slate-600 bg-slate-100 rounded-lg hover:bg-brandGreen-50 hover:text-brandGreen-600 transition"
-                      >
-                        <FontAwesomeIcon icon={faPenToSquare} />
-                      </button>
+                  <div className="h-20 w-32 overflow-hidden rounded-xl bg-slate-900 ring-1 ring-slate-200 shadow-sm shrink-0 relative">
+                    {isVideo ? (
+                      activeImg ? (
+                        <div className="relative h-full w-full">
+                          <img src={activeImg} alt="Banner" className="h-full w-full object-cover" />
+                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600 text-white text-[10px]">
+                              <FontAwesomeIcon icon={faPlay} className="translate-x-[1px]" />
+                            </span>
+                          </div>
+                        </div>
+                      ) : activeVideo ? (
+                        <div className="relative h-full w-full bg-black">
+                          <video src={activeVideo} preload="metadata" muted className="h-full w-full object-cover" />
+                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-600 text-white text-[10px]">
+                              <FontAwesomeIcon icon={faPlay} className="translate-x-[1px]" />
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-slate-400">
+                          <FontAwesomeIcon icon={faVideo} />
+                        </div>
+                      )
+                    ) : (
+                      <img
+                        src={activeImg ?? imagePlaceholder}
+                        alt="Banner"
+                        className="h-full w-full object-cover"
+                        onError={(e) => (e.currentTarget.src = imagePlaceholder)}
+                      />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1 flex flex-col justify-between py-1">
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-bold text-slate-900 line-clamp-1">Banner #{banner.display_order}</p>
+                        {banner.status === "draft" ? (
+                          <span className="inline-flex items-center rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                            Draf
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                            Dipublikasikan
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 flex items-center gap-2">
+                        {isVideo ? (
+                          <span className="inline-flex items-center gap-1 rounded bg-purple-50 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 border border-purple-200">
+                            <FontAwesomeIcon icon={faVideo} /> {banner.video_duration ? `${banner.video_duration}s` : "Video"}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600 border border-slate-200">
+                            <FontAwesomeIcon icon={faImage} /> Foto
+                          </span>
+                        )}
+                        <span className="text-[10px] text-slate-400 font-mono font-bold">#{banner.display_order}</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        {formatBannerDate(banner.updated_at ?? banner.created_at)}
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => onEdit(banner.id)}
+                          aria-label={`Ubah banner #${banner.display_order}`}
+                          className="p-2 text-slate-600 bg-slate-100 rounded-lg hover:bg-brandGreen-50 hover:text-brandGreen-600 transition"
+                        >
+                          <FontAwesomeIcon icon={faPenToSquare} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

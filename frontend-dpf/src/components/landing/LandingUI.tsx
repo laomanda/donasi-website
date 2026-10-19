@@ -114,7 +114,12 @@ export type Partner = {
 
 export type Banner = {
   id: number;
-  image_path: string;
+  media_type?: "image" | "video";
+  image_path?: string | null;
+  video_path?: string | null;
+  video_duration?: number | null;
+  image_url?: string | null;
+  video_url?: string | null;
   display_order: number;
   status?: "published" | "draft";
 };

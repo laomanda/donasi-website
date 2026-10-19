@@ -13,8 +13,10 @@ import EditorBannerFormSidebar from "../../../../components/management/editor/ba
 import { 
   type Banner, 
   type BannerFormState, 
+  type BannerMediaType,
   emptyBannerForm, 
   bannerFolder,
+  bannerVideoFolder,
   getNextBannerOrder 
 } from "../../../../components/management/editor/banner/EditorBannerTypes";
 
@@ -30,9 +32,15 @@ export default function EditorBannerCreatePage() {
   const [loadingPeers, setLoadingPeers] = useState(true);
   const [orderTouched, setOrderTouched] = useState(false);
 
+  // Image Upload State
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+
+  // Video Upload State
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
 
   const orderNumber = Number(form.display_order);
   const orderIsValid = Number.isFinite(orderNumber) && Number.isInteger(orderNumber) && orderNumber >= 0;
@@ -67,9 +75,9 @@ export default function EditorBannerCreatePage() {
     setImageError(null);
     setImageUploading(true);
     try {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
       const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      setImagePreviewUrl(url);
 
       const fd = new FormData();
       fd.append("file", file);
@@ -86,9 +94,36 @@ export default function EditorBannerCreatePage() {
     }
   };
 
+  const onUploadVideo = async (file: File) => {
+    setVideoError(null);
+    setVideoUploading(true);
+    try {
+      if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+      const url = URL.createObjectURL(file);
+      setVideoPreviewUrl(url);
+
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", bannerVideoFolder);
+      const res = await http.post<{ path: string; url?: string }>("/editor/uploads/video", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setForm(s => ({ ...s, video_path: res.data.path }));
+      toast.success("Video berhasil diunggah.", { title: "Berhasil" });
+    } catch {
+      setVideoError("Gagal mengunggah video. Pastikan format didukung dan ukuran tidak melebihi batas.");
+    } finally {
+      setVideoUploading(false);
+    }
+  };
+
   const onSubmit = async () => {
-    if (!form.image_path) {
-      setErrors(["Gambar banner wajib diisi."]);
+    if (form.media_type === "image" && !form.image_path) {
+      setErrors(["Gambar banner wajib diunggah."]);
+      return;
+    }
+    if (form.media_type === "video" && !form.video_path) {
+      setErrors(["File video banner wajib diunggah."]);
       return;
     }
     if (orderErrorMsg) {
@@ -96,11 +131,22 @@ export default function EditorBannerCreatePage() {
       return;
     }
 
+    if (form.video_duration.trim()) {
+      const dur = Number(form.video_duration);
+      if (isNaN(dur) || dur < 1 || dur > 120) {
+        setErrors(["Durasi video harus antara 1 sampai 120 detik."]);
+        return;
+      }
+    }
+
     setSaving(true);
     setErrors([]);
     try {
       await http.post("/editor/banners", {
-        image_path: form.image_path,
+        media_type: form.media_type,
+        image_path: form.image_path.trim() || null,
+        video_path: form.video_path.trim() || null,
+        video_duration: form.video_duration.trim() ? Number(form.video_duration) : null,
         display_order: orderNumber,
         status: form.status,
       });
@@ -124,14 +170,17 @@ export default function EditorBannerCreatePage() {
     }
   };
 
-  const canSubmit = !saving && !imageUploading && !loadingPeers && !orderErrorMsg && form.image_path;
+  const isVideo = form.media_type === "video";
+  const hasRequiredMedia = isVideo ? !!form.video_path : !!form.image_path;
+  const isMediaUploading = imageUploading || videoUploading;
+  const canSubmit = !saving && !isMediaUploading && !loadingPeers && !orderErrorMsg && hasRequiredMedia;
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 pb-20">
       <EditorBannerFormHeader
         mode="create"
         saving={saving}
-        uploading={imageUploading}
+        uploading={isMediaUploading}
         deleting={false}
         canSubmit={!!canSubmit}
         onBack={() => navigate("/editor/banners")}
@@ -148,15 +197,33 @@ export default function EditorBannerCreatePage() {
         <div className="lg:col-span-8">
           <EditorBannerFormMain
             form={form}
-            onUpload={onUploadImage}
-            onRemove={() => {
+            onMediaTypeChange={(type: BannerMediaType) => setForm(s => ({ ...s, media_type: type }))}
+            onUploadImage={onUploadImage}
+            onRemoveImage={() => {
               setForm(s => ({ ...s, image_path: "" }));
-              if (previewUrl) URL.revokeObjectURL(previewUrl);
-              setPreviewUrl(null);
+              if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+              setImagePreviewUrl(null);
             }}
-            uploading={imageUploading}
-            uploadError={imageError}
-            previewUrl={previewUrl}
+            imageUploading={imageUploading}
+            imageError={imageError}
+            imagePreviewUrl={imagePreviewUrl}
+            onUploadVideo={onUploadVideo}
+            onRemoveVideo={() => {
+              setForm(s => ({ ...s, video_path: "" }));
+              if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+              setVideoPreviewUrl(null);
+            }}
+            videoUploading={videoUploading}
+            videoError={videoError}
+            videoPreviewUrl={videoPreviewUrl}
+            onVideoDurationDetected={(dur) => {
+              setForm(s => {
+                if (!s.video_duration) {
+                  return { ...s, video_duration: String(Math.min(120, dur)) };
+                }
+                return s;
+              });
+            }}
             disabled={saving}
           />
         </div>
@@ -167,6 +234,7 @@ export default function EditorBannerCreatePage() {
               setOrderTouched(true);
               setForm(s => ({ ...s, display_order: val }));
             }}
+            onDurationChange={(val) => setForm(s => ({ ...s, video_duration: val }))}
             onStatusChange={(status) => setForm(s => ({ ...s, status }))}
             onSuggest={() => {
                setOrderTouched(true);

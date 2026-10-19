@@ -14,8 +14,10 @@ import { LoadingSkeleton } from "../../../../components/management/editor/progra
 import { 
   type Banner, 
   type BannerFormState, 
+  type BannerMediaType,
   emptyBannerForm,
   bannerFolder,
+  bannerVideoFolder,
   getNextBannerOrder 
 } from "../../../../components/management/editor/banner/EditorBannerTypes";
 
@@ -29,6 +31,8 @@ export default function EditorBannerEditPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+
+  const bannerId = Number(id);
 
   const onDelete = async () => {
     setDeleting(true);
@@ -46,11 +50,16 @@ export default function EditorBannerEditPage() {
   const [peers, setPeers] = useState<Banner[]>([]);
   const [loadingPeers, setLoadingPeers] = useState(true);
 
+  // Image upload state
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
-  const bannerId = Number(id);
+  // Video upload state
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
+
   const orderNumber = Number(form.display_order);
   const orderIsValid = Number.isFinite(orderNumber) && Number.isInteger(orderNumber) && orderNumber >= 0;
   
@@ -82,7 +91,10 @@ export default function EditorBannerEditPage() {
         const banner = list.find(b => b.id === bannerId);
         if (banner) {
           setForm({
+            media_type: banner.media_type || (banner.video_path ? "video" : "image"),
             image_path: banner.image_path || "",
+            video_path: banner.video_path || "",
+            video_duration: banner.video_duration ? String(banner.video_duration) : "",
             display_order: String(banner.display_order ?? 0),
             status: banner.status || "published",
           });
@@ -107,9 +119,9 @@ export default function EditorBannerEditPage() {
     setImageError(null);
     setImageUploading(true);
     try {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
       const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      setImagePreviewUrl(url);
 
       const fd = new FormData();
       fd.append("file", file);
@@ -126,9 +138,36 @@ export default function EditorBannerEditPage() {
     }
   };
 
+  const onUploadVideo = async (file: File) => {
+    setVideoError(null);
+    setVideoUploading(true);
+    try {
+      if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+      const url = URL.createObjectURL(file);
+      setVideoPreviewUrl(url);
+
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", bannerVideoFolder);
+      const res = await http.post<{ path: string }>("/editor/uploads/video", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setForm(s => ({ ...s, video_path: res.data.path }));
+      toast.success("Video berhasil diperbarui.", { title: "Berhasil" });
+    } catch {
+      setVideoError("Gagal mengunggah video. Pastikan format didukung dan ukuran tidak melebihi batas.");
+    } finally {
+      setVideoUploading(false);
+    }
+  };
+
   const onSubmit = async () => {
-    if (!form.image_path) {
+    if (form.media_type === "image" && !form.image_path) {
       setErrors(["Gambar banner wajib diisi."]);
+      return;
+    }
+    if (form.media_type === "video" && !form.video_path) {
+      setErrors(["File video banner wajib diisi."]);
       return;
     }
     if (orderErrorMsg) {
@@ -136,11 +175,22 @@ export default function EditorBannerEditPage() {
       return;
     }
 
+    if (form.video_duration.trim()) {
+      const dur = Number(form.video_duration);
+      if (isNaN(dur) || dur < 1 || dur > 120) {
+        setErrors(["Durasi video harus antara 1 sampai 120 detik."]);
+        return;
+      }
+    }
+
     setSaving(true);
     setErrors([]);
     try {
       await http.put(`/editor/banners/${bannerId}`, {
-        image_path: form.image_path,
+        media_type: form.media_type,
+        image_path: form.image_path.trim() || null,
+        video_path: form.video_path.trim() || null,
+        video_duration: form.video_duration.trim() ? Number(form.video_duration) : null,
         display_order: orderNumber,
         status: form.status,
       });
@@ -164,16 +214,27 @@ export default function EditorBannerEditPage() {
     }
   };
 
-  if (loading) return <div className="p-10"><LoadingSkeleton rows={8} /></div>;
+  const isVideo = form.media_type === "video";
+  const hasRequiredMedia = isVideo ? !!form.video_path : !!form.image_path;
+  const isMediaUploading = imageUploading || videoUploading;
+  const canSubmit = !saving && !isMediaUploading && !loadingPeers && !orderErrorMsg && hasRequiredMedia;
+
+  if (loading) {
+    return (
+      <div className="mx-auto w-full max-w-6xl pb-20">
+        <LoadingSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 pb-20">
       <EditorBannerFormHeader
         mode="edit"
         saving={saving}
-        uploading={imageUploading}
+        uploading={isMediaUploading}
         deleting={deleting}
-        canSubmit={!orderErrorMsg && !!form.image_path && !deleting}
+        canSubmit={!!canSubmit}
         onBack={() => navigate("/editor/banners")}
         onSubmit={onSubmit}
         onDelete={onDelete}
@@ -189,27 +250,46 @@ export default function EditorBannerEditPage() {
         <div className="lg:col-span-8">
           <EditorBannerFormMain
             form={form}
-            onUpload={onUploadImage}
-            onRemove={() => {
+            onMediaTypeChange={(type: BannerMediaType) => setForm(s => ({ ...s, media_type: type }))}
+            onUploadImage={onUploadImage}
+            onRemoveImage={() => {
               setForm(s => ({ ...s, image_path: "" }));
-              if (previewUrl) URL.revokeObjectURL(previewUrl);
-              setPreviewUrl(null);
+              if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+              setImagePreviewUrl(null);
             }}
-            uploading={imageUploading}
-            uploadError={imageError}
-            previewUrl={previewUrl}
-            disabled={saving}
+            imageUploading={imageUploading}
+            imageError={imageError}
+            imagePreviewUrl={imagePreviewUrl}
+            onUploadVideo={onUploadVideo}
+            onRemoveVideo={() => {
+              setForm(s => ({ ...s, video_path: "" }));
+              if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+              setVideoPreviewUrl(null);
+            }}
+            videoUploading={videoUploading}
+            videoError={videoError}
+            videoPreviewUrl={videoPreviewUrl}
+            onVideoDurationDetected={(dur) => {
+              setForm(s => {
+                if (!s.video_duration) {
+                  return { ...s, video_duration: String(Math.min(120, dur)) };
+                }
+                return s;
+              });
+            }}
+            disabled={saving || deleting}
           />
         </div>
         <div className="lg:col-span-4">
           <EditorBannerFormSidebar
             form={form}
             onChange={(val) => setForm(s => ({ ...s, display_order: val }))}
+            onDurationChange={(val) => setForm(s => ({ ...s, video_duration: val }))}
             onStatusChange={(status) => setForm(s => ({ ...s, status }))}
             onSuggest={() => setForm(s => ({ ...s, display_order: String(suggestedOrder) }))}
             suggestedOrder={suggestedOrder}
             loadingPeers={loadingPeers}
-            disabled={saving}
+            disabled={saving || deleting}
             error={orderErrorMsg}
           />
         </div>

@@ -12,6 +12,13 @@ class BannerRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('video_duration') && ($this->input('video_duration') === '' || $this->input('video_duration') === null)) {
+            $this->merge(['video_duration' => null]);
+        }
+    }
+
     public function rules(): array
     {
         $banner = $this->route('banner');
@@ -20,10 +27,38 @@ class BannerRequest extends FormRequest
             $orderRule = $orderRule->ignore($banner->id);
         }
 
+        $mediaType = $this->input('media_type', $banner?->media_type ?? 'image');
+
         return [
-            'image_path'   => [$banner ? 'sometimes' : 'required', 'string', 'max:255'],
-            'display_order'=> [$banner ? 'sometimes' : 'required', 'integer', 'min:0', $orderRule],
-            'status'       => ['sometimes', 'required', 'string', 'in:published,draft'],
+            'media_type'    => ['sometimes', 'required', 'string', 'in:image,video'],
+            'image_path'    => [
+                Rule::requiredIf(function () use ($mediaType, $banner) {
+                    if ($mediaType !== 'image') return false;
+                    if (!$banner) return true;
+                    return empty($this->input('image_path')) && empty($banner->image_path);
+                }),
+                'nullable', 'string', 'max:255'
+            ],
+            'video_path'    => [
+                Rule::requiredIf(function () use ($mediaType, $banner) {
+                    if ($mediaType !== 'video') return false;
+                    if (!$banner) return true;
+                    return empty($this->input('video_path')) && empty($banner->video_path);
+                }),
+                'nullable', 'string', 'max:255'
+            ],
+            'video_duration'=> ['nullable', 'integer', 'min:1', 'max:120'],
+            'display_order' => [$banner ? 'sometimes' : 'required', 'integer', 'min:0', $orderRule],
+            'status'        => ['sometimes', 'required', 'string', 'in:published,draft'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'video_duration.max' => 'Durasi video maksimal adalah 2 menit (120 detik).',
+            'video_path.required' => 'File video wajib diunggah untuk banner bertipe video.',
+            'image_path.required' => 'Gambar banner wajib diunggah.',
         ];
     }
 }
