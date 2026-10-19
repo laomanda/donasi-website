@@ -139,17 +139,17 @@ export default function EditorBannerFormMain({
 
             <div className="mt-6">
               {activeImageUrl ? (
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 aspect-[21/9] sm:aspect-[24/10]">
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 aspect-video flex items-center justify-center">
                   <img
                     src={activeImageUrl}
                     alt="Preview Banner"
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain"
                   />
                 </div>
               ) : (
                 <div
                   onClick={() => imageInputRef.current?.click()}
-                  className="cursor-pointer rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 text-center transition hover:border-slate-300 hover:bg-slate-50 aspect-[21/9] sm:aspect-[24/10] flex flex-col items-center justify-center gap-2"
+                  className="cursor-pointer rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 text-center transition hover:border-slate-300 hover:bg-slate-50 aspect-video flex flex-col items-center justify-center gap-2"
                 >
                   <FontAwesomeIcon icon={faImage} className="text-3xl text-slate-300" />
                   <p className="text-sm font-semibold text-slate-600">
@@ -211,7 +211,7 @@ export default function EditorBannerFormMain({
 
             <div className="mt-6">
               {activeVideoUrl ? (
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-black aspect-[21/9] sm:aspect-[24/10] relative flex items-center justify-center">
+                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-black aspect-video relative flex items-center justify-center">
                   <video
                     src={activeVideoUrl}
                     controls
@@ -228,7 +228,7 @@ export default function EditorBannerFormMain({
               ) : (
                 <div
                   onClick={() => videoInputRef.current?.click()}
-                  className="cursor-pointer rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/20 p-8 text-center transition hover:border-purple-300 hover:bg-purple-50/50 aspect-[21/9] sm:aspect-[24/10] flex flex-col items-center justify-center gap-2"
+                  className="cursor-pointer rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/20 p-8 text-center transition hover:border-purple-300 hover:bg-purple-50/50 aspect-video flex flex-col items-center justify-center gap-2"
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm text-purple-600">
                     <FontAwesomeIcon icon={faFilm} className="text-xl" />
